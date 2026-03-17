@@ -374,3 +374,406 @@ def track_mode(alphas, target, n_nearest=1):
     dist = np.abs(alphas - target)
     idx = np.argsort(dist)[:n_nearest]
     return alphas[idx]
+
+
+# ========================================================================
+# SPECTRAL RAYLEIGH SOLVER (inviscid, replaces broken shooting method)
+# ========================================================================
+
+def solve_rayleigh_spectral(baseflow, alpha, N=200, y_max=20.0, L=None,
+                            contour_shift=0.0):
+    """Solve the Rayleigh equation using Chebyshev spectral collocation.
+
+    The Rayleigh equation:
+        [(alpha*U - omega)(D^2 - alpha^2) - alpha*D^2U] v_hat = 0
+
+    Rearranged as generalized EVP:  A*v = omega*B*v
+
+    For profiles WITHOUT an inflection point (e.g. Blasius), damped
+    eigenvalues exist only on a deformed contour (Lin 1945). Set
+    contour_shift > 0 to deform the y-contour into the lower complex
+    half-plane, enabling detection of these damped modes.
+
+    The profile is analytically continued to complex y using Taylor:
+        U(y + i*dy) = U(y) + i*dy*U'(y) - dy^2/2*U''(y)
+
+    Parameters
+    ----------
+    baseflow : callable
+        Profile object returning dict with U, dU, d2U.
+    alpha : float
+        Real wavenumber.
+    N : int
+        Number of Chebyshev intervals.
+    y_max : float
+        Domain height.
+    contour_shift : float
+        Magnitude of imaginary shift for contour deformation.
+        0 = real axis (standard), >0 = deformed below (Lin's contour).
+
+    Returns
+    -------
+    omega : array
+        Complex frequencies, sorted by omega_i descending.
+    modes : array
+        Eigenvectors.
+    y : array
+        Real part of grid points.
+    """
+    D_eta = chebyshev_D(N)
+    y_real, D1_real, D2_real = physical_derivatives(D_eta, y_max, N, L)
+
+    bf = baseflow(y_real)
+    n = len(y_real)
+    I_mat = np.eye(n)
+
+    if contour_shift > 0:
+        # Deform contour: y_complex = y_real - i * shift * bump(y)
+        # Bump is a smooth function zero at boundaries, max in interior
+        bump = y_real * (y_max - y_real) / (y_max / 2)**2
+        y_imag = -contour_shift * bump
+
+        # Analytically continue U to complex y via Taylor expansion
+        # U(y_r + i*y_i) ≈ U(y_r) + i*y_i*U'(y_r) - y_i^2/2*U''(y_r)
+        U_vals = (bf['U'] + 1j * y_imag * bf['dU']
+                  - 0.5 * y_imag**2 * bf['d2U'])
+        d2U_vals = bf['d2U'] + 0j  # Leading order
+
+        # Metric: dy_complex/dy_real = 1 + i * d(y_imag)/d(y_real)
+        # d(y_imag)/d(y_real) = -shift * (y_max - 2*y_real) / (y_max/2)^2
+        dy_imag_dy = -contour_shift * (y_max - 2 * y_real) / (y_max / 2)**2
+        metric = 1.0 + 1j * dy_imag_dy
+
+        # Transform derivatives: D_complex = (1/metric) * D_real
+        metric_inv = 1.0 / metric
+        D1 = np.diag(metric_inv) @ D1_real
+        D2 = (np.diag(metric_inv**2) @ D2_real
+              - np.diag(metric_inv**3 * 1j *
+                        2 * contour_shift / (y_max / 2)**2) @ D1_real)
+    else:
+        U_vals = bf['U'] + 0j
+        d2U_vals = bf['d2U'] + 0j
+        D1 = D1_real
+        D2 = D2_real
+
+    U_diag = np.diag(U_vals)
+    d2U_diag = np.diag(d2U_vals)
+
+    L2 = D2 - alpha**2 * I_mat
+
+    A = alpha * U_diag @ L2 - alpha * d2U_diag
+    B = L2.copy().astype(complex)
+
+    # BCs
+    A[0, :] = 0;   A[0, 0] = 1;   B[0, :] = 0
+    A[-1, :] = 0;  A[-1, -1] = 1; B[-1, :] = 0
+
+    eigenvalues, eigenvectors = linalg.eig(A, B)
+
+    valid = np.isfinite(eigenvalues)
+    eigenvalues = eigenvalues[valid]
+    eigenvectors = eigenvectors[:, valid]
+
+    c = eigenvalues / alpha
+    phys = ((c.real > -0.1) & (c.real < 1.2) &
+            (np.abs(c.imag) < 0.5))
+    eigenvalues = eigenvalues[phys]
+    eigenvectors = eigenvectors[:, phys]
+
+    idx = np.argsort(-eigenvalues.imag)
+    return eigenvalues[idx], eigenvectors[:, idx], y_real
+
+
+# ========================================================================
+# SPATIAL SOLVER VIA MULLER'S METHOD (replaces broken QEP companion)
+# ========================================================================
+
+def _spatial_determinant(alpha, C0, C1, C2):
+    """Evaluate the eigenvalue of L(alpha) closest to zero.
+
+    L(alpha) = C0 + alpha*C1 + alpha^2*C2
+    Returns the complex eigenvalue nearest to zero — this is zero
+    when alpha is a spatial eigenvalue of the stability problem.
+    Using eigenvalue (complex) instead of SVD (real) gives Muller's
+    method the phase information it needs for quadratic interpolation.
+    """
+    L = C0 + alpha * C1 + alpha**2 * C2
+    try:
+        eigs = linalg.eigvals(L)
+        idx = np.argmin(np.abs(eigs))
+        return eigs[idx]
+    except Exception:
+        return 1e30 + 0j
+
+
+def _muller_step(z0, z1, z2, f0, f1, f2):
+    """One step of Muller's method for complex root-finding.
+
+    Given three points (z0,f0), (z1,f1), (z2,f2), fit a quadratic
+    and return the root closest to z2.
+    """
+    h0 = z1 - z0
+    h1 = z2 - z1
+    d0 = (f1 - f0) / h0
+    d1 = (f2 - f1) / h1
+    a = (d1 - d0) / (h1 + h0)
+    b = d1 + a * h1
+    c_val = f2
+
+    disc = b**2 - 4 * a * c_val
+    sqrt_disc = np.sqrt(disc)
+
+    # Choose denominator with larger magnitude (numerical stability)
+    denom1 = b + sqrt_disc
+    denom2 = b - sqrt_disc
+    if abs(denom1) > abs(denom2):
+        dz = -2 * c_val / denom1
+    else:
+        dz = -2 * c_val / denom2
+
+    return z2 + dz
+
+
+def solve_spatial_muller(baseflow, omega, Re, Ma, Pr, gamma, alpha_guess,
+                         N=100, y_max=None, tol=1e-8, max_iter=30):
+    """Find spatial eigenvalue alpha using Muller's method.
+
+    Instead of solving the full QEP and filtering, this directly
+    searches for the complex alpha that makes L(alpha) singular.
+    Uses the smallest singular value of L(alpha) as the objective.
+
+    The key insight: Muller's method needs only 3 initial points and
+    converges quadratically for simple roots. No companion system needed.
+
+    Parameters
+    ----------
+    baseflow : callable
+        Profile object.
+    omega : float
+        Real frequency.
+    Re, Ma, Pr, gamma : float
+        Flow parameters.
+    alpha_guess : complex
+        Initial guess (e.g., from Gaster transform of temporal result).
+    N : int
+        Chebyshev intervals.
+    y_max : float
+        Domain height.
+    tol : float
+        Convergence tolerance on |sigma_min|.
+    max_iter : int
+        Maximum iterations.
+
+    Returns
+    -------
+    alpha : complex
+        Spatial eigenvalue.
+    converged : bool
+        Whether the iteration converged.
+    sigma_min : float
+        Final smallest singular value (should be ~0 if converged).
+    """
+    if y_max is None:
+        y_max = 6.0 if Ma > 2.0 else 12.0
+
+    D_eta = chebyshev_D(N)
+    y, D1, D2 = physical_derivatives(D_eta, y_max, N)
+    bf = baseflow(y)
+
+    C0, C1, C2 = assemble_compressible_matrices(
+        D1, D2, y, bf, omega, Re, Ma, Pr, gamma)
+
+    n = len(y)
+    nn = 4 * n
+
+    # Apply BCs
+    wall = n - 1
+    free = 0
+    for var in range(3):
+        for loc in [wall, free]:
+            row = var * n + loc
+            C0[row, :] = 0
+            C1[row, :] = 0
+            C2[row, :] = 0
+            C0[row, row] = 1.0
+
+    # Muller's method needs 3 initial points
+    ag = complex(alpha_guess)
+    z0 = ag - 0.01 - 0.005j
+    z1 = ag + 0.01
+    z2 = ag
+
+    f0 = _spatial_determinant(z0, C0, C1, C2)
+    f1 = _spatial_determinant(z1, C0, C1, C2)
+    f2 = _spatial_determinant(z2, C0, C1, C2)
+
+    for iteration in range(max_iter):
+        if abs(f2) < tol:
+            return z2, True, abs(f2)
+
+        try:
+            z_new = _muller_step(z0, z1, z2, f0, f1, f2)
+        except (ZeroDivisionError, ValueError):
+            # Muller step failed, try small perturbation
+            z_new = z2 + 0.001 * (1 + 1j)
+
+        f_new = _spatial_determinant(z_new, C0, C1, C2)
+
+        # Shift: oldest point dropped
+        z0, z1, z2 = z1, z2, z_new
+        f0, f1, f2 = f1, f2, f_new
+
+    return z2, abs(f2) < tol * 100, abs(f2)
+
+
+def _temporal_at_complex_alpha(baseflow, alpha_complex, Re, Ma, Pr, gamma,
+                                N, y_max, c_target):
+    """Evaluate temporal EVP at complex alpha; return c nearest to target.
+
+    This is the key building block for spatial Newton iteration.
+    The temporal solver works with complex alpha — the matrices just
+    become fully complex.
+    """
+    c_all, _, _ = solve_temporal_compressible(
+        baseflow, alpha_complex, Re, Ma, Pr, gamma, N=N, y_max=y_max)
+    if len(c_all) == 0:
+        return None
+    # Find mode nearest to target
+    dist = np.abs(c_all - c_target)
+    return c_all[np.argmin(dist)]
+
+
+def solve_spatial_newton(baseflow, omega, Re, Ma, Pr, gamma,
+                          alpha_guess, c_target, N=100, y_max=None,
+                          tol=1e-6, max_iter=20):
+    """Find spatial eigenvalue alpha via Newton on omega(alpha) = omega_target.
+
+    Given the converged temporal mode c at real alpha, iterate on
+    complex alpha until alpha*c(alpha) = omega.
+
+    Parameters
+    ----------
+    alpha_guess : complex
+        Initial guess from Gaster relation.
+    c_target : complex
+        Phase speed of the tracked mode (for nearest-mode selection).
+
+    Returns
+    -------
+    alpha : complex
+        Converged spatial eigenvalue.
+    converged : bool
+    """
+    if y_max is None:
+        y_max = 6.0 if Ma > 2.0 else 12.0
+
+    alpha = complex(alpha_guess)
+    da = 1e-5  # finite difference step
+
+    for it in range(max_iter):
+        c = _temporal_at_complex_alpha(
+            baseflow, alpha, Re, Ma, Pr, gamma, N, y_max, c_target)
+        if c is None:
+            return alpha, False
+
+        # Residual: F(alpha) = alpha*c - omega
+        F = alpha * c - omega
+        if abs(F) < tol:
+            return alpha, True
+
+        # Jacobian by finite difference: dF/dalpha ≈ [F(alpha+da) - F(alpha)] / da
+        c_p = _temporal_at_complex_alpha(
+            baseflow, alpha + da, Re, Ma, Pr, gamma, N, y_max, c_target)
+        if c_p is None:
+            return alpha, False
+
+        F_p = (alpha + da) * c_p - omega
+        dF_dalpha = (F_p - F) / da
+
+        if abs(dF_dalpha) < 1e-30:
+            return alpha, False
+
+        # Newton step
+        alpha_new = alpha - F / dF_dalpha
+
+        # Update target for mode tracking
+        c_target = c
+
+        # Damped step if change is too large
+        step = alpha_new - alpha
+        if abs(step) > 0.5:
+            step = 0.5 * step / abs(step)
+        alpha = alpha + step
+
+    return alpha, abs(alpha * c - omega) < tol * 100
+
+
+def solve_spatial_from_temporal(baseflow, omega, Re, Ma, Pr, gamma,
+                                 N=100, y_max=None):
+    """Solve spatial problem using temporal result + Gaster + Muller.
+
+    Pipeline:
+    1. Find converged temporal eigenvalue (two-resolution filtering)
+    2. Use Gaster relation for spatial initial guess
+    3. Refine with Muller's method on sigma_min[L(alpha)]
+
+    Returns
+    -------
+    alpha : complex
+        Spatial eigenvalue.
+    converged : bool
+    """
+    if y_max is None:
+        y_max = 6.0 if Ma > 2.0 else 12.0
+
+    # Step 1: estimate alpha_r from phase speed
+    if Ma > 3:
+        c_est = 0.98  # discrete second mode
+    else:
+        c_est = 0.35
+
+    alpha_r = omega / c_est
+
+    # Step 2: convergence-filtered temporal eigenvalue
+    N_lo, N_hi = max(N - 30, 60), N
+    c_lo, _, _ = solve_temporal_compressible(
+        baseflow, alpha_r, Re, Ma, Pr, gamma, N=N_lo, y_max=y_max)
+    c_hi, _, _ = solve_temporal_compressible(
+        baseflow, alpha_r, Re, Ma, Pr, gamma, N=N_hi, y_max=y_max)
+
+    filt = lambda c: ((c.real > 0.3) & (c.real < 1.05) &
+                       (np.abs(c.imag) < 0.3))
+    cl, ch = c_lo[filt(c_lo)], c_hi[filt(c_hi)]
+
+    best = None
+    if len(cl) > 0 and len(ch) > 0:
+        converged_modes = []
+        for c in ch:
+            if np.min(np.abs(cl - c)) < 0.008:
+                converged_modes.append(c)
+        if converged_modes:
+            converged_modes = np.array(converged_modes)
+            best = converged_modes[np.argmax(converged_modes.imag)]
+
+    if best is None:
+        # Fallback: use unfiltered most unstable
+        if len(ch) > 0:
+            best = ch[np.argmax(ch.imag)]
+        else:
+            return alpha_r + 0j, False
+
+    # Step 3: Gaster relation
+    # -alpha_i = alpha * c_i / c_r (spatial growth from temporal)
+    c_r = best.real
+    c_i = best.imag
+    alpha_i_guess = -alpha_r * c_i / max(c_r, 0.1)
+
+    alpha_guess = alpha_r + 1j * alpha_i_guess
+
+    # Step 4: Newton refinement
+    alpha, converged = solve_spatial_newton(
+        baseflow, omega, Re, Ma, Pr, gamma,
+        alpha_guess=alpha_guess, c_target=best,
+        N=N, y_max=y_max)
+
+    return alpha, converged
