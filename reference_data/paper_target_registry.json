@@ -1,0 +1,262 @@
+{
+  "papers": [
+    {
+      "paper_id": "mack_agard_709",
+      "title": "Boundary-Layer Linear Stability Theory",
+      "targets": [
+        {
+          "id": "mack_ch05_blasius_neutral",
+          "chapter": "5",
+          "kind": "figure",
+          "label": "Blasius neutral curve",
+          "quantity": "temporal neutral curve",
+          "formulation": "temporal",
+          "scale": "delta_star",
+          "transport_model": "incompressible",
+          "wall_condition": "adiabatic",
+          "expected_topology": "single unstable pocket",
+          "script": "chapters/ch05_incompressible_viscous/ch05.py",
+          "reference_data": [],
+          "status": "validated_core"
+        },
+        {
+          "id": "mack_ch06_table_11_1",
+          "chapter": "6",
+          "kind": "table",
+          "label": "Table 11.1 displacement thickness",
+          "quantity": "delta_star_over_lstar",
+          "formulation": "mean_flow",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "monotone increase with Mach",
+          "script": "chapters/ch06_compressible_formulation/ch06.py",
+          "reference_data": [
+            "mack/table_11_1_delta_star_over_lstar.csv"
+          ],
+          "status": "validated_numeric"
+        },
+        {
+          "id": "mack_ch09_figures",
+          "chapter": "9",
+          "kind": "figure_family",
+          "label": "Compressible inviscid higher-mode figures",
+          "quantity": "phase speed, temporal growth, neutral conditions",
+          "formulation": "temporal_inviscid",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic_or_isothermal_by_caption",
+          "expected_topology": "mode branches and sonic/inflection conditions",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "remap_required"
+        },
+        {
+          "id": "mack_ch10_table_10_1",
+          "chapter": "10",
+          "kind": "table",
+          "label": "Table 10.1 oblique temporal growth",
+          "quantity": "omega_i",
+          "formulation": "temporal_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "first-mode oblique growth family",
+          "script": "validation/diagnose_mack_table_10_1.py",
+          "reference_data": [
+            "mack/table_10_1_oblique_growth.csv"
+          ],
+          "status": "validated_gap_identified"
+        },
+        {
+          "id": "mack_ch10_figures",
+          "chapter": "10",
+          "kind": "figure_family",
+          "label": "Compressible viscous flat-plate figures",
+          "quantity": "temporal and spatial growth / neutral curves",
+          "formulation": "temporal_and_spatial",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "mixed_by_figure",
+          "expected_topology": "first- and second-mode pockets with branch mergers",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [
+            "mack/table_10_1_oblique_growth.csv",
+            "mack/table_11_1_delta_star_over_lstar.csv"
+          ],
+          "status": "production_rebuild_required"
+        }
+      ]
+    },
+    {
+      "paper_id": "ozgen_kircali_2008",
+      "title": "Linear stability analysis in compressible flat plate boundary layers",
+      "targets": [
+        {
+          "id": "ozgen_fig1_profiles",
+          "chapter": "results",
+          "kind": "figure",
+          "label": "Figure 1 mean-flow profiles",
+          "quantity": "U, T, and d2U/deta2 versus eta",
+          "formulation": "mean_flow",
+          "scale": "eta",
+          "transport_model": "ozgen_sutherland",
+          "wall_condition": "adiabatic",
+          "expected_topology": "family of monotone U and heated-wall T profiles",
+          "script": "chapters/ozgen_kircali_2008/ozgen.py",
+          "reference_data": [],
+          "status": "shared_builder_refactor_started"
+        },
+        {
+          "id": "ozgen_fig2_profile_validation",
+          "chapter": "results",
+          "kind": "figure",
+          "label": "Figure 2 literature profile comparison",
+          "quantity": "velocity profiles versus thickness-normalized coordinate",
+          "formulation": "mean_flow",
+          "scale": "theta_or_delta_star",
+          "transport_model": "ozgen_sutherland",
+          "wall_condition": "adiabatic",
+          "expected_topology": "profile overlays against literature",
+          "script": null,
+          "reference_data": [],
+          "status": "not_implemented"
+        },
+        {
+          "id": "ozgen_fig3_2d_stability",
+          "chapter": "results",
+          "kind": "figure",
+          "label": "Figure 3 two-dimensional stability diagrams",
+          "quantity": "c_i contour maps and neutral curves",
+          "formulation": "temporal_2d",
+          "scale": "L_star",
+          "transport_model": "ozgen_sutherland",
+          "wall_condition": "adiabatic",
+          "expected_topology": "neutral pockets with first/second-mode transition",
+          "script": "chapters/ozgen_kircali_2008/ozgen.py",
+          "reference_data": [
+            "ozgen/critical_reynolds_points.csv"
+          ],
+          "status": "provisional"
+        },
+        {
+          "id": "ozgen_fig4_critical_reynolds",
+          "chapter": "results",
+          "kind": "figure",
+          "label": "Figure 4 critical Reynolds versus Mach",
+          "quantity": "critical Reynolds number",
+          "formulation": "temporal_2d",
+          "scale": "L_star",
+          "transport_model": "ozgen_sutherland",
+          "wall_condition": "adiabatic",
+          "expected_topology": "first- and second-mode critical-Re branches",
+          "script": "chapters/ozgen_kircali_2008/ozgen.py",
+          "reference_data": [
+            "ozgen/critical_reynolds_points.csv"
+          ],
+          "status": "provisional"
+        },
+        {
+          "id": "ozgen_fig5_m8_comparison",
+          "chapter": "results",
+          "kind": "figure",
+          "label": "Figure 5 M=8 neutral-curve comparison",
+          "quantity": "neutral curve comparison with Masad et al.",
+          "formulation": "temporal_2d",
+          "scale": "L_star",
+          "transport_model": "ozgen_sutherland",
+          "wall_condition": "adiabatic",
+          "expected_topology": "single compared neutral envelope",
+          "script": null,
+          "reference_data": [],
+          "status": "not_implemented"
+        },
+        {
+          "id": "ozgen_fig6_wave_angle_effect",
+          "chapter": "results",
+          "kind": "figure",
+          "label": "Figure 6 wave-angle effect at M=4",
+          "quantity": "c_i contour maps versus Re and alpha",
+          "formulation": "temporal_3d",
+          "scale": "L_star",
+          "transport_model": "ozgen_sutherland",
+          "wall_condition": "adiabatic",
+          "expected_topology": "second mode stabilizes and first mode destabilizes with psi",
+          "script": "chapters/ozgen_kircali_2008/ozgen.py",
+          "reference_data": [
+            "ozgen/most_unstable_wave_angles.csv"
+          ],
+          "status": "stale_under_scaled_lstar_domain"
+        },
+        {
+          "id": "ozgen_fig7_critical_re_vs_wave_angle",
+          "chapter": "results",
+          "kind": "figure",
+          "label": "Figure 7 critical Reynolds versus wave angle",
+          "quantity": "critical Reynolds number",
+          "formulation": "temporal_3d",
+          "scale": "L_star",
+          "transport_model": "ozgen_sutherland",
+          "wall_condition": "adiabatic",
+          "expected_topology": "psi_opt shifts from 0 to about 60 degrees",
+          "script": "chapters/ozgen_kircali_2008/ozgen.py",
+          "reference_data": [
+            "ozgen/most_unstable_wave_angles.csv"
+          ],
+          "status": "stale_under_scaled_lstar_domain"
+        },
+        {
+          "id": "ozgen_fig8_mach_independence",
+          "chapter": "results",
+          "kind": "figure",
+          "label": "Figure 8 Mach independence at most unstable wave angle",
+          "quantity": "spatial sigma_i versus Re_delta maps with constant omega_r contours",
+          "formulation": "spatial_3d",
+          "scale": "L_star",
+          "transport_model": "ozgen_sutherland",
+          "wall_condition": "adiabatic",
+          "expected_topology": "near-invariant oblique first-mode pockets for M>=4",
+          "script": "chapters/ozgen_kircali_2008/ozgen.py",
+          "reference_data": [
+            "ozgen/most_unstable_wave_angles.csv"
+          ],
+          "status": "mismapped_requires_spatial_3d"
+        },
+        {
+          "id": "ozgen_fig9_reference_temperature_2d",
+          "chapter": "reference_temperature",
+          "kind": "figure",
+          "label": "Figure 9 reference-temperature effect at M=4.8, psi=0",
+          "quantity": "neutral curves",
+          "formulation": "temporal_2d",
+          "scale": "L_star",
+          "transport_model": "ozgen_sutherland",
+          "wall_condition": "adiabatic",
+          "expected_topology": "mode merger under lower edge temperature",
+          "script": "chapters/ozgen_kircali_2008/ozgen.py",
+          "reference_data": [
+            "ozgen/reference_temperature_cases.csv"
+          ],
+          "status": "provisional"
+        },
+        {
+          "id": "ozgen_fig10_reference_temperature_3d",
+          "chapter": "reference_temperature",
+          "kind": "figure",
+          "label": "Figure 10 reference-temperature effect at M=4.5, psi=60",
+          "quantity": "neutral curves",
+          "formulation": "temporal_3d",
+          "scale": "L_star",
+          "transport_model": "ozgen_sutherland",
+          "wall_condition": "adiabatic",
+          "expected_topology": "weaker reference-temperature sensitivity for oblique waves",
+          "script": "chapters/ozgen_kircali_2008/ozgen.py",
+          "reference_data": [
+            "ozgen/reference_temperature_cases.csv"
+          ],
+          "status": "mismapped_requires_oblique_neutral_tracing"
+        }
+      ]
+    }
+  ]
+}

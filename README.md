@@ -4,6 +4,13 @@ A from-scratch Python implementation of spatial/temporal stability analysis for 
 
 **No open-source Python compressible LST solver exists** — this fills a real gap.
 
+Important orientation:
+
+- [`docs/LST_REPRODUCTION_GUIDE.md`](docs/LST_REPRODUCTION_GUIDE.md) explains the actual mathematical objects in this repo: temporal vs spatial growth, neutral branches, `L*` vs `delta*` scaling, and the current reproduction limits.
+- [`docs/PAPER_ALIGNMENT_AUDIT.md`](docs/PAPER_ALIGNMENT_AUDIT.md) records what is currently exact, approximate, and still unresolved against Mack and Ozgen.
+- The incompressible Orr-Sommerfeld path is the most validated part of the codebase.
+- The shared compressible solver is usable, but exact figure reproduction against Mack/Ozgen still depends on choosing the correct Mack condition set (`Table 11.1` vs figure-caption `wind_tunnel`), using the correct `L*` or `delta*` variable set, and tightening the oblique-wave viscous system against Mack's Chapter 10 data.
+
 ---
 
 ## Table of Contents
@@ -63,7 +70,7 @@ The second mode is an acoustic resonance: pressure waves bounce between the wall
 | T_edge | 56 K | Nitrogen freestream |
 | T_recovery | 328 K | With recovery factor r = Pr^0.5 |
 | Gas | N2 | R = 296.8 J/(kg K), gamma = 1.4, Pr = 0.72 |
-| Viscosity | Power law | mu/mu_ref = (T/T_ref)^0.74 |
+| Transport | Mack Appendix-A air properties | Viscosity and conductivity may both vary with temperature |
 
 ---
 
@@ -148,46 +155,27 @@ Solves the Blasius ODE `f''' + 0.5*f*f'' = 0` with the known shooting parameter 
 
 The displacement thickness in similarity coordinates `delta*_eta = integral(1 - f') d_eta` maps physical `y/delta*` to similarity `eta`.
 
-#### Compressible Self-Similar (Illingworth-Stewartson + Crocco-Busemann)
+#### Compressible Self-Similar Mean Flow
 
-This is the most complex component. The compressible boundary layer equations are solved in transformed (similarity) coordinates, then mapped to physical coordinates.
+This is the most complex component. The current implementation solves the
+coupled compressible similarity boundary-value problem for velocity and
+temperature, then reconstructs the physical wall-normal coordinate and all
+needed derivatives for the stability solver.
 
-**Transformed ODE:**
+Supported wall conditions:
 
-```
-(C * f'')' + f * f'' = 0
-```
+- `adiabatic`: zero wall heat flux
+- `isothermal`: fixed wall temperature
 
-where `C = (T/T_e)^(omega-1)` is the Chapman-Rubesin parameter and the temperature comes from the Crocco-Busemann relation:
+Supported transport models:
 
-```
-T/T_e = g_w + (1 - g_w)*f' + 0.5*(gamma-1)*Ma^2 * f'*(1 - f')
-```
+- `power_law`
+- `sutherland`
+- `mack`: Mack Appendix-A air viscosity and conductivity laws
 
-This is exact for Pr=1 and an excellent approximation for Pr=0.72.
-
-**Shooting method:** `scipy.optimize.brentq` finds `f''(0)` in [0.01, 2.0] such that `f'(eta_max) = 1`.
-
-**Critical coordinate mapping:** The physical coordinate relates to the similarity variable through:
-
-```
-y_phys(eta) = integral_0^eta g(s) ds
-```
-
-where `g = T/T_e`. This is a NONLINEAR mapping (not the linear `y = eta/const` that would be correct only for incompressible flow). The cumulative integral is computed with `scipy.integrate.cumulative_trapezoid`, and all profiles (U, T, rho, mu and their derivatives) are expressed in physical coordinates normalized by the physical displacement thickness:
-
-```
-delta*_physical = integral_0^inf (g - f') d_eta
-```
-
-**Physical-space derivatives** are computed using the chain rule:
-
-```
-dU/dy = f'' / g
-d^2U/dy^2 = f''' / g^2 - f'' * g' / g^3
-```
-
-(and similarly for T, rho, mu).
+For Mack reproductions, the repo also now separates the Chapter 6 Table 11.1
+temperature schedule from the Chapter 9-11 figure-caption wind-tunnel
+conditions through [`lst/mack_conditions.py`](lst/mack_conditions.py).
 
 ### 3. Stability Equations (`lst/equations.py`)
 
@@ -274,6 +262,10 @@ Compressible temporal solver — the **primary workhorse**. Assembles the A and 
 
 Boundary conditions: `u_hat = v_hat = T_hat = 0` at wall and freestream (isothermal wall). Pressure has no explicit BC (handled by the equation system). Applied by row replacement in A and B.
 
+The temporal solvers now also expose an explicit `length_scale` switch so paper-facing scripts can choose whether `alpha`, `omega`, and `Re` are interpreted on `delta*` or Mack's `L*` scale while still using the collocation grid on `y / delta*`.
+
+For the 3D compressible temporal problem, the repo now also includes Appendix-B freestream leakage diagnostics, an iterative asymptotic top-boundary refinement path, and an experimental Appendix-A/B bounded shooting scaffold for single temporal points.
+
 Filters: `c_r in (-0.5, 1.5)`, `|c_i| < 0.5`.
 
 #### `solve_spatial(baseflow, omega, Re, Ma, ...)`
@@ -295,9 +287,15 @@ This reliably separates the physical second mode (c_i ~ 0.01) from continuous sp
 ### 5. Analysis Tools (`lst/analysis.py`)
 
 - `frequency_sweep(...)`: Spatial growth rate sigma vs omega at fixed Re
+- `spatial_growth_curve(...)`: High-level spatial wrapper returning sigma and alpha
+- `spatial_growth_map(...)`: Shared (Re, omega) spatial map workflow
 - `neutral_curve(...)`: 2D map of growth rate in (Re, alpha/omega) space
 - `nfactor(...)`: N-factor integration (integral of growth rate along x)
 - `temporal_growth_scan(...)`: Temporal c_i vs alpha at fixed Re
+- `temporal_growth_curve(...)`: High-level temporal wrapper for incompressible and compressible scans
+- `temporal_growth_map(...)`: Shared (Re, alpha) temporal map workflow
+- `find_temporal_mode_anchor_3d_shooting(...)`: Exact 3D shooting anchor search from seed grids
+- `trace_temporal_neutral_curve_shooting(...)`: Exact-shooting temporal neutral tracing from an anchor root
 - `find_critical_Re(...)`: Bisection for the critical Reynolds number
 
 ### 6. Plotting (`lst/plotting.py`)
@@ -386,7 +384,7 @@ All figures saved in `cases/mach535_n2/`.
 - **Velocity**: Standard BL profile, U=0 at wall to U=1 at edge
 - **Temperature**: T_wall/T_e = 6.6 at wall, monotonically decreasing to T_e
 - **Density**: rho_wall/rho_e = 0.15 (very low due to high temperature)
-- **Viscosity**: mu_wall/mu_e ~ 4 (power law with omega=0.74)
+- **Transport**: strong wall-to-edge viscosity increase, captured with temperature-dependent air properties
 
 ### Temporal Growth Rate (Discrete Second Mode)
 
@@ -491,12 +489,12 @@ All figures saved in `cases/mach535_n2/`.
 
 - [ ] **Spatial solver refinement**: Implement Newton iteration (Muller's method) targeting specific eigenvalues, bypassing the companion system entirely
 - [ ] **Gaster transformation**: Convert temporal results to spatial growth rates for N-factor integration
-- [ ] **3D oblique modes (beta != 0)**: Extend to oblique waves for first-mode analysis. The first mode is most unstable as oblique at hypersonic speeds
+- [ ] **Oblique-wave Chapter 10 validation**: tighten the 3D viscous solver against Mack Table 10.1 / Fig. 10.3 / Fig. 10.7 before claiming paper-grade 3D reproduction; Appendix-B filtering and the Appendix-A/B shooting scaffold are in place, but the low-/mid-Mach first-mode amplitudes still do not match Mack
 - [ ] **Adiabatic wall BC**: Add `DT_hat = 0` wall condition (currently isothermal only)
 
 ### Medium Priority
 
-- [ ] **BL calculator integration**: Read profiles from the external `newBLcalculator` (github.com/BARDAK1995/newBLcalculator.git) instead of the built-in Crocco-Busemann approximation
+- [ ] **BL calculator integration**: Read profiles from the external `newBLcalculator` (github.com/BARDAK1995/newBLcalculator.git) instead of relying only on the built-in self-similar mean-flow models
 - [ ] **DSMC/CFD profile reader**: Import mean flow profiles from DSMC or CFD solutions via `TabulatedProfile` class
 - [ ] **N-factor envelope**: Compute max N over all frequencies for transition prediction
 - [ ] **Energy equation Form 2**: Implement the `(gamma-1)*T*div(u')` form as an alternative to the pressure work form, for cross-validation

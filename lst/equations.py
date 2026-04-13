@@ -19,8 +19,78 @@ Energy equation uses the enthalpy form (Form 1):
 
 import numpy as np
 
+DEFAULT_LAMBDA_MU_RATIO = 1.2
 
-def assemble_compressible_matrices(D1, D2, y, baseflow, omega, Re, Ma, Pr, gamma):
+
+def momentum_viscous_coefficients(lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO):
+    """Return the 2D momentum coefficients implied by Mack Eq. 8.5/8.9."""
+    d = float(lambda_mu_ratio)
+    alpha2_streamwise = 2.0 * (2.0 + d) / 3.0
+    cross_gradient = (1.0 + 2.0 * d) / 3.0
+    wallnormal_laplacian = 2.0 * (2.0 + d) / 3.0
+    wallnormal_u_algebraic = 2.0 * (d - 1.0) / 3.0
+    return (
+        alpha2_streamwise,
+        cross_gradient,
+        wallnormal_laplacian,
+        wallnormal_u_algebraic,
+    )
+
+
+def transport_temperature_derivatives(baseflow):
+    """Return dmu/dT and d2mu/dT2 from the baseflow when available.
+
+    The compressible mean-flow model may use either a power-law or a
+    Sutherland transport relation. Re-inferring a local power-law exponent from
+    mu(T) is only a fallback for older baseflow objects that do not expose the
+    derivatives explicitly.
+    """
+    T_v = baseflow['T']
+    mu_v = baseflow['mu']
+
+    if 'dmu_dT' in baseflow and 'd2mu_dT2' in baseflow:
+        dmu_dT_v = baseflow['dmu_dT']
+        d2mu_dT2_v = baseflow['d2mu_dT2']
+    else:
+        log_T = np.log(np.maximum(T_v, 1e-30))
+        log_mu = np.log(np.maximum(mu_v, 1e-30))
+        with np.errstate(divide='ignore', invalid='ignore'):
+            omega_v = np.where(np.abs(log_T) > 1e-10, log_mu / log_T, 0.74)
+        omega_v = np.clip(omega_v, 0.5, 1.0)
+        dmu_dT_v = omega_v * mu_v / T_v
+        d2mu_dT2_v = omega_v * (omega_v - 1.0) * mu_v / T_v**2
+
+    return dmu_dT_v, d2mu_dT2_v
+
+
+def transport_conductivity_data(baseflow, Pr):
+    """Return conductivity data consistent with the baseflow transport law."""
+    if (
+        'kappa' in baseflow and 'dkappa' in baseflow
+        and 'dkappa_dT' in baseflow and 'd2kappa_dT2' in baseflow
+    ):
+        return (
+            baseflow['kappa'],
+            baseflow['dkappa'],
+            baseflow['dkappa_dT'],
+            baseflow['d2kappa_dT2'],
+            False,
+        )
+
+    dmu_dT_v, d2mu_dT2_v = transport_temperature_derivatives(baseflow)
+    return (
+        baseflow['mu'],
+        baseflow['dmu'],
+        dmu_dT_v,
+        d2mu_dT2_v,
+        True,
+    )
+
+
+def assemble_compressible_matrices(
+    D1, D2, y, baseflow, omega, Re, Ma, Pr, gamma,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+):
     """Build C0, C1, C2 coefficient matrices for spatial stability.
 
     All equations written in the form L*phi = 0 with L = C0 + alpha*C1 + alpha^2*C2.
@@ -58,6 +128,7 @@ def assemble_compressible_matrices(D1, D2, y, baseflow, omega, Re, Ma, Pr, gamma
     d2Ub = np.diag(baseflow['d2U'])
     Tb = np.diag(baseflow['T'])
     dTb = np.diag(baseflow['dT'])
+    d2Tb = np.diag(baseflow['d2T'])
     rhob = np.diag(baseflow['rho'])
     mub = np.diag(baseflow['mu'])
     dmub = np.diag(baseflow['dmu'])
@@ -71,23 +142,23 @@ def assemble_compressible_matrices(D1, D2, y, baseflow, omega, Re, Ma, Pr, gamma
     rhoI = np.diag(1.0 / rho_v)
     TI = np.diag(1.0 / T_v)
 
-    # Viscosity power law: mu = T^omega_v, dmu/dT = omega_v * mu/T
-    log_T = np.log(np.maximum(T_v, 1e-30))
-    log_mu = np.log(np.maximum(mu_v, 1e-30))
-    omega_v = np.where(
-        np.abs(log_T) > 1e-10,
-        log_mu / log_T,
-        0.74)
-    omega_v = np.clip(omega_v, 0.5, 1.0)
-    dmu_dT_v = omega_v * mu_v / T_v
-    d2mu_dT2_v = omega_v * (omega_v - 1) * mu_v / T_v**2
+    dmu_dT_v, d2mu_dT2_v = transport_temperature_derivatives(baseflow)
     dmu_dT = np.diag(dmu_dT_v)
     d2mu_dT2 = np.diag(d2mu_dT2_v)
+    (
+        x_alpha2_coeff,
+        cross_grad_coeff,
+        y_laplacian_coeff,
+        y_u_algebraic_coeff,
+    ) = momentum_viscous_coefficients(lambda_mu_ratio)
 
-    # Conductivity (same power law, kappa/kappa_e = mu/mu_e for const Pr)
-    kappab = mub
-    dkappab = dmub
-    dkappa_dT = dmu_dT
+    kappa_v, dkappa_v, dkappa_dT_v, d2kappa_dT2_v, needs_pr_prefactor = (
+        transport_conductivity_data(baseflow, Pr)
+    )
+    kappab = np.diag(kappa_v)
+    dkappab = np.diag(dkappa_v)
+    dkappa_dT = np.diag(dkappa_dT_v)
+    d2kappa_dT2 = np.diag(d2kappa_dT2_v)
 
     gm1 = gamma - 1.0
     Ma2 = Ma**2
@@ -95,7 +166,7 @@ def assemble_compressible_matrices(D1, D2, y, baseflow, omega, Re, Ma, Pr, gamma
 
     # Prefactors (all divided by rho_bar)
     visc = rhoI / Re                          # viscous: 1/(Re*rho)
-    cond = rhoI / (Pr * Re)                   # conduction: 1/(Pr*Re*rho)
+    cond = rhoI / Re if not needs_pr_prefactor else rhoI / (Pr * Re)
     diss = gm1 * Ma2 * rhoI / Re             # dissipation: (g-1)*Ma^2/(Re*rho)
 
     # Initialize complex matrices
@@ -121,40 +192,48 @@ def assemble_compressible_matrices(D1, D2, y, baseflow, omega, Re, Ma, Pr, gamma
     # =================================================================
     # X-MOMENTUM (row 1) — divided by rho_bar
     # (-iw+i*alpha*U)*u + DU*v + i*alpha*p/rho
-    # - visc*[mu*D^2(u) + Dmu*D(u) + dmu_dT*DT*D(u)   (C0 on u)
-    #         - (4/3)*alpha^2*mu*u                       (C2 on u)
-    #         + (i*alpha/3)*(mu*D(v) + Dmu*v)            (C1 on v)
+    # - visc*[mu*D^2(u) + Dmu*D(u)                       (C0 on u)
+    #         - x_alpha2_coeff*alpha^2*mu*u             (C2 on u)
+    #         + i*alpha*(cross_grad_coeff*mu*D(v) + Dmu*v) (C1 on v)
     #         + dmu_dT*(D^2U*T + DU*D(T))               (C0 on T)
     #         + d2mu_dT2*DU*DT*T]                        (C0 on T)
     # = 0
     # =================================================================
     C0[blk(1, 0)] = (-iw * I
-                      - visc @ (mub @ D2 + dmub @ D1 + dmu_dT @ dTb @ D1))
+                      - visc @ (mub @ D2 + dmub @ D1))
     C0[blk(1, 1)] = dUb
     C0[blk(1, 2)] = -visc @ (dmu_dT @ d2Ub + d2mu_dT2 @ dUb @ dTb
                               + dmu_dT @ dUb @ D1)
 
     C1[blk(1, 0)] = 1j * Ub
-    C1[blk(1, 1)] = -(1j / 3.0) * visc @ (mub @ D1 + dmub)
+    C1[blk(1, 1)] = -1j * visc @ (cross_grad_coeff * mub @ D1 + dmub)
     C1[blk(1, 3)] = 1j * rhoI                        # +i*p/rho (NO gamma*Ma^2!)
 
-    C2[blk(1, 0)] = (4.0 / 3.0) * visc @ mub        # +(4/3)*visc*mu (positive!)
+    C2[blk(1, 0)] = x_alpha2_coeff * visc @ mub
 
     # =================================================================
     # Y-MOMENTUM (row 2) — divided by rho_bar
     # (-iw+i*alpha*U)*v + Dp/rho
-    # - visc*[mu*D^2(v) + (4/3)*Dmu*D(v) + dmu_dT*DT*D(v)   (C0 on v)
-    #         - alpha^2*mu*v                                    (C2 on v)
-    #         + (i*alpha/3)*(mu*D(u) + Dmu*u)]                  (C1 on u)
+    # - visc*[y_laplacian_coeff*mu*D^2(v)
+    #         + y_laplacian_coeff*Dmu*D(v)                  (C0 on v)
+    #         - alpha^2*mu*v                                 (C2 on v)
+    #         + i*alpha*(cross_grad_coeff*mu*D(u)
+    #         + y_u_algebraic_coeff*Dmu*u)]                 (C1 on u)
+    #         + i*alpha*dmu_dT*DU*T                          (C1 on T)
     # = 0
     # =================================================================
     C0[blk(2, 1)] = (-iw * I
-                      - visc @ (mub @ D2 + (4.0/3.0) * dmub @ D1
-                                + dmu_dT @ dTb @ D1))
+                      - visc @ (
+                          y_laplacian_coeff * mub @ D2
+                          + y_laplacian_coeff * dmub @ D1
+                      ))
     C0[blk(2, 3)] = rhoI @ D1                        # +Dp/rho (NO gamma*Ma^2!)
 
-    C1[blk(2, 0)] = -(1j / 3.0) * visc @ (mub @ D1 + dmub)
+    C1[blk(2, 0)] = -1j * visc @ (
+        cross_grad_coeff * mub @ D1 + y_u_algebraic_coeff * dmub
+    )
     C1[blk(2, 1)] = 1j * Ub
+    C1[blk(2, 2)] = -1j * visc @ (dmu_dT @ dUb)
 
     C2[blk(2, 1)] = visc @ mub                       # +visc*mu (positive!)
 
@@ -170,8 +249,10 @@ def assemble_compressible_matrices(D1, D2, y, baseflow, omega, Re, Ma, Pr, gamma
     C0[blk(3, 0)] = -diss @ (2.0 * mub @ dUb @ D1)   # -diss*2*mu*DU*D(u)
     C0[blk(3, 1)] = np.diag(dT_v)                     # DT*v (convection of mean T)
     C0[blk(3, 2)] = (-iw * I
-                      - cond @ (kappab @ D2 + dkappab @ D1
-                                + dkappa_dT @ dTb @ D1))
+                      - cond @ (kappab @ D2 + 2.0 * dkappab @ D1
+                                + dkappa_dT @ d2Tb
+                                + d2kappa_dT2 @ dTb @ dTb)
+                      - diss @ (dmu_dT @ dUb @ dUb))
     C0[blk(3, 3)] = iw * gm1 * Ma2 * rhoI            # +iw*(g-1)*Ma^2*p/rho
 
     C1[blk(3, 1)] = -2j * diss @ (mub @ dUb)          # -i*diss*2*mu*DU*v (dissip.)
