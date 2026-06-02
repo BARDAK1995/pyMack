@@ -472,9 +472,9 @@ def solve_temporal_compressible(baseflow, alpha, Re, Ma, Pr, gamma,
 
     # ====== B matrix (coefficient of c, from -c*B part) ======
 
-    # Continuity: c*[i*alpha*(gMa^2*p - T/T)] → B[cont,T] = i*alpha*TI, B[cont,p] = -i*alpha*gMa^2
-    B[blk(0, 2)] = ia * TI
-    B[blk(0, 3)] = -ia * gamma * Ma2 * I
+    # Continuity: i*alpha*(U-c)*(gamma*Ma^2*p - T/T)
+    B[blk(0, 2)] = -ia * TI
+    B[blk(0, 3)] = ia * gamma * Ma2 * I
 
     # x-mom: c*[i*alpha*u] → B[xmom,u] = i*alpha*I
     B[blk(1, 0)] = ia * I
@@ -615,8 +615,8 @@ def _assemble_temporal_compressible_3d_evp(
     A[blk(0, 3)] = -ia * Ub @ TI
     A[blk(0, 4)] = ia * gamma * Ma2 * Ub
 
-    B[blk(0, 3)] = ia * TI
-    B[blk(0, 4)] = -ia * gamma * Ma2 * I
+    B[blk(0, 3)] = -ia * TI
+    B[blk(0, 4)] = ia * gamma * Ma2 * I
 
     # Momentum along the wave vector (q equation)
     A[blk(1, 0)] = (

@@ -17,7 +17,77 @@
           "expected_topology": "single unstable pocket",
           "script": "chapters/ch05_incompressible_viscous/ch05.py",
           "reference_data": [],
-          "status": "validated_core"
+          "status": "validated_core",
+          "trusted_path": "incompressible_os_validated",
+          "requires_digitized_ref": false
+        },
+        {
+          "id": "mack_ch05_fig5_1",
+          "chapter": "5",
+          "kind": "figure",
+          "label": "Figure 5.1 Blasius neutral curve",
+          "quantity": "temporal neutral curve",
+          "formulation": "temporal_2d",
+          "scale": "delta_star",
+          "transport_model": "incompressible",
+          "wall_condition": "isothermal_incompressible",
+          "expected_topology": "single lower and upper neutral branch",
+          "script": "chapters/ch05_incompressible_viscous/ch05.py",
+          "reference_data": [],
+          "status": "validated_core",
+          "trusted_path": "incompressible_os_validated",
+          "requires_digitized_ref": false
+        },
+        {
+          "id": "mack_ch05_fig5_3",
+          "chapter": "5",
+          "kind": "figure",
+          "label": "Figure 5.3 Blasius neutral curve in R-F variables",
+          "quantity": "neutral curve in R-F scaling",
+          "formulation": "temporal_2d",
+          "scale": "delta_star",
+          "transport_model": "incompressible",
+          "wall_condition": "isothermal_incompressible",
+          "expected_topology": "single unstable pocket",
+          "script": "chapters/ch05_incompressible_viscous/ch05.py",
+          "reference_data": [],
+          "status": "validated_core",
+          "trusted_path": "incompressible_os_validated",
+          "requires_digitized_ref": false
+        },
+        {
+          "id": "mack_ch05_fig5_7",
+          "chapter": "5",
+          "kind": "figure",
+          "label": "Figure 5.7 Blasius spatial amplification",
+          "quantity": "spatial amplification curve",
+          "formulation": "spatial_2d",
+          "scale": "delta_star",
+          "transport_model": "incompressible",
+          "wall_condition": "isothermal_incompressible",
+          "expected_topology": "single spatial growth lobe",
+          "script": "chapters/ch05_incompressible_viscous/ch05.py",
+          "reference_data": [],
+          "status": "validated_core",
+          "trusted_path": "incompressible_os_validated",
+          "requires_digitized_ref": false
+        },
+        {
+          "id": "mack_ch05_fig5_8",
+          "chapter": "5",
+          "kind": "figure",
+          "label": "Figure 5.8 maximum Blasius amplification",
+          "quantity": "maximum spatial amplification versus Reynolds number",
+          "formulation": "spatial_2d",
+          "scale": "delta_star",
+          "transport_model": "incompressible",
+          "wall_condition": "isothermal_incompressible",
+          "expected_topology": "single maximum-growth branch",
+          "script": "chapters/ch05_incompressible_viscous/ch05.py",
+          "reference_data": [],
+          "status": "validated_core",
+          "trusted_path": "incompressible_os_validated",
+          "requires_digitized_ref": false
         },
         {
           "id": "mack_ch06_table_11_1",
@@ -34,7 +104,9 @@
           "reference_data": [
             "mack/table_11_1_delta_star_over_lstar.csv"
           ],
-          "status": "validated_numeric"
+          "status": "validated_numeric",
+          "trusted_path": "mack_mean_flow_validated",
+          "requires_digitized_ref": false
         },
         {
           "id": "mack_ch09_figures",
@@ -49,7 +121,286 @@
           "expected_topology": "mode branches and sonic/inflection conditions",
           "script": "chapters/ch09_compressible_inviscid/ch09.py",
           "reference_data": [],
-          "status": "remap_required"
+          "status": "remap_required",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_1",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.1 neutral-wave phase velocities",
+          "quantity": "phase velocity versus Mach number",
+          "formulation": "inviscid_temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "c_s, c_0, and wall sonic-limit curves",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "remap_required",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_2",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.2 inflectional neutral wavenumbers",
+          "quantity": "multiple alpha_sn branches at c=c_s",
+          "formulation": "inviscid_temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "multiple discrete higher-mode wavenumber branches",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "not_implemented",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_3",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.3 inflectional pressure eigenfunctions",
+          "quantity": "pressure eigenfunctions for modes 1-6 at M=10",
+          "formulation": "inviscid_temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "isothermal_by_caption",
+          "expected_topology": "mode n has n-1 pressure zero crossings",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "not_implemented",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_4",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.4 noninflectional neutral wavenumbers",
+          "quantity": "multiple alpha_1n branches at c=1",
+          "formulation": "inviscid_temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "monotone noninflectional neutral branches",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "not_implemented",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_5",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.5 noninflectional pressure eigenfunctions",
+          "quantity": "pressure eigenfunctions for modes 1-6 at M=10 and c=1",
+          "formulation": "inviscid_temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "isothermal_by_caption",
+          "expected_topology": "ordered pressure eigenfunction sequence",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "not_implemented",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_6",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.6 maximum temporal amplification versus Mach",
+          "quantity": "maximum omega_i for first four 2D modes",
+          "formulation": "inviscid_temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "second mode becomes dominant above about M=2.2",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "quantity_correction_required",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_7",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.7 frequency of most unstable 2D waves",
+          "quantity": "frequency at maximum omega_i for first four modes",
+          "formulation": "inviscid_temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "mode-family frequency branches versus Mach",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "not_implemented",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_8",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.8 oblique first/second-mode growth at M=4.5",
+          "quantity": "omega_i versus omega_r for wave-angle family",
+          "formulation": "inviscid_temporal_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "first mode destabilizes and second mode stabilizes with wave angle",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "diagnostic_only",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_9",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.9 temporal amplification versus wavenumber at M=8",
+          "quantity": "omega_i versus alpha for 3D waves",
+          "formulation": "inviscid_temporal_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "merged first-through-third-mode unstable region for 2D",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "not_implemented",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_10",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.10 wave-angle effect on maximum growth",
+          "quantity": "maximum omega_i versus wave angle",
+          "formulation": "inviscid_temporal_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "first-mode optimum near 50-60 degrees",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "not_implemented",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_11",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.11 Mach effect on first-mode maximum growth",
+          "quantity": "2D and 3D first-mode maximum omega_i versus Mach",
+          "formulation": "inviscid_temporal_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "3D first-mode growth remains much larger than 2D at low supersonic Mach",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "not_implemented",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_12",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.12 wall-cooling growth ratios",
+          "quantity": "cooled/uncooled maximum omega_i ratio",
+          "formulation": "inviscid_temporal_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "cooled_wall_family",
+          "expected_topology": "first mode stabilizes while second mode destabilizes",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "diagnostic_only",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch09_fig9_13",
+          "chapter": "9",
+          "kind": "figure",
+          "label": "Figure 9.13 extreme wall-cooling growth at M=10",
+          "quantity": "omega_i versus wavenumber for first four 2D modes",
+          "formulation": "inviscid_temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "cooled_and_adiabatic_comparison",
+          "expected_topology": "mode merger for adiabatic wall and separated regions for cooled wall",
+          "script": "chapters/ch09_compressible_inviscid/ch09.py",
+          "reference_data": [],
+          "status": "not_implemented",
+          "trusted_path": "remap_required_then_exact_or_inviscid",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "mack_ch10_table_10_1",
@@ -61,12 +412,284 @@
           "scale": "L_star",
           "transport_model": "mack",
           "wall_condition": "adiabatic",
+          "condition": "table_10_1_inferred_total_temperature_250K",
           "expected_topology": "first-mode oblique growth family",
           "script": "validation/diagnose_mack_table_10_1.py",
           "reference_data": [
             "mack/table_10_1_oblique_growth.csv"
           ],
-          "status": "validated_gap_identified"
+          "status": "validated_gap_identified",
+          "trusted_path": "to_be_determined",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_1",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.1 neutral frequency curves",
+          "quantity": "neutral-stability frequency versus Reynolds number",
+          "formulation": "temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "M=1.6 and M=2.2 neutral frequency branches",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [
+            "digitized/mack_ch10_fig10_1_M16_paper_dunn_asymptotic.csv",
+            "digitized/mack_ch10_fig10_1_M16_paper_dunn_numerical.csv",
+            "digitized/mack_ch10_fig10_1_M16_paper_complete.csv",
+            "digitized/mack_ch10_fig10_1_M22_paper_dunn_asymptotic.csv",
+            "digitized/mack_ch10_fig10_1_M22_paper_dunn_numerical.csv",
+            "digitized/mack_ch10_fig10_1_M22_paper_complete.csv",
+            "digitized/mack_ch10_fig10_1_M16_current_code_neutral_lo.csv",
+            "digitized/mack_ch10_fig10_1_M16_current_code_neutral_up.csv",
+            "digitized/mack_ch10_fig10_1_M22_current_code_neutral_lo.csv",
+            "digitized/mack_ch10_fig10_1_M22_current_code_neutral_up.csv"
+          ],
+          "status": "partial",
+          "trusted_path": "exact_temporal_shooting_plus_theory_overlays",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.05,
+            "note": "Theory comparison families for Fig 10.1. Current code only produces its own neutral curves."
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_2",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.2 neutral wavenumber curves",
+          "quantity": "neutral-stability wavenumber versus reciprocal Reynolds number",
+          "formulation": "temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "viscous lower branch weakens as Mach increases",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [],
+          "status": "scaling_correction_required",
+          "trusted_path": "exact_temporal_shooting_1_over_R",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_3",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.3 maximum temporal growth versus Reynolds number",
+          "quantity": "maximum omega_i versus R for 2D and 3D waves",
+          "formulation": "temporal_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "3D growth persists as 2D growth weakens with Mach",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [
+            "digitized/mack_ch10_fig10_3_M13_paper_2D.csv",
+            "digitized/mack_ch10_fig10_3_M13_paper_psi30.csv",
+            "digitized/mack_ch10_fig10_3_M13_paper_psi40.csv",
+            "digitized/mack_ch10_fig10_3_M13_paper_psi45.csv",
+            "digitized/mack_ch10_fig10_3_M13_current_code_2D.csv",
+            "digitized/mack_ch10_fig10_3_M22_paper_psi45.csv",
+            "digitized/mack_ch10_fig10_3_M22_paper_2d.csv",
+            "digitized/mack_ch10_fig10_3_M22_current_code_2D.csv",
+            "digitized/mack_ch10_fig10_3_M30_paper_psi60.csv",
+            "digitized/mack_ch10_fig10_3_M30_paper_2d.csv",
+            "digitized/mack_ch10_fig10_3_M30_current_code_first.csv",
+            "digitized/mack_ch10_fig10_3_M30_current_code_second.csv"
+          ],
+          "status": "partial",
+          "trusted_path": "exact_temporal_shooting_3d_continuation",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.05,
+            "note": "5% initial tolerance. Multiple Mach + wave angles now have reference data. Sign convention mismatch in current code is a tracked issue for Phase 2."
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_4",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.4 high-Mach first-mode maximum growth",
+          "quantity": "maximum first-mode omega_i versus R",
+          "formulation": "temporal_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "viscosity stabilizes high-Mach first-mode waves",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [
+            "digitized/mack_ch10_fig10_4_M45_paper.csv",
+            "digitized/mack_ch10_fig10_4_M58_paper.csv",
+            "digitized/mack_ch10_fig10_4_M70_paper.csv",
+            "digitized/mack_ch10_fig10_4_M100_paper.csv"
+          ],
+          "status": "production_rebuild_required",
+          "trusted_path": "exact_temporal_shooting_wave_angle_opt",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "Paper reference curves digitized post-critique (Agent 1 pass). Current code outputs exist in ch10 but not yet extracted to digitized/current for numeric gate. 2% target after trusted rebuild."
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_5",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.5 first/second-mode neutral curves",
+          "quantity": "2D neutral-stability wavenumber curves",
+          "formulation": "temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "separate first/second pockets at M=4.5 and merged topology at M=4.8",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [],
+          "status": "provisional",
+          "trusted_path": "exact_temporal_shooting_two_modes",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_6",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.6 second-mode maximum growth",
+          "quantity": "maximum second-mode omega_i versus R",
+          "formulation": "temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "second-mode growth increases with Mach and weakens with viscosity",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [
+            "digitized/mack_ch10_fig10_6_M45_paper.csv",
+            "digitized/mack_ch10_fig10_6_M58_paper.csv",
+            "digitized/mack_ch10_fig10_6_M70_paper.csv",
+            "digitized/mack_ch10_fig10_6_M100_paper.csv"
+          ],
+          "status": "provisional",
+          "trusted_path": "exact_temporal_shooting_second_mode",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "Paper reference curves digitized post-critique (Agent 1 pass). Current code outputs exist in ch10 but not yet extracted to digitized/current for numeric gate. 2% target after trusted rebuild."
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_7",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.7 wave-angle effect on second-mode growth",
+          "quantity": "maximum second-mode omega_i versus wave angle",
+          "formulation": "temporal_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "second mode stabilizes as wave angle increases",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [],
+          "status": "not_implemented",
+          "trusted_path": "to_be_determined",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_8",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.8 low-speed wall-temperature N-factor effect",
+          "quantity": "constant N-factor Reynolds number versus Tw/Tr",
+          "formulation": "spatial_2d_nfactor",
+          "scale": "x_reynolds",
+          "transport_model": "mack",
+          "wall_condition": "heated_and_cooled_wall_family",
+          "expected_topology": "cooling stabilizes and heating destabilizes low-speed boundary layer",
+          "script": null,
+          "reference_data": [],
+          "status": "out_of_first_completion_scope",
+          "trusted_path": "to_be_determined",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_9",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.9 wall-cooling neutral curves",
+          "quantity": "2D neutral-stability wavenumber curves",
+          "formulation": "temporal_2d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "cooled_wall_family",
+          "expected_topology": "first mode disappears under strong cooling while second mode remains",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [],
+          "status": "mismapped",
+          "trusted_path": "exact_temporal_shooting_wall_cooling",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_10",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.10 maximum temporal growth versus Mach",
+          "quantity": "maximum omega_i versus Mach at R=1500",
+          "formulation": "temporal_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "first/second mode dominance changes with Mach",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [],
+          "status": "provisional",
+          "trusted_path": "exact_temporal_shooting_plus_theory_overlays",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
+        },
+        {
+          "id": "mack_ch10_fig10_11",
+          "chapter": "10",
+          "kind": "figure",
+          "label": "Figure 10.11 maximum spatial growth versus Mach",
+          "quantity": "maximum -alpha_i versus Mach at R=1500",
+          "formulation": "spatial_3d",
+          "scale": "L_star",
+          "transport_model": "mack",
+          "wall_condition": "adiabatic",
+          "expected_topology": "spatial-growth counterpart of temporal Mach trend",
+          "script": "chapters/ch10_compressible_viscous/ch10.py",
+          "reference_data": [],
+          "status": "proxy_requires_spatial_solve",
+          "trusted_path": "exact_temporal_shooting_plus_theory_overlays",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "mack_ch10_figures",
@@ -84,7 +707,13 @@
             "mack/table_10_1_oblique_growth.csv",
             "mack/table_11_1_delta_star_over_lstar.csv"
           ],
-          "status": "production_rebuild_required"
+          "status": "production_rebuild_required",
+          "trusted_path": "to_be_determined",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         }
       ]
     },
@@ -100,12 +729,18 @@
           "quantity": "U, T, and d2U/deta2 versus eta",
           "formulation": "mean_flow",
           "scale": "eta",
-          "transport_model": "ozgen_sutherland",
+          "transport_model": "ozgen_temperature_dependent",
           "wall_condition": "adiabatic",
           "expected_topology": "family of monotone U and heated-wall T profiles",
           "script": "chapters/ozgen_kircali_2008/ozgen.py",
           "reference_data": [],
-          "status": "shared_builder_refactor_started"
+          "status": "property_model_updated_reference_overlay_pending",
+          "trusted_path": "ozgen_mean_flow_validated",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "ozgen_fig2_profile_validation",
@@ -115,12 +750,18 @@
           "quantity": "velocity profiles versus thickness-normalized coordinate",
           "formulation": "mean_flow",
           "scale": "theta_or_delta_star",
-          "transport_model": "ozgen_sutherland",
+          "transport_model": "ozgen_temperature_dependent",
           "wall_condition": "adiabatic",
           "expected_topology": "profile overlays against literature",
           "script": null,
           "reference_data": [],
-          "status": "not_implemented"
+          "status": "not_implemented",
+          "trusted_path": "to_be_determined",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "ozgen_fig3_2d_stability",
@@ -130,14 +771,20 @@
           "quantity": "c_i contour maps and neutral curves",
           "formulation": "temporal_2d",
           "scale": "L_star",
-          "transport_model": "ozgen_sutherland",
+          "transport_model": "ozgen_temperature_dependent",
           "wall_condition": "adiabatic",
           "expected_topology": "neutral pockets with first/second-mode transition",
           "script": "chapters/ozgen_kircali_2008/ozgen.py",
           "reference_data": [
             "ozgen/critical_reynolds_points.csv"
           ],
-          "status": "provisional"
+          "status": "provisional",
+          "trusted_path": "ozgen_2d_solver_refined_tracing",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "ozgen_fig4_critical_reynolds",
@@ -147,14 +794,20 @@
           "quantity": "critical Reynolds number",
           "formulation": "temporal_2d",
           "scale": "L_star",
-          "transport_model": "ozgen_sutherland",
+          "transport_model": "ozgen_temperature_dependent",
           "wall_condition": "adiabatic",
           "expected_topology": "first- and second-mode critical-Re branches",
           "script": "chapters/ozgen_kircali_2008/ozgen.py",
           "reference_data": [
             "ozgen/critical_reynolds_points.csv"
           ],
-          "status": "provisional"
+          "status": "provisional",
+          "trusted_path": "critical_reynolds_by_max_growth",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "ozgen_fig5_m8_comparison",
@@ -164,12 +817,18 @@
           "quantity": "neutral curve comparison with Masad et al.",
           "formulation": "temporal_2d",
           "scale": "L_star",
-          "transport_model": "ozgen_sutherland",
+          "transport_model": "ozgen_temperature_dependent",
           "wall_condition": "adiabatic",
           "expected_topology": "single compared neutral envelope",
           "script": null,
           "reference_data": [],
-          "status": "not_implemented"
+          "status": "not_implemented",
+          "trusted_path": "to_be_determined",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "ozgen_fig6_wave_angle_effect",
@@ -179,14 +838,20 @@
           "quantity": "c_i contour maps versus Re and alpha",
           "formulation": "temporal_3d",
           "scale": "L_star",
-          "transport_model": "ozgen_sutherland",
+          "transport_model": "ozgen_temperature_dependent",
           "wall_condition": "adiabatic",
           "expected_topology": "second mode stabilizes and first mode destabilizes with psi",
           "script": "chapters/ozgen_kircali_2008/ozgen.py",
           "reference_data": [
             "ozgen/most_unstable_wave_angles.csv"
           ],
-          "status": "stale_under_scaled_lstar_domain"
+          "status": "stale_under_scaled_lstar_domain",
+          "trusted_path": "exact_temporal_shooting_oblique_continuation",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "ozgen_fig7_critical_re_vs_wave_angle",
@@ -196,14 +861,20 @@
           "quantity": "critical Reynolds number",
           "formulation": "temporal_3d",
           "scale": "L_star",
-          "transport_model": "ozgen_sutherland",
+          "transport_model": "ozgen_temperature_dependent",
           "wall_condition": "adiabatic",
           "expected_topology": "psi_opt shifts from 0 to about 60 degrees",
           "script": "chapters/ozgen_kircali_2008/ozgen.py",
           "reference_data": [
             "ozgen/most_unstable_wave_angles.csv"
           ],
-          "status": "stale_under_scaled_lstar_domain"
+          "status": "stale_under_scaled_lstar_domain",
+          "trusted_path": "exact_temporal_shooting_oblique_continuation",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "ozgen_fig8_mach_independence",
@@ -213,14 +884,20 @@
           "quantity": "spatial sigma_i versus Re_delta maps with constant omega_r contours",
           "formulation": "spatial_3d",
           "scale": "L_star",
-          "transport_model": "ozgen_sutherland",
+          "transport_model": "ozgen_temperature_dependent",
           "wall_condition": "adiabatic",
           "expected_topology": "near-invariant oblique first-mode pockets for M>=4",
           "script": "chapters/ozgen_kircali_2008/ozgen.py",
           "reference_data": [
             "ozgen/most_unstable_wave_angles.csv"
           ],
-          "status": "mismapped_requires_spatial_3d"
+          "status": "mismapped_requires_spatial_3d",
+          "trusted_path": "true_3d_spatial_constant_omega_r",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "ozgen_fig9_reference_temperature_2d",
@@ -230,14 +907,20 @@
           "quantity": "neutral curves",
           "formulation": "temporal_2d",
           "scale": "L_star",
-          "transport_model": "ozgen_sutherland",
+          "transport_model": "ozgen_temperature_dependent",
           "wall_condition": "adiabatic",
           "expected_topology": "mode merger under lower edge temperature",
           "script": "chapters/ozgen_kircali_2008/ozgen.py",
           "reference_data": [
             "ozgen/reference_temperature_cases.csv"
           ],
-          "status": "provisional"
+          "status": "provisional",
+          "trusted_path": "to_be_determined",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         },
         {
           "id": "ozgen_fig10_reference_temperature_3d",
@@ -247,14 +930,20 @@
           "quantity": "neutral curves",
           "formulation": "temporal_3d",
           "scale": "L_star",
-          "transport_model": "ozgen_sutherland",
+          "transport_model": "ozgen_temperature_dependent",
           "wall_condition": "adiabatic",
           "expected_topology": "weaker reference-temperature sensitivity for oblique waves",
           "script": "chapters/ozgen_kircali_2008/ozgen.py",
           "reference_data": [
             "ozgen/reference_temperature_cases.csv"
           ],
-          "status": "mismapped_requires_oblique_neutral_tracing"
+          "status": "mismapped_requires_oblique_neutral_tracing",
+          "trusted_path": "ozgen_mean_flow_validated",
+          "requires_digitized_ref": true,
+          "numeric_tolerance": {
+            "max_rel_err": 0.02,
+            "note": "default 2% until paper-specific value set"
+          }
         }
       ]
     }

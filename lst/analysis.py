@@ -3,12 +3,15 @@ Parameter sweeps, neutral curves, and N-factor integration.
 """
 
 import numpy as np
+from scipy.optimize import brentq, minimize_scalar
 
 from .equations import DEFAULT_LAMBDA_MU_RATIO
 from .mack_shooting import (
     continue_temporal_mode_3d_shooting_sigma_min,
     solve_temporal_mode_3d_shooting,
+    solve_temporal_mode_6_shooting,
     solve_temporal_mode_3d_shooting_sigma_min,
+    solve_temporal_mode_6_shooting_sigma_min,
 )
 from .solver import (
     solve_spatial,
@@ -63,6 +66,152 @@ def _broadcast_int_scan_parameter(value, size, name):
     return arr.astype(int)
 
 
+def track_complex_branch(
+    candidate_series,
+    *,
+    anchor_index=None,
+    anchor_value=None,
+    anchor_phase_speed_bounds=None,
+    phase_speed_floor=None,
+    phase_floor_penalty=1.0,
+    max_jump=None,
+):
+    """Track one continuous complex branch through a 1D spectrum series.
+
+    Parameters
+    ----------
+    candidate_series : sequence of array-like complex
+        Candidate eigenvalues at each scan station.
+    anchor_index : int, optional
+        Scan station used to initialize the branch. If omitted, the station
+        containing the largest candidate imaginary part is used.
+    anchor_value : complex, optional
+        Initial target value at ``anchor_index``.
+    anchor_phase_speed_bounds : tuple, optional
+        Bounds used only for automatic anchor selection. This lets a Mack-mode
+        branch be anchored away from acoustic/free-stream families.
+    phase_speed_floor : float, optional
+        Soft penalty applied during nearest-neighbor continuation when a
+        candidate's real part falls below this value.
+    phase_floor_penalty : float
+        Multiplier for the soft phase-speed penalty.
+    max_jump : float, optional
+        If provided, reject continuation steps whose best complex-plane jump
+        exceeds this value.
+    """
+    candidates = [
+        np.asarray(values, dtype=complex)[np.isfinite(np.asarray(values, dtype=complex))]
+        for values in candidate_series
+    ]
+    n = len(candidates)
+    selected = np.full(n, np.nan + 1j * np.nan, dtype=complex)
+    jump = np.full(n, np.nan, dtype=float)
+    selected_indices = np.full(n, -1, dtype=int)
+
+    if n == 0:
+        return {
+            'c': selected,
+            'jump': jump,
+            'selected_indices': selected_indices,
+            'anchor_index': None,
+        }
+
+    if anchor_index is None:
+        best = None
+        for i, values in enumerate(candidates):
+            if len(values) == 0:
+                continue
+            anchor_values = values
+            if anchor_phase_speed_bounds is not None:
+                lo, hi = anchor_phase_speed_bounds
+                mask = (anchor_values.real >= lo) & (anchor_values.real <= hi)
+                if np.any(mask):
+                    anchor_values = anchor_values[mask]
+            if len(anchor_values) == 0:
+                continue
+            local = anchor_values[int(np.argmax(anchor_values.imag))]
+            score = float(local.imag)
+            if best is None or score > best[0]:
+                best = (score, i, local)
+        if best is None:
+            return {
+                'c': selected,
+                'jump': jump,
+                'selected_indices': selected_indices,
+                'anchor_index': None,
+            }
+        anchor_index = best[1]
+        anchor_value = best[2]
+    else:
+        anchor_index = int(anchor_index)
+        if not 0 <= anchor_index < n:
+            raise ValueError('anchor_index must lie inside candidate_series')
+
+    if len(candidates[anchor_index]) == 0:
+        return {
+            'c': selected,
+            'jump': jump,
+            'selected_indices': selected_indices,
+            'anchor_index': None,
+        }
+
+    def select_nearest(values, target):
+        distances = np.abs(values - target)
+        if phase_speed_floor is not None:
+            distances = distances + float(phase_floor_penalty) * np.maximum(
+                0.0, float(phase_speed_floor) - values.real
+            )
+        idx = int(np.argmin(distances))
+        return idx, float(distances[idx])
+
+    if anchor_value is None or not np.isfinite(anchor_value):
+        anchor_candidates = candidates[anchor_index]
+        if anchor_phase_speed_bounds is not None:
+            lo, hi = anchor_phase_speed_bounds
+            mask = (
+                (anchor_candidates.real >= lo)
+                & (anchor_candidates.real <= hi)
+            )
+            if np.any(mask):
+                local_candidates = anchor_candidates[mask]
+                local_indices = np.flatnonzero(mask)
+                local_idx = int(np.argmax(local_candidates.imag))
+                anchor_local_index = int(local_indices[local_idx])
+            else:
+                anchor_local_index = int(np.argmax(anchor_candidates.imag))
+        else:
+            anchor_local_index = int(np.argmax(anchor_candidates.imag))
+        anchor_value = anchor_candidates[anchor_local_index]
+
+    idx, dist = select_nearest(candidates[anchor_index], anchor_value)
+    selected[anchor_index] = candidates[anchor_index][idx]
+    selected_indices[anchor_index] = idx
+    jump[anchor_index] = dist
+
+    for direction in (-1, 1):
+        previous = selected[anchor_index]
+        scan_range = range(anchor_index - 1, -1, -1) if direction < 0 else range(anchor_index + 1, n)
+        for i in scan_range:
+            values = candidates[i]
+            if len(values) == 0 or not np.isfinite(previous):
+                continue
+            idx, dist = select_nearest(values, previous)
+            if max_jump is not None and dist > float(max_jump):
+                previous = np.nan + 1j * np.nan
+                continue
+            selected[i] = values[idx]
+            selected_indices[i] = idx
+            jump[i] = dist
+            previous = selected[i]
+
+    return {
+        'c': selected,
+        'jump': jump,
+        'selected_indices': selected_indices,
+        'anchor_index': int(anchor_index),
+    }
+
+
 def _candidate_root_key(candidate):
     """Pick the best complex root representative for uniqueness checks."""
     for key in ('c_final', 'c_sigma_min'):
@@ -85,6 +234,116 @@ def search_temporal_roots_3d_shooting(
     y_max,
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
     length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
+    spanwise_dissipation_coupling_scale=1.0,
+    wall_bc='isothermal',
+    method='qr',
+    n_steps=600,
+    xatol=1e-7,
+    fatol=1e-9,
+    max_iter=120,
+    root_atol=1e-6,
+    polish_with_determinant=True,
+    c_real_bounds=None,
+    c_imag_bounds=None,
+    out_of_bounds_penalty=1e6,
+):
+    """Search unique exact first-order temporal roots from multiple complex seeds."""
+    candidates = []
+
+    for seed in seed_list:
+        c_opt, sigma_min, sigma_converged, sigma_history = (
+            solve_temporal_mode_3d_shooting_sigma_min(
+                baseflow,
+                alpha,
+                beta,
+                complex(seed),
+                Re,
+                Ma,
+                Pr,
+                gamma,
+                y_max,
+                lambda_mu_ratio=lambda_mu_ratio,
+                length_scale=length_scale,
+                include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+                spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
+                wall_bc=wall_bc,
+                method=method,
+                n_steps=n_steps,
+                xatol=xatol,
+                fatol=fatol,
+                max_iter=max_iter,
+                c_real_bounds=c_real_bounds,
+                c_imag_bounds=c_imag_bounds,
+                out_of_bounds_penalty=out_of_bounds_penalty,
+            )
+        )
+
+        c_final = c_opt
+        det_converged = False
+        det_history = []
+        if polish_with_determinant:
+            c_final, det_converged, det_history = solve_temporal_mode_3d_shooting(
+                baseflow,
+                alpha,
+                beta,
+                c_opt,
+                Re,
+                Ma,
+                Pr,
+                gamma,
+                y_max,
+                lambda_mu_ratio=lambda_mu_ratio,
+                length_scale=length_scale,
+                include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+                spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
+                wall_bc=wall_bc,
+                method=method,
+                n_steps=max(int(n_steps), 800),
+            )
+
+        candidates.append({
+            'seed': complex(seed),
+            'c_sigma_min': c_opt,
+            'c_final': c_final,
+            'omega_i': alpha * c_final.imag,
+            'sigma_min': sigma_min,
+            'sigma_min_converged': sigma_converged,
+            'determinant_converged': det_converged,
+            'sigma_min_history': sigma_history,
+            'determinant_history': det_history,
+        })
+
+    candidates.sort(key=lambda item: (item['sigma_min'], -item['omega_i']))
+
+    unique = []
+    for candidate in candidates:
+        candidate_root = _candidate_root_key(candidate)
+        keep = True
+        for existing in unique:
+            existing_root = _candidate_root_key(existing)
+            if abs(candidate_root - existing_root) < root_atol:
+                keep = False
+                break
+        if keep:
+            unique.append(candidate)
+
+    return unique
+
+
+def search_temporal_roots_6_shooting(
+    baseflow,
+    alpha,
+    beta,
+    Re,
+    Ma,
+    seed_list,
+    *,
+    Pr=0.72,
+    gamma=1.4,
+    y_max,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    length_scale='delta_star',
     wall_bc='isothermal',
     method='qr',
     n_steps=600,
@@ -94,12 +353,12 @@ def search_temporal_roots_3d_shooting(
     root_atol=1e-6,
     polish_with_determinant=True,
 ):
-    """Search unique exact first-order temporal roots from multiple complex seeds."""
+    """Search unique temporal roots for Mack's primary sixth-order system."""
     candidates = []
 
     for seed in seed_list:
         c_opt, sigma_min, sigma_converged, sigma_history = (
-            solve_temporal_mode_3d_shooting_sigma_min(
+            solve_temporal_mode_6_shooting_sigma_min(
                 baseflow,
                 alpha,
                 beta,
@@ -124,7 +383,7 @@ def search_temporal_roots_3d_shooting(
         det_converged = False
         det_history = []
         if polish_with_determinant:
-            c_final, det_converged, det_history = solve_temporal_mode_3d_shooting(
+            c_final, det_converged, det_history = solve_temporal_mode_6_shooting(
                 baseflow,
                 alpha,
                 beta,
@@ -184,6 +443,7 @@ def temporal_growth_scan_3d_shooting(
     y_max,
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
     length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
     wall_bc='isothermal',
     method='qr',
     n_steps=600,
@@ -233,6 +493,7 @@ def temporal_growth_scan_3d_shooting(
         initial_c=complex(initial_c),
         lambda_mu_ratio=lambda_mu_ratio,
         length_scale=length_scale,
+        include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
         wall_bc=wall_bc,
         method=method,
         n_steps=int(np.max(n_steps_arr)),
@@ -264,6 +525,7 @@ def temporal_growth_scan_3d_shooting_from_anchor(
     y_max,
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
     length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
     wall_bc='isothermal',
     method='qr',
     n_steps=600,
@@ -299,6 +561,7 @@ def temporal_growth_scan_3d_shooting_from_anchor(
             y_max=_broadcast_float_scan_parameter(y_max, len(alphas), 'y_max')[:anchor_index + 1][::-1],
             lambda_mu_ratio=lambda_mu_ratio,
             length_scale=length_scale,
+            include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
             wall_bc=wall_bc,
             method=method,
             n_steps=_broadcast_int_scan_parameter(n_steps, len(alphas), 'n_steps')[:anchor_index + 1][::-1],
@@ -331,6 +594,7 @@ def temporal_growth_scan_3d_shooting_from_anchor(
         y_max=_broadcast_float_scan_parameter(y_max, len(alphas), 'y_max')[anchor_index:],
         lambda_mu_ratio=lambda_mu_ratio,
         length_scale=length_scale,
+        include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
         wall_bc=wall_bc,
         method=method,
         n_steps=_broadcast_int_scan_parameter(n_steps, len(alphas), 'n_steps')[anchor_index:],
@@ -349,8 +613,21 @@ def temporal_growth_scan_3d_shooting_from_anchor(
     return alphas, omega_i, c_vals, sigma_min, tracked
 
 
-def temporal_neutral_points_from_scan(alpha_values, omega_i_values, atol=1e-14):
-    """Locate temporal neutral points by linear interpolation of a growth scan."""
+def temporal_neutral_points_from_scan(
+    alpha_values,
+    omega_i_values,
+    atol=1e-14,
+    refine_func=None,
+    xtol=1e-10,
+    rtol=1e-10,
+    maxiter=50,
+):
+    """Locate temporal neutral points from a growth scan.
+
+    By default roots are linearly interpolated between sampled sign changes.
+    If ``refine_func`` is supplied, each bracket is refined with Brent's method
+    so neutral branches are not limited to the plotting grid resolution.
+    """
     alphas = np.asarray(alpha_values, dtype=float)
     omega_i = np.asarray(omega_i_values, dtype=float)
     if alphas.ndim != 1 or omega_i.ndim != 1 or len(alphas) != len(omega_i):
@@ -376,7 +653,20 @@ def temporal_neutral_points_from_scan(alpha_values, omega_i_values, atol=1e-14):
         if g0 * g1 > 0.0:
             continue
 
-        root = a0 - g0 * (a1 - a0) / (g1 - g0)
+        if refine_func is not None:
+            try:
+                root = brentq(
+                    refine_func,
+                    a0,
+                    a1,
+                    xtol=xtol,
+                    rtol=rtol,
+                    maxiter=maxiter,
+                )
+            except (ValueError, RuntimeError, FloatingPointError):
+                root = a0 - g0 * (a1 - a0) / (g1 - g0)
+        else:
+            root = a0 - g0 * (a1 - a0) / (g1 - g0)
         roots.append(root)
 
     if not roots:
@@ -387,6 +677,89 @@ def temporal_neutral_points_from_scan(alpha_values, omega_i_values, atol=1e-14):
         if abs(root - unique[-1]) > atol:
             unique.append(root)
     return np.asarray(unique, dtype=float)
+
+
+def neutral_points_from_growth_map(
+    Re_values,
+    alpha_values,
+    growth_map,
+    *,
+    atol=1e-14,
+    refine_func=None,
+):
+    """Extract neutral points from a Reynolds-wavenumber growth map.
+
+    The returned records are intentionally plain dictionaries so validation
+    scripts and chapter plotters can serialize them without depending on a
+    plotting contour object.
+
+    If ``refine_func`` is supplied, it is called for every sign-change bracket
+    as ``refine_func(row_index, branch_index, alpha_left, alpha_right,
+    growth_left, growth_right)``. It may return either a refined root value or
+    a dictionary with an ``alpha`` entry plus additional serializable metadata.
+    """
+    Re_arr = np.asarray(Re_values, dtype=float)
+    alpha_arr = np.asarray(alpha_values, dtype=float)
+    growth = np.asarray(growth_map, dtype=float)
+    if Re_arr.ndim != 1 or alpha_arr.ndim != 1:
+        raise ValueError('Re_values and alpha_values must be one-dimensional')
+    if growth.shape != (len(Re_arr), len(alpha_arr)):
+        raise ValueError('growth_map must have shape (len(Re_values), len(alpha_values))')
+
+    def linear_root(a0, a1, g0, g1):
+        return a0 - g0 * (a1 - a0) / (g1 - g0)
+
+    records = []
+    for i, Re in enumerate(Re_arr):
+        branch_index = 0
+        previous_alpha = None
+        for j in range(len(alpha_arr) - 1):
+            a0 = alpha_arr[j]
+            a1 = alpha_arr[j + 1]
+            g0 = growth[i, j]
+            g1 = growth[i, j + 1]
+            if not np.isfinite(g0) or not np.isfinite(g1):
+                continue
+
+            extra = {}
+            if abs(g0) <= atol:
+                alpha = float(a0)
+            elif abs(g1) <= atol:
+                alpha = float(a1)
+            elif g0 * g1 < 0.0:
+                alpha = float(linear_root(a0, a1, g0, g1))
+            else:
+                continue
+
+            if refine_func is not None and g0 * g1 <= 0.0:
+                try:
+                    refined = refine_func(i, branch_index, a0, a1, g0, g1)
+                    if isinstance(refined, dict):
+                        if 'alpha' in refined and np.isfinite(refined['alpha']):
+                            alpha = float(refined['alpha'])
+                        extra = {
+                            key: value
+                            for key, value in refined.items()
+                            if key != 'alpha'
+                        }
+                    elif np.isfinite(refined):
+                        alpha = float(refined)
+                except (ValueError, RuntimeError, FloatingPointError):
+                    pass
+
+            if previous_alpha is not None and abs(alpha - previous_alpha) <= atol:
+                continue
+
+            record = {
+                'Re': float(Re),
+                'alpha': float(alpha),
+                'branch_index': int(branch_index),
+            }
+            record.update(extra)
+            records.append(record)
+            previous_alpha = alpha
+            branch_index += 1
+    return records
 
 
 def _resolve_beta_values(alpha_values, beta_range=None, psi_deg=None):
@@ -458,6 +831,7 @@ def find_temporal_mode_anchor_3d_shooting(
     wall_bc='isothermal',
     length_scale='delta_star',
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    include_spanwise_dissipation_coupling=True,
     method='qr',
     n_steps=600,
     xatol=1e-7,
@@ -487,6 +861,7 @@ def find_temporal_mode_anchor_3d_shooting(
         y_max=y_max,
         lambda_mu_ratio=lambda_mu_ratio,
         length_scale=length_scale,
+        include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
         wall_bc=wall_bc,
         method=method,
         n_steps=n_steps,
@@ -495,6 +870,8 @@ def find_temporal_mode_anchor_3d_shooting(
         max_iter=max_iter,
         root_atol=root_atol,
         polish_with_determinant=polish_with_determinant,
+        c_real_bounds=c_real_bounds,
+        c_imag_bounds=(-c_imag_abs_max, c_imag_abs_max),
     )
 
     if len(candidates) == 0:
@@ -626,6 +1003,7 @@ def temporal_growth_curve(
             y_max=12.0 if y_max is None else y_max,
             lambda_mu_ratio=lambda_mu_ratio,
             length_scale=length_scale,
+            include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
             wall_bc=wall_bc,
             method='qr',
             n_steps=n_steps,
@@ -662,6 +1040,7 @@ def temporal_growth_curve(
                 y_max=12.0 if y_max is None else y_max,
                 lambda_mu_ratio=lambda_mu_ratio,
                 length_scale=length_scale,
+                include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
                 wall_bc=wall_bc,
                 method='qr',
                 n_steps=n_steps,
@@ -766,8 +1145,16 @@ def trace_temporal_neutral_curve(
     xatol=1e-7,
     fatol=1e-9,
     max_iter=120,
+    refine_neutral=False,
+    neutral_xtol=1e-8,
 ):
-    """Trace temporal lower and upper neutral branches across Reynolds number."""
+    """Trace temporal lower and upper neutral branches across Reynolds number.
+
+    If ``refine_neutral`` is true, sign-change brackets are refined by direct
+    scalar solves of the selected growth branch. This is currently intended for
+    reduced/OS scans; exact-shooting neutral refinement should use the shooting
+    branch tracker to avoid seed-dependent branch jumps.
+    """
     Re_arr = np.asarray(Re_range, dtype=float)
     lower_alpha = np.full(len(Re_arr), np.nan, dtype=float)
     upper_alpha = np.full(len(Re_arr), np.nan, dtype=float)
@@ -803,7 +1190,45 @@ def trace_temporal_neutral_curve(
             fatol=fatol,
             max_iter=max_iter,
         )
-        neutrals = temporal_neutral_points_from_scan(scan['alpha'], scan['omega_i'])
+        refine_func = None
+        if (
+            refine_neutral
+            and beta_range is None
+            and method not in {'shooting', 'shooting_anchor'}
+        ):
+            def refine_func(alpha_value):
+                refined_scan = temporal_growth_curve(
+                    baseflow,
+                    Re,
+                    [alpha_value],
+                    Ma=Ma,
+                    psi_deg=psi_deg,
+                    Pr=Pr,
+                    gamma=gamma,
+                    N=N,
+                    y_max=y_max,
+                    wall_bc=wall_bc,
+                    method=method,
+                    branch=branch,
+                    include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+                    freestream_leakage_tol=freestream_leakage_tol,
+                    phase_speed_bounds=phase_speed_bounds,
+                    phase_speed_metric=phase_speed_metric,
+                    length_scale=length_scale,
+                    lambda_mu_ratio=lambda_mu_ratio,
+                    n_steps=n_steps,
+                    xatol=xatol,
+                    fatol=fatol,
+                    max_iter=max_iter,
+                )
+                return float(refined_scan['omega_i'][0])
+
+        neutrals = temporal_neutral_points_from_scan(
+            scan['alpha'],
+            scan['omega_i'],
+            refine_func=refine_func,
+            xtol=neutral_xtol,
+        )
         if len(neutrals) >= 1:
             lower_alpha[i] = neutrals[0]
         if len(neutrals) >= 2:
@@ -854,6 +1279,7 @@ def trace_temporal_neutral_curve_shooting(
     wall_bc='isothermal',
     length_scale='delta_star',
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    include_spanwise_dissipation_coupling=True,
     method='qr',
     n_steps=600,
     xatol=1e-7,
@@ -861,6 +1287,8 @@ def trace_temporal_neutral_curve_shooting(
     max_iter=120,
     root_atol=1e-6,
     polish_with_determinant=True,
+    refine_neutral=False,
+    neutral_xtol=1e-8,
 ):
     """Trace temporal neutral branches using an exact-shooting anchor root."""
     Re_arr = np.asarray(Re_range, dtype=float)
@@ -899,6 +1327,7 @@ def trace_temporal_neutral_curve_shooting(
             wall_bc=wall_bc,
             length_scale=length_scale,
             lambda_mu_ratio=lambda_mu_ratio,
+            include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
             method=method,
             n_steps=n_steps,
             xatol=xatol,
@@ -921,10 +1350,13 @@ def trace_temporal_neutral_curve_shooting(
         anchor_index=anchor_index,
         length_scale=length_scale,
         lambda_mu_ratio=lambda_mu_ratio,
+        include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
         n_steps=n_steps,
         xatol=xatol,
         fatol=fatol,
         max_iter=max_iter,
+        refine_neutral=refine_neutral,
+        neutral_xtol=neutral_xtol,
     )
 
     forward = trace_temporal_neutral_curve(
@@ -1117,6 +1549,152 @@ def critical_reynolds_from_growth_series(Re_values, growth_values, atol=1e-14):
     return np.nan
 
 
+def maximize_growth_over_parameter(
+    growth_func,
+    bounds,
+    *,
+    samples=17,
+    xatol=1e-8,
+    require_positive=False,
+):
+    """Maximize a scalar growth function over one bounded parameter interval.
+
+    The function is sampled first to find a robust local bracket, then refined
+    with bounded scalar minimization of ``-growth``. Non-finite samples are
+    ignored so expensive LST mode selectors can fail at isolated parameters
+    without poisoning the whole critical-point solve.
+    """
+    lo, hi = map(float, bounds)
+    if not lo < hi:
+        raise ValueError('bounds must satisfy lower < upper')
+    if int(samples) < 3:
+        raise ValueError('samples must be at least 3')
+
+    x_grid = np.linspace(lo, hi, int(samples))
+    g_grid = np.array([growth_func(float(x)) for x in x_grid], dtype=float)
+    finite = np.isfinite(g_grid)
+    if not np.any(finite):
+        return {
+            'parameter': np.nan,
+            'growth': np.nan,
+            'sample_parameter': x_grid,
+            'sample_growth': g_grid,
+            'success': False,
+        }
+
+    finite_indices = np.where(finite)[0]
+    best_idx = int(finite_indices[np.argmax(g_grid[finite])])
+    left_idx = max(0, best_idx - 1)
+    right_idx = min(len(x_grid) - 1, best_idx + 1)
+    bracket = (float(x_grid[left_idx]), float(x_grid[right_idx]))
+    if not bracket[0] < bracket[1]:
+        bracket = (lo, hi)
+
+    def objective(x):
+        value = growth_func(float(x))
+        if not np.isfinite(value):
+            return np.inf
+        return -float(value)
+
+    result = minimize_scalar(
+        objective,
+        bounds=bracket,
+        method='bounded',
+        options={'xatol': xatol},
+    )
+
+    if result.success and np.isfinite(result.fun):
+        parameter = float(result.x)
+        growth = -float(result.fun)
+    else:
+        parameter = float(x_grid[best_idx])
+        growth = float(g_grid[best_idx])
+
+    if require_positive and growth <= 0.0:
+        success = False
+    else:
+        success = bool(np.isfinite(parameter) and np.isfinite(growth))
+
+    return {
+        'parameter': parameter,
+        'growth': growth,
+        'sample_parameter': x_grid,
+        'sample_growth': g_grid,
+        'success': success,
+    }
+
+
+def critical_reynolds_by_max_growth(
+    growth_func,
+    Re_bracket,
+    alpha_bounds,
+    *,
+    alpha_samples=17,
+    re_xtol=1e-6,
+    alpha_xatol=1e-7,
+):
+    """Find critical Reynolds number from ``max_alpha growth(Re, alpha)=0``.
+
+    This is the production primitive needed for paper critical-Re extraction:
+    optimize the selected mode's growth over wavenumber at each Reynolds number,
+    then solve the resulting maximum-growth onset equation in Reynolds number.
+    """
+    Re_lo, Re_hi = map(float, Re_bracket)
+    if not Re_lo < Re_hi:
+        raise ValueError('Re_bracket must satisfy lower < upper')
+
+    evaluations = []
+
+    def max_growth_at_Re(Re):
+        max_result = maximize_growth_over_parameter(
+            lambda alpha: growth_func(float(Re), float(alpha)),
+            alpha_bounds,
+            samples=alpha_samples,
+            xatol=alpha_xatol,
+        )
+        evaluations.append({'Re': float(Re), **max_result})
+        return float(max_result['growth'])
+
+    g_lo = max_growth_at_Re(Re_lo)
+    g_hi = max_growth_at_Re(Re_hi)
+
+    if not np.isfinite(g_lo) or not np.isfinite(g_hi):
+        return {
+            'Re_crit': np.nan,
+            'alpha_crit': np.nan,
+            'growth_crit': np.nan,
+            'evaluations': evaluations,
+            'success': False,
+        }
+
+    if g_lo > 0.0:
+        Re_crit = Re_lo
+    elif g_hi < 0.0:
+        return {
+            'Re_crit': np.nan,
+            'alpha_crit': np.nan,
+            'growth_crit': np.nan,
+            'evaluations': evaluations,
+            'success': False,
+        }
+    else:
+        Re_crit = float(brentq(max_growth_at_Re, Re_lo, Re_hi, xtol=re_xtol))
+
+    final = maximize_growth_over_parameter(
+        lambda alpha: growth_func(float(Re_crit), float(alpha)),
+        alpha_bounds,
+        samples=alpha_samples,
+        xatol=alpha_xatol,
+    )
+    return {
+        'Re_crit': Re_crit,
+        'alpha_crit': final['parameter'],
+        'growth_crit': final['growth'],
+        'evaluations': evaluations,
+        'success': bool(final['success'] and np.isfinite(Re_crit)),
+    }
+
+
 def spatial_growth_curve(
     baseflow,
     Re,
@@ -1297,6 +1875,8 @@ def critical_reynolds_curve(
     xatol=1e-7,
     fatol=1e-9,
     max_iter=120,
+    refine_neutral=False,
+    neutral_xtol=1e-8,
 ):
     """Return the temporal neutral curve plus its approximate critical point."""
     neutral = trace_temporal_neutral_curve(
@@ -1325,6 +1905,8 @@ def critical_reynolds_curve(
         xatol=xatol,
         fatol=fatol,
         max_iter=max_iter,
+        refine_neutral=refine_neutral,
+        neutral_xtol=neutral_xtol,
     )
     gap = neutral['upper_alpha'] - neutral['lower_alpha']
     valid = np.isfinite(gap)
@@ -1367,6 +1949,8 @@ def most_unstable_wave_angle(
     xatol=1e-7,
     fatol=1e-9,
     max_iter=120,
+    refine_neutral=False,
+    neutral_xtol=1e-8,
 ):
     """Scan wave angle and return the smallest critical Reynolds number found."""
     psi_arr = np.asarray(psi_range, dtype=float)
@@ -1400,6 +1984,8 @@ def most_unstable_wave_angle(
             xatol=xatol,
             fatol=fatol,
             max_iter=max_iter,
+            refine_neutral=refine_neutral,
+            neutral_xtol=neutral_xtol,
         )
         Re_crit[i] = curve['Re_crit']
         alpha_crit[i] = curve['alpha_crit']
@@ -1575,3 +2161,55 @@ def nfactor(baseflow_func, Ma, omega, Re_range, Pr=0.72, gamma=1.4,
         N_vals[i] = N_vals[i - 1] + 0.5 * (sigma_pos[i] + sigma_pos[i - 1]) * dRe
 
     return Re_arr, N_vals, sigma
+
+
+def spatial_growth_scan_3d_oblique(baseflow_builder, Re, Ma, psi_list, omega_r_range, **kw):
+    """Thin wrapper re-using spatial_growth_curve + temporal_3d+Gaster for oblique.
+    beta = alpha_r * tan(psi). psi=0 delegates to existing spatial.
+    """
+    psi_arr = np.asarray(psi_list, dtype=float)
+    om_arr = np.asarray(omega_r_range, dtype=float)
+    c_est = 0.82 if Ma > 2.5 else 0.42
+    scans = {}
+    Pr = kw.get('Pr', 0.72)
+    gamma = kw.get('gamma', 1.4)
+    Nn = kw.get('N', 64)
+    ym = kw.get('y_max') or (6.0 if Ma > 2 else 12.0)
+    for psi in psi_arr:
+        sig = np.full(len(om_arr), np.nan)
+        ar = np.full(len(om_arr), np.nan)
+        if abs(psi) < 0.5:
+            sc = spatial_growth_curve(baseflow_builder(Re), Re, Ma, om_arr, Pr=Pr, gamma=gamma, N=Nn, y_max=ym, method=kw.get('method', 'refined'))
+            sig, ar = sc['sigma'], sc['alpha_r']
+        else:
+            # pilot oblique: beta=alpha_r*tan(psi); temporal3d + Gaster proxy
+            al0 = om_arr / c_est
+            be0 = al0 * np.tan(np.deg2rad(psi))
+            for j, (om, al, be) in enumerate(zip(om_arr, al0, be0)):
+                try:
+                    cs, _, _, _ = solve_temporal_compressible_3d(baseflow_builder(Re), float(al), float(be), Re, Ma, Pr, gamma, N=Nn, y_max=ym)
+                    msk = (cs.real > 0.3) & (cs.real < 1.1) & (np.abs(cs.imag) < 0.3)
+                    if msk.any():
+                        c = cs[msk][np.argmax(cs[msk].imag)]
+                        cr, ci = float(c.real), float(c.imag)
+                        sig[j] = al * ci / max(cr, 0.08)
+                        ar[j] = al
+                except Exception:
+                    pass
+        scans[float(psi)] = {'omega': om_arr.copy(), 'sigma': sig, 'alpha_r': ar}
+    return {'Re': float(Re), 'Ma': float(Ma), 'psi': psi_arr, 'scans': scans,
+            'LIMITATION': 'Basic 3D oblique spatial growth + N-factor stub added in lst/analysis (pilot only, not yet 1:1 for any Ozgen/Mack spatial fig)'}
+
+
+def compute_n_factor(spatial_growths, x_or_Re):
+    """Basic N-factor stub: trapezoidal integration of max(0,sigma) vs path var."""
+    sig = np.asarray(spatial_growths.get('sigma', spatial_growths) if isinstance(spatial_growths, dict) else spatial_growths)
+    x = np.asarray(x_or_Re) if not isinstance(x_or_Re, dict) else np.asarray(x_or_Re.get('Re', x_or_Re.get('x', np.arange(len(sig)))))
+    if len(x) != len(sig):
+        x = np.arange(len(sig), dtype=float)
+    N = np.zeros(len(x))
+    sp = np.maximum(sig, 0.0)
+    for i in range(1, len(x)):
+        dx = x[i] - x[i-1]
+        N[i] = N[i-1] + 0.5*(sp[i]+sp[i-1])*dx
+    return x, N, sig

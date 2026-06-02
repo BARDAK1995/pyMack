@@ -22,10 +22,15 @@ from .baseflow import (
     OzgenFlatPlateProfile,
     make_ozgen_profile,
     ozgen_adiabatic_wall_temperature,
+    ozgen_conductivity_ratio,
+    ozgen_cp_ratio,
+    ozgen_local_prandtl,
+    ozgen_viscosity_ratio,
 )
 from .mack_conditions import (
     make_mack_profile,
     mack_figure_edge_temperature,
+    mack_table_10_1_edge_temperature,
     mack_table_11_1_edge_temperature,
 )
 from .scales import (
@@ -46,22 +51,33 @@ from .asymptotic import (
 )
 from .mack_shooting import (
     mack_first_order_matrix_3d,
+    mack_first_order_matrix_6,
     temporal_shooting_residual_3d,
+    temporal_shooting_residual_6,
     temporal_shooting_sigma_min_3d,
+    temporal_shooting_sigma_min_6,
     solve_temporal_mode_3d_shooting,
+    solve_temporal_mode_6_shooting,
     solve_temporal_mode_3d_shooting_sigma_min,
+    solve_temporal_mode_6_shooting_sigma_min,
     continue_temporal_mode_3d_shooting_sigma_min,
+    continue_temporal_mode_6_shooting_sigma_min,
 )
 from .solver import solve_temporal_os, solve_spatial
+from .ozgen_solver import solve_temporal_ozgen_2d
 from .analysis import (
     critical_reynolds_from_growth_series,
+    critical_reynolds_by_max_growth,
     critical_reynolds_curve,
     find_temporal_mode_anchor_3d_shooting,
     frequency_sweep,
+    maximize_growth_over_parameter,
     most_unstable_wave_angle,
     neutral_curve,
+    neutral_points_from_growth_map,
     nfactor,
     search_temporal_roots_3d_shooting,
+    search_temporal_roots_6_shooting,
     spatial_growth_curve,
     spatial_growth_map,
     temporal_growth_curve,
@@ -69,15 +85,25 @@ from .analysis import (
     temporal_growth_scan_3d_shooting,
     temporal_growth_scan_3d_shooting_from_anchor,
     temporal_neutral_points_from_scan,
+    track_complex_branch,
     trace_spatial_neutral_curve,
     trace_temporal_neutral_curve,
     trace_temporal_neutral_curve_shooting,
 )
 from .reference_data import (
     find_paper_target,
+    load_mack_table_10_1_cases,
     load_paper_target_registry,
     load_reference_csv,
+    mack_table_10_1_case_key,
     reference_data_root,
+    select_mack_table_10_1_cases,
+)
+from .mack_table_10_1 import (
+    DEFAULT_TABLE_10_1_CONDITION,
+    DEFAULT_TABLE_10_1_WALL_BC,
+    evaluate_table_10_1_exact_shooting,
+    load_low_mid_table_10_1_families,
 )
 
 __version__ = "0.1.0"

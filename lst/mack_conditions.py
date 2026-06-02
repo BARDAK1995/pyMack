@@ -6,7 +6,13 @@ all figures and tables. Two distinct condition sets matter in this repository:
 - ``table_11_1``:
   An inferred low-/mid-Mach total-temperature fit that reproduces the
   displacement-thickness values in Mack's Table 11.1 when combined with the
-  adiabatic-wall mean-flow solver and Appendix-A transport model.
+  adiabatic-wall mean-flow solver and Appendix-A transport model. Exact
+  Table 10.1 shooting diagnostics also select this mean-flow schedule when
+  paired with Mack's fixed-temperature disturbance condition.
+- ``table_10_1``:
+  A colder legacy sensitivity schedule from an earlier Table 10.1 hypothesis.
+  It is kept separate so diagnostics can show the temperature sensitivity
+  without changing the trusted Table 11.1 condition.
 - ``wind_tunnel``:
   The figure-caption conditions used throughout Chapters 9-11, where the
   low-/mid-Mach cases use ``T_1^* = 311 K`` and the hypersonic cases use
@@ -60,6 +66,26 @@ def mack_table_11_1_edge_temperature(
     return reference_total_temperature / (1.0 + 0.5 * (gamma - 1.0) * Ma**2)
 
 
+def mack_table_10_1_edge_temperature(
+    Ma,
+    gamma=1.4,
+    reference_total_temperature=250.0,
+    hypersonic_edge_temperature=50.0,
+    hypersonic_switch_mach=5.0,
+):
+    """Return the legacy colder edge-temperature schedule for Table 10.1 checks.
+
+    Mack Table 10.1 does not restate a freestream temperature. This colder
+    constant-total-temperature schedule is retained only for sensitivity
+    diagnostics; the current low-/mid-Mach Table 10.1 reproduction uses the
+    Table 11.1 schedule with an isothermal disturbance boundary condition.
+    """
+    Ma = float(Ma)
+    if Ma >= hypersonic_switch_mach:
+        return hypersonic_edge_temperature
+    return reference_total_temperature / (1.0 + 0.5 * (gamma - 1.0) * Ma**2)
+
+
 def mack_figure_edge_temperature(
     Ma,
     low_mid_edge_temperature=311.0,
@@ -79,10 +105,13 @@ def resolve_mack_edge_temperature(Ma, condition='wind_tunnel'):
     """Resolve ``T_1^*`` for a named Mack reproduction condition set."""
     if condition in {'wind_tunnel', 'figure', 'figures'}:
         return mack_figure_edge_temperature(Ma)
+    if condition in {'table_10_1', 'table_10', 'tab10_1'}:
+        return mack_table_10_1_edge_temperature(Ma)
     if condition in {'table_11_1', 'table'}:
         return mack_table_11_1_edge_temperature(Ma)
     raise ValueError(
-        "condition must be 'wind_tunnel'/'figure' or 'table_11_1'/'table'"
+        "condition must be 'wind_tunnel'/'figure', 'table_10_1', "
+        "or 'table_11_1'/'table'"
     )
 
 

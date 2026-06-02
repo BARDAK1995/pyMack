@@ -6,6 +6,8 @@ eighth-order oblique-wave temporal amplification rates at Mack's tabulated
 points so solver regressions and gaps are visible in one place.
 """
 
+import argparse
+import json
 import os
 import sys
 
@@ -14,26 +16,34 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from lst.mack_conditions import make_mack_profile
+from lst.reference_data import select_mack_table_10_1_cases
 from lst.solver import solve_temporal_compressible_3d
 
 
-TABLE_10_1_CASES = [
-    (1.3, 500, 0.075, 45, 0.883e-3, 0.824e-3),
-    (1.3, 1500, 0.060, 45, 1.467e-3, 1.445e-3),
-    (1.6, 500, 0.070, 55, 0.974e-3, 0.874e-3),
-    (1.6, 1500, 0.050, 55, 1.384e-3, 1.346e-3),
-    (2.2, 500, 0.055, 60, 1.198e-3, 1.066e-3),
-    (2.2, 800, 0.045, 60, 1.391e-3, 1.300e-3),
-    (2.2, 1500, 0.035, 60, 1.325e-3, 1.273e-3),
-    (4.5, 500, 0.045, 60, 1.117e-3, 1.039e-3),
-    (4.5, 1500, 0.050, 60, 1.641e-3, 1.613e-3),
-    (5.8, 500, 0.050, 55, 0.790e-3, 0.736e-3),
-    (5.8, 1500, 0.060, 55, 1.403e-3, 1.384e-3),
-    (10.0, 1500, 0.040, 55, 0.444e-3, 0.434e-3),
-]
+DEFAULT_TABLE_10_1_CONDITION = 'table_10_1'
+DEFAULT_TABLE_10_1_WALL_BC = 'adiabatic'
 
 
-def leading_growth_rate(profile, alpha_l, beta_l, re_l, ma, *, include_coupling):
+def json_scalar(value):
+    """Return a strict-JSON numeric scalar, or None for non-finite values."""
+    value = float(value)
+    if not np.isfinite(value):
+        return None
+    return value
+
+
+def leading_growth_rate(
+    profile,
+    alpha_l,
+    beta_l,
+    re_l,
+    ma,
+    *,
+    include_coupling,
+    wall_bc=DEFAULT_TABLE_10_1_WALL_BC,
+    N=90,
+    y_max=12.0,
+):
     """Return the largest positive omega_i found at a Mack Table 10.1 point."""
     c_all, _, _ = solve_temporal_compressible_3d(
         profile,
@@ -43,8 +53,9 @@ def leading_growth_rate(profile, alpha_l, beta_l, re_l, ma, *, include_coupling)
         ma,
         0.72,
         1.4,
-        N=90,
-        y_max=12.0,
+        N=N,
+        y_max=y_max,
+        wall_bc=wall_bc,
         length_scale='L_star',
         include_spanwise_dissipation_coupling=include_coupling,
     )
@@ -58,31 +69,136 @@ def leading_growth_rate(profile, alpha_l, beta_l, re_l, ma, *, include_coupling)
     return omega_i[idx], c_all[idx].real
 
 
-def main():
-    print('=' * 84)
-    print('DIAGNOSTIC: MACK TABLE 10.1 OBLIQUE-WAVE AMPLIFICATION RATES')
-    print('=' * 84)
-    print()
-    print("All inputs are interpreted on Mack's L* scale.")
-    print('The reported values are the largest positive omega_i found in the spectrum.')
-    print()
-    print(f'{"M1":>4s} {"R":>6s} {"a":>6s} {"psi":>6s} '
-          f'{"6th calc":>12s} {"6th tab":>12s} {"8th calc":>12s} {"8th tab":>12s}')
-    print('-' * 84)
-
-    for ma, re_l, alpha_l, psi_deg, sixth_tab, eighth_tab in TABLE_10_1_CASES:
-        psi = np.deg2rad(psi_deg)
-        beta_l = alpha_l * np.tan(psi)
-        profile = make_mack_profile(ma)
+def evaluate_reduced_table_10_1_cases(
+    cases,
+    *,
+    N=90,
+    y_max=12.0,
+    condition=DEFAULT_TABLE_10_1_CONDITION,
+    wall_bc=DEFAULT_TABLE_10_1_WALL_BC,
+):
+    """Evaluate reduced-EVP growth at selected Mack Table 10.1 cases."""
+    rows = []
+    for case in cases:
+        profile = make_mack_profile(case.Ma, condition=condition)
 
         sixth_calc, _ = leading_growth_rate(
-            profile, alpha_l, beta_l, re_l, ma, include_coupling=False)
+            profile,
+            case.alpha_L,
+            case.beta_L,
+            case.Re_L,
+            case.Ma,
+            include_coupling=False,
+            wall_bc=wall_bc,
+            N=N,
+            y_max=y_max,
+        )
         eighth_calc, _ = leading_growth_rate(
-            profile, alpha_l, beta_l, re_l, ma, include_coupling=True)
+            profile,
+            case.alpha_L,
+            case.beta_L,
+            case.Re_L,
+            case.Ma,
+            include_coupling=True,
+            wall_bc=wall_bc,
+            N=N,
+            y_max=y_max,
+        )
+        rows.append({
+            'Ma': json_scalar(case.Ma),
+            'Re_L': json_scalar(case.Re_L),
+            'alpha_L': json_scalar(case.alpha_L),
+            'psi_deg': json_scalar(case.psi_deg),
+            'condition': condition,
+            'wall_bc': wall_bc,
+            'sixth_calc': json_scalar(sixth_calc),
+            'sixth_tab': json_scalar(case.omega_i_6th),
+            'sixth_rel_error': json_scalar(
+                (sixth_calc - case.omega_i_6th) / case.omega_i_6th
+            ),
+            'eighth_calc': json_scalar(eighth_calc),
+            'eighth_tab': json_scalar(case.omega_i_8th),
+            'eighth_rel_error': json_scalar(
+                (eighth_calc - case.omega_i_8th) / case.omega_i_8th
+            ),
+        })
+    return rows
 
-        print(f'{ma:4.1f} {re_l:6.0f} {alpha_l:6.3f} {psi_deg:6.0f} '
-              f'{sixth_calc:12.6e} {sixth_tab:12.6e} '
-              f'{eighth_calc:12.6e} {eighth_tab:12.6e}')
+
+def parse_args():
+    """Parse command-line options for the diagnostic."""
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--Ma', dest='mach', action='append', type=float)
+    parser.add_argument('--Re', dest='re_l', action='append', type=float)
+    parser.add_argument('--psi', dest='psi_deg', action='append', type=float)
+    parser.add_argument('--limit', type=int, default=None)
+    parser.add_argument('--N', type=int, default=90)
+    parser.add_argument('--y-max', type=float, default=12.0)
+    parser.add_argument(
+        '--wall-bc',
+        choices=('adiabatic', 'isothermal'),
+        default=DEFAULT_TABLE_10_1_WALL_BC,
+        help='thermal perturbation wall boundary condition',
+    )
+    parser.add_argument(
+        '--condition',
+        default=DEFAULT_TABLE_10_1_CONDITION,
+        choices=('table_10_1', 'table_11_1', 'wind_tunnel', 'figure'),
+        help='Mack mean-flow temperature condition set',
+    )
+    parser.add_argument(
+        '--json',
+        action='store_true',
+        help='emit machine-readable JSON instead of the formatted table',
+    )
+    return parser.parse_args()
+
+
+def main():
+    args = parse_args()
+    cases = select_mack_table_10_1_cases(
+        Ma=args.mach,
+        Re_L=args.re_l,
+        psi_deg=args.psi_deg,
+    )
+    if args.limit is not None:
+        cases = cases[:max(0, int(args.limit))]
+
+    rows = evaluate_reduced_table_10_1_cases(
+        cases,
+        N=args.N,
+        y_max=args.y_max,
+        condition=args.condition,
+        wall_bc=args.wall_bc,
+    )
+
+    if args.json:
+        print(json.dumps(rows, indent=2, allow_nan=False))
+        return
+
+    print('=' * 104)
+    print('DIAGNOSTIC: MACK TABLE 10.1 OBLIQUE-WAVE AMPLIFICATION RATES')
+    print('=' * 104)
+    print()
+    print("All inputs are interpreted on Mack's L* scale.")
+    print(f'Mack mean-flow condition set: {args.condition}.')
+    print(f'Thermal perturbation wall condition: {args.wall_bc}.')
+    print('The reported values are the largest positive omega_i found in the reduced spectrum.')
+    print('Reference values are loaded from reference_data/mack/table_10_1_oblique_growth.csv.')
+    print()
+    print(f'{"M1":>4s} {"R":>6s} {"a":>6s} {"psi":>6s} '
+          f'{"6th calc":>12s} {"6th tab":>12s} {"err %":>9s} '
+          f'{"8th calc":>12s} {"8th tab":>12s} {"err %":>9s}')
+    print('-' * 104)
+
+    for row in rows:
+        print(
+            f'{row["Ma"]:4.1f} {row["Re_L"]:6.0f} {row["alpha_L"]:6.3f} '
+            f'{row["psi_deg"]:6.0f} {row["sixth_calc"]:12.6e} '
+            f'{row["sixth_tab"]:12.6e} {100.0 * row["sixth_rel_error"]:9.2f} '
+            f'{row["eighth_calc"]:12.6e} {row["eighth_tab"]:12.6e} '
+            f'{100.0 * row["eighth_rel_error"]:9.2f}'
+        )
 
     print()
     print('Interpretation: this table is a diagnostic target for the current')

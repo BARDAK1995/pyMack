@@ -41,6 +41,15 @@ def _wall_condition_rows_3d(wall_bc):
     raise ValueError("wall_bc must be 'isothermal' or 'adiabatic'")
 
 
+def _wall_condition_rows_6(wall_bc):
+    """Return the primary sixth-order wall rows."""
+    if wall_bc == 'isothermal':
+        return (0, 2, 4)
+    if wall_bc == 'adiabatic':
+        return (0, 2, 5)
+    raise ValueError("wall_bc must be 'isothermal' or 'adiabatic'")
+
+
 def mack_first_order_matrix_3d(
     baseflow,
     y,
@@ -52,6 +61,8 @@ def mack_first_order_matrix_3d(
     gamma,
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
     length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
+    spanwise_dissipation_coupling_scale=1.0,
 ):
     """Return Mack Appendix-A first-order matrix for a 2D mean flow."""
     bf = _sample_scaled_baseflow(baseflow, np.array([y]), length_scale)
@@ -143,7 +154,17 @@ def mack_first_order_matrix_3d(
         - sigma * (gamma - 1.0) * Ma**2 * dmu_dT * DU**2 / mu
     )
     A[5, 5] = -2.0 * dkappa_dT * DT / kappa
-    A[5, 7] = 2.0 * sigma * (gamma - 1.0) * Ma**2 * beta * DU / k2
+    if include_spanwise_dissipation_coupling:
+        A[5, 7] = (
+            float(spanwise_dissipation_coupling_scale)
+            * 2.0
+            * sigma
+            * (gamma - 1.0)
+            * Ma**2
+            * beta
+            * DU
+            / k2
+        )
 
     # Appendix A.8/A.9
     A[6, 7] = 1.0
@@ -154,6 +175,65 @@ def mack_first_order_matrix_3d(
     A[7, 7] = -(dmu_dT / mu) * DT
 
     return A
+
+
+def mack_first_order_matrix_6(
+    baseflow,
+    y,
+    alpha,
+    beta,
+    c,
+    Re,
+    Ma,
+    gamma,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    length_scale='delta_star',
+):
+    """Return Mack's primary sixth-order first-order matrix.
+
+    The sixth-order approximation drops Appendix-A ``a68`` and solves only the
+    first six equations. The passive normal-vorticity pair is not part of the
+    eigenvalue determinant.
+    """
+    A8 = mack_first_order_matrix_3d(
+        baseflow,
+        y,
+        alpha,
+        beta,
+        c,
+        Re,
+        Ma,
+        gamma,
+        lambda_mu_ratio=lambda_mu_ratio,
+        length_scale=length_scale,
+        include_spanwise_dissipation_coupling=False,
+    )
+    return A8[:6, :6]
+
+
+def mack_freestream_decay_basis_6(
+    alpha,
+    beta,
+    c,
+    Re,
+    Ma,
+    Pr,
+    gamma,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+):
+    """Return the three bounded Appendix-B columns for the primary 6x6 system."""
+    basis8, labels8 = mack_freestream_decay_basis(
+        alpha,
+        beta,
+        c,
+        Re,
+        Ma,
+        Pr,
+        gamma,
+        lambda_mu_ratio=lambda_mu_ratio,
+    )
+    keep = [i for i, label in enumerate(labels8) if label != 'lambda_7']
+    return basis8[:6, keep], tuple(labels8[i] for i in keep)
 
 
 def integrate_bounded_basis_3d(
@@ -168,6 +248,8 @@ def integrate_bounded_basis_3d(
     y_max,
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
     length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
+    spanwise_dissipation_coupling_scale=1.0,
     rtol=1e-8,
     atol=1e-10,
     method='ivp',
@@ -192,16 +274,22 @@ def integrate_bounded_basis_3d(
                 baseflow, y0, alpha, beta, c, Re, Ma, gamma,
                 lambda_mu_ratio=lambda_mu_ratio,
                 length_scale=length_scale,
+                include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+                spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
             )
             Am = mack_first_order_matrix_3d(
                 baseflow, ym, alpha, beta, c, Re, Ma, gamma,
                 lambda_mu_ratio=lambda_mu_ratio,
                 length_scale=length_scale,
+                include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+                spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
             )
             A1 = mack_first_order_matrix_3d(
                 baseflow, y1, alpha, beta, c, Re, Ma, gamma,
                 lambda_mu_ratio=lambda_mu_ratio,
                 length_scale=length_scale,
+                include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+                spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
             )
 
             k1 = A0 @ Y
@@ -219,6 +307,8 @@ def integrate_bounded_basis_3d(
             baseflow, y, alpha, beta, c, Re, Ma, gamma,
             lambda_mu_ratio=lambda_mu_ratio,
             length_scale=length_scale,
+            include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+            spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
         )
         return (A @ Y).reshape(-1)
 
@@ -237,6 +327,93 @@ def integrate_bounded_basis_3d(
     return wall_basis, sol
 
 
+def integrate_bounded_basis_6(
+    baseflow,
+    alpha,
+    beta,
+    c,
+    Re,
+    Ma,
+    Pr,
+    gamma,
+    y_max,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    length_scale='delta_star',
+    rtol=1e-8,
+    atol=1e-10,
+    method='ivp',
+    n_steps=600,
+):
+    """Integrate the three bounded primary sixth-order solutions to the wall."""
+    sigma = _freestream_sigma(baseflow, Pr, length_scale)
+    basis, _ = mack_freestream_decay_basis_6(
+        alpha,
+        beta,
+        c,
+        Re,
+        Ma,
+        sigma,
+        gamma,
+        lambda_mu_ratio=lambda_mu_ratio,
+    )
+
+    if method == 'qr':
+        Y, _ = np.linalg.qr(basis)
+        y_grid = np.linspace(float(y_max), 0.0, int(n_steps) + 1)
+
+        for y0, y1 in zip(y_grid[:-1], y_grid[1:]):
+            h = y1 - y0
+            ym = 0.5 * (y0 + y1)
+
+            A0 = mack_first_order_matrix_6(
+                baseflow, y0, alpha, beta, c, Re, Ma, gamma,
+                lambda_mu_ratio=lambda_mu_ratio,
+                length_scale=length_scale,
+            )
+            Am = mack_first_order_matrix_6(
+                baseflow, ym, alpha, beta, c, Re, Ma, gamma,
+                lambda_mu_ratio=lambda_mu_ratio,
+                length_scale=length_scale,
+            )
+            A1 = mack_first_order_matrix_6(
+                baseflow, y1, alpha, beta, c, Re, Ma, gamma,
+                lambda_mu_ratio=lambda_mu_ratio,
+                length_scale=length_scale,
+            )
+
+            k1 = A0 @ Y
+            k2 = Am @ (Y + 0.5 * h * k1)
+            k3 = Am @ (Y + 0.5 * h * k2)
+            k4 = A1 @ (Y + h * k3)
+            Y = Y + (h / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+            Y, _ = np.linalg.qr(Y)
+
+        return Y, {'success': True, 'method': 'qr', 'n_steps': int(n_steps)}
+
+    def rhs(y, flat_state):
+        Y = flat_state.reshape(6, 3)
+        A = mack_first_order_matrix_6(
+            baseflow, y, alpha, beta, c, Re, Ma, gamma,
+            lambda_mu_ratio=lambda_mu_ratio,
+            length_scale=length_scale,
+        )
+        return (A @ Y).reshape(-1)
+
+    sol = solve_ivp(
+        rhs,
+        (float(y_max), 0.0),
+        basis.reshape(-1),
+        method='DOP853',
+        rtol=rtol,
+        atol=atol,
+    )
+    if not sol.success:
+        raise RuntimeError(sol.message)
+
+    wall_basis = sol.y[:, -1].reshape(6, 3)
+    return wall_basis, sol
+
+
 def temporal_shooting_residual_3d(
     baseflow,
     alpha,
@@ -249,6 +426,8 @@ def temporal_shooting_residual_3d(
     y_max,
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
     length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
+    spanwise_dissipation_coupling_scale=1.0,
     wall_bc='isothermal',
     method='qr',
     n_steps=600,
@@ -266,10 +445,48 @@ def temporal_shooting_residual_3d(
         y_max,
         lambda_mu_ratio=lambda_mu_ratio,
         length_scale=length_scale,
+        include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+        spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
         method=method,
         n_steps=n_steps,
     )
     wall_matrix = wall_basis[_wall_condition_rows_3d(wall_bc), :]
+    return np.linalg.det(wall_matrix)
+
+
+def temporal_shooting_residual_6(
+    baseflow,
+    alpha,
+    beta,
+    c,
+    Re,
+    Ma,
+    Pr,
+    gamma,
+    y_max,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    length_scale='delta_star',
+    wall_bc='isothermal',
+    method='qr',
+    n_steps=600,
+):
+    """Return the wall determinant residual for Mack's primary sixth-order system."""
+    wall_matrix = temporal_shooting_wall_matrix_6(
+        baseflow,
+        alpha,
+        beta,
+        c,
+        Re,
+        Ma,
+        Pr,
+        gamma,
+        y_max,
+        lambda_mu_ratio=lambda_mu_ratio,
+        length_scale=length_scale,
+        wall_bc=wall_bc,
+        method=method,
+        n_steps=n_steps,
+    )
     return np.linalg.det(wall_matrix)
 
 
@@ -285,6 +502,8 @@ def temporal_shooting_wall_matrix_3d(
     y_max,
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
     length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
+    spanwise_dissipation_coupling_scale=1.0,
     wall_bc='isothermal',
     method='qr',
     n_steps=600,
@@ -302,13 +521,15 @@ def temporal_shooting_wall_matrix_3d(
         y_max,
         lambda_mu_ratio=lambda_mu_ratio,
         length_scale=length_scale,
+        include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+        spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
         method=method,
         n_steps=n_steps,
     )
     return wall_basis[_wall_condition_rows_3d(wall_bc), :]
 
 
-def temporal_shooting_sigma_min_3d(
+def temporal_shooting_wall_matrix_6(
     baseflow,
     alpha,
     beta,
@@ -324,8 +545,83 @@ def temporal_shooting_sigma_min_3d(
     method='qr',
     n_steps=600,
 ):
+    """Return the 3x3 wall boundary matrix for Mack's sixth-order system."""
+    wall_basis, _ = integrate_bounded_basis_6(
+        baseflow,
+        alpha,
+        beta,
+        c,
+        Re,
+        Ma,
+        Pr,
+        gamma,
+        y_max,
+        lambda_mu_ratio=lambda_mu_ratio,
+        length_scale=length_scale,
+        method=method,
+        n_steps=n_steps,
+    )
+    return wall_basis[_wall_condition_rows_6(wall_bc), :]
+
+
+def temporal_shooting_sigma_min_3d(
+    baseflow,
+    alpha,
+    beta,
+    c,
+    Re,
+    Ma,
+    Pr,
+    gamma,
+    y_max,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
+    spanwise_dissipation_coupling_scale=1.0,
+    wall_bc='isothermal',
+    method='qr',
+    n_steps=600,
+):
     """Return the smallest singular value of the wall boundary matrix."""
     wall_matrix = temporal_shooting_wall_matrix_3d(
+        baseflow,
+        alpha,
+        beta,
+        c,
+        Re,
+        Ma,
+        Pr,
+        gamma,
+        y_max,
+        lambda_mu_ratio=lambda_mu_ratio,
+        length_scale=length_scale,
+        include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+        spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
+        wall_bc=wall_bc,
+        method=method,
+        n_steps=n_steps,
+    )
+    return np.linalg.svd(wall_matrix, compute_uv=False)[-1]
+
+
+def temporal_shooting_sigma_min_6(
+    baseflow,
+    alpha,
+    beta,
+    c,
+    Re,
+    Ma,
+    Pr,
+    gamma,
+    y_max,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    length_scale='delta_star',
+    wall_bc='isothermal',
+    method='qr',
+    n_steps=600,
+):
+    """Return the smallest singular value of the sixth-order wall matrix."""
+    wall_matrix = temporal_shooting_wall_matrix_6(
         baseflow,
         alpha,
         beta,
@@ -371,6 +667,8 @@ def solve_temporal_mode_3d_shooting(
     y_max,
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
     length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
+    spanwise_dissipation_coupling_scale=1.0,
     wall_bc='isothermal',
     tol=1e-8,
     max_iter=20,
@@ -395,6 +693,8 @@ def solve_temporal_mode_3d_shooting(
             y_max,
             lambda_mu_ratio=lambda_mu_ratio,
             length_scale=length_scale,
+            include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+            spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
             wall_bc=wall_bc,
             method=method,
             n_steps=n_steps,
@@ -433,12 +733,17 @@ def solve_temporal_mode_3d_shooting_sigma_min(
     y_max,
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
     length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
+    spanwise_dissipation_coupling_scale=1.0,
     wall_bc='isothermal',
     method='qr',
     n_steps=600,
     xatol=1e-7,
     fatol=1e-9,
     max_iter=120,
+    c_real_bounds=None,
+    c_imag_bounds=None,
+    out_of_bounds_penalty=1e6,
 ):
     """Minimize the wall-matrix smallest singular value over complex c."""
 
@@ -446,6 +751,23 @@ def solve_temporal_mode_3d_shooting_sigma_min(
 
     def objective(x):
         c_val = complex(x[0], x[1])
+        penalty = 0.0
+        if c_real_bounds is not None:
+            lo, hi = c_real_bounds
+            if c_val.real < lo:
+                penalty += float(out_of_bounds_penalty) * (lo - c_val.real + 1.0)
+            elif c_val.real > hi:
+                penalty += float(out_of_bounds_penalty) * (c_val.real - hi + 1.0)
+        if c_imag_bounds is not None:
+            lo, hi = c_imag_bounds
+            if c_val.imag < lo:
+                penalty += float(out_of_bounds_penalty) * (lo - c_val.imag + 1.0)
+            elif c_val.imag > hi:
+                penalty += float(out_of_bounds_penalty) * (c_val.imag - hi + 1.0)
+        if penalty > 0.0:
+            history.append((c_val, penalty))
+            return penalty
+
         sigma_min = temporal_shooting_sigma_min_3d(
             baseflow,
             alpha,
@@ -458,6 +780,8 @@ def solve_temporal_mode_3d_shooting_sigma_min(
             y_max,
             lambda_mu_ratio=lambda_mu_ratio,
             length_scale=length_scale,
+            include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+            spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
             wall_bc=wall_bc,
             method=method,
             n_steps=n_steps,
@@ -489,6 +813,8 @@ def solve_temporal_mode_3d_shooting_sigma_min(
         y_max,
         lambda_mu_ratio=lambda_mu_ratio,
         length_scale=length_scale,
+        include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+        spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
         wall_bc=wall_bc,
         method=method,
         n_steps=n_steps,
@@ -505,6 +831,8 @@ def continue_temporal_mode_3d_shooting_sigma_min(
     initial_c,
     lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
     length_scale='delta_star',
+    include_spanwise_dissipation_coupling=True,
+    spanwise_dissipation_coupling_scale=1.0,
     wall_bc='isothermal',
     method='qr',
     n_steps=600,
@@ -546,6 +874,8 @@ def continue_temporal_mode_3d_shooting_sigma_min(
             y_max,
             lambda_mu_ratio=lambda_mu_ratio,
             length_scale=length_scale,
+            include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+            spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
             wall_bc=wall_bc,
             method=method,
             n_steps=n_steps_case,
@@ -559,6 +889,240 @@ def continue_temporal_mode_3d_shooting_sigma_min(
         det_history = []
         if polish_with_determinant:
             c_final, det_converged, det_history = solve_temporal_mode_3d_shooting(
+                baseflow,
+                alpha,
+                beta,
+                c_opt,
+                Re,
+                Ma,
+                Pr_case,
+                gamma_case,
+                y_max,
+                lambda_mu_ratio=lambda_mu_ratio,
+                length_scale=length_scale,
+                include_spanwise_dissipation_coupling=include_spanwise_dissipation_coupling,
+                spanwise_dissipation_coupling_scale=spanwise_dissipation_coupling_scale,
+                wall_bc=wall_bc,
+                method=method,
+                n_steps=max(n_steps_case, 800),
+            )
+
+        tracked.append({
+            'case': case_data,
+            'c_sigma_min': c_opt,
+            'c_final': c_final,
+            'omega_i': alpha * c_final.imag,
+            'sigma_min': sigma_min,
+            'sigma_min_converged': converged,
+            'determinant_converged': det_converged,
+            'sigma_min_history': history,
+            'determinant_history': det_history,
+        })
+        c_seed = c_final
+
+    return tracked
+
+
+def solve_temporal_mode_6_shooting(
+    baseflow,
+    alpha,
+    beta,
+    c_guess,
+    Re,
+    Ma,
+    Pr,
+    gamma,
+    y_max,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    length_scale='delta_star',
+    wall_bc='isothermal',
+    tol=1e-8,
+    max_iter=20,
+    method='qr',
+    n_steps=600,
+):
+    """Refine a temporal eigenvalue with Mack's primary sixth-order system."""
+    z2 = complex(c_guess)
+    z1 = z2 + (1e-3 - 2e-3j)
+    z0 = z2 - (1e-3 + 2e-3j)
+
+    def residual(c_val):
+        return temporal_shooting_residual_6(
+            baseflow,
+            alpha,
+            beta,
+            c_val,
+            Re,
+            Ma,
+            Pr,
+            gamma,
+            y_max,
+            lambda_mu_ratio=lambda_mu_ratio,
+            length_scale=length_scale,
+            wall_bc=wall_bc,
+            method=method,
+            n_steps=n_steps,
+        )
+
+    f0 = residual(z0)
+    f1 = residual(z1)
+    f2 = residual(z2)
+
+    history = [(z0, f0), (z1, f1), (z2, f2)]
+
+    for _ in range(max_iter):
+        if abs(f2) < tol:
+            return z2, True, history
+        try:
+            z_new = _muller_step_complex(z0, z1, z2, f0, f1, f2)
+        except Exception:
+            z_new = z2 + (1e-4 + 1e-4j)
+        f_new = residual(z_new)
+        z0, z1, z2 = z1, z2, z_new
+        f0, f1, f2 = f1, f2, f_new
+        history.append((z2, f2))
+
+    return z2, abs(f2) < 1e-4, history
+
+
+def solve_temporal_mode_6_shooting_sigma_min(
+    baseflow,
+    alpha,
+    beta,
+    c_guess,
+    Re,
+    Ma,
+    Pr,
+    gamma,
+    y_max,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    length_scale='delta_star',
+    wall_bc='isothermal',
+    method='qr',
+    n_steps=600,
+    xatol=1e-7,
+    fatol=1e-9,
+    max_iter=120,
+):
+    """Minimize the primary sixth-order wall-matrix singular value."""
+
+    history = []
+
+    def objective(x):
+        c_val = complex(x[0], x[1])
+        sigma_min = temporal_shooting_sigma_min_6(
+            baseflow,
+            alpha,
+            beta,
+            c_val,
+            Re,
+            Ma,
+            Pr,
+            gamma,
+            y_max,
+            lambda_mu_ratio=lambda_mu_ratio,
+            length_scale=length_scale,
+            wall_bc=wall_bc,
+            method=method,
+            n_steps=n_steps,
+        )
+        history.append((c_val, sigma_min))
+        return sigma_min
+
+    result = minimize(
+        objective,
+        x0=np.array([complex(c_guess).real, complex(c_guess).imag], dtype=float),
+        method='Nelder-Mead',
+        options={
+            'maxiter': int(max_iter),
+            'xatol': float(xatol),
+            'fatol': float(fatol),
+        },
+    )
+
+    c_opt = complex(result.x[0], result.x[1])
+    sigma_min = temporal_shooting_sigma_min_6(
+        baseflow,
+        alpha,
+        beta,
+        c_opt,
+        Re,
+        Ma,
+        Pr,
+        gamma,
+        y_max,
+        lambda_mu_ratio=lambda_mu_ratio,
+        length_scale=length_scale,
+        wall_bc=wall_bc,
+        method=method,
+        n_steps=n_steps,
+    )
+    return c_opt, sigma_min, bool(result.success), history
+
+
+def continue_temporal_mode_6_shooting_sigma_min(
+    case_sequence,
+    baseflow_builder=None,
+    *,
+    Pr=0.72,
+    gamma=1.4,
+    initial_c,
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    length_scale='delta_star',
+    wall_bc='isothermal',
+    method='qr',
+    n_steps=600,
+    xatol=1e-7,
+    fatol=1e-9,
+    max_iter=120,
+    polish_with_determinant=True,
+):
+    """Track one temporal root with Mack's primary sixth-order system."""
+    tracked = []
+    c_seed = complex(initial_c)
+
+    for case in case_sequence:
+        case_data = dict(case)
+        alpha = float(case_data['alpha'])
+        beta = float(case_data['beta'])
+        Re = float(case_data['Re'])
+        Ma = float(case_data['Ma'])
+        Pr_case = float(case_data.get('Pr', Pr))
+        gamma_case = float(case_data.get('gamma', gamma))
+        y_max = float(case_data['y_max'])
+        n_steps_case = int(case_data.get('n_steps', n_steps))
+
+        baseflow = case_data.get('baseflow')
+        if baseflow is None:
+            if baseflow_builder is None:
+                raise ValueError('baseflow_builder is required when case has no baseflow')
+            baseflow = baseflow_builder(case_data)
+
+        c_opt, sigma_min, converged, history = solve_temporal_mode_6_shooting_sigma_min(
+            baseflow,
+            alpha,
+            beta,
+            c_seed,
+            Re,
+            Ma,
+            Pr_case,
+            gamma_case,
+            y_max,
+            lambda_mu_ratio=lambda_mu_ratio,
+            length_scale=length_scale,
+            wall_bc=wall_bc,
+            method=method,
+            n_steps=n_steps_case,
+            xatol=xatol,
+            fatol=fatol,
+            max_iter=max_iter,
+        )
+
+        c_final = c_opt
+        det_converged = False
+        det_history = []
+        if polish_with_determinant:
+            c_final, det_converged, det_history = solve_temporal_mode_6_shooting(
                 baseflow,
                 alpha,
                 beta,

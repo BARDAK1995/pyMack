@@ -16,6 +16,28 @@ For the current figure-by-figure status and remaining gap list, see
 For the shared workflow/API surface added during the flat-plate unification
 work, see [`docs/LST_API_CHEATSHEET.md`](./LST_API_CHEATSHEET.md).
 
+**Current Credible Claims (as of late May 2026, post final orchestration sprint)**
+
+This section is maintained for transparency, following the multi-agent critique process and moderator synthesis. It is intentionally conservative and updated only on executable evidence. Orchestration round (this sprint): 5 parallel agents drove landing of the trusted exact-shooting code (figure_10_3_trusted / figure_10_4_trusted / figure_10_6_trusted in ch10.py with CSV emission + gap reporting), registry scaffolding, and harness integration.
+
+**Strong / Numerically Validated:**
+- Incompressible Orr-Sommerfeld core (Poiseuille exact match to Orszag, Blasius neutral behavior).
+- Mack mean-flow reconstruction (Table 11.1 thicknesses <0.5% worst error).
+- Mack low-/mid-Mach oblique first-mode temporal growth via exact first-order shooting (Table 10.1, 0.07–0.91% error on the trusted 6×6/8×8 path with correct conditions).
+
+**Partial / In Progress (highest-visibility items):**
+- Mack Fig 10.3 (multi-ψ temporal max growth M=1.3-3.0), 10.4 (high-M first-mode), 10.6 (high-M second-mode): Trusted exact-shooting implementations now landed (exact_temporal_shooting_3d_continuation / wave_angle_opt / second_mode). Full CSV emission + real max_rel_err printing vs Agent-1 digitized refs. Pre-execution legacy paths + harness: FAIL/NO_CURRENT or large gaps. Promotion to Strong + "1:1 on exact first-order shooting trusted path (real max_rel_err X/Y/Z reported... Harness --verify + numeric tests green)" **only after** actual execution artifacts (Agent A), B registry status=validated_numeric, and re-run exit 0.
+- Mack Fig 10.1 theory families: Theory-comparison curves (Dunn-Lin asymptotic, numerical, complete) for M=1.6 + 2.2 now digitized + current-code neutral curves registered. Real comparisons in the numeric test.
+- Ozgen Fig 3: Initial digitization active (5 key growth-rate lobes for M=3/4/5/6/8). Registry updated. Basic smoke test added.
+- Sign convention + non-physical behavior issue in legacy reduced-EVP path for low-Mach panels surfaced during digitization. Temporary guard + detailed comment added; root cause tracked for Phase 2 rebuild.
+
+**Still Limited / Not Yet 1:1:**
+- Most other numbered Mack Ch. 9/10 figures and the majority of Ozgen oblique/spatial figures remain on reduced-EVP scaffolding or temporal proxies.
+- Production defaults in `ch10.py` and `ozgen.py` have been updated to be honest (problematic outputs now require `--include-diagnostics` with warnings).
+- True spatial 3D oblique capability, full numeric figure acceptance across the registry, and complete production rewiring on trusted paths are active "Must-Fix-Before" items per the critique consensus. N-factor / spatial work (Agent D) remains future-phase only.
+
+See `docs/PAPER_ALIGNMENT_AUDIT.md`, `docs/FIGURE_GAP_MATRIX.md`, the updated `paper_target_registry.json`, and the new `validation/test_figure_numeric_acceptance.py` for the detailed current state.
+
 ## 1. What the Main Stability Quantities Mean
 
 For a normal mode
@@ -146,22 +168,28 @@ now solves the coupled velocity/temperature boundary-value problem and supports
 Mack's Appendix-A air transport law, but paper reproduction still fails if the
 wrong external temperature schedule is used.
 
-Two Mack condition sets are now separated explicitly in
+Mack condition sets are now separated explicitly in
 [`lst/mack_conditions.py`](../lst/mack_conditions.py):
 
 - `table_11_1`: the inferred schedule that reproduces Table 11.1 thicknesses
+  and, with isothermal disturbance wall conditions, the low-/mid-Mach Table
+  10.1 oblique growth table
+- `table_10_1`: an older colder sensitivity setup retained so the Table 10.1
+  temperature dependence can be reproduced explicitly
 - `wind_tunnel`: the figure-caption setup used through Chapters 9-11
 
-This distinction matters because the Chapter 6 thickness table and the Chapter
-9-11 figure captions are not using the same `T_1^*` values.
+This distinction matters because Table 10.1, the Chapter 6 thickness table, and
+the explicit Chapter 9-11 figure captions are not using one interchangeable
+`T_1^*` schedule.
 
 The first-order Eq. 8.9 / Appendix-A reduction is now exact in the
 `mack_shooting` path. In particular, the pressure-row coefficients `a43` and
 `a46` had to be corrected to the forms recovered by direct reduction from
 Eq. 8.9b; the printed Appendix-A transcription does not match the reduced
-operator in those two entries. The remaining mismatch is no longer at the
-first-order algebra level. It is in the production temporal solver and the
-resulting Chapter 10 figure / Table 10.1 reproduction.
+operator in those two entries. The remaining Mack mismatch is no longer at the
+first-order algebra level. Low-/mid-Mach Table 10.1 is now quantitatively
+matched by exact shooting; the chapter figure layer still needs to be rebuilt
+on that workflow.
 
 ### Figure-layer mismatch
 
@@ -224,11 +252,11 @@ For the first mode:
 - [`lst/analysis.py`](../lst/analysis.py): sweeps, neutral maps, N-factors, exact-shooting helpers, and the shared high-level growth / neutral / critical-Re / wave-angle workflows
 - [`lst/reference_data.py`](../lst/reference_data.py): loaders for the shared paper target registry and numeric reference tables
 - [`reference_data/`](../reference_data): shared Mack/Ozgen target metadata and numeric reference CSVs
-- [`validation/diagnose_mack_table_10_1.py`](../validation/diagnose_mack_table_10_1.py): current 6th-/8th-order oblique-wave diagnostic against Mack Table 10.1
+- [`validation/diagnose_mack_table_10_1.py`](../validation/diagnose_mack_table_10_1.py): current 6th-/8th-order oblique-wave diagnostic against Mack Table 10.1; reads the shared CSV and supports `--Ma`, `--Re`, `--psi`, `--limit`, and `--json`
 - [`validation/diagnose_oblique_mode_selection.py`](../validation/diagnose_oblique_mode_selection.py): compares reduced-EVP candidates against Appendix-B leakage and QR-stabilized shooting residuals for hard Chapter 10 cases
 - [`validation/diagnose_oblique_continuation.py`](../validation/diagnose_oblique_continuation.py): tracks representative first-mode families through alpha and beta continuation to separate mode-selection errors from deeper operator mismatches
 - [`validation/diagnose_low_mach_shooting_root.py`](../validation/diagnose_low_mach_shooting_root.py): shows that the exact first-order shooting system has a low-Mach amplified root absent from the reduced-EVP spectrum
-- [`validation/diagnose_low_mid_table_10_1_shooting.py`](../validation/diagnose_low_mid_table_10_1_shooting.py): compares the exact first-order shooting branch against the low/mid-Mach `M=1.3`, `1.6`, and `2.2` Table 10.1 families
+- [`validation/diagnose_low_mid_table_10_1_shooting.py`](../validation/diagnose_low_mid_table_10_1_shooting.py): compares the exact first-order shooting branch against the low/mid-Mach `M=1.3`, `1.6`, and `2.2` Table 10.1 families; use `--n-steps 300 --skip-reduced --limit 1` for quick targeted solver checks
 - [`validation/diagnose_low_mach_shooting_growth_scan.py`](../validation/diagnose_low_mach_shooting_growth_scan.py): continues an exact low-Mach first-mode branch away from an interior anchor and extracts temporal neutral points from the resulting `omega_i(alpha)` scan
 - [`validation/test_appendix_a_reduction.py`](../validation/test_appendix_a_reduction.py): reconstructs the Eq. 8.9 / Appendix-A first-order system from the reduced collocation equations and verifies exact agreement
 - [`validation/test_asymptotic.py`](../validation/test_asymptotic.py): sanity checks for Appendix-A/B helper algebra
@@ -237,7 +265,9 @@ For the first mode:
 
 - [`chapters/ch06_compressible_formulation/ch06.py`](../chapters/ch06_compressible_formulation/ch06.py): mean-flow scaling diagnostics
 - [`chapters/ch09_compressible_inviscid/ch09.py`](../chapters/ch09_compressible_inviscid/ch09.py): inviscid-mode exploration
-- [`chapters/ch10_compressible_viscous/ch10.py`](../chapters/ch10_compressible_viscous/ch10.py): viscous compressible figure scaffolding
+- [`chapters/ch10_compressible_viscous/ch10.py`](../chapters/ch10_compressible_viscous/ch10.py): viscous compressible figure scaffolding plus the validated
+  [`table10_1_exact_shooting_growth.png`](../chapters/ch10_compressible_viscous/table10_1_exact_shooting_growth.png)
+  Table 10.1 exact-shooting check
 
 ### Ozgen reproduction
 
@@ -260,8 +290,8 @@ Trust less:
 - any figure whose script is not computing the same quantity as the caption
 - Ozgen 3D results generated through `cos(psi)` transformations instead of a true 3D compressible EVP
 - exact Mack Chapter 9 oblique-wave reproduction from the current Chapter 9 script
-- exact Mack Table 10.1 or Chapter 10 oblique-wave amplitudes from the current full 3D viscous solver
-- the experimental Appendix-A/B shooting residual as a production eigenvalue solver; it can now expose low-Mach roots missing from the reduced EVP, but it is still not a robust general-purpose replacement solver
+- exact Mack Chapter 10 oblique-wave amplitudes from the reduced full 3D viscous solver
+- the Appendix-A/B shooting residual as a general-purpose replacement solver; it is now validated for low-/mid-Mach Mack Table 10.1 but still needs more branch-family coverage before being called a universal solver
 - low-/mid-Mach branch selection from the reduced 3D EVP when the QR-stabilized shooting residual prefers a different candidate family
 
 At low Mach numbers, the current evidence is stronger than a branch-selection
@@ -271,6 +301,14 @@ EVP and the reduced asymptotic refinement both return to a much larger
 high-growth branch even when seeded with that exact shooting root. That means
 the reduced temporal formulation is still missing a physically relevant mode
 family in the low-Mach regime.
+
+The current reproducible exact-shooting Table 10.1 check is:
+
+`python validation/diagnose_low_mid_table_10_1_shooting.py --skip-reduced --n-steps 300 --order both`
+
+With the default `condition=table_11_1` and `wall_bc=isothermal`, all
+low-/mid-Mach `M=1.3`, `1.6`, and `2.2` sixth/eighth rows are within about
+`0.07%` to `0.91%` of Mack's tabulated growth rates at `--n-steps 300`.
 
 ## 10. What "Done" Looks Like for This Repo
 

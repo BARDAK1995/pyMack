@@ -7,8 +7,11 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from lst.reference_data import (
     iter_registry_reference_paths,
+    load_mack_table_10_1_cases,
     load_paper_target_registry,
     load_reference_csv,
+    mack_table_10_1_case_key,
+    select_mack_table_10_1_cases,
     reference_data_root,
 )
 
@@ -30,12 +33,96 @@ def test_registry_and_reference_files_exist():
     print('  PASSED\n')
 
 
+def test_registry_has_individual_mack_and_ozgen_targets():
+    """Registry should enumerate scoped paper figures/tables individually."""
+    print('Test 2: Registry contains individual Mack/Ozgen target IDs')
+
+    registry = load_paper_target_registry()
+    target_ids = {
+        target['id']
+        for paper in registry.get('papers', [])
+        for target in paper.get('targets', [])
+    }
+
+    required_ids = {
+        'mack_ch05_fig5_1',
+        'mack_ch05_fig5_3',
+        'mack_ch05_fig5_7',
+        'mack_ch05_fig5_8',
+        'mack_ch06_table_11_1',
+        'mack_ch09_fig9_1',
+        'mack_ch09_fig9_2',
+        'mack_ch09_fig9_3',
+        'mack_ch09_fig9_4',
+        'mack_ch09_fig9_5',
+        'mack_ch09_fig9_6',
+        'mack_ch09_fig9_7',
+        'mack_ch09_fig9_8',
+        'mack_ch09_fig9_9',
+        'mack_ch09_fig9_10',
+        'mack_ch09_fig9_11',
+        'mack_ch09_fig9_12',
+        'mack_ch09_fig9_13',
+        'mack_ch10_fig10_1',
+        'mack_ch10_fig10_2',
+        'mack_ch10_fig10_3',
+        'mack_ch10_fig10_4',
+        'mack_ch10_fig10_5',
+        'mack_ch10_fig10_6',
+        'mack_ch10_fig10_7',
+        'mack_ch10_fig10_8',
+        'mack_ch10_fig10_9',
+        'mack_ch10_fig10_10',
+        'mack_ch10_fig10_11',
+        'mack_ch10_table_10_1',
+        'ozgen_fig1_profiles',
+        'ozgen_fig2_profile_validation',
+        'ozgen_fig3_2d_stability',
+        'ozgen_fig4_critical_reynolds',
+        'ozgen_fig5_m8_comparison',
+        'ozgen_fig6_wave_angle_effect',
+        'ozgen_fig7_critical_re_vs_wave_angle',
+        'ozgen_fig8_mach_independence',
+        'ozgen_fig9_reference_temperature_2d',
+        'ozgen_fig10_reference_temperature_3d',
+    }
+
+    missing = sorted(required_ids - target_ids)
+    assert not missing, f'Missing registry target IDs: {missing}'
+    print('  PASSED\n')
+
+
+def test_mack_table_10_1_reference_loader_is_typed_and_filterable():
+    """Mack Table 10.1 should be loaded from one canonical CSV source."""
+    print('Test 3: Mack Table 10.1 reference loader')
+
+    cases = load_mack_table_10_1_cases()
+    assert len(cases) == 12
+    assert cases[0].Ma == 1.3
+    assert cases[0].Re_L == 500.0
+    assert cases[0].alpha_L == 0.075
+    assert cases[0].psi_deg == 45.0
+    assert abs(cases[0].beta_L - 0.075) < 1e-12
+    assert cases[0].omega_i_8th == 8.24e-04
+
+    low_mid = select_mack_table_10_1_cases(Ma=[1.3, 1.6, 2.2])
+    assert len(low_mid) == 7
+    assert all(case.Ma in {1.3, 1.6, 2.2} for case in low_mid)
+
+    selected = select_mack_table_10_1_cases(Ma=4.5, Re_L=1500.0)
+    assert len(selected) == 1
+    assert mack_table_10_1_case_key(selected[0]) == (4.5, 1500.0, 0.05, 60.0)
+    print('  PASSED\n')
+
+
 if __name__ == '__main__':
     print('=' * 60)
     print('REFERENCE DATA VALIDATION')
     print('=' * 60 + '\n')
 
     test_registry_and_reference_files_exist()
+    test_registry_has_individual_mack_and_ozgen_targets()
+    test_mack_table_10_1_reference_loader_is_typed_and_filterable()
 
     print('=' * 60)
     print('REFERENCE DATA TESTS COMPLETE')

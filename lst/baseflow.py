@@ -18,6 +18,150 @@ from scipy.optimize import brentq
 from scipy.interpolate import CubicSpline
 
 
+OZGEN_SUTHERLAND_S1 = 110.0
+OZGEN_CONDUCTIVITY_S2 = 2.646e-3
+OZGEN_CONDUCTIVITY_S3 = 245.4
+OZGEN_CONDUCTIVITY_S4 = 12.0
+OZGEN_THETA_VIB = 3055.0
+OZGEN_CP_REF = 1006.0
+OZGEN_GAMMA_REF = 1.4
+
+
+def ozgen_viscosity_ratio(T_ratio, T_edge, S1=OZGEN_SUTHERLAND_S1):
+    """Return Ozgen Eq. 2.36 viscosity ratio ``mu/mu_e``."""
+    T_ratio = np.maximum(np.asarray(T_ratio, dtype=float), 1e-8)
+    return T_ratio**1.5 * (T_edge + S1) / (T_edge * T_ratio + S1)
+
+
+def ozgen_conductivity_ratio(
+    T_ratio,
+    T_edge,
+    S2=OZGEN_CONDUCTIVITY_S2,
+    S3=OZGEN_CONDUCTIVITY_S3,
+    S4=OZGEN_CONDUCTIVITY_S4,
+):
+    """Return Ozgen Eq. 2.37 conductivity ratio ``kappa/kappa_e``."""
+    T_ratio = np.maximum(np.asarray(T_ratio, dtype=float), 1e-8)
+    T_abs = T_edge * T_ratio
+    kappa = _ozgen_conductivity_star(T_abs, S2=S2, S3=S3, S4=S4)
+    kappa_edge = _ozgen_conductivity_star(T_edge, S2=S2, S3=S3, S4=S4)
+    return kappa / kappa_edge
+
+
+def ozgen_cp_ratio(
+    T_ratio,
+    T_edge,
+    cp_ref=OZGEN_CP_REF,
+    gamma_ref=OZGEN_GAMMA_REF,
+    theta=OZGEN_THETA_VIB,
+):
+    """Return Ozgen Eq. 2.38 specific-heat ratio ``Cp/Cp_e``."""
+    T_ratio = np.maximum(np.asarray(T_ratio, dtype=float), 1e-8)
+    T_abs = T_edge * T_ratio
+    cp = _ozgen_cp_star(T_abs, cp_ref=cp_ref, gamma_ref=gamma_ref, theta=theta)
+    cp_edge = _ozgen_cp_star(T_edge, cp_ref=cp_ref, gamma_ref=gamma_ref, theta=theta)
+    return cp / cp_edge
+
+
+def ozgen_local_prandtl(T_ratio, T_edge, Pr_edge=0.72, **kwargs):
+    """Return local Ozgen Prandtl number using Eqs. 2.36-2.38."""
+    mu_ratio = ozgen_viscosity_ratio(
+        T_ratio,
+        T_edge=T_edge,
+        S1=kwargs.get('S1', OZGEN_SUTHERLAND_S1),
+    )
+    kappa_ratio = ozgen_conductivity_ratio(
+        T_ratio,
+        T_edge=T_edge,
+        S2=kwargs.get('S2', OZGEN_CONDUCTIVITY_S2),
+        S3=kwargs.get('S3', OZGEN_CONDUCTIVITY_S3),
+        S4=kwargs.get('S4', OZGEN_CONDUCTIVITY_S4),
+    )
+    cp_ratio = ozgen_cp_ratio(
+        T_ratio,
+        T_edge=T_edge,
+        cp_ref=kwargs.get('cp_ref', OZGEN_CP_REF),
+        gamma_ref=kwargs.get('gamma_ref', OZGEN_GAMMA_REF),
+        theta=kwargs.get('theta', OZGEN_THETA_VIB),
+    )
+    return Pr_edge * mu_ratio * cp_ratio / kappa_ratio
+
+
+def _ozgen_conductivity_star(T_abs, S2, S3, S4):
+    T_abs = np.maximum(np.asarray(T_abs, dtype=float), 1e-8)
+    return S2 * np.sqrt(T_abs) / (
+        1.0 + (S3 / T_abs) * 10.0 ** (-S4 / T_abs)
+    )
+
+
+def _ozgen_conductivity_ratio_derivatives(
+    T_ratio,
+    T_edge,
+    Pr_edge,
+    S2=OZGEN_CONDUCTIVITY_S2,
+    S3=OZGEN_CONDUCTIVITY_S3,
+    S4=OZGEN_CONDUCTIVITY_S4,
+):
+    """Return code-normalized kappa and derivatives with respect to T/T_e."""
+    T_ratio = np.maximum(np.asarray(T_ratio, dtype=float), 1e-8)
+    T_abs = T_edge * T_ratio
+    kappa_ratio = ozgen_conductivity_ratio(
+        T_ratio, T_edge=T_edge, S2=S2, S3=S3, S4=S4
+    )
+    log1, log2 = _ozgen_conductivity_log_derivatives(T_abs, S3=S3, S4=S4)
+    kappa_code = kappa_ratio / Pr_edge
+    dkappa_dT = kappa_code * T_edge * log1
+    d2kappa_dT2 = kappa_code * T_edge**2 * (log1**2 + log2)
+    return kappa_code, dkappa_dT, d2kappa_dT2
+
+
+def _ozgen_conductivity_log_derivatives(T_abs, S3, S4):
+    T_abs = np.maximum(np.asarray(T_abs, dtype=float), 1e-8)
+    q = np.log(10.0) * S4
+    A = (S3 / T_abs) * np.exp(-q / T_abs)
+    D = 1.0 + A
+    a = -1.0 / T_abs + q / T_abs**2
+    ap = 1.0 / T_abs**2 - 2.0 * q / T_abs**3
+    dlog = 0.5 / T_abs - A * a / D
+    term_prime = (A * (a**2 + ap) * D - A**2 * a**2) / D**2
+    d2log = -0.5 / T_abs**2 - term_prime
+    return dlog, d2log
+
+
+def _ozgen_cp_star(T_abs, cp_ref, gamma_ref, theta):
+    T_abs = np.maximum(np.asarray(T_abs, dtype=float), 1e-8)
+    z = theta / T_abs
+    z_cap = np.minimum(z, 50.0)
+    ez = np.exp(z_cap)
+    denom = np.expm1(z_cap)
+    vibrational = np.where(
+        z > 50.0,
+        0.0,
+        z**2 * ez / np.maximum(denom**2, 1e-300),
+    )
+    return cp_ref * (
+        1.0 + ((gamma_ref - 1.0) / gamma_ref) * (vibrational - 1.0)
+    )
+
+
+def _ozgen_mean_flow_diffusivity_ratio(T_ratio, T_edge, Pr_edge):
+    """Return the ``mu/sigma`` ratio in Ozgen Eq. 2.33."""
+    return (
+        ozgen_viscosity_ratio(T_ratio, T_edge=T_edge)
+        / ozgen_local_prandtl(T_ratio, T_edge=T_edge, Pr_edge=Pr_edge)
+    )
+
+
+def _ozgen_d_mean_flow_diffusivity_dT(T_ratio, T_edge, Pr_edge):
+    """Return d(mu/sigma)/d(T/T_e) for Ozgen Eq. 2.33."""
+    T_ratio = np.maximum(np.asarray(T_ratio, dtype=float), 1e-8)
+    h = 1e-5 * np.maximum(1.0, np.abs(T_ratio))
+    return (
+        _ozgen_mean_flow_diffusivity_ratio(T_ratio + h, T_edge, Pr_edge)
+        - _ozgen_mean_flow_diffusivity_ratio(T_ratio - h, T_edge, Pr_edge)
+    ) / (2.0 * h)
+
+
 class BlasiusProfile:
     """Incompressible Blasius boundary layer.
 
@@ -484,10 +628,9 @@ class CompressibleBlasiusProfile:
 class OzgenFlatPlateProfile:
     """Ozgen-style compressible self-similar flat-plate profile.
 
-    This profile matches the Sutherland-law adiabatic-wall mean-flow path used
-    by the current Ozgen chapter reproduction code. The governing ODE is the
-    shoot-search form embedded in the original chapter script rather than the
-    BVP form used by :class:`CompressibleBlasiusProfile`.
+    This profile solves Ozgen & Kircali's coupled mean-flow equations,
+    Eqs. 2.32-2.35, using their temperature-dependent viscosity, conductivity,
+    heat capacity, and local Prandtl-number laws.
     """
 
     def __init__(
@@ -497,7 +640,7 @@ class OzgenFlatPlateProfile:
         T_edge,
         gamma=1.4,
         Pr=0.72,
-        S=110.4,
+        S=OZGEN_SUTHERLAND_S1,
         Re_delta_star=1000,
         n_points=4000,
         eta_max=40.0,
@@ -509,17 +652,12 @@ class OzgenFlatPlateProfile:
         self.Pr = Pr
         self.S = S
         self.Re_delta_star = Re_delta_star
-        self.T_ratio_wall = T_wall / T_edge
+        self.T_ratio_wall = None if T_wall is None else T_wall / T_edge
         self._solve(n_points, eta_max)
 
     def _mu_ratio(self, T_ratio):
         """Return Ozgen's Sutherland viscosity ratio mu/mu_e."""
-        T_ratio = np.maximum(np.asarray(T_ratio, dtype=float), 1e-8)
-        return (
-            T_ratio**1.5
-            * (self.T_edge + self.S)
-            / (self.T_edge * T_ratio + self.S)
-        )
+        return ozgen_viscosity_ratio(T_ratio, T_edge=self.T_edge, S1=self.S)
 
     def _d_mu_ratio_dT(self, T_ratio):
         """Return d(mu/mu_e)/d(T/T_e) for Ozgen's Sutherland law."""
@@ -547,99 +685,146 @@ class OzgenFlatPlateProfile:
     def _solve(self, n_points, eta_max):
         Ma = self.Ma
         gm1 = self.gamma - 1.0
-        g_w = self.T_ratio_wall
+        is_adiabatic = self.T_ratio_wall is None
 
-        def g_from_fp(fp):
-            return g_w + (1.0 - g_w) * fp + 0.5 * gm1 * Ma**2 * fp * (1.0 - fp)
+        def diffusivity_ratio(T_ratio):
+            return _ozgen_mean_flow_diffusivity_ratio(
+                T_ratio,
+                T_edge=self.T_edge,
+                Pr_edge=self.Pr,
+            )
 
-        def dg_dfp(fp):
-            return (1.0 - g_w) + 0.5 * gm1 * Ma**2 * (1.0 - 2.0 * fp)
+        def d_diffusivity_dT(T_ratio):
+            return _ozgen_d_mean_flow_diffusivity_dT(
+                T_ratio,
+                T_edge=self.T_edge,
+                Pr_edge=self.Pr,
+            )
 
-        def ode(eta, u):
-            f, fp, fpp = u
-            g = max(g_from_fp(fp), 0.01)
-            c_ratio = self._mu_ratio(g)
-            dc_dg = self._d_mu_ratio_dT(g)
-            dg = dg_dfp(fp)
-            fppp = -(f * fpp + dc_dg * dg * fpp**2) / c_ratio
-            return [fp, fpp, fppp]
+        def rhs(eta, u):
+            F, U, Up, T, Tp = u
+            T_safe = np.maximum(T, 0.05)
+            mu = self._mu_ratio(T_safe)
+            dmu_dT = self._d_mu_ratio_dT(T_safe)
+            B = diffusivity_ratio(T_safe)
+            dB_dT = d_diffusivity_dT(T_safe)
 
-        def shoot(fpp0):
-            try:
-                sol = solve_ivp(
-                    ode,
-                    [0.0, eta_max],
-                    [0.0, 0.0, fpp0],
-                    method='RK45',
-                    rtol=1e-10,
-                    atol=1e-12,
-                    max_step=0.05,
-                )
-                return sol.y[1, -1] - 1.0
-            except Exception:
-                return 1.0
+            Fp = U / T_safe
+            Upp = -(0.5 * F * Up + dmu_dT * Tp * Up) / mu
+            Tpp = (
+                -gm1 * Ma**2 * mu * Up**2
+                - 0.5 * F * Tp
+                - dB_dT * Tp**2
+            ) / B
+            return np.vstack((Fp, Up, Upp, Tp, Tpp))
 
-        fpp0 = brentq(shoot, 0.01, 2.0, xtol=1e-12)
-        sol = solve_ivp(
-            ode,
-            [0.0, eta_max],
-            [0.0, 0.0, fpp0],
-            method='RK45',
-            dense_output=True,
-            rtol=1e-12,
-            atol=1e-14,
-            max_step=0.005,
-        )
+        def bc(ya, yb):
+            thermal_wall = ya[4] if is_adiabatic else ya[3] - self.T_ratio_wall
+            return np.array([
+                ya[0],
+                ya[1],
+                thermal_wall,
+                yb[1] - 1.0,
+                yb[3] - 1.0,
+            ])
+
+        eta_mesh = np.linspace(0.0, eta_max, 800)
+        velocity_width = max(1.0, 0.8 * Ma)
+        U_guess = 1.0 - np.exp(-eta_mesh / velocity_width)
+        Up_guess = np.exp(-eta_mesh / velocity_width) / velocity_width
+        if is_adiabatic:
+            recovery = 1.0 + 0.5 * gm1 * Ma**2 * np.sqrt(self.Pr)
+            thermal_width = max(3.0, 0.8 * Ma)
+            T_guess = 1.0 + (recovery - 1.0) * np.exp(-(eta_mesh / thermal_width) ** 2)
+            Tp_guess = (
+                (recovery - 1.0)
+                * np.exp(-(eta_mesh / thermal_width) ** 2)
+                * (-2.0 * eta_mesh / thermal_width**2)
+            )
+            Tp_guess[0] = 0.0
+        else:
+            T_guess = 1.0 + (self.T_ratio_wall - 1.0) * np.exp(-eta_mesh)
+            Tp_guess = -(self.T_ratio_wall - 1.0) * np.exp(-eta_mesh)
+
+        F_guess = cumulative_trapezoid(U_guess, eta_mesh, initial=0.0)
+        guess = np.vstack((F_guess, U_guess, Up_guess, T_guess, Tp_guess))
+        sol = None
+        for tol, max_nodes in ((1e-5, 200000), (5e-5, 300000), (1e-4, 400000)):
+            sol = solve_bvp(
+                rhs,
+                bc,
+                eta_mesh,
+                guess,
+                tol=tol,
+                max_nodes=max_nodes,
+            )
+            if sol.success:
+                break
+        if not sol.success:
+            raise RuntimeError(f'Ozgen mean-flow BVP failed: {sol.message}')
 
         eta = np.linspace(0.0, eta_max, n_points)
-        w = sol.sol(eta)
-        f_arr = w[0]
-        fp_arr = w[1]
-        fpp_arr = w[2]
-        T_arr = np.maximum(g_from_fp(fp_arr), 0.01)
+        F_arr, fp_arr, fpp_arr, T_arr, Tp_arr = sol.sol(eta)
+        T_arr = np.maximum(T_arr, 0.05)
 
-        y_phys = cumulative_trapezoid(T_arr, eta, initial=0.0)
-        y_L = np.sqrt(2.0) * y_phys
-        self._delta_star = np.sqrt(2.0) * np.trapz(T_arr - fp_arr, eta)
-        self._theta = np.sqrt(2.0) * np.trapz(fp_arr * (T_arr - fp_arr), eta)
+        y_L = eta.copy()
+        rho_arr = 1.0 / T_arr
+        self._delta_star = np.trapz(1.0 - rho_arr * fp_arr, eta)
+        self._theta = np.trapz(rho_arr * fp_arr * (1.0 - fp_arr), eta)
         y_nd = y_L / self._delta_star
 
-        dT_deta = dg_dfp(fp_arr) * fpp_arr
         mu_arr = self._mu_ratio(T_arr)
         dmu_dT_arr = self._d_mu_ratio_dT(T_arr)
         d2mu_dT2_arr = self._d2_mu_ratio_dT2(T_arr)
-        fppp_arr = -(f_arr * fpp_arr + dmu_dT_arr * dg_dfp(fp_arr) * fpp_arr**2) / mu_arr
+        B_arr = diffusivity_ratio(T_arr)
+        dB_dT_arr = d_diffusivity_dT(T_arr)
+        fppp_arr = -(
+            0.5 * F_arr * fpp_arr
+            + dmu_dT_arr * Tp_arr * fpp_arr
+        ) / mu_arr
+        d2T_deta2 = (
+            -gm1 * Ma**2 * mu_arr * fpp_arr**2
+            - 0.5 * F_arr * Tp_arr
+            - dB_dT_arr * Tp_arr**2
+        ) / B_arr
 
-        d2g_dfp2 = -gm1 * Ma**2
-        d2T_deta2 = d2g_dfp2 * fpp_arr**2 + dg_dfp(fp_arr) * fppp_arr
-
-        fac1 = self._delta_star / (np.sqrt(2.0) * T_arr)
-        fac2 = self._delta_star**2 / 2.0
+        fac1 = self._delta_star
+        fac2 = self._delta_star**2
 
         U_arr = fp_arr
         dU_arr = fac1 * fpp_arr
-        d2U_arr = fac2 * (fppp_arr / T_arr**2 - dT_deta * fpp_arr / T_arr**3)
+        d2U_arr = fac2 * (fppp_arr / T_arr**2 - Tp_arr * fpp_arr / T_arr**3)
 
-        dT_arr = fac1 * dT_deta
-        d2T_arr = fac2 * (d2T_deta2 / T_arr**2 - dT_deta**2 / T_arr**3)
+        dT_arr = fac1 * Tp_arr
+        d2T_arr = fac2 * (d2T_deta2 / T_arr**2 - Tp_arr**2 / T_arr**3)
 
         rho_arr = 1.0 / T_arr
-        dmu_deta = dmu_dT_arr * dT_deta
+        dmu_deta = dmu_dT_arr * Tp_arr
         dmu_arr = fac1 * dmu_deta
 
-        # Match the legacy Ozgen chapter behavior under the shared solver
-        # interface: constant Pr, so kappa/(cp*mu_e) = mu/(Pr*mu_e).
-        kappa_arr = mu_arr / self.Pr
-        dkappa_arr = dmu_arr / self.Pr
-        dkappa_dT_arr = dmu_dT_arr / self.Pr
-        d2kappa_dT2_arr = d2mu_dT2_arr / self.Pr
-        Pr_local_arr = np.full_like(T_arr, self.Pr)
+        kappa_arr, dkappa_dT_arr, d2kappa_dT2_arr = (
+            _ozgen_conductivity_ratio_derivatives(
+                T_arr,
+                T_edge=self.T_edge,
+                Pr_edge=self.Pr,
+            )
+        )
+        dkappa_arr = dkappa_dT_arr * dT_arr
+        Pr_local_arr = ozgen_local_prandtl(
+            T_arr,
+            T_edge=self.T_edge,
+            Pr_edge=self.Pr,
+            S1=self.S,
+        )
 
         self._eta = eta
-        self._f = f_arr
+        self._F = F_arr
+        self._f = F_arr
         self._fp = fp_arr
         self._fpp = fpp_arr
         self._fppp = fppp_arr
+        self._T_eta = Tp_arr
+        self._T_eta_eta = d2T_deta2
         self._U = U_arr
         self._T = T_arr
         self._rho = rho_arr
@@ -658,6 +843,11 @@ class OzgenFlatPlateProfile:
         self._dkappa_dT = dkappa_dT_arr
         self._d2kappa_dT2 = d2kappa_dT2_arr
         self._Pr_local = Pr_local_arr
+        self._mean_flow_diffusivity = B_arr
+        self._d_mean_flow_diffusivity_dT = dB_dT_arr
+        if is_adiabatic:
+            self.T_ratio_wall = float(T_arr[0])
+            self.T_wall = self.T_ratio_wall * self.T_edge
 
         self._spl = {}
         for name, data in [
@@ -670,6 +860,25 @@ class OzgenFlatPlateProfile:
             ('Pr_local', Pr_local_arr),
         ]:
             self._spl[name] = CubicSpline(y_nd, data, extrapolate=True)
+
+    def mean_flow_residuals(self):
+        """Return residuals of Ozgen Eqs. 2.32-2.33 in the similarity scale."""
+        momentum = (
+            2.0 * (
+                self._dmu_dT * self._T_eta * self._fpp
+                + self._mu * self._fppp
+            )
+            + self._F * self._fpp
+        )
+        energy = (
+            2.0 * (
+                self._d_mean_flow_diffusivity_dT * self._T_eta**2
+                + self._mean_flow_diffusivity * self._T_eta_eta
+            )
+            + self._F * self._T_eta
+            + 2.0 * (self.gamma - 1.0) * self.Ma**2 * self._mu * self._fpp**2
+        )
+        return momentum, energy
 
     def __call__(self, y):
         """Evaluate the Ozgen mean flow at y/delta* locations."""
@@ -702,14 +911,12 @@ def make_ozgen_profile(
     T_wall=None,
     gamma=1.4,
     Pr=0.72,
-    S=110.4,
+    S=OZGEN_SUTHERLAND_S1,
     Re_delta_star=1000,
     n_points=4000,
     eta_max=40.0,
 ):
     """Build the shared Ozgen-style compressible flat-plate profile."""
-    if T_wall is None:
-        T_wall = ozgen_adiabatic_wall_temperature(Ma, T_edge, Pr=Pr, gamma=gamma)
     return OzgenFlatPlateProfile(
         Ma=Ma,
         T_wall=T_wall,

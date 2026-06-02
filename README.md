@@ -9,7 +9,31 @@ Important orientation:
 - [`docs/LST_REPRODUCTION_GUIDE.md`](docs/LST_REPRODUCTION_GUIDE.md) explains the actual mathematical objects in this repo: temporal vs spatial growth, neutral branches, `L*` vs `delta*` scaling, and the current reproduction limits.
 - [`docs/PAPER_ALIGNMENT_AUDIT.md`](docs/PAPER_ALIGNMENT_AUDIT.md) records what is currently exact, approximate, and still unresolved against Mack and Ozgen.
 - The incompressible Orr-Sommerfeld path is the most validated part of the codebase.
-- The shared compressible solver is usable, but exact figure reproduction against Mack/Ozgen still depends on choosing the correct Mack condition set (`Table 11.1` vs figure-caption `wind_tunnel`), using the correct `L*` or `delta*` variable set, and tightening the oblique-wave viscous system against Mack's Chapter 10 data.
+- The shared compressible solver is usable, but exact figure reproduction against Mack/Ozgen still depends on choosing the correct Mack condition set (`Table 10.1`, `Table 11.1`, or figure-caption `wind_tunnel`), using the correct `L*` or `delta*` variable set, and tightening the oblique-wave viscous system against Mack's Chapter 10 data.
+
+**Current Credible Claims (as of late May 2026, post final orchestration sprint)**
+
+This section is maintained for transparency following the multi-agent critique process. Status is intentionally conservative and updated only on executable evidence. Orchestration round (this sprint): 5 parallel agents drove landing of the trusted exact-shooting code (figure_10_3_trusted / figure_10_4_trusted / figure_10_6_trusted in ch10.py with CSV emission + gap reporting), registry scaffolding, and harness integration.
+
+**Strong / Numerically Validated:**
+- Incompressible Orr-Sommerfeld (Poiseuille + Blasius benchmarks, Ch. 5 neutral curves).
+- Mack mean-flow reconstruction (Table 11.1 thicknesses < 0.5% error).
+- Mack low-/mid-Mach oblique first-mode temporal growth via exact first-order shooting (Table 10.1, 0.07–0.91% error on trusted 6×6/8×8 path with correct conditions).
+
+**Partial / In Progress (highest-visibility items):**
+- Mack Fig 10.3: Excellent coverage. 12+ high-quality reference curves committed across M=1.3/1.6/2.2/3.0 (paper multi-ψ + 2D vs current code, including second mode). Real numeric comparisons running on legacy paths (large gaps documented). Trusted exact-shooting implementation (exact_temporal_shooting_3d_continuation) now landed in ch10.py (Agent A). Emits PNG + *_trusted_current_code_*.csv + per-curve max_rel_err reporting. Status change to validated_numeric + 1:1 claim pending actual execution, gap capture (4-6 printed lines), B registry patch, and harness --verify exit 0.
+- Mack Fig 10.4 (high-M first-mode) and 10.6 (high-M second-mode): Paper refs + trusted exact-shooting implementations (wave_angle_opt / second_mode) now landed in ch10.py (Agent B). Emits matching CSVs + gap metrics vs 2% target. Pre-execution: tests report "paper refs only, no current yet" / NO_CURRENT. Promotion to Strong pending execution evidence + B status=validated_numeric + green re-verify.
+- Mack Fig 10.1 theory families: Theory-comparison curves (Dunn-Lin asymptotic, numerical, complete) for M=1.6 + 2.2 now digitized + current-code neutral curves registered. Real comparisons in the numeric test.
+- Ozgen Fig 3: Initial digitization active (5 key growth-rate lobes for M=3/4/5/6/8). Registry updated. Basic smoke test added.
+- Sign convention + non-physical behavior issue in legacy reduced-EVP path for low-Mach panels surfaced during digitization. Temporary guard + detailed comment added; root cause tracked for Phase 2 rebuild.
+
+**Still Limited / Not Yet 1:1:**
+- Most other numbered Mack Ch. 9/10 figures and the majority of Ozgen oblique/spatial figures (6/7/8/10) remain on reduced-EVP scaffolding or temporal proxies. Production defaults in `ch10.py` and `ozgen.py` have been updated to be honest about this.
+- True spatial 3D oblique capability and full numeric figure acceptance across the registry are active "Must-Fix-Before" items. N-factor / spatial work (Agent D) remains future-phase only.
+
+See `docs/PAPER_ALIGNMENT_AUDIT.md`, `docs/FIGURE_GAP_MATRIX.md`, and the updated `paper_target_registry.json` for the current detailed status per target.
+
+---
 
 ---
 
@@ -489,8 +513,11 @@ All figures saved in `cases/mach535_n2/`.
 
 - [ ] **Spatial solver refinement**: Implement Newton iteration (Muller's method) targeting specific eigenvalues, bypassing the companion system entirely
 - [ ] **Gaster transformation**: Convert temporal results to spatial growth rates for N-factor integration
-- [ ] **Oblique-wave Chapter 10 validation**: tighten the 3D viscous solver against Mack Table 10.1 / Fig. 10.3 / Fig. 10.7 before claiming paper-grade 3D reproduction; Appendix-B filtering and the Appendix-A/B shooting scaffold are in place, but the low-/mid-Mach first-mode amplitudes still do not match Mack
-- [ ] **Adiabatic wall BC**: Add `DT_hat = 0` wall condition (currently isothermal only)
+- [ ] **Oblique-wave Chapter 10 validation**: rebuild Fig. 10.3 / Fig. 10.7 on the exact Appendix-A/B shooting path before claiming paper-grade 3D reproduction; Mack Table 10.1 low-/mid-Mach amplitudes now match through the exact shooting diagnostic, but the chapter figure layer still uses older reduced-EVP scaffolding
+- [ ] **Chapter 10 wall-condition validation**: keep adiabatic/isothermal
+  perturbation wall conditions explicit in every Mack/Ozgen diagnostic and
+  resolve which condition is used by each paper target before claiming
+  paper-grade agreement
 
 ### Medium Priority
 

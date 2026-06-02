@@ -14,7 +14,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lst.mack_conditions import (
     make_mack_profile,
     mack_figure_edge_temperature,
+    mack_table_10_1_edge_temperature,
     mack_table_11_1_edge_temperature,
+    resolve_mack_edge_temperature,
 )
 
 
@@ -59,14 +61,25 @@ def test_temperature_condition_split():
     print('Test 2: Mack condition helper split')
 
     t_table = mack_table_11_1_edge_temperature(4.5)
+    t_table_10_1 = mack_table_10_1_edge_temperature(4.5)
     t_figure = mack_figure_edge_temperature(4.5)
-    print(f'  M=4.5: table T1*={t_table:.3f} K, figure T1*={t_figure:.3f} K')
+    print(
+        f'  M=4.5: table 10.1 T1*={t_table_10_1:.3f} K, '
+        f'table 11.1 T1*={t_table:.3f} K, figure T1*={t_figure:.3f} K'
+    )
 
     assert abs(t_table - t_figure) > 100.0, (
         'Table and figure temperature schedules should remain distinct at M=4.5'
     )
+    assert abs(t_table_10_1 - 250.0 / (1.0 + 0.2 * 4.5**2)) < 1e-12
+    assert abs(mack_table_10_1_edge_temperature(1.3) -
+               250.0 / (1.0 + 0.2 * 1.3**2)) < 1e-12
+    assert resolve_mack_edge_temperature(1.3, condition='table_10_1') == (
+        mack_table_10_1_edge_temperature(1.3)
+    )
     assert mack_figure_edge_temperature(5.8) == 50.0
     assert mack_table_11_1_edge_temperature(5.8) == 50.0
+    assert mack_table_10_1_edge_temperature(5.8) == 50.0
     print('  PASSED\n')
 
 
