@@ -117,6 +117,28 @@ Use these helpers instead of embedding scale factors inside chapter scripts.
 - `lst.trace_spatial_neutral_curve(...)`
   - locates spatial neutral branches by extracting `sigma = 0`
 
+## N-Factor Integration
+
+- `lst.integrate_n_factor(spatial_growths, x_or_Re=None, ...)`
+  - strict N-factor primitive for already-computed spatial growth samples
+  - accepts either arrays or dicts containing `sigma`/`growth` plus `x` or `Re`
+  - integrates by the trapezoid rule along the supplied path variable
+  - defaults to the transition-envelope convention `N = integral max(sigma, 0) dx`
+  - set `clip_negative=False` only when a signed amplification integral is intended
+  - rejects missing, mismatched, non-finite, or non-monotone path coordinates
+  - physical N-factor values require `sigma` units reciprocal to the supplied
+    path coordinate; integrating over `Re` is a Reynolds-coordinate diagnostic,
+    not a dimensional transition prediction
+
+- `lst.compute_n_factor(...)`
+  - backward-compatible wrapper returning `(path, N, sigma)`
+  - delegates to `integrate_n_factor` and therefore has the same validation rules
+
+- `lst.nfactor(...)`
+  - legacy spatial-solve-plus-integration wrapper over `Re_range`
+  - useful for diagnostics, but production transition work should call the
+    spatial-growth solver first and integrate with the explicit physical path
+
 ## Exact Oblique First-Mode Tools
 
 These remain the advanced low-level interfaces backing the production wrappers:

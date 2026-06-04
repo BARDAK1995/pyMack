@@ -743,8 +743,18 @@ class OzgenFlatPlateProfile:
             )
             Tp_guess[0] = 0.0
         else:
-            T_guess = 1.0 + (self.T_ratio_wall - 1.0) * np.exp(-eta_mesh)
-            Tp_guess = -(self.T_ratio_wall - 1.0) * np.exp(-eta_mesh)
+            # Hot/cold fixed walls at high Mach need a boundary-layer-width
+            # thermal guess; a unit-width exponential can make the collocation
+            # Jacobian singular before Newton reaches the physical branch.
+            thermal_width = max(3.0, 0.8 * Ma)
+            T_guess = 1.0 + (self.T_ratio_wall - 1.0) * np.exp(
+                -(eta_mesh / thermal_width) ** 2
+            )
+            Tp_guess = (
+                (self.T_ratio_wall - 1.0)
+                * np.exp(-(eta_mesh / thermal_width) ** 2)
+                * (-2.0 * eta_mesh / thermal_width**2)
+            )
 
         F_guess = cumulative_trapezoid(U_guess, eta_mesh, initial=0.0)
         guess = np.vstack((F_guess, U_guess, Up_guess, T_guess, Tp_guess))

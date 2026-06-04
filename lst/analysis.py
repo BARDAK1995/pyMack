@@ -2124,7 +2124,14 @@ def neutral_curve(baseflow_func, Ma, Re_range, omega_range,
 def nfactor(baseflow_func, Ma, omega, Re_range, Pr=0.72, gamma=1.4,
             N=128, y_max=None, wall_bc='isothermal', method='refined',
             lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO):
-    """Compute an N-factor curve by integrating spatial growth."""
+    """Compute an N-factor curve by integrating spatial growth over ``Re_range``.
+
+    The returned ``N_vals`` are the trapezoidal integral of positive spatial
+    growth over the supplied path variable.  When the path variable is Reynolds
+    number, the result is an N-factor with respect to that Reynolds-coordinate
+    parametrization.  For dimensional transition work, pass a physical path
+    coordinate to :func:`compute_n_factor` instead.
+    """
     Re_arr = np.asarray(Re_range)
     sigma = np.zeros(len(Re_arr))
     alpha_tracked = None
@@ -2153,13 +2160,7 @@ def nfactor(baseflow_func, Ma, omega, Re_range, Pr=0.72, gamma=1.4,
         alpha_tracked = a
         sigma[i] = -a.imag
 
-    N_vals = np.zeros(len(Re_arr))
-    sigma_pos = np.maximum(sigma, 0)
-
-    for i in range(1, len(Re_arr)):
-        dRe = Re_arr[i] - Re_arr[i - 1]
-        N_vals[i] = N_vals[i - 1] + 0.5 * (sigma_pos[i] + sigma_pos[i - 1]) * dRe
-
+    _, N_vals, _ = compute_n_factor(sigma, Re_arr)
     return Re_arr, N_vals, sigma
 
 
@@ -2201,15 +2202,102 @@ def spatial_growth_scan_3d_oblique(baseflow_builder, Re, Ma, psi_list, omega_r_r
             'LIMITATION': 'Basic 3D oblique spatial growth + N-factor stub added in lst/analysis (pilot only, not yet 1:1 for any Ozgen/Mack spatial fig)'}
 
 
-def compute_n_factor(spatial_growths, x_or_Re):
-    """Basic N-factor stub: trapezoidal integration of max(0,sigma) vs path var."""
-    sig = np.asarray(spatial_growths.get('sigma', spatial_growths) if isinstance(spatial_growths, dict) else spatial_growths)
-    x = np.asarray(x_or_Re) if not isinstance(x_or_Re, dict) else np.asarray(x_or_Re.get('Re', x_or_Re.get('x', np.arange(len(sig)))))
-    if len(x) != len(sig):
-        x = np.arange(len(sig), dtype=float)
-    N = np.zeros(len(x))
-    sp = np.maximum(sig, 0.0)
+def _coerce_nfactor_inputs(spatial_growths, x_or_Re=None):
+    """Extract growth and path arrays for N-factor integration."""
+    if isinstance(spatial_growths, dict):
+        if 'sigma' in spatial_growths:
+            sigma = spatial_growths['sigma']
+        elif 'growth' in spatial_growths:
+            sigma = spatial_growths['growth']
+        else:
+            raise ValueError("spatial_growths dict must contain 'sigma' or 'growth'")
+
+        if x_or_Re is None:
+            if 'x' in spatial_growths:
+                x_or_Re = spatial_growths['x']
+            elif 'Re' in spatial_growths:
+                x_or_Re = spatial_growths['Re']
+            else:
+                raise ValueError("x_or_Re is required unless spatial_growths contains 'x' or 'Re'")
+    else:
+        sigma = spatial_growths
+        if x_or_Re is None:
+            raise ValueError('x_or_Re is required when spatial_growths is not a dict')
+
+    if isinstance(x_or_Re, dict):
+        if 'x' in x_or_Re:
+            x_or_Re = x_or_Re['x']
+        elif 'Re' in x_or_Re:
+            x_or_Re = x_or_Re['Re']
+        else:
+            raise ValueError("x_or_Re dict must contain 'x' or 'Re'")
+
+    sig = np.asarray(sigma, dtype=float)
+    x = np.asarray(x_or_Re, dtype=float)
+    if sig.ndim != 1 or x.ndim != 1:
+        raise ValueError('spatial growth and path arrays must be one-dimensional')
+    if len(sig) != len(x):
+        raise ValueError('spatial growth and path arrays must have the same length')
+    if len(sig) == 0:
+        raise ValueError('spatial growth and path arrays must be non-empty')
+    if not np.all(np.isfinite(x)):
+        raise ValueError('path array must be finite')
+    return x, sig
+
+
+def integrate_n_factor(spatial_growths, x_or_Re=None, *, clip_negative=True,
+                       require_monotonic=True):
+    """Integrate an N-factor from spatial growth along a path variable.
+
+    Parameters
+    ----------
+    spatial_growths : array_like or dict
+        Spatial growth rate samples.  A dict may provide ``sigma`` or
+        ``growth``.  If it also contains ``x`` or ``Re``, ``x_or_Re`` may be
+        omitted.
+    x_or_Re : array_like or dict, optional
+        Path variable corresponding to the growth samples.  This can be a
+        physical streamwise coordinate or a Reynolds-coordinate path.  The
+        growth units must be reciprocal to this path variable.
+    clip_negative : bool
+        If true, damped segments do not reduce accumulated N.  This is the
+        standard transition-envelope convention ``N = integral max(sigma, 0)``.
+        If false, signed growth is integrated.
+    require_monotonic : bool
+        If true, the path must be strictly increasing.
+    """
+    x, sig = _coerce_nfactor_inputs(spatial_growths, x_or_Re)
+    dx = np.diff(x)
+    if require_monotonic and np.any(dx <= 0.0):
+        raise ValueError('path array must be strictly increasing')
+
+    integrand = np.maximum(sig, 0.0) if clip_negative else sig
+    N_vals = np.zeros(len(x), dtype=float)
     for i in range(1, len(x)):
-        dx = x[i] - x[i-1]
-        N[i] = N[i-1] + 0.5*(sp[i]+sp[i-1])*dx
-    return x, N, sig
+        if not (
+            np.isfinite(N_vals[i - 1])
+            and np.isfinite(integrand[i - 1])
+            and np.isfinite(integrand[i])
+        ):
+            N_vals[i] = np.nan
+            continue
+        N_vals[i] = N_vals[i - 1] + 0.5 * (integrand[i] + integrand[i - 1]) * dx[i - 1]
+    return {
+        'path': x,
+        'N': N_vals,
+        'sigma': sig,
+        'integrand': integrand,
+        'clip_negative': bool(clip_negative),
+    }
+
+
+def compute_n_factor(spatial_growths, x_or_Re=None, *, clip_negative=True,
+                     require_monotonic=True):
+    """Return ``(path, N, sigma)`` for backward-compatible N-factor callers."""
+    result = integrate_n_factor(
+        spatial_growths,
+        x_or_Re,
+        clip_negative=clip_negative,
+        require_monotonic=require_monotonic,
+    )
+    return result['path'], result['N'], result['sigma']

@@ -76,6 +76,7 @@ from .analysis import (
     neutral_curve,
     neutral_points_from_growth_map,
     nfactor,
+    integrate_n_factor,
     search_temporal_roots_3d_shooting,
     search_temporal_roots_6_shooting,
     spatial_growth_curve,
