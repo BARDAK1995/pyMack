@@ -101,11 +101,14 @@ the first release.
 
 ## Development & AI usage
 
-pyMack was developed with substantial generative-AI assistance (code
-scaffolding, refactoring, and documentation). All numerical results are
-validated against the published references above, and the author is responsible
-for the correctness of the code and results. A full disclosure accompanies the
-paper.
+pyMack started out as an implementation of old course notes on boundary-layer
+stability theory, with correctness established by benchmarking directly against
+the published figures and tables of the references above (Mack 1984,
+Özgen & Kırcalı 2008, Orszag 1971). From there it was debugged substantially
+with the help of AI tools, then reorganized and refactored into a reusable
+package. All numerical results are validated against the published references,
+and the author made the core modeling decisions and is responsible for the
+correctness of the code and results.
 
 ## License
 
