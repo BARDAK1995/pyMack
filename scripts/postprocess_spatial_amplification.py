@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-SECOND_MODE_ALPHA_MIN_L = 0.6
+SECOND_MODE_ALPHA_MIN_L = None
 
 
 def _read_rows(path):
@@ -43,7 +43,11 @@ def _read_rows(path):
 
 
 def _apply_mode_family_defaults(args):
-    if args.mode_family == "second_mode" and args.alpha_min_l is None:
+    if (
+        args.mode_family == "second_mode"
+        and args.alpha_min_l is None
+        and SECOND_MODE_ALPHA_MIN_L is not None
+    ):
         args.alpha_min_l = SECOND_MODE_ALPHA_MIN_L
     return args
 
@@ -146,6 +150,53 @@ def _integrate_full_path(rows, *, dx_over_lstar_per_dR):
 
     envelope = np.maximum.accumulate(signed)
     return {
+        "path_rows": path_rows,
+        "R": R,
+        "signed_N": signed,
+        "positive_N": positive,
+        "envelope_N": envelope,
+    }
+
+
+def _integrate_from_lower_neutral(rows, lower, upper=None, *, dx_over_lstar_per_dR):
+    """Integrate signed growth from the lower neutral through the full path.
+
+    This is the physical amplitude history for a wave normalized by its lower
+    neutral amplitude.  It keeps decaying after the upper neutral instead of
+    freezing at the lobe peak/exit value.
+    """
+    lower_R, lower_left, lower_right = lower
+    path_rows = [_interpolate_row(lower_left, lower_right, lower_R)]
+    path_rows.extend([
+        row for row in rows
+        if lower_R < float(row["R_L"]) and math.isfinite(float(row["sigma_L"]))
+    ])
+    if upper is not None:
+        upper_R, upper_left, upper_right = upper
+        if upper_R > lower_R:
+            path_rows.append(_interpolate_row(upper_left, upper_right, upper_R))
+
+    deduped = {}
+    for row in path_rows:
+        deduped[round(float(row["R_L"]), 12)] = row
+    path_rows = sorted(deduped.values(), key=lambda row: float(row["R_L"]))
+
+    R = np.array([float(row["R_L"]) for row in path_rows], dtype=float)
+    sigma = np.array([float(row["sigma_L"]) for row in path_rows], dtype=float)
+    integrand = float(dx_over_lstar_per_dR) * sigma
+    integrand_pos = np.maximum(integrand, 0.0)
+
+    signed = np.zeros(len(R), dtype=float)
+    positive = np.zeros(len(R), dtype=float)
+    for i in range(1, len(R)):
+        dR = R[i] - R[i - 1]
+        signed[i] = signed[i - 1] + 0.5 * (integrand[i] + integrand[i - 1]) * dR
+        positive[i] = positive[i - 1] + 0.5 * (integrand_pos[i] + integrand_pos[i - 1]) * dR
+
+    envelope = np.maximum.accumulate(signed)
+    return {
+        "lower_R": lower_R,
+        "upper_R": math.nan if upper is None else upper[0],
         "path_rows": path_rows,
         "R": R,
         "signed_N": signed,
@@ -281,6 +332,12 @@ def _process_frequency(
         upper,
         dx_over_lstar_per_dR=dx_over_lstar_per_dR,
     )
+    lower_path = _integrate_from_lower_neutral(
+        freq_rows,
+        lower,
+        upper,
+        dx_over_lstar_per_dR=dx_over_lstar_per_dR,
+    )
     full_path = _integrate_full_path(
         freq_rows,
         dx_over_lstar_per_dR=dx_over_lstar_per_dR,
@@ -289,6 +346,10 @@ def _process_frequency(
     signed = lobe["signed_N"]
     positive = lobe["positive_N"]
     envelope = lobe["envelope_N"]
+    R_lower_path = lower_path["R"]
+    signed_lower_path = lower_path["signed_N"]
+    positive_lower_path = lower_path["positive_N"]
+    envelope_lower_path = lower_path["envelope_N"]
     R_full = full_path["R"]
     signed_full = full_path["signed_N"]
     positive_full = full_path["positive_N"]
@@ -304,9 +365,27 @@ def _process_frequency(
             envelope_N = 0.0
         else:
             region = "inside_lobe" if R <= lobe["upper_R"] else "post_lobe_stable"
-            signed_N = _interp_series(R, R_path, signed, fill_before=0.0, fill_after=float(signed[-1]))
-            positive_N = _interp_series(R, R_path, positive, fill_before=0.0, fill_after=float(positive[-1]))
-            envelope_N = _interp_series(R, R_path, envelope, fill_before=0.0, fill_after=float(envelope[-1]))
+            signed_N = _interp_series(
+                R,
+                R_lower_path,
+                signed_lower_path,
+                fill_before=0.0,
+                fill_after=float(signed_lower_path[-1]),
+            )
+            positive_N = _interp_series(
+                R,
+                R_lower_path,
+                positive_lower_path,
+                fill_before=0.0,
+                fill_after=float(positive_lower_path[-1]),
+            )
+            envelope_N = _interp_series(
+                R,
+                R_lower_path,
+                envelope_lower_path,
+                fill_before=0.0,
+                fill_after=float(envelope_lower_path[-1]),
+            )
         signed_N_start = _interp_series(
             R,
             R_full,
@@ -349,6 +428,7 @@ def _process_frequency(
         out_rows.append(out)
 
     peak_index = int(np.argmax(signed))
+    lower_peak_index = int(np.argmax(signed_lower_path))
     peak_index_start = int(np.argmax(signed_full))
     lobe_rows = [
         row for row in freq_rows
@@ -363,6 +443,9 @@ def _process_frequency(
         "peak_N_R_L": float(R_path[peak_index]),
         "N_signed_peak": float(signed[peak_index]),
         "amplification_signed_peak": float(math.exp(float(signed[peak_index]))),
+        "peak_N_R_L_from_lower_full_path": float(R_lower_path[lower_peak_index]),
+        "N_signed_peak_from_lower_full_path": float(signed_lower_path[lower_peak_index]),
+        "amplification_signed_peak_from_lower_full_path": float(math.exp(float(signed_lower_path[lower_peak_index]))),
         "peak_N_R_L_from_start": float(R_full[peak_index_start]),
         "N_signed_peak_from_start": float(signed_full[peak_index_start]),
         "amplification_signed_peak_from_start": float(math.exp(float(signed_full[peak_index_start]))),
@@ -378,6 +461,10 @@ def _process_frequency(
         "amplification_envelope_at_upper": float(math.exp(float(envelope[-1]))),
         "N_signed_at_upper": float(signed[-1]),
         "amplification_signed_at_upper": float(math.exp(float(signed[-1]))),
+        "N_signed_at_end_from_lower": float(signed_lower_path[-1]),
+        "amplification_signed_at_end_from_lower": float(math.exp(float(signed_lower_path[-1]))),
+        "N_envelope_at_end_from_lower": float(envelope_lower_path[-1]),
+        "amplification_envelope_at_end_from_lower": float(math.exp(float(envelope_lower_path[-1]))),
         "peak_growth_R_L": float(peak_growth_row["R_L"]),
         "peak_sigma_L": float(peak_growth_row["sigma_L"]),
         "peak_wavelength_L": float(peak_growth_row["wavelength_L"]),
@@ -548,6 +635,91 @@ def _plot_linear_amplification_from_start(
     plt.close(fig)
 
 
+def _neutral_envelope_rows(summaries):
+    rows = []
+    for summary in summaries:
+        if summary.get("status") != "ok":
+            continue
+        lower = float(summary.get("lower_neutral_R_L", math.nan))
+        upper = float(summary.get("upper_neutral_R_L", math.nan))
+        freq = float(summary.get("freq_parameter", math.nan))
+        if not (math.isfinite(freq) and math.isfinite(lower) and math.isfinite(upper)):
+            continue
+        rows.append({
+            "freq_parameter": freq,
+            "F_x1e4": 1.0e4 * freq,
+            "lower_neutral_R_L": lower,
+            "upper_neutral_R_L": upper,
+            "peak_growth_R_L": float(summary.get("peak_growth_R_L", math.nan)),
+            "peak_sigma_L": float(summary.get("peak_sigma_L", math.nan)),
+            "peak_wavelength_L": float(summary.get("peak_wavelength_L", math.nan)),
+            "N_signed_peak": float(summary.get("N_signed_peak", math.nan)),
+            "amplification_signed_peak": float(summary.get("amplification_signed_peak", math.nan)),
+        })
+    return sorted(rows, key=lambda row: row["freq_parameter"])
+
+
+def _plot_neutral_envelope(path, envelope_rows, title):
+    fig, ax = plt.subplots(figsize=(7.2, 4.8))
+    if not envelope_rows:
+        ax.text(
+            0.5,
+            0.5,
+            "No two-crossing neutral branches found",
+            transform=ax.transAxes,
+            ha="center",
+            va="center",
+        )
+    else:
+        F = np.array([row["F_x1e4"] for row in envelope_rows], dtype=float)
+        lower = np.array([row["lower_neutral_R_L"] for row in envelope_rows], dtype=float)
+        upper = np.array([row["upper_neutral_R_L"] for row in envelope_rows], dtype=float)
+        ax.plot(lower, F, "o-", lw=2.0, ms=4.5, label="lower neutral")
+        ax.plot(upper, F, "o-", lw=2.0, ms=4.5, label="upper neutral")
+        for lo, hi, f_val in zip(lower, upper, F):
+            ax.plot([lo, hi], [f_val, f_val], color="0.85", lw=0.8, zorder=0)
+        ax.legend(frameon=False)
+    ax.set_xlabel(r"$R=\sqrt{Re_x}$")
+    ax.set_ylabel(r"$F \times 10^4$")
+    ax.set_title(f"{title}: neutral envelope")
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(path, dpi=200)
+    plt.close(fig)
+
+
+def _plot_neutral_peak_growth(path, envelope_rows, title):
+    fig, ax = plt.subplots(figsize=(7.2, 4.8))
+    if not envelope_rows:
+        ax.text(
+            0.5,
+            0.5,
+            "No two-crossing neutral branches found",
+            transform=ax.transAxes,
+            ha="center",
+            va="center",
+        )
+    else:
+        F = np.array([row["F_x1e4"] for row in envelope_rows], dtype=float)
+        lower = np.array([row["lower_neutral_R_L"] for row in envelope_rows], dtype=float)
+        upper = np.array([row["upper_neutral_R_L"] for row in envelope_rows], dtype=float)
+        peak_R = np.array([row["peak_growth_R_L"] for row in envelope_rows], dtype=float)
+        peak_sigma = np.array([row["peak_sigma_L"] for row in envelope_rows], dtype=float)
+        ax.plot(lower, F, "k--", lw=1.2, label="lower neutral")
+        ax.plot(upper, F, "k-", lw=1.2, label="upper neutral")
+        sc = ax.scatter(peak_R, F, c=peak_sigma, cmap="viridis", s=45)
+        ax.legend(frameon=False)
+        cb = fig.colorbar(sc, ax=ax)
+        cb.set_label(r"peak $-\alpha_i L^*$")
+    ax.set_xlabel(r"$R=\sqrt{Re_x}$")
+    ax.set_ylabel(r"$F \times 10^4$")
+    ax.set_title(f"{title}: peak-growth locations")
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(path, dpi=200)
+    plt.close(fig)
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input_csv")
@@ -561,9 +733,8 @@ def parse_args(argv=None):
         choices=["second_mode", "unconstrained"],
         default="second_mode",
         help=(
-            "Rows to integrate. second_mode applies alpha_L>=0.6 by default, "
-            "which prevents stale low-alpha long-wave CSVs from producing "
-            "spurious second-mode N factors."
+            "Rows to integrate. second_mode applies no alpha floor by default; "
+            "provide --alpha-min-l only for deliberately high-alpha diagnostics."
         ),
     )
     parser.add_argument("--alpha-min-l", type=float, default=None)
@@ -571,11 +742,12 @@ def parse_args(argv=None):
     parser.add_argument(
         "--r-convention",
         choices=["sqrt_2_re_x", "sqrt_re_x", "custom"],
-        default="sqrt_2_re_x",
+        default="sqrt_re_x",
         help=(
-            "How the supplied R_L path maps to physical x. sqrt_2_re_x uses "
-            "dx/L*=dR and is the conservative Baseline-5B similarity convention. "
-            "sqrt_re_x uses dx/L*=2 dR. custom requires --dx-over-lstar-per-dr."
+            "How the supplied R_L path maps to physical x. sqrt_re_x uses "
+            "dx/L*=2 dR for R_L=sqrt(Re_x), matching the pyMack/Mack L* "
+            "convention. sqrt_2_re_x uses dx/L*=dR. custom requires "
+            "--dx-over-lstar-per-dr."
         ),
     )
     parser.add_argument(
@@ -631,12 +803,17 @@ def main(argv=None):
 
     curves_csv = output_dir / "spatial_fixed_frequency_amplification_curves.csv"
     summary_csv = output_dir / "spatial_fixed_frequency_amplification_summary.csv"
+    neutral_envelope_csv = output_dir / "spatial_fixed_frequency_neutral_envelope.csv"
     png_path = output_dir / "spatial_fixed_frequency_amplification.png"
     linear_png_path = output_dir / "spatial_fixed_frequency_amplification_linear.png"
     linear_start_png_path = output_dir / "spatial_fixed_frequency_amplification_linear_from_start.png"
+    neutral_envelope_png_path = output_dir / "spatial_fixed_frequency_neutral_envelope.png"
+    neutral_peak_png_path = output_dir / "spatial_fixed_frequency_neutral_envelope_peak_growth.png"
     metadata_path = output_dir / "spatial_fixed_frequency_amplification_metadata.json"
+    neutral_envelope_rows = _neutral_envelope_rows(summaries)
     _write_csv(curves_csv, amplified_rows)
     _write_csv(summary_csv, summaries)
+    _write_csv(neutral_envelope_csv, neutral_envelope_rows)
     _plot(
         png_path,
         amplified_rows,
@@ -661,6 +838,16 @@ def main(argv=None):
         plot_x_min=args.plot_x_min,
         plot_x_max=args.plot_x_max,
     )
+    _plot_neutral_envelope(
+        neutral_envelope_png_path,
+        neutral_envelope_rows,
+        args.title,
+    )
+    _plot_neutral_peak_growth(
+        neutral_peak_png_path,
+        neutral_envelope_rows,
+        args.title,
+    )
     with open(metadata_path, "w", encoding="utf-8") as handle:
         json.dump({
             "status": "diagnostic_not_paper_certified",
@@ -676,12 +863,19 @@ def main(argv=None):
             ],
             "r_convention": args.r_convention,
             "dx_over_lstar_per_dR": float(dx_over_lstar_per_dR),
+            "neutral_envelope_source": (
+                "linear interpolation of signed fixed-frequency growth "
+                "crossings sigma_L=0"
+            ),
             "n_factor_formula": (
                 "N = integral sigma_phys dx = integral "
                 f"{dx_over_lstar_per_dR:g}*sigma_L dR_L"
             ),
             "amplification_formula": "A/A_lower = exp(N_signed_from_lower)",
             "n_factor_convention": (
+                "N_signed_from_lower integrates signed growth from the lower "
+                "neutral point through the full plotted path, so stable "
+                "post-upper-neutral damping reduces A/A_lower. "
                 "N_envelope_from_lower is the cumulative maximum of signed N; "
                 "N_positive_from_lower integrates "
                 f"max({dx_over_lstar_per_dR:g}*sigma_L, 0). "
@@ -697,9 +891,12 @@ def main(argv=None):
 
     print(f"curves_csv={curves_csv}")
     print(f"summary_csv={summary_csv}")
+    print(f"neutral_envelope_csv={neutral_envelope_csv}")
     print(f"png={png_path}")
     print(f"linear_png={linear_png_path}")
     print(f"linear_start_png={linear_start_png_path}")
+    print(f"neutral_envelope_png={neutral_envelope_png_path}")
+    print(f"neutral_peak_png={neutral_peak_png_path}")
     print(f"metadata={metadata_path}")
     for summary in summaries:
         if summary.get("status") != "ok":

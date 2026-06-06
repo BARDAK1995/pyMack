@@ -64,6 +64,13 @@ from .mack_shooting import (
     continue_temporal_mode_6_shooting_sigma_min,
 )
 from .solver import solve_temporal_os, solve_spatial
+from .pymack_dense import (
+    DenseBaseFlowConfig,
+    DenseGasModel,
+    DenseLSTConfig,
+    prepare_dense_case,
+    solve_mack_branch,
+)
 from .ozgen_solver import solve_temporal_ozgen_2d
 from .analysis import (
     critical_reynolds_from_growth_series,

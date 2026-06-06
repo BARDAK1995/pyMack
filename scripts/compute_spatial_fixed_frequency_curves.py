@@ -20,11 +20,18 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from lst import CompressibleBlasiusProfile, make_ozgen_profile  # noqa: E402
+from lst.pymack_dense import (  # noqa: E402
+    DenseBaseFlowConfig,
+    DenseGasModel,
+    DenseLSTConfig,
+    prepare_dense_case,
+    solve_mack_branch,
+)
 from lst.scales import delta_star_over_lstar  # noqa: E402
-from lst.solver import solve_spatial  # noqa: E402
+from lst.solver import solve_spatial, solve_spatial_full_spectrum  # noqa: E402
 
 
-SECOND_MODE_ALPHA_MIN_L = 0.6
+SECOND_MODE_ALPHA_MIN_L = None
 
 
 def _select_alpha(alphas, target_alpha, previous_alpha=None, *, omega_L=None,
@@ -81,24 +88,68 @@ def _phase_filtered_candidates(alphas, *, omega_L, delta_over_l, phase_min=0.75,
     return alphas[mask]
 
 
+def _phase_speed_from_alpha(omega_L, alpha_L):
+    alpha_r = float(np.real(alpha_L))
+    if not np.isfinite(alpha_r) or alpha_r <= 0.0:
+        return np.nan
+    return float(omega_L / alpha_r)
+
+
 def _solve_spatial_candidates(profile, args, *, omega_L, R, delta_over_l,
                               target_alpha_delta):
     omega_delta = omega_L * delta_over_l
     Re_delta = float(R * delta_over_l)
-    alphas_delta, _modes, _y = solve_spatial(
-        profile,
-        omega_delta,
-        Re_delta,
-        args.ma,
-        args.pr,
-        args.gamma,
-        N=args.N,
-        y_max=args.y_max_delta,
-        wall_bc=args.wall_bc,
-        target_alpha=target_alpha_delta,
-        n_modes=args.n_modes,
-        length_scale="delta_star",
-    )
+    if args.solver_length_scale == "L_star":
+        solver_omega = float(omega_L)
+        solver_Re = float(R)
+        solver_y_max = (
+            float(args.y_max_lstar)
+            if args.y_max_lstar is not None
+            else float(args.y_max_delta * delta_over_l)
+        )
+        solver_target_alpha = target_alpha_delta / delta_over_l
+        output_alpha_scale = float(delta_over_l)
+    else:
+        solver_omega = float(omega_delta)
+        solver_Re = float(Re_delta)
+        solver_y_max = float(args.y_max_delta)
+        solver_target_alpha = target_alpha_delta
+        output_alpha_scale = 1.0
+
+    if args.candidate_source == "full_spectrum":
+        alphas_solver, _modes, _y = solve_spatial_full_spectrum(
+            profile,
+            solver_omega,
+            solver_Re,
+            args.ma,
+            args.pr,
+            args.gamma,
+            N=args.N,
+            y_max=solver_y_max,
+            wall_bc=args.wall_bc,
+            length_scale=args.solver_length_scale,
+            lambda_mu_ratio=args.lambda_mu_ratio,
+            max_abs_alpha=args.full_spectrum_max_abs_alpha,
+            max_abs_alpha_i=args.full_spectrum_max_abs_alpha_i,
+            residual_tol=args.full_spectrum_residual_tol,
+        )
+    else:
+        alphas_solver, _modes, _y = solve_spatial(
+            profile,
+            solver_omega,
+            solver_Re,
+            args.ma,
+            args.pr,
+            args.gamma,
+            N=args.N,
+            y_max=solver_y_max,
+            wall_bc=args.wall_bc,
+            target_alpha=solver_target_alpha,
+            n_modes=args.n_modes,
+            length_scale=args.solver_length_scale,
+            lambda_mu_ratio=args.lambda_mu_ratio,
+        )
+    alphas_delta = np.asarray(alphas_solver, dtype=complex) * output_alpha_scale
     return np.asarray(alphas_delta, dtype=complex), omega_delta, Re_delta
 
 
@@ -129,6 +180,92 @@ def _track_anchored_branch(candidate_rows, anchor_i, anchor_alpha):
         if distances[idx] <= 0.45 * scale:
             tracked[i] = complex(candidates[idx])
             prev = tracked[i]
+
+    return tracked
+
+
+def _track_pymack_continuation(candidate_rows, *, delta_over_l, c_phase):
+    """Track the Mack/S fixed-F branch with pyMack-style alpha~R prediction."""
+    tracked = [np.nan + 1j * np.nan for _ in candidate_rows]
+    c_target = float(c_phase)
+    row_best = []
+
+    for i, row in enumerate(candidate_rows):
+        candidates = row["candidates"]
+        if len(candidates) == 0:
+            continue
+        alpha_L = candidates / delta_over_l
+        phase = np.divide(
+            float(row["omega_L"]),
+            alpha_L.real,
+            out=np.full_like(alpha_L.real, np.nan, dtype=float),
+            where=alpha_L.real != 0.0,
+        )
+        sigma_L = -alpha_L.imag
+        score = (
+            sigma_L
+            - 0.12 * np.abs(phase - c_target)
+            - 0.35 * np.maximum(phase - 0.955, 0.0)
+        )
+        finite = np.isfinite(score) & np.isfinite(sigma_L)
+        if not np.any(finite):
+            continue
+        safe_score = np.where(finite, score, -np.inf)
+        j = int(np.nanargmax(safe_score))
+        # pyMack's robust behavior comes from seeding on the strongest valid
+        # lobe point, not from the first Reynolds station that has a candidate.
+        row_best.append((float(sigma_L[j]), float(safe_score[j]), i, complex(candidates[j])))
+
+    if not row_best:
+        return tracked
+
+    _seed_growth, _seed_score, seed_i, seed_alpha = max(
+        row_best,
+        key=lambda item: (item[0], item[1]),
+    )
+    tracked[seed_i] = seed_alpha
+
+    def choose(row, previous, previous_R):
+        candidates = row["candidates"]
+        if len(candidates) == 0 or not np.isfinite(previous):
+            return np.nan + 1j * np.nan
+        alpha_L = candidates / delta_over_l
+        phase = np.divide(
+            float(row["omega_L"]),
+            alpha_L.real,
+            out=np.full_like(alpha_L.real, np.nan, dtype=float),
+            where=alpha_L.real != 0.0,
+        )
+        sigma_L = -alpha_L.imag
+        predictor = previous * (float(row["R_L"]) / float(previous_R))
+        score = (
+            np.abs(candidates - predictor) / max(abs(predictor), 1.0e-12)
+            + 0.08 * np.abs(phase - c_target)
+            - 0.005 * sigma_L
+        )
+        finite = np.isfinite(score)
+        if not np.any(finite):
+            return np.nan + 1j * np.nan
+        safe_score = np.where(finite, score, np.inf)
+        return complex(candidates[int(np.nanargmin(safe_score))])
+
+    prev = seed_alpha
+    prev_R = candidate_rows[seed_i]["R_L"]
+    for i in range(seed_i + 1, len(candidate_rows)):
+        alpha = choose(candidate_rows[i], prev, prev_R)
+        tracked[i] = alpha
+        if np.isfinite(alpha):
+            prev = alpha
+            prev_R = candidate_rows[i]["R_L"]
+
+    prev = seed_alpha
+    prev_R = candidate_rows[seed_i]["R_L"]
+    for i in range(seed_i - 1, -1, -1):
+        alpha = choose(candidate_rows[i], prev, prev_R)
+        tracked[i] = alpha
+        if np.isfinite(alpha):
+            prev = alpha
+            prev_R = candidate_rows[i]["R_L"]
 
     return tracked
 
@@ -178,6 +315,39 @@ def _make_power_law_profile(args):
         return profile
 
 
+def _make_sutherland_blasius_profile(args):
+    if args.wall_bc != "isothermal":
+        raise ValueError("sutherland_blasius diagnostic path currently requires an isothermal wall")
+    if args.tw_over_te is None:
+        raise ValueError("--tw-over-te is required for an isothermal sutherland_blasius profile")
+
+    target_ratio = float(args.tw_over_te)
+    target_wall = target_ratio * float(args.t_edge)
+    kwargs = dict(
+        Ma=args.ma,
+        T_edge=args.t_edge,
+        gamma=args.gamma,
+        Pr=args.pr,
+        wall_bc=args.wall_bc,
+        viscosity_model="sutherland",
+        sutherland_S=_default_sutherland_s(args),
+        n_points=args.profile_points,
+        eta_max=args.eta_max,
+    )
+    try:
+        return CompressibleBlasiusProfile(T_wall=target_wall, **kwargs)
+    except RuntimeError:
+        profile = CompressibleBlasiusProfile(T_wall=args.t_edge, **kwargs)
+        n_steps = max(6, int(np.ceil(abs(target_ratio - 1.0) / 0.20)))
+        for ratio in np.linspace(1.0, target_ratio, n_steps + 1)[1:]:
+            profile = CompressibleBlasiusProfile(
+                T_wall=float(ratio * args.t_edge),
+                initial_guess_profile=profile,
+                **kwargs,
+            )
+        return profile
+
+
 def _make_profile(args):
     sutherland_s = _default_sutherland_s(args)
     t_wall = None if args.tw_over_te is None else args.tw_over_te * args.t_edge
@@ -188,6 +358,14 @@ def _make_profile(args):
             "viscosity_model": "power_law",
             "viscosity_exponent": float(args.viscosity_exponent),
             "sutherland_s_K": None,
+        }
+    elif args.profile_family == "sutherland_blasius":
+        profile = _make_sutherland_blasius_profile(args)
+        transport = {
+            "profile_family": "sutherland_blasius",
+            "viscosity_model": "sutherland",
+            "viscosity_exponent": None,
+            "sutherland_s_K": float(sutherland_s),
         }
     else:
         profile = make_ozgen_profile(
@@ -212,12 +390,17 @@ def _make_profile(args):
 def _apply_mode_family_defaults(args):
     """Apply explicit mode-family filters before any roots are selected.
 
-    For the Mach-6 hot-wall work in this repo, the intended branch is the
-    trapped/acoustic second-mode family.  A phase-speed window alone also admits
-    long-wave low-alpha candidates; those produced the absurd amplification
-    ratios.  The alpha-family filter makes that branch identity explicit.
+    pyMack-equivalent Mach-6 hot-wall cases show that the Mack/S branch for
+    F=O(1e-4) has alpha_L=O(0.1), so an unconditional high-alpha floor rejects
+    the validated branch.  The family contract is therefore phase-speed and
+    continuation based by default; users can still provide --alpha-min-l for
+    deliberately high-alpha diagnostics.
     """
-    if args.mode_family == "second_mode" and args.alpha_min_l is None:
+    if (
+        args.mode_family == "second_mode"
+        and args.alpha_min_l is None
+        and SECOND_MODE_ALPHA_MIN_L is not None
+    ):
         args.alpha_min_l = SECOND_MODE_ALPHA_MIN_L
     return args
 
@@ -228,7 +411,17 @@ def compute_curves(args):
     R_L = np.linspace(args.r_min, args.r_max, args.r_points)
     freqs = np.array([float(item) for item in args.frequencies.split(",") if item.strip()])
 
-    if args.selection in {"anchored_max_sigma", "anchored_resolve"}:
+    if args.backend == "pymack_dense":
+        return _compute_curves_pymack_dense(
+            args,
+            delta_over_l,
+            freqs,
+            R_L,
+            sutherland_s,
+            transport,
+        )
+
+    if args.selection in {"anchored_max_sigma", "anchored_resolve", "pymack_continuation"}:
         return _compute_curves_anchored(args, profile, delta_over_l, freqs, R_L, sutherland_s, transport)
 
     records = []
@@ -255,6 +448,7 @@ def compute_curves(args):
                     target_alpha=target_alpha,
                     n_modes=args.n_modes,
                     length_scale="delta_star",
+                    lambda_mu_ratio=args.lambda_mu_ratio,
                 )
                 alpha_delta = _select_alpha(
                     alphas_delta,
@@ -286,6 +480,7 @@ def compute_curves(args):
 
             previous = alpha_delta if np.isfinite(alpha_delta) else previous
             alpha_L = alpha_delta / delta_over_l if np.isfinite(alpha_delta) else np.nan + 1j * np.nan
+            phase_speed_L = _phase_speed_from_alpha(omega_L, alpha_L)
             records.append({
                 "freq_parameter": float(freq),
                 "R_L": float(R),
@@ -294,6 +489,7 @@ def compute_curves(args):
                 "Re_delta": float(Re_delta),
                 "alpha_r_L": float(np.real(alpha_L)),
                 "alpha_i_L": float(np.imag(alpha_L)),
+                "phase_speed_L": phase_speed_L,
                 "wavelength_L": float(
                     2.0 * np.pi / np.real(alpha_L)
                     if np.isfinite(alpha_L) and np.real(alpha_L) > 0.0
@@ -372,6 +568,13 @@ def _compute_curves_anchored(args, profile, delta_over_l, freqs, R_L, sutherland
             [np.nan + 1j * np.nan for _ in candidate_rows]
             if anchor is None
             else (
+                _track_pymack_continuation(
+                    candidate_rows,
+                    delta_over_l=delta_over_l,
+                    c_phase=args.c_phase,
+                )
+                if args.selection == "pymack_continuation"
+                else
                 _resolve_anchored_branch(args, profile, delta_over_l, candidate_rows, anchor[1], anchor[2])
                 if args.selection == "anchored_resolve"
                 else _track_anchored_branch(candidate_rows, anchor[1], anchor[2])
@@ -387,6 +590,7 @@ def _compute_curves_anchored(args, profile, delta_over_l, freqs, R_L, sutherland
             row_status = row["status"]
             if row_status == "ok" and not np.isfinite(alpha_delta):
                 row_status = "not_tracked"
+            phase_speed_L = _phase_speed_from_alpha(row["omega_L"], alpha_L)
             records.append({
                 "freq_parameter": float(freq),
                 "R_L": float(row["R_L"]),
@@ -395,6 +599,7 @@ def _compute_curves_anchored(args, profile, delta_over_l, freqs, R_L, sutherland
                 "Re_delta": float(row["Re_delta"]),
                 "alpha_r_L": float(np.real(alpha_L)),
                 "alpha_i_L": float(np.imag(alpha_L)),
+                "phase_speed_L": phase_speed_L,
                 "wavelength_L": float(
                     2.0 * np.pi / np.real(alpha_L)
                     if np.isfinite(alpha_L) and np.real(alpha_L) > 0.0
@@ -410,6 +615,93 @@ def _compute_curves_anchored(args, profile, delta_over_l, freqs, R_L, sutherland
                 "status": row_status,
             })
 
+    return records, delta_over_l, freqs, R_L, sutherland_s, transport
+
+
+def _compute_curves_pymack_dense(args, delta_over_l, freqs, R_L, sutherland_s, transport):
+    if args.frequency_mode != "fixed_physical":
+        raise ValueError("pymack_dense backend currently requires --frequency-mode fixed_physical")
+    if args.wall_bc != "isothermal" and not args.dense_adiabatic_wall:
+        raise ValueError("pymack_dense non-adiabatic path currently supports isothermal-wall runs")
+    if args.profile_family not in {"sutherland_blasius", "power_law"}:
+        raise ValueError("pymack_dense backend supports sutherland_blasius or power_law profiles")
+
+    gas = DenseGasModel(
+        gamma=float(args.gamma),
+        prandtl=float(args.pr),
+        viscosity_law="power" if args.profile_family == "power_law" else "sutherland",
+        mu_power=float(args.viscosity_exponent),
+        sutherland_S_K=float(sutherland_s),
+        T_edge_K=float(args.t_edge),
+    )
+    base_cfg = DenseBaseFlowConfig(
+        mach_edge=float(args.ma),
+        Tw_Te=float(args.tw_over_te),
+        eta_max=float(args.eta_max),
+        eta_nodes=int(args.dense_eta_nodes),
+        bvp_tol=float(args.dense_bvp_tol),
+        adiabatic=bool(args.dense_adiabatic_wall),
+    )
+    y_max_lstar = (
+        float(args.y_max_lstar)
+        if args.y_max_lstar is not None
+        else float(args.dense_y_max_lstar)
+    )
+    lst_cfg = DenseLSTConfig(
+        ny=int(args.N),
+        y_max=y_max_lstar,
+        c_min=float(args.phase_min),
+        c_max=float(args.phase_max),
+        max_abs_alpha=float(args.dense_max_abs_alpha),
+        max_abs_ai=float(args.dense_max_abs_ai),
+        max_ai_over_ar=float(args.dense_max_ai_over_ar),
+    )
+    _base, y, D, base_grid = prepare_dense_case(gas, base_cfg, lst_cfg)
+
+    records = []
+    for freq in freqs:
+        rows = solve_mack_branch(
+            float(freq),
+            R_L,
+            y,
+            D,
+            base_grid,
+            gas,
+            lst_cfg,
+            convention="mack",
+        )
+        for row in rows:
+            alpha_L = complex(row["alpha_real"], row["alpha_imag"])
+            alpha_delta = alpha_L * delta_over_l
+            omega_L = float(row["omega"])
+            R = float(row["R"])
+            records.append({
+                "freq_parameter": float(freq),
+                "R_L": R,
+                "omega_L": omega_L,
+                "omega_delta": float(omega_L * delta_over_l),
+                "Re_delta": float(R * delta_over_l),
+                "alpha_r_L": float(alpha_L.real),
+                "alpha_i_L": float(alpha_L.imag),
+                "phase_speed_L": float(row["phase_speed"]),
+                "wavelength_L": float(
+                    2.0 * np.pi / alpha_L.real
+                    if np.isfinite(alpha_L.real) and alpha_L.real > 0.0
+                    else np.nan
+                ),
+                "sigma_L": float(row["growth"]),
+                "alpha_r_delta": float(alpha_delta.real),
+                "alpha_i_delta": float(alpha_delta.imag),
+                "sigma_delta": float(row["growth"] * delta_over_l),
+                "n_candidates": int(row["n_candidates"]),
+                "n_filtered_candidates": int(row["n_candidates"]),
+                "target_alpha_L": float(omega_L / args.c_phase),
+                "status": "ok" if row["selected"] else "not_tracked",
+            })
+
+    transport = dict(transport)
+    transport["backend"] = "pymack_dense"
+    transport["dense_y_max_lstar"] = y_max_lstar
     return records, delta_over_l, freqs, R_L, sutherland_s, transport
 
 
@@ -497,6 +789,7 @@ def _write_csv(path, records):
         "Re_delta",
         "alpha_r_L",
         "alpha_i_L",
+        "phase_speed_L",
         "wavelength_L",
         "sigma_L",
         "alpha_r_delta",
@@ -533,6 +826,31 @@ def _plot(path, records, freqs, title):
     plt.close(fig)
 
 
+def _plot_phase_speed(path, records, freqs, title, *, ma=None):
+    fig, ax = plt.subplots(figsize=(8.4, 5.4))
+    colors = plt.cm.plasma(np.linspace(0.1, 0.9, len(freqs)))
+    for color, freq in zip(colors, freqs):
+        rows = [row for row in records if np.isclose(row["freq_parameter"], freq)]
+        rows.sort(key=lambda row: row["R_L"])
+        R = np.array([row["R_L"] for row in rows], dtype=float)
+        c = np.array([row.get("phase_speed_L", np.nan) for row in rows], dtype=float)
+        ax.plot(R, c, "o-", color=color, label=rf"$\omega_L/R_L={freq:.3e}$")
+
+    if ma is not None and np.isfinite(ma) and ma > 0.0:
+        slow = 1.0 - 1.0 / float(ma)
+        fast = 1.0 + 1.0 / float(ma)
+        ax.axhline(slow, color="0.35", lw=0.9, ls=":", label=r"$1-1/M_e$")
+        ax.axhline(fast, color="0.35", lw=0.9, ls="--", label=r"$1+1/M_e$")
+    ax.set_xlabel(r"$R_L=\sqrt{Re_x}=U_e L^*/\nu_e$")
+    ax.set_ylabel(r"phase speed $c_L=\omega_L/\alpha_{r,L}$")
+    ax.set_title(f"{title}: phase speed")
+    ax.legend(loc="best", fontsize=8)
+    ax.grid(True, alpha=0.3, linestyle="--")
+    fig.tight_layout()
+    fig.savefig(path, dpi=200)
+    plt.close(fig)
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--r-min", type=float, default=300.0)
@@ -545,7 +863,11 @@ def parse_args():
     parser.add_argument("--t-edge", type=float, default=288.0)
     parser.add_argument("--tw-over-te", type=float, default=5.55)
     parser.add_argument("--sutherland-s", type=float, default=None)
-    parser.add_argument("--profile-family", choices=["ozgen", "power_law"], default="ozgen")
+    parser.add_argument(
+        "--profile-family",
+        choices=["sutherland_blasius", "ozgen", "power_law"],
+        default="sutherland_blasius",
+    )
     parser.add_argument("--viscosity-exponent", type=float, default=0.74)
     parser.add_argument("--pr", type=float, default=0.72)
     parser.add_argument("--gamma", type=float, default=1.4)
@@ -554,7 +876,65 @@ def parse_args():
     parser.add_argument("--eta-max", type=float, default=40.0)
     parser.add_argument("--N", type=int, default=56)
     parser.add_argument("--y-max-delta", type=float, default=10.0)
+    parser.add_argument(
+        "--y-max-lstar",
+        type=float,
+        default=None,
+        help=(
+            "Domain height in L* units when --solver-length-scale L_star is "
+            "used. If omitted, y_max_lstar = y_max_delta * delta*/L*."
+        ),
+    )
     parser.add_argument("--n-modes", type=int, default=10)
+    parser.add_argument(
+        "--backend",
+        choices=["ms_lst", "pymack_dense"],
+        default="ms_lst",
+        help=(
+            "ms_lst uses the general shared spatial solver. pymack_dense uses "
+            "the independent pyMack-style dense QEP backend for 2-D Mack/S "
+            "branch validation and production once accepted."
+        ),
+    )
+    parser.add_argument(
+        "--solver-length-scale",
+        choices=["delta_star", "L_star"],
+        default="delta_star",
+        help="Length scale used inside the spatial solver.",
+    )
+    parser.add_argument(
+        "--candidate-source",
+        choices=["shift_invert", "full_spectrum"],
+        default="shift_invert",
+        help=(
+            "Use fast shift-invert candidates near the target alpha, or solve "
+            "the full companion spectrum for more robust branch discovery."
+        ),
+    )
+    parser.add_argument("--full-spectrum-max-abs-alpha", type=float, default=8.0)
+    parser.add_argument("--full-spectrum-max-abs-alpha-i", type=float, default=0.4)
+    parser.add_argument("--full-spectrum-residual-tol", type=float, default=None)
+    parser.add_argument("--dense-eta-nodes", type=int, default=80)
+    parser.add_argument("--dense-bvp-tol", type=float, default=1.0e-4)
+    parser.add_argument("--dense-y-max-lstar", type=float, default=30.0)
+    parser.add_argument("--dense-max-abs-alpha", type=float, default=8.0)
+    parser.add_argument("--dense-max-abs-ai", type=float, default=0.4)
+    parser.add_argument("--dense-max-ai-over-ar", type=float, default=1.0)
+    parser.add_argument(
+        "--dense-adiabatic-wall",
+        action="store_true",
+        help="Use the dense backend adiabatic-wall base-flow condition.",
+    )
+    parser.add_argument(
+        "--lambda-mu-ratio",
+        type=float,
+        default=0.0,
+        help=(
+            "Bulk-viscosity parameter for the compressible operator. 0.0 "
+            "uses the Stokes-hypothesis coefficients used by the pyMack "
+            "spatial reference path."
+        ),
+    )
     parser.add_argument("--c-phase", type=float, default=0.86)
     parser.add_argument("--phase-min", type=float, default=0.75)
     parser.add_argument("--phase-max", type=float, default=1.15)
@@ -563,17 +943,22 @@ def parse_args():
         choices=["second_mode", "unconstrained"],
         default="second_mode",
         help=(
-            "Branch-family contract. second_mode applies alpha_L>=0.6 by "
-            "default so low-alpha long-wave branches cannot be reported as "
-            "second-mode amplification. Use unconstrained for exploratory or "
-            "first-mode work."
+            "Branch-family contract. second_mode uses phase-speed and "
+            "continuation by default; provide --alpha-min-l only for "
+            "deliberately high-alpha diagnostics."
         ),
     )
     parser.add_argument("--alpha-min-l", type=float, default=None)
     parser.add_argument("--alpha-max-l", type=float, default=None)
     parser.add_argument(
         "--selection",
-        choices=["tracked", "max_sigma", "anchored_max_sigma", "anchored_resolve"],
+        choices=[
+            "tracked",
+            "max_sigma",
+            "anchored_max_sigma",
+            "anchored_resolve",
+            "pymack_continuation",
+        ],
         default="max_sigma",
     )
     parser.add_argument(
@@ -597,6 +982,7 @@ def main():
     records, delta_over_l, freqs, R_L, sutherland_s, transport = compute_curves(args)
     csv_path = output_dir / "spatial_fixed_frequency_growth_curves.csv"
     png_path = output_dir / "spatial_fixed_frequency_growth_curves.png"
+    phase_png_path = output_dir / "spatial_fixed_frequency_phase_speed.png"
     metadata_path = output_dir / "spatial_fixed_frequency_growth_metadata.json"
     _write_csv(csv_path, records)
     _plot(
@@ -604,6 +990,13 @@ def main():
         records,
         freqs,
         f"Mach {args.ma:g} {args.gas}, Tw/Te={args.tw_over_te:g}: spatial growth",
+    )
+    _plot_phase_speed(
+        phase_png_path,
+        records,
+        freqs,
+        f"Mach {args.ma:g} {args.gas}, Tw/Te={args.tw_over_te:g}",
+        ma=args.ma,
     )
     with open(metadata_path, "w", encoding="utf-8") as handle:
         json.dump({
@@ -624,7 +1017,39 @@ def main():
             "delta_star_over_L_star": float(delta_over_l),
             "wall_bc": args.wall_bc,
             "N": int(args.N),
-            "solver": "lst.solver.solve_spatial companion QEP",
+            "backend": args.backend,
+            "solver_length_scale": args.solver_length_scale,
+            "y_max_delta": float(args.y_max_delta),
+            "y_max_lstar": (
+                None
+                if args.y_max_lstar is None
+                else float(args.y_max_lstar)
+            ),
+            "solver": (
+                "lst.pymack_dense dense full-spectrum QEP"
+                if args.backend == "pymack_dense"
+                else "lst.solver.solve_spatial companion QEP"
+            ),
+            "dense_backend_config": {
+                "eta_nodes": int(args.dense_eta_nodes),
+                "bvp_tol": float(args.dense_bvp_tol),
+                "y_max_lstar": (
+                    float(args.y_max_lstar)
+                    if args.y_max_lstar is not None
+                    else float(args.dense_y_max_lstar)
+                ),
+                "max_abs_alpha": float(args.dense_max_abs_alpha),
+                "max_abs_ai": float(args.dense_max_abs_ai),
+                "max_ai_over_ar": float(args.dense_max_ai_over_ar),
+                "adiabatic_wall": bool(args.dense_adiabatic_wall),
+            },
+            "candidate_source": args.candidate_source,
+            "full_spectrum_filter": {
+                "max_abs_alpha_delta": float(args.full_spectrum_max_abs_alpha),
+                "max_abs_alpha_i_delta": float(args.full_spectrum_max_abs_alpha_i),
+                "residual_tol": args.full_spectrum_residual_tol,
+            },
+            "lambda_mu_ratio": float(args.lambda_mu_ratio),
             "selection": args.selection,
             "mode_family": args.mode_family,
             "phase_speed_filter": [float(args.phase_min), float(args.phase_max)],
@@ -636,6 +1061,7 @@ def main():
         }, handle, indent=2)
     print(f"csv={csv_path}")
     print(f"png={png_path}")
+    print(f"phase_png={phase_png_path}")
     print(f"metadata={metadata_path}")
     for freq in freqs:
         rows = [row for row in records if np.isclose(row["freq_parameter"], freq)]

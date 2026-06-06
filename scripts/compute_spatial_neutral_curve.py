@@ -1,4 +1,4 @@
-"""Compute a diagnostic spatial neutral curve in (R_L, omega_L/R_L)."""
+"""Compute a diagnostic spatial neutral curve from sigma_L = 0."""
 
 from __future__ import annotations
 
@@ -80,6 +80,39 @@ def _make_power_law_profile_from_config(config):
         return profile
 
 
+def _make_sutherland_blasius_profile_from_config(config):
+    if config["wall_bc"] != "isothermal":
+        raise ValueError("sutherland_blasius diagnostic path currently requires an isothermal wall")
+    if config["tw_over_te"] is None:
+        raise ValueError("tw_over_te is required for an isothermal sutherland_blasius profile")
+
+    target_ratio = float(config["tw_over_te"])
+    target_wall = target_ratio * float(config["t_edge"])
+    kwargs = dict(
+        Ma=config["ma"],
+        T_edge=config["t_edge"],
+        gamma=config["gamma"],
+        Pr=config["pr"],
+        wall_bc=config["wall_bc"],
+        viscosity_model="sutherland",
+        sutherland_S=_default_sutherland_s_from_config(config),
+        n_points=config["profile_points"],
+        eta_max=config["eta_max"],
+    )
+    try:
+        return CompressibleBlasiusProfile(T_wall=target_wall, **kwargs)
+    except RuntimeError:
+        profile = CompressibleBlasiusProfile(T_wall=config["t_edge"], **kwargs)
+        n_steps = max(6, int(np.ceil(abs(target_ratio - 1.0) / 0.20)))
+        for ratio in np.linspace(1.0, target_ratio, n_steps + 1)[1:]:
+            profile = CompressibleBlasiusProfile(
+                T_wall=float(ratio * config["t_edge"]),
+                initial_guess_profile=profile,
+                **kwargs,
+            )
+        return profile
+
+
 def _make_profile_from_config(config):
     sutherland_s = _default_sutherland_s_from_config(config)
     t_wall = (
@@ -89,6 +122,8 @@ def _make_profile_from_config(config):
     )
     if config["profile_family"] == "power_law":
         return _make_power_law_profile_from_config(config)
+    if config["profile_family"] == "sutherland_blasius":
+        return _make_sutherland_blasius_profile_from_config(config)
     return make_ozgen_profile(
         config["ma"],
         T_edge=config["t_edge"],
@@ -138,11 +173,33 @@ def _select_spatial_candidate(alphas_delta, *, omega_L, delta_over_l, phase_min,
     return complex(candidates[int(np.nanargmax(sigma))]), int(len(candidates))
 
 
+def _omega_from_frequency_parameter(freq_parameter, R_L, frequency_mode):
+    if frequency_mode == "fixed_omega":
+        return float(freq_parameter)
+    return float(freq_parameter * R_L)
+
+
+def _frequency_axis_label(frequency_mode):
+    if frequency_mode == "fixed_omega":
+        return r"$\omega_L$"
+    return r"$F=\omega_L/R_L$"
+
+
+def _frequency_parameter_description(frequency_mode):
+    if frequency_mode == "fixed_omega":
+        return "omega_L, fixed dimensionless angular frequency"
+    return "F = omega_L/R_L"
+
+
 def _solve_point(task):
     i, j, R_L, freq_parameter = task
     cfg = _WORKER_ARGS
     delta_over_l = _WORKER_DELTA_OVER_L
-    omega_L = float(freq_parameter * R_L)
+    omega_L = _omega_from_frequency_parameter(
+        freq_parameter,
+        R_L,
+        cfg["frequency_mode"],
+    )
     omega_delta = omega_L * delta_over_l
     Re_delta = float(R_L * delta_over_l)
     target_alpha_L = omega_L / cfg["target_phase_speed"]
@@ -161,6 +218,7 @@ def _solve_point(task):
             target_alpha=target_alpha_delta,
             n_modes=cfg["n_modes"],
             length_scale="delta_star",
+            lambda_mu_ratio=cfg["lambda_mu_ratio"],
         )
         alpha_delta, n_candidates = _select_spatial_candidate(
             alphas_delta,
@@ -220,7 +278,7 @@ def _write_csv(path, rows):
         writer.writerows(rows)
 
 
-def _interp_record(left, right, freq_cross):
+def _interp_record(left, right, freq_cross, frequency_mode):
     f0 = float(left["freq_parameter"])
     f1 = float(right["freq_parameter"])
     if f1 == f0:
@@ -231,7 +289,11 @@ def _interp_record(left, right, freq_cross):
     out = {
         "R_L": float(left["R_L"]),
         "freq_parameter": float(freq_cross),
-        "omega_L": float(freq_cross * float(left["R_L"])),
+        "omega_L": _omega_from_frequency_parameter(
+            freq_cross,
+            float(left["R_L"]),
+            frequency_mode,
+        ),
         "sigma_L": 0.0,
         "branch_index": None,
     }
@@ -254,7 +316,7 @@ def _interp_record(left, right, freq_cross):
     return out
 
 
-def _extract_neutrals(records, R_values, freq_values):
+def _extract_neutrals(records, R_values, freq_values, frequency_mode):
     by_key = {(float(row["R_L"]), float(row["freq_parameter"])): row for row in records}
     neutral_rows = []
     branch_rows = []
@@ -281,7 +343,7 @@ def _extract_neutrals(records, R_values, freq_values):
                 f0 = float(left["freq_parameter"])
                 f1 = float(right["freq_parameter"])
                 f_cross = f0 + (0.0 - s0) * (f1 - f0) / (s1 - s0)
-                crossings.append(_interp_record(left, right, f_cross))
+                crossings.append(_interp_record(left, right, f_cross, frequency_mode))
         counts[float(R)] = len(crossings)
         for branch_index, item in enumerate(crossings):
             item["branch_index"] = int(branch_index)
@@ -302,7 +364,7 @@ def _extract_neutrals(records, R_values, freq_values):
     return neutral_rows, branch_rows, counts
 
 
-def _plot_map(path, records, neutral_rows, R_values, freq_values, title):
+def _plot_map(path, records, branch_rows, R_values, freq_values, title, frequency_mode):
     sigma = np.full((len(R_values), len(freq_values)), np.nan)
     for row in records:
         i = int(row["i"])
@@ -319,31 +381,34 @@ def _plot_map(path, records, neutral_rows, R_values, freq_values, title):
         ax.contour(R_grid, F_grid, sigma, levels=[0.0], colors="black", linewidths=2.0)
     except ValueError:
         pass
-    if neutral_rows:
-        branches = sorted({int(row["branch_index"]) for row in neutral_rows})
-        for branch in branches:
-            rows = [row for row in neutral_rows if int(row["branch_index"]) == branch]
+    if branch_rows:
+        colors = {"lower": "#3b0a9f", "upper": "#e8743b"}
+        for branch in ("lower", "upper"):
+            rows = [row for row in branch_rows if row.get("branch_label") == branch]
+            if not rows:
+                continue
             rows.sort(key=lambda item: float(item["R_L"]))
             ax.plot(
                 [float(row["R_L"]) for row in rows],
                 [float(row["freq_parameter"]) for row in rows],
                 "o-",
+                color=colors[branch],
                 ms=3,
                 lw=1.5,
-                label=f"neutral {branch}",
+                label=f"{branch} neutral",
             )
     ax.set_xlabel(r"$R_L=\sqrt{Re_x}=U_eL^*/\nu_e$")
-    ax.set_ylabel(r"$F=\omega_L/R_L$")
+    ax.set_ylabel(_frequency_axis_label(frequency_mode))
     ax.set_title(title)
     ax.grid(True, alpha=0.25, linestyle="--")
-    if neutral_rows:
+    if branch_rows:
         ax.legend(loc="best", fontsize=8)
     fig.tight_layout()
     fig.savefig(path, dpi=200)
     plt.close(fig)
 
 
-def _plot_branches(path, branch_rows, title):
+def _plot_branches(path, branch_rows, title, frequency_mode):
     fig, axes = plt.subplots(3, 1, figsize=(8.4, 8.4), sharex=True)
     colors = {"lower": "#3b0a9f", "upper": "#e8743b"}
     for label in ("lower", "upper"):
@@ -355,7 +420,7 @@ def _plot_branches(path, branch_rows, title):
         axes[0].plot(R, [float(row["freq_parameter"]) for row in rows], "o-", color=colors[label], label=label)
         axes[1].plot(R, [float(row["alpha_r_L"]) for row in rows], "o-", color=colors[label], label=label)
         axes[2].plot(R, [float(row["wavelength_L"]) for row in rows], "o-", color=colors[label], label=label)
-    axes[0].set_ylabel(r"$F=\omega_L/R_L$")
+    axes[0].set_ylabel(_frequency_axis_label(frequency_mode))
     axes[1].set_ylabel(r"neutral $\alpha_{r,L}$")
     axes[2].set_ylabel(r"neutral $\lambda_L$")
     axes[2].set_xlabel(r"$R_L=\sqrt{Re_x}=U_eL^*/\nu_e$")
@@ -376,12 +441,25 @@ def parse_args():
     parser.add_argument("--f-min", type=float, default=0.0005)
     parser.add_argument("--f-max", type=float, default=0.0016)
     parser.add_argument("--f-points", type=int, default=45)
+    parser.add_argument(
+        "--frequency-mode",
+        choices=["omega_over_R", "fixed_omega"],
+        default="omega_over_R",
+        help=(
+            "Interpret the scanned frequency parameter as either F=omega_L/R_L "
+            "or as the fixed omega_L used by fixed-frequency growth curves."
+        ),
+    )
     parser.add_argument("--ma", type=float, default=6.0)
     parser.add_argument("--gas", default="nitrogen")
     parser.add_argument("--t-edge", type=float, default=288.0)
     parser.add_argument("--tw-over-te", type=float, default=5.55)
     parser.add_argument("--sutherland-s", type=float, default=None)
-    parser.add_argument("--profile-family", choices=["ozgen", "power_law"], default="ozgen")
+    parser.add_argument(
+        "--profile-family",
+        choices=["sutherland_blasius", "ozgen", "power_law"],
+        default="sutherland_blasius",
+    )
     parser.add_argument("--viscosity-exponent", type=float, default=0.74)
     parser.add_argument("--pr", type=float, default=0.72)
     parser.add_argument("--gamma", type=float, default=1.4)
@@ -391,6 +469,16 @@ def parse_args():
     parser.add_argument("--N", type=int, default=48)
     parser.add_argument("--y-max-delta", type=float, default=10.0)
     parser.add_argument("--n-modes", type=int, default=28)
+    parser.add_argument(
+        "--lambda-mu-ratio",
+        type=float,
+        default=0.0,
+        help=(
+            "Bulk-viscosity parameter for the compressible operator. 0.0 "
+            "uses the Stokes-hypothesis coefficients used by the pyMack "
+            "spatial reference path."
+        ),
+    )
     parser.add_argument("--target-phase-speed", type=float, default=0.86)
     parser.add_argument("--phase-min", type=float, default=0.75)
     parser.add_argument("--phase-max", type=float, default=1.15)
@@ -433,11 +521,13 @@ def main():
         "pr": float(args.pr),
         "gamma": float(args.gamma),
         "wall_bc": args.wall_bc,
+        "frequency_mode": args.frequency_mode,
         "profile_points": int(args.profile_points),
         "eta_max": float(args.eta_max),
         "N": int(args.N),
         "y_max_delta": float(args.y_max_delta),
         "n_modes": int(args.n_modes),
+        "lambda_mu_ratio": float(args.lambda_mu_ratio),
         "target_phase_speed": float(args.target_phase_speed),
         "phase_min": float(args.phase_min),
         "phase_max": float(args.phase_max),
@@ -461,7 +551,12 @@ def main():
                 print(f"completed {k}/{len(futures)} points", flush=True)
 
     records.sort(key=lambda row: (row["R_L"], row["freq_parameter"]))
-    neutral_rows, branch_rows, counts = _extract_neutrals(records, R_values, freq_values)
+    neutral_rows, branch_rows, counts = _extract_neutrals(
+        records,
+        R_values,
+        freq_values,
+        args.frequency_mode,
+    )
 
     grid_csv = output_dir / "spatial_neutral_growth_grid.csv"
     neutral_csv = output_dir / "spatial_neutral_points.csv"
@@ -474,8 +569,8 @@ def main():
     _write_csv(neutral_csv, neutral_rows)
     _write_csv(branches_csv, branch_rows)
     title = f"Mach {args.ma:g} {args.gas}, Tw/Te={args.tw_over_te:g}: spatial neutral curve"
-    _plot_map(map_png, records, neutral_rows, R_values, freq_values, title)
-    _plot_branches(branches_png, branch_rows, title)
+    _plot_map(map_png, records, branch_rows, R_values, freq_values, title, args.frequency_mode)
+    _plot_branches(branches_png, branch_rows, title, args.frequency_mode)
 
     finite_sigma = np.array([float(row["sigma_L"]) for row in records], dtype=float)
     two_crossing_count = int(sum(1 for value in counts.values() if value >= 2))
@@ -483,14 +578,23 @@ def main():
         json.dump({
             "status": "diagnostic_not_paper_certified",
             "quantity": "spatial neutral curve from sigma_L = -Im(alpha_L) = 0",
-            "frequency_parameter": "F = omega_L/R_L, fixed physical-frequency parameter",
+            "frequency_mode": args.frequency_mode,
+            "frequency_parameter": _frequency_parameter_description(args.frequency_mode),
             "ma": float(args.ma),
             "gas": args.gas,
             "T_edge_K": float(args.t_edge),
             "T_wall_over_T_edge": None if args.tw_over_te is None else float(args.tw_over_te),
             "T_wall_K": None if args.tw_over_te is None else float(args.tw_over_te * args.t_edge),
             "profile_family": args.profile_family,
-            "viscosity_model": "power_law" if args.profile_family == "power_law" else "ozgen_sutherland",
+            "viscosity_model": (
+                "power_law"
+                if args.profile_family == "power_law"
+                else (
+                    "sutherland"
+                    if args.profile_family == "sutherland_blasius"
+                    else "ozgen_sutherland"
+                )
+            ),
             "viscosity_exponent": float(args.viscosity_exponent) if args.profile_family == "power_law" else None,
             "sutherland_s_K": None if args.profile_family == "power_law" else float(sutherland_s),
             "wall_bc": args.wall_bc,
@@ -501,6 +605,7 @@ def main():
             "phase_speed_filter": [float(args.phase_min), float(args.phase_max)],
             "target_phase_speed": float(args.target_phase_speed),
             "solver": "lst.solver.solve_spatial companion QEP",
+            "lambda_mu_ratio": float(args.lambda_mu_ratio),
             "selection": "phase-filtered maximum sigma envelope",
             "n_grid_points": int(len(records)),
             "n_finite_sigma": int(np.count_nonzero(np.isfinite(finite_sigma))),
@@ -511,7 +616,7 @@ def main():
             "neutral_counts_by_R_L": {f"{key:.8g}": int(value) for key, value in counts.items()},
             "note": (
                 "Diagnostic neutral envelope. It identifies sigma=0 crossings "
-                "on a finite F grid and linearly interpolates; production "
+                "on a finite frequency grid and linearly interpolates; production "
                 "certification still requires direct root continuation and "
                 "residual checks."
             ),
@@ -525,11 +630,12 @@ def main():
     print(f"metadata={metadata_json}")
     print(f"neutral_points={len(neutral_rows)}")
     print(f"R_with_two_or_more_crossings={two_crossing_count}/{len(R_values)}")
+    print_label = "omega" if args.frequency_mode == "fixed_omega" else "F"
     for R in R_values:
         rows = [row for row in branch_rows if math.isclose(float(row["R_L"]), float(R), abs_tol=1.0e-9)]
         if rows:
             summary = ", ".join(
-                f"{row['branch_label']} F={float(row['freq_parameter']):.6g}"
+                f"{row['branch_label']} {print_label}={float(row['freq_parameter']):.6g}"
                 for row in rows
             )
             print(f"R={R:.1f}: {summary}")

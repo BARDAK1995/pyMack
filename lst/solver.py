@@ -124,6 +124,81 @@ def _temperature_wall_operator(D1, n, wall_bc):
     raise ValueError("wall_bc must be 'isothermal' or 'adiabatic'")
 
 
+def _assemble_spatial_qep(
+    baseflow,
+    omega,
+    Re,
+    Ma,
+    Pr,
+    gamma,
+    N,
+    y_max,
+    L,
+    wall_bc,
+    length_scale,
+    lambda_mu_ratio,
+):
+    """Assemble the spatial quadratic EVP after boundary conditions.
+
+    The spatial problem is
+        (C0 + alpha*C1 + alpha**2*C2) phi = 0.
+    This helper is shared by shift-invert and full-spectrum paths so branch
+    discovery changes do not silently change the operator.
+    """
+    if y_max is None:
+        y_max = 6.0 if Ma > 2.0 else 12.0
+
+    D_eta = chebyshev_D(N)
+    y, D1, D2 = physical_derivatives(D_eta, y_max, N, L)
+    bf, D1, D2 = _scaled_compressible_problem(baseflow, y, D1, D2, length_scale)
+
+    C0, C1, C2 = assemble_compressible_matrices(
+        D1, D2, y, bf, omega, Re, Ma, Pr, gamma,
+        lambda_mu_ratio=lambda_mu_ratio)
+
+    n = len(y)
+
+    # Apply BCs: no-slip plus either isothermal or adiabatic thermal wall BC.
+    wall = n - 1
+    free = 0
+    for var in range(2):
+        for loc in [wall, free]:
+            row = var * n + loc
+            C0[row, :] = 0
+            C1[row, :] = 0
+            C2[row, :] = 0
+            C0[row, row] = 1.0
+
+    temp_slice = slice(2 * n, 3 * n)
+    temp_wall_row = 2 * n + wall
+    temp_free_row = 2 * n + free
+    C0[temp_wall_row, :] = 0
+    C1[temp_wall_row, :] = 0
+    C2[temp_wall_row, :] = 0
+    C0[temp_wall_row, temp_slice] = _temperature_wall_operator(D1, n, wall_bc)
+    C0[temp_free_row, :] = 0
+    C1[temp_free_row, :] = 0
+    C2[temp_free_row, :] = 0
+    C0[temp_free_row, temp_free_row] = 1.0
+
+    return C0, C1, C2, y
+
+
+def _spatial_companion_matrices(C0, C1, C2):
+    """Return companion matrices for the spatial quadratic EVP."""
+    nn = C0.shape[0]
+    LL = np.zeros((2 * nn, 2 * nn), dtype=complex)
+    RR = np.zeros((2 * nn, 2 * nn), dtype=complex)
+
+    LL[:nn, :nn] = -C1
+    LL[:nn, nn:] = -C0
+    LL[nn:, :nn] = np.eye(nn)
+
+    RR[:nn, :nn] = C2
+    RR[nn:, nn:] = np.eye(nn)
+    return LL, RR
+
+
 def solve_temporal_os(baseflow, alpha, Re, N=128, y_max=40.0, L=None):
     """Solve the temporal Orr-Sommerfeld problem."""
     D_eta = chebyshev_D(N)
@@ -166,43 +241,6 @@ def solve_spatial(baseflow, omega, Re, Ma, Pr, gamma, N=128,
     n_modes : int
         Number of eigenvalues to return near the target.
     """
-    if y_max is None:
-        y_max = 6.0 if Ma > 2.0 else 12.0
-
-    D_eta = chebyshev_D(N)
-    y, D1, D2 = physical_derivatives(D_eta, y_max, N, L)
-    bf, D1, D2 = _scaled_compressible_problem(baseflow, y, D1, D2, length_scale)
-
-    C0, C1, C2 = assemble_compressible_matrices(
-        D1, D2, y, bf, omega, Re, Ma, Pr, gamma,
-        lambda_mu_ratio=lambda_mu_ratio)
-
-    n = len(y)
-    nn = 4 * n
-
-    # Apply BCs: no-slip plus either isothermal or adiabatic thermal wall BC.
-    wall = n - 1
-    free = 0
-    for var in range(2):
-        for loc in [wall, free]:
-            row = var * n + loc
-            C0[row, :] = 0
-            C1[row, :] = 0
-            C2[row, :] = 0
-            C0[row, row] = 1.0
-
-    temp_slice = slice(2 * n, 3 * n)
-    temp_wall_row = 2 * n + wall
-    temp_free_row = 2 * n + free
-    C0[temp_wall_row, :] = 0
-    C1[temp_wall_row, :] = 0
-    C2[temp_wall_row, :] = 0
-    C0[temp_wall_row, temp_slice] = _temperature_wall_operator(D1, n, wall_bc)
-    C0[temp_free_row, :] = 0
-    C1[temp_free_row, :] = 0
-    C2[temp_free_row, :] = 0
-    C0[temp_free_row, temp_free_row] = 1.0
-
     # Estimate target if not given
     if target_alpha is None:
         # Second mode phase speed: c ~ 1 - 1/Ma for Ma > 3
@@ -213,19 +251,12 @@ def solve_spatial(baseflow, omega, Re, Ma, Pr, gamma, N=128,
         else:
             target_alpha = omega / 0.4 + 0j
 
-    # Use the determinant-minimization approach:
-    # For each alpha, L(alpha) = C0 + alpha*C1 + alpha^2*C2
-    # Eigenvalue alpha makes L(alpha) singular.
-    # Use companion + shift-invert near target.
-    LL = np.zeros((2*nn, 2*nn), dtype=complex)
-    RR = np.zeros((2*nn, 2*nn), dtype=complex)
-
-    LL[:nn, :nn] = -C1
-    LL[:nn, nn:] = -C0
-    LL[nn:, :nn] = np.eye(nn)
-
-    RR[:nn, :nn] = C2
-    RR[nn:, nn:] = np.eye(nn)
+    C0, C1, C2, y = _assemble_spatial_qep(
+        baseflow, omega, Re, Ma, Pr, gamma, N, y_max, L, wall_bc,
+        length_scale, lambda_mu_ratio,
+    )
+    nn = C0.shape[0]
+    LL, RR = _spatial_companion_matrices(C0, C1, C2)
 
     # Shift-invert: (LL - sigma*RR)^{-1} @ RR has eigenvalues 1/(alpha - sigma)
     sigma = target_alpha
@@ -271,6 +302,71 @@ def solve_spatial(baseflow, omega, Re, Ma, Pr, gamma, N=128,
     # Re-sort by alpha_i (most unstable first)
     idx2 = np.argsort(alphas.imag)
     return alphas[idx2], modes[:, idx2], y
+
+
+def solve_spatial_full_spectrum(
+    baseflow,
+    omega,
+    Re,
+    Ma,
+    Pr,
+    gamma,
+    N=64,
+    y_max=None,
+    L=None,
+    wall_bc='isothermal',
+    length_scale='delta_star',
+    lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO,
+    max_abs_alpha=100.0,
+    max_abs_alpha_i=5.0,
+    residual_tol=None,
+):
+    """Solve the full spatial companion spectrum for branch discovery.
+
+    Unlike :func:`solve_spatial`, this does not shift-invert around a target.
+    It returns every physical-looking alpha from the companion QEP, which is
+    useful when a branch tracker must not miss the Mack/S root because the
+    local shift landed on a nearby acoustic or spurious branch.
+    """
+    C0, C1, C2, y = _assemble_spatial_qep(
+        baseflow, omega, Re, Ma, Pr, gamma, N, y_max, L, wall_bc,
+        length_scale, lambda_mu_ratio,
+    )
+    nn = C0.shape[0]
+    LL, RR = _spatial_companion_matrices(C0, C1, C2)
+
+    eigenvalues, eigenvectors = linalg.eig(
+        LL,
+        RR,
+        overwrite_a=True,
+        overwrite_b=True,
+        check_finite=False,
+    )
+    valid = (
+        np.isfinite(eigenvalues)
+        & (eigenvalues.real > 1.0e-8)
+        & (np.abs(eigenvalues) < max_abs_alpha)
+        & (np.abs(eigenvalues.imag) < max_abs_alpha_i)
+    )
+    alphas = eigenvalues[valid]
+    modes = eigenvectors[nn:, valid]
+
+    if residual_tol is not None:
+        alphas, modes = _filter_with_residual(
+            alphas,
+            modes,
+            C0,
+            C1,
+            C2,
+            nn,
+            omega,
+            Re,
+            Ma,
+            tol=float(residual_tol),
+        )
+
+    idx = np.argsort(alphas.imag)
+    return alphas[idx], modes[:, idx], y
 
 
 def _filter_with_residual(eigenvalues, phi_all, C0, C1, C2, nn,

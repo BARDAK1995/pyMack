@@ -19,3 +19,9 @@ CODEX_*.md
 AUDIT_REGENERATION_DOSSIER.md
 *_RUN_LOG.md
 *_AUDIT_LOG.md
+PYMACK_COMPARISON_AUDIT.md
+
+# Generated diagnostic outputs (regenerable; archived privately, not committed)
+**/diagnostics/**/benchmark_*/
+**/diagnostics/**/pymack_*/
+**/diagnostics/**/smoke_*/
