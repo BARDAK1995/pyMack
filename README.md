@@ -55,12 +55,17 @@ problem with a spectral method, returning the complete spectrum at each station.
 
 ## Validation
 
-| Benchmark | Result |
-|---|---|
-| **Orszag (1971)** — plane Poiseuille | $c = 0.23753 + 0.00374\,i$ at $Re=10^4$ (matches to 5+ significant figures) |
-| **Mack (1984)** — compressible mean flow | Table 11.1 thicknesses < 0.5% error |
-| **Mack (1984)** — Table 10.1 oblique first mode | 0.07–0.91% error (exact-shooting path) |
-| Incompressible Blasius | Tollmien–Schlichting neutral curve reproduced |
+The **incompressible core** is validated by the test suite — the
+**Orszag (1971)** plane-Poiseuille eigenvalue is reproduced to 5+ significant
+figures ($c = 0.23753 + 0.00374\,i$ at $Re=10^4$), and the Blasius
+Tollmien–Schlichting neutral curve is recovered.
+
+> ⚠️ **The compressible / hypersonic validation is a work in progress.** The
+> chapter-by-chapter reproductions of **Mack (1984)** and **Özgen & Kırcalı
+> (2008)** in [`chapters/`](chapters/) are **not yet complete, and several of
+> those figures are currently incorrect** — see [`chapters/README.md`](chapters/README.md).
+> The Mach 6 results shown above are pyMack's own computations, cross-checked
+> internally; they are not yet claimed as 1:1 reproductions of published figures.
 
 ## Install
 
@@ -78,9 +83,10 @@ Runnable examples and reproducible cases:
 
 - `cases/mach535_n2/run_case.py` — full Mach 5.35 second-mode case.
 - `scripts/compute_spatial_neutral_curve.py` — spatial neutral curves.
-- `chapters/` — reproductions organised by chapter of Mack (1984) and of
-  Özgen & Kırcalı (2008).
-- `validation/` — benchmark tests.
+- `chapters/` — chapter-by-chapter reproductions of Mack (1984) and
+  Özgen & Kırcalı (2008) (**work in progress — not all validated yet**; see
+  [`chapters/README.md`](chapters/README.md)).
+- `validation/` — benchmark tests (incompressible core).
 
 ## Citing
 
