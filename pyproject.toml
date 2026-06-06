@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pymack"
+version = "0.1.0"
+description = "Open-source linear stability theory (LST) for compressible & hypersonic boundary-layer transition — Mack modes, growth rates, neutral curves, N-factors."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Mert Senkardesler", email = "mert.senkardesler@gmail.com" }]
+keywords = [
+    "linear-stability-theory", "lst", "boundary-layer", "transition",
+    "hypersonic", "compressible-flow", "mack-mode", "second-mode",
+    "orr-sommerfeld", "neutral-curve", "n-factor", "cfd", "fluid-dynamics",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Physics",
+]
+dependencies = [
+    "numpy>=1.24",
+    "scipy>=1.10",
+    "matplotlib>=3.7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7"]
+
+[project.urls]
+Homepage = "https://github.com/BARDAK1995/pymack"
+Repository = "https://github.com/BARDAK1995/pymack"
+Issues = "https://github.com/BARDAK1995/pymack/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pymack"]
