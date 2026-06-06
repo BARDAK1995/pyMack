@@ -35,3 +35,7 @@ chapters/**/results/
 
 # Internal provenance/comparison artifacts (regenerable; kept private)
 **/trusted_manifests/
+
+# Work-in-progress paper reproductions — kept private until validated
+chapters/
+baseline_snapshot/
