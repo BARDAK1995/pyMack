@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+message: "If you use pyMack in your research, please cite it as below."
+title: "pyMack: open-source linear stability theory for compressible and hypersonic boundary-layer transition"
+abstract: >-
+  pyMack is an open-source Python package for linear stability theory (LST) of
+  compressible and hypersonic boundary layers using Chebyshev spectral
+  collocation. It computes disturbance growth rates, eigenvalue spectra, neutral
+  curves and N-factors, including Mack's second mode. Validated against
+  Orszag (1971), Mack (1984), and Özgen & Kırcalı (2008).
+type: software
+authors:
+  - family-names: Senkardesler
+    given-names: Mert
+    email: mert.senkardesler@gmail.com
+version: 0.1.0
+date-released: "2026-06-06"
+license: MIT
+repository-code: "https://github.com/BARDAK1995/pymack"
+keywords:
+  - linear stability theory
+  - boundary-layer transition
+  - hypersonic
+  - compressible flow
+  - Mack mode
+  - second mode
+  - Orr-Sommerfeld
+  - neutral curve
+  - N-factor
+references:
+  - type: report
+    authors:
+      - family-names: Mack
+        given-names: Leslie M.
+    title: "Boundary-Layer Linear Stability Theory"
+    institution: "AGARD Report No. 709"
+    year: 1984
+  - type: article
+    authors:
+      - family-names: Özgen
+        given-names: Serkan
+      - family-names: Kırcalı
+        given-names: Sertaç A.
+    title: "Linear stability analysis in compressible, flat-plate boundary-layers"
+    journal: "Theoretical and Computational Fluid Dynamics"
+    year: 2008
+  - type: article
+    authors:
+      - family-names: Orszag
+        given-names: Steven A.
+    title: "Accurate solution of the Orr-Sommerfeld stability equation"
+    journal: "Journal of Fluid Mechanics"
+    volume: 50
+    year: 1971

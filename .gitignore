@@ -6,3 +6,16 @@ __pycache__/
 dist/
 build/
 .venv/
+.pytest_cache/
+
+# Never commit copyrighted papers / reproductions (kept locally only, link instead)
+*.pdf
+latex_papers/
+
+# Process logs / scratch (not part of the public project)
+*.log
+automode_log.md
+CODEX_*.md
+AUDIT_REGENERATION_DOSSIER.md
+*_RUN_LOG.md
+*_AUDIT_LOG.md
