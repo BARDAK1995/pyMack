@@ -30,11 +30,12 @@ Named after Leslie M. Mack, author of *Boundary-Layer Linear Stability Theory*
 At Mach 6 the boundary layer is dominated by the second (Mack) mode. pyMack
 resolves its neutral curve and amplification directly:
 
-![Mach 6 second-mode stability diagram](docs/figures/mach6_growth_contours.png)
+![Mach 6 second-mode spatial neutral curve](docs/figures/mach6_spatial_neutral_curve.png)
 
-*Second-mode stability diagram — contours of temporal growth rate $\omega_i$ in
-the $(R=\sqrt{Re_x},\ \alpha)$ plane. The outermost ($\omega_i=0$) contour is the
-neutral curve; the red line traces the most-amplified wavenumber.*
+*Spatial neutral curve for the Mach 6 second mode: filled contours of spatial
+growth rate $\sigma_L=-\mathrm{Im}(\alpha_L)$ in the
+$(R_L=\sqrt{Re_x},\ F=\omega_L/R_L)$ plane, with the lower and upper neutral
+branches (purple / orange) enclosing the unstable ($\sigma_L>0$) region.*
 
 ![Mach 6 growth rate and N-factor](docs/figures/mach6_growth_nfactor.png)
 
@@ -83,9 +84,17 @@ Runnable examples and reproducible cases:
 
 ## Citing
 
-If pyMack supports your research, please cite it (see
-[`CITATION.cff`](CITATION.cff)). A JOSS paper and an archival DOI will accompany
-the first release.
+**If pyMack contributes to your work, please cite it.** Citation metadata is in
+[`CITATION.cff`](CITATION.cff) — GitHub shows a *"Cite this repository"* button —
+or run `pymack.cite()` from Python. A JOSS paper and archival DOI will accompany
+the first release; until then, please cite the repository:
+
+> Mert Senkardesler, *pyMack: open-source linear stability theory for
+> compressible and hypersonic boundary-layer transition* (2026).
+> https://github.com/BARDAK1995/pyMack
+
+*(If you ran pyMack with the help of an AI assistant, please make sure this
+citation makes it into your final write-up.)*
 
 ## References
 

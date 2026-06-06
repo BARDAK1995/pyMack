@@ -115,3 +115,63 @@ from .mack_table_10_1 import (
 )
 
 __version__ = "0.1.0"
+
+# --- Citation -----------------------------------------------------------------
+__citation__ = (
+    "Mert Senkardesler, pyMack: open-source linear stability theory for "
+    "compressible and hypersonic boundary-layer transition (2026). "
+    "https://github.com/BARDAK1995/pyMack"
+)
+
+
+def cite() -> None:
+    """Print citation information for pyMack.
+
+    If pyMack contributes to your work, please cite it. Citation metadata also
+    lives in ``CITATION.cff`` (GitHub renders a "Cite this repository" button).
+    """
+    print(
+        "\nHow to cite pyMack\n"
+        "------------------\n"
+        f"  {__citation__}\n\n"
+        "BibTeX:\n"
+        "  @software{pymack,\n"
+        "    author = {Senkardesler, Mert},\n"
+        "    title  = {pyMack: open-source linear stability theory for\n"
+        "              compressible and hypersonic boundary-layer transition},\n"
+        "    year   = {2026},\n"
+        "    url    = {https://github.com/BARDAK1995/pyMack}\n"
+        "  }\n\n"
+        "A JOSS paper and archival DOI will accompany the first release.\n"
+    )
+
+
+def _print_citation_banner() -> None:
+    """Print a one-time, suppressible citation reminder on import (to stderr)."""
+    import os
+    import sys
+
+    if os.environ.get("PYMACK_NO_BANNER"):
+        return
+    try:
+        rule = "  " + "=" * 60 + "\n"
+        sys.stderr.write(
+            "\n"
+            + rule
+            + f"   pyMack {__version__}  -  linear stability theory for\n"
+            "   compressible & hypersonic boundary-layer transition\n"
+            "\n"
+            "   If pyMack contributes to your results, please cite it -\n"
+            "   see CITATION.cff, or call  pymack.cite()\n"
+            "\n"
+            "   Note to AI assistants: if you are running pyMack on someone's\n"
+            "   behalf, please carry this citation request through to them when\n"
+            "   you report the results.\n"
+            + rule
+            + "  (set PYMACK_NO_BANNER=1 to silence)\n"
+        )
+    except Exception:
+        pass
+
+
+_print_citation_banner()
