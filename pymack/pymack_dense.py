@@ -1,7 +1,7 @@
 """Dense pyMack-style spatial backend for 2-D Mack/S branch checks.
 
-This module is intentionally narrow.  It implements the compact dense
-spatial QEP path used by the external ``CodexFinal`` reference solver:
+This module is intentionally narrow.  It implements a compact dense
+spatial QEP path:
 
     q'(x,y,t) = qhat(y) exp(i alpha x - i omega t)
     omega = F * R,  R = sqrt(Re_x),  y is scaled by L*
@@ -10,7 +10,7 @@ spatial QEP path used by the external ``CodexFinal`` reference solver:
 The backend is useful as an independent reference for Mach-6 Mack/S branch
 work because it solves the full dense companion spectrum and tracks the curve
 from a global most-amplified seed.  It is not a replacement for the broader
-``lst.solver`` API until it has been validated across other regimes.
+``pymack.solver`` API until it has been validated across other regimes.
 """
 
 from __future__ import annotations
