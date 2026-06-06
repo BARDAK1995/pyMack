@@ -30,10 +30,11 @@ Named after Leslie M. Mack, author of *Boundary-Layer Linear Stability Theory*
 At Mach 6 the boundary layer is dominated by the second (Mack) mode. pyMack
 resolves its neutral curve and amplification directly:
 
-![Mach 6 second-mode neutral curve](docs/figures/mach6_neutral_curve.png)
+![Mach 6 second-mode stability diagram](docs/figures/mach6_growth_contours.png)
 
-*Second-mode neutral curve — lower and upper neutral branches in
-$(R=\sqrt{Re_x},\ F)$ space.*
+*Second-mode stability diagram — contours of temporal growth rate $\omega_i$ in
+the $(R=\sqrt{Re_x},\ \alpha)$ plane. The outermost ($\omega_i=0$) contour is the
+neutral curve; the red line traces the most-amplified wavenumber.*
 
 ![Mach 6 growth rate and N-factor](docs/figures/mach6_growth_nfactor.png)
 
