@@ -11,7 +11,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.mack_conditions import (
+from pymack.mack_conditions import (
     make_mack_profile,
     mack_figure_edge_temperature,
     mack_table_10_1_edge_temperature,

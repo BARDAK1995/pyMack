@@ -15,7 +15,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.spectral import chebyshev_D, chebyshev_points, map_domain, physical_derivatives
+from pymack.spectral import chebyshev_D, chebyshev_points, map_domain, physical_derivatives
 
 
 def test_polynomial_differentiation():

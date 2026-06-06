@@ -9,7 +9,7 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.mack_table_10_1 import (
+from pymack.mack_table_10_1 import (
     DEFAULT_TABLE_10_1_CONDITION,
     DEFAULT_TABLE_10_1_WALL_BC,
     choose_initial_root,
@@ -21,7 +21,7 @@ from lst.mack_table_10_1 import (
     order_specs_from_label,
     search_family_initial_roots,
 )
-from lst.mack_conditions import make_mack_profile
+from pymack.mack_conditions import make_mack_profile
 
 
 def parse_args():

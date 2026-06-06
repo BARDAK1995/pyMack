@@ -30,9 +30,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from lst import integrate_n_factor, make_ozgen_profile  # noqa: E402
-from lst.ozgen_solver import solve_temporal_ozgen_2d  # noqa: E402
-from lst.scales import delta_star_over_lstar  # noqa: E402
+from pymack import integrate_n_factor, make_ozgen_profile  # noqa: E402
+from pymack.ozgen_solver import solve_temporal_ozgen_2d  # noqa: E402
+from pymack.scales import delta_star_over_lstar  # noqa: E402
 
 
 _WORKER_PROFILE = None

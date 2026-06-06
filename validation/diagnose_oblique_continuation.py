@@ -14,8 +14,8 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.mack_conditions import make_mack_profile
-from lst.solver import (
+from pymack.mack_conditions import make_mack_profile
+from pymack.solver import (
     continue_temporal_mode_3d,
     refine_temporal_compressible_3d_asymptotic,
     temporal_candidate_spectrum_3d,

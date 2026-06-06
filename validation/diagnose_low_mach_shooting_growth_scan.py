@@ -7,11 +7,11 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.analysis import (
+from pymack.analysis import (
     temporal_growth_scan_3d_shooting_from_anchor,
     temporal_neutral_points_from_scan,
 )
-from lst.mack_conditions import make_mack_profile
+from pymack.mack_conditions import make_mack_profile
 
 
 CASE = {

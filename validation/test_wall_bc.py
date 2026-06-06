@@ -7,8 +7,8 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.mack_shooting import _wall_condition_rows_3d
-from lst.solver import _apply_wall_bc_3d
+from pymack.mack_shooting import _wall_condition_rows_3d
+from pymack.solver import _apply_wall_bc_3d
 
 
 def test_apply_wall_bc_3d_adiabatic_uses_temperature_derivative():

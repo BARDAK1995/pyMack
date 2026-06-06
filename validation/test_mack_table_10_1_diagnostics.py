@@ -7,7 +7,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.mack_table_10_1 import (
+from pymack.mack_table_10_1 import (
     DEFAULT_TABLE_10_1_CONDITION,
     DEFAULT_TABLE_10_1_WALL_BC,
     evaluate_table_10_1_exact_shooting,

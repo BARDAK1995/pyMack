@@ -15,9 +15,9 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.mack_conditions import make_mack_profile
-from lst.reference_data import select_mack_table_10_1_cases
-from lst.solver import solve_temporal_compressible_3d
+from pymack.mack_conditions import make_mack_profile
+from pymack.reference_data import select_mack_table_10_1_cases
+from pymack.solver import solve_temporal_compressible_3d
 
 
 DEFAULT_TABLE_10_1_CONDITION = 'table_10_1'

@@ -7,14 +7,14 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.asymptotic import (
+from pymack.asymptotic import (
     mack_freestream_characteristic_values,
     mack_freestream_decay_basis,
     mack_freestream_subspace_residual,
 )
-from lst.mack_conditions import make_mack_profile
-from lst.mack_shooting import mack_first_order_matrix_3d
-from lst.scales import rescale_baseflow_derivatives
+from pymack.mack_conditions import make_mack_profile
+from pymack.mack_shooting import mack_first_order_matrix_3d
+from pymack.scales import rescale_baseflow_derivatives
 
 
 class UniformFreestreamProfile:

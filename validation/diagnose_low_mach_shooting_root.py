@@ -7,13 +7,13 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.mack_conditions import make_mack_profile
-from lst.mack_shooting import (
+from pymack.mack_conditions import make_mack_profile
+from pymack.mack_shooting import (
     continue_temporal_mode_3d_shooting_sigma_min,
     solve_temporal_mode_3d_shooting,
     solve_temporal_mode_3d_shooting_sigma_min,
 )
-from lst.solver import (
+from pymack.solver import (
     refine_temporal_compressible_3d_asymptotic,
     solve_temporal_compressible_3d,
 )

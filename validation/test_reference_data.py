@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.reference_data import (
+from pymack.reference_data import (
     iter_registry_reference_paths,
     load_mack_table_10_1_cases,
     load_paper_target_registry,

@@ -7,22 +7,22 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.equations import (
+from pymack.equations import (
     DEFAULT_LAMBDA_MU_RATIO,
     momentum_viscous_coefficients,
     transport_conductivity_data,
     transport_temperature_derivatives,
 )
-from lst.baseflow import make_ozgen_profile
-from lst.mack_conditions import make_mack_profile
-from lst.mack_shooting import (
+from pymack.baseflow import make_ozgen_profile
+from pymack.mack_conditions import make_mack_profile
+from pymack.mack_shooting import (
     _sample_scaled_baseflow,
     mack_first_order_matrix_3d,
     mack_first_order_matrix_6,
     temporal_shooting_wall_matrix_3d,
     temporal_shooting_wall_matrix_6,
 )
-from lst.solver import _assemble_temporal_compressible_3d_evp
+from pymack.solver import _assemble_temporal_compressible_3d_evp
 
 
 def reduced_first_order_matrix_3d(

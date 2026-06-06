@@ -11,10 +11,10 @@ import sys, os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
-from lst.spectral import chebyshev_points, chebyshev_D, physical_derivatives
-from lst.baseflow import BlasiusProfile
-from lst.solver import solve_temporal_os
-from lst.equations import assemble_orr_sommerfeld
+from pymack.spectral import chebyshev_points, chebyshev_D, physical_derivatives
+from pymack.baseflow import BlasiusProfile
+from pymack.solver import solve_temporal_os
+from pymack.equations import assemble_orr_sommerfeld
 
 
 def make_poiseuille(y):

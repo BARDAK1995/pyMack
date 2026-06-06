@@ -14,11 +14,11 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lst.analysis import frequency_sweep
-from lst.baseflow import CompressibleBlasiusProfile
-from lst.equations import momentum_viscous_coefficients
-from lst.scales import delta_star_over_lstar
-from lst.solver import (
+from pymack.analysis import frequency_sweep
+from pymack.baseflow import CompressibleBlasiusProfile
+from pymack.equations import momentum_viscous_coefficients
+from pymack.scales import delta_star_over_lstar
+from pymack.solver import (
     solve_spatial,
     solve_spatial_from_temporal,
     solve_temporal_compressible,
