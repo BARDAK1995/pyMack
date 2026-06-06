@@ -60,12 +60,11 @@ The **incompressible core** is validated by the test suite — the
 figures ($c = 0.23753 + 0.00374\,i$ at $Re=10^4$), and the Blasius
 Tollmien–Schlichting neutral curve is recovered.
 
-> ⚠️ **The compressible / hypersonic validation is a work in progress.** The
-> chapter-by-chapter reproductions of **Mack (1984)** and **Özgen & Kırcalı
-> (2008)** in [`chapters/`](chapters/) are **not yet complete, and several of
-> those figures are currently incorrect** — see [`chapters/README.md`](chapters/README.md).
-> The Mach 6 results shown above are pyMack's own computations, cross-checked
-> internally; they are not yet claimed as 1:1 reproductions of published figures.
+> ⚠️ **The compressible / hypersonic validation against published benchmarks is
+> a work in progress**, developed separately and **not yet included here**. The
+> Mach 6 results shown above are pyMack's own computations, cross-checked
+> internally — not yet claimed as 1:1 reproductions of the figures in
+> Mack (1984) or Özgen & Kırcalı (2008).
 
 ## Install
 
@@ -79,13 +78,11 @@ Requires Python ≥ 3.9.
 
 ## Usage
 
-Runnable examples and reproducible cases:
+Runnable scripts and tests:
 
-- `cases/mach535_n2/run_case.py` — full Mach 5.35 second-mode case.
 - `scripts/compute_spatial_neutral_curve.py` — spatial neutral curves.
-- `chapters/` — chapter-by-chapter reproductions of Mack (1984) and
-  Özgen & Kırcalı (2008) (**work in progress — not all validated yet**; see
-  [`chapters/README.md`](chapters/README.md)).
+- `scripts/compute_spatial_fixed_frequency_curves.py` — fixed-frequency growth and N-factor.
+- `scripts/compute_mach6_growth_nfactor.py` — the Mach 6 second-mode workflow.
 - `validation/` — benchmark tests (incompressible core).
 
 ## Citing
@@ -117,13 +114,13 @@ citation makes it into your final write-up.)*
 ## Development & AI usage
 
 pyMack started out as an implementation of old course notes on boundary-layer
-stability theory, with correctness established by benchmarking directly against
-the published figures and tables of the references above (Mack 1984,
-Özgen & Kırcalı 2008, Orszag 1971). From there it was debugged substantially
-with the help of AI tools, then reorganized and refactored into a reusable
-package. All numerical results are validated against the published references,
-and the author made the core modeling decisions and is responsible for the
-correctness of the code and results.
+stability theory. Its incompressible core is checked against published
+benchmarks (e.g. the Orszag 1971 plane-Poiseuille eigenvalue); validation of the
+compressible results against the published figures of Mack (1984) and
+Özgen & Kırcalı (2008) is ongoing. The code was debugged substantially with the
+help of AI tools, then reorganized and refactored into a reusable package. The
+author made the core modeling decisions and is responsible for the correctness
+of the code and results.
 
 ## License
 
