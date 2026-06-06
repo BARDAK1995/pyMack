@@ -12,6 +12,10 @@ build/
 *.pdf
 latex_papers/
 
+# Copyrighted published-figure scans (digitization inputs) — kept private only
+/10.*.png
+/ozgenFig3.png
+
 # Process logs / scratch (not part of the public project)
 *.log
 automode_log.md
