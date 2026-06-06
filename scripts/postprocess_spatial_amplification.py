@@ -91,6 +91,41 @@ def _crossings(rows):
     return crossings
 
 
+def _select_unstable_lobe(freq_rows, crossings):
+    if len(crossings) < 2:
+        return None
+    finite_rows = [
+        row for row in freq_rows
+        if math.isfinite(float(row["R_L"])) and math.isfinite(float(row["sigma_L"]))
+    ]
+    if not finite_rows:
+        return crossings[0], crossings[-1]
+    peak_row = max(finite_rows, key=lambda row: float(row["sigma_L"]))
+    peak_R = float(peak_row["R_L"])
+    best_pair = None
+    best_score = -math.inf
+    for left, right in zip(crossings[:-1], crossings[1:]):
+        lower_R = float(left[0])
+        upper_R = float(right[0])
+        if upper_R <= lower_R:
+            continue
+        interval_rows = [
+            row for row in finite_rows
+            if lower_R <= float(row["R_L"]) <= upper_R
+        ]
+        if not interval_rows:
+            continue
+        max_sigma = max(float(row["sigma_L"]) for row in interval_rows)
+        if lower_R <= peak_R <= upper_R:
+            return left, right
+        if max_sigma > best_score:
+            best_pair = (left, right)
+            best_score = max_sigma
+    if best_pair is not None:
+        return best_pair
+    return crossings[0], crossings[-1]
+
+
 def _integrate_lobe(rows, lower, upper, *, dx_over_lstar_per_dR):
     lower_R, lower_left, lower_right = lower
     upper_R, upper_left, upper_right = upper
@@ -324,8 +359,7 @@ def _process_frequency(
             "n_samples": int(len(freq_rows)),
         }
 
-    lower = crosses[0]
-    upper = crosses[-1]
+    lower, upper = _select_unstable_lobe(freq_rows, crosses)
     lobe = _integrate_lobe(
         freq_rows,
         lower,
@@ -720,6 +754,79 @@ def _plot_neutral_peak_growth(path, envelope_rows, title):
     plt.close(fig)
 
 
+def _plot_growth_contour_neutral_envelope(
+    path,
+    rows,
+    envelope_rows,
+    title,
+    *,
+    plot_x_min=None,
+    plot_x_max=None,
+):
+    fig, ax = plt.subplots(figsize=(8.8, 5.4))
+    finite_rows = [
+        row for row in rows
+        if math.isfinite(float(row.get("R_L", math.nan)))
+        and math.isfinite(float(row.get("freq_parameter", math.nan)))
+        and math.isfinite(float(row.get("sigma_L", math.nan)))
+    ]
+    if not finite_rows:
+        ax.text(
+            0.5,
+            0.5,
+            "No finite growth samples found",
+            transform=ax.transAxes,
+            ha="center",
+            va="center",
+        )
+    else:
+        R = np.array([float(row["R_L"]) for row in finite_rows], dtype=float)
+        F = np.array([1.0e4 * float(row["freq_parameter"]) for row in finite_rows], dtype=float)
+        sigma = np.array([float(row["sigma_L"]) for row in finite_rows], dtype=float)
+        max_abs = float(np.nanmax(np.abs(sigma)))
+        if not math.isfinite(max_abs) or max_abs <= 0.0:
+            max_abs = 1.0
+        levels = np.linspace(-max_abs, max_abs, 33)
+        R_unique = np.array(sorted(set(float(value) for value in R)), dtype=float)
+        F_unique = np.array(sorted(set(float(value) for value in F)), dtype=float)
+        if len(R_unique) * len(F_unique) >= len(finite_rows):
+            r_index = {value: i for i, value in enumerate(R_unique)}
+            f_index = {value: i for i, value in enumerate(F_unique)}
+            Z = np.full((len(F_unique), len(R_unique)), np.nan, dtype=float)
+            for r_value, f_value, sigma_value in zip(R, F, sigma):
+                Z[f_index[float(f_value)], r_index[float(r_value)]] = sigma_value
+            Z_masked = np.ma.masked_invalid(Z)
+            cf = ax.contourf(R_unique, F_unique, Z_masked, levels=levels, cmap="coolwarm", extend="both")
+            try:
+                ax.contour(R_unique, F_unique, Z_masked, levels=[0.0], colors="0.1", linewidths=1.1)
+            except ValueError:
+                pass
+        else:
+            cf = ax.tricontourf(R, F, sigma, levels=levels, cmap="coolwarm", extend="both")
+            try:
+                ax.tricontour(R, F, sigma, levels=[0.0], colors="0.1", linewidths=1.1)
+            except ValueError:
+                pass
+        cb = fig.colorbar(cf, ax=ax)
+        cb.set_label(r"spatial growth $\sigma_L=-\mathrm{Im}(\alpha_L)$")
+
+    if envelope_rows:
+        F_env = np.array([row["F_x1e4"] for row in envelope_rows], dtype=float)
+        lower = np.array([row["lower_neutral_R_L"] for row in envelope_rows], dtype=float)
+        upper = np.array([row["upper_neutral_R_L"] for row in envelope_rows], dtype=float)
+        ax.plot(lower, F_env, "k--", lw=2.0, label="lower neutral")
+        ax.plot(upper, F_env, "k-", lw=2.0, label="upper neutral")
+        ax.legend(frameon=False)
+    ax.set_xlabel(r"$R=\sqrt{Re_x}$")
+    ax.set_ylabel(r"$F \times 10^4$")
+    ax.set_title(f"{title}: growth contour and neutral envelope")
+    _apply_plot_xlim(ax, plot_x_min, plot_x_max)
+    ax.grid(True, alpha=0.25)
+    fig.tight_layout()
+    fig.savefig(path, dpi=200)
+    plt.close(fig)
+
+
 def parse_args(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("input_csv")
@@ -809,6 +916,7 @@ def main(argv=None):
     linear_start_png_path = output_dir / "spatial_fixed_frequency_amplification_linear_from_start.png"
     neutral_envelope_png_path = output_dir / "spatial_fixed_frequency_neutral_envelope.png"
     neutral_peak_png_path = output_dir / "spatial_fixed_frequency_neutral_envelope_peak_growth.png"
+    neutral_contour_png_path = output_dir / "spatial_fixed_frequency_neutral_envelope_growth_contour.png"
     metadata_path = output_dir / "spatial_fixed_frequency_amplification_metadata.json"
     neutral_envelope_rows = _neutral_envelope_rows(summaries)
     _write_csv(curves_csv, amplified_rows)
@@ -848,6 +956,14 @@ def main(argv=None):
         neutral_envelope_rows,
         args.title,
     )
+    _plot_growth_contour_neutral_envelope(
+        neutral_contour_png_path,
+        amplified_rows,
+        neutral_envelope_rows,
+        args.title,
+        plot_x_min=args.plot_x_min,
+        plot_x_max=args.plot_x_max,
+    )
     with open(metadata_path, "w", encoding="utf-8") as handle:
         json.dump({
             "status": "diagnostic_not_paper_certified",
@@ -866,6 +982,10 @@ def main(argv=None):
             "neutral_envelope_source": (
                 "linear interpolation of signed fixed-frequency growth "
                 "crossings sigma_L=0"
+            ),
+            "neutral_contour_source": (
+                "sampled fixed-frequency growth field sigma_L over the same "
+                "R_L and frequency grid used for branch integration"
             ),
             "n_factor_formula": (
                 "N = integral sigma_phys dx = integral "
@@ -897,6 +1017,7 @@ def main(argv=None):
     print(f"linear_start_png={linear_start_png_path}")
     print(f"neutral_envelope_png={neutral_envelope_png_path}")
     print(f"neutral_peak_png={neutral_peak_png_path}")
+    print(f"neutral_contour_png={neutral_contour_png_path}")
     print(f"metadata={metadata_path}")
     for summary in summaries:
         if summary.get("status") != "ok":

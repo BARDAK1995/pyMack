@@ -7,6 +7,7 @@ import csv
 import json
 import os
 import sys
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 import matplotlib
@@ -32,6 +33,72 @@ from lst.solver import solve_spatial, solve_spatial_full_spectrum  # noqa: E402
 
 
 SECOND_MODE_ALPHA_MIN_L = None
+
+
+def _configure_worker_threads():
+    for key in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS"):
+        os.environ.setdefault(key, "1")
+
+
+def _chunk_array(values, n_chunks):
+    values = list(values)
+    if n_chunks <= 1 or len(values) <= 1:
+        return [values]
+    n_chunks = min(int(n_chunks), len(values))
+    return [list(chunk) for chunk in np.array_split(np.asarray(values, dtype=float), n_chunks) if len(chunk) > 0]
+
+
+def _dense_records_for_frequency_chunk(payload):
+    _configure_worker_threads()
+    gas = DenseGasModel(**payload["gas"])
+    base_cfg = DenseBaseFlowConfig(**payload["base_cfg"])
+    lst_cfg = DenseLSTConfig(**payload["lst_cfg"])
+    _base, y, D, base_grid = prepare_dense_case(gas, base_cfg, lst_cfg)
+
+    records = []
+    R_L = np.asarray(payload["R_L"], dtype=float)
+    delta_over_l = float(payload["delta_over_l"])
+    c_phase = float(payload["c_phase"])
+    for freq in payload["freqs"]:
+        rows = solve_mack_branch(
+            float(freq),
+            R_L,
+            y,
+            D,
+            base_grid,
+            gas,
+            lst_cfg,
+            convention="mack",
+        )
+        for row in rows:
+            alpha_L = complex(row["alpha_real"], row["alpha_imag"])
+            alpha_delta = alpha_L * delta_over_l
+            omega_L = float(row["omega"])
+            R = float(row["R"])
+            records.append({
+                "freq_parameter": float(freq),
+                "R_L": R,
+                "omega_L": omega_L,
+                "omega_delta": float(omega_L * delta_over_l),
+                "Re_delta": float(R * delta_over_l),
+                "alpha_r_L": float(alpha_L.real),
+                "alpha_i_L": float(alpha_L.imag),
+                "phase_speed_L": float(row["phase_speed"]),
+                "wavelength_L": float(
+                    2.0 * np.pi / alpha_L.real
+                    if np.isfinite(alpha_L.real) and alpha_L.real > 0.0
+                    else np.nan
+                ),
+                "sigma_L": float(row["growth"]),
+                "alpha_r_delta": float(alpha_delta.real),
+                "alpha_i_delta": float(alpha_delta.imag),
+                "sigma_delta": float(row["growth"] * delta_over_l),
+                "n_candidates": int(row["n_candidates"]),
+                "n_filtered_candidates": int(row["n_candidates"]),
+                "target_alpha_L": float(omega_L / c_phase),
+                "status": "ok" if row["selected"] else "not_tracked",
+            })
+    return records
 
 
 def _select_alpha(alphas, target_alpha, previous_alpha=None, *, omega_L=None,
@@ -626,82 +693,67 @@ def _compute_curves_pymack_dense(args, delta_over_l, freqs, R_L, sutherland_s, t
     if args.profile_family not in {"sutherland_blasius", "power_law"}:
         raise ValueError("pymack_dense backend supports sutherland_blasius or power_law profiles")
 
-    gas = DenseGasModel(
-        gamma=float(args.gamma),
-        prandtl=float(args.pr),
-        viscosity_law="power" if args.profile_family == "power_law" else "sutherland",
-        mu_power=float(args.viscosity_exponent),
-        sutherland_S_K=float(sutherland_s),
-        T_edge_K=float(args.t_edge),
-    )
-    base_cfg = DenseBaseFlowConfig(
-        mach_edge=float(args.ma),
-        Tw_Te=float(args.tw_over_te),
-        eta_max=float(args.eta_max),
-        eta_nodes=int(args.dense_eta_nodes),
-        bvp_tol=float(args.dense_bvp_tol),
-        adiabatic=bool(args.dense_adiabatic_wall),
-    )
     y_max_lstar = (
         float(args.y_max_lstar)
         if args.y_max_lstar is not None
         else float(args.dense_y_max_lstar)
     )
-    lst_cfg = DenseLSTConfig(
-        ny=int(args.N),
-        y_max=y_max_lstar,
-        c_min=float(args.phase_min),
-        c_max=float(args.phase_max),
-        max_abs_alpha=float(args.dense_max_abs_alpha),
-        max_abs_ai=float(args.dense_max_abs_ai),
-        max_ai_over_ar=float(args.dense_max_ai_over_ar),
-    )
-    _base, y, D, base_grid = prepare_dense_case(gas, base_cfg, lst_cfg)
-
+    payload_base = {
+        "gas": {
+            "gamma": float(args.gamma),
+            "prandtl": float(args.pr),
+            "viscosity_law": "power" if args.profile_family == "power_law" else "sutherland",
+            "mu_power": float(args.viscosity_exponent),
+            "sutherland_S_K": float(sutherland_s),
+            "T_edge_K": float(args.t_edge),
+        },
+        "base_cfg": {
+            "mach_edge": float(args.ma),
+            "Tw_Te": float(args.tw_over_te),
+            "eta_max": float(args.eta_max),
+            "eta_nodes": int(args.dense_eta_nodes),
+            "bvp_tol": float(args.dense_bvp_tol),
+            "adiabatic": bool(args.dense_adiabatic_wall),
+        },
+        "lst_cfg": {
+            "ny": int(args.N),
+            "y_max": y_max_lstar,
+            "c_min": float(args.phase_min),
+            "c_max": float(args.phase_max),
+            "max_abs_alpha": float(args.dense_max_abs_alpha),
+            "max_abs_ai": float(args.dense_max_abs_ai),
+            "max_ai_over_ar": float(args.dense_max_ai_over_ar),
+        },
+        "R_L": [float(r) for r in R_L],
+        "delta_over_l": float(delta_over_l),
+        "c_phase": float(args.c_phase),
+    }
     records = []
-    for freq in freqs:
-        rows = solve_mack_branch(
-            float(freq),
-            R_L,
-            y,
-            D,
-            base_grid,
-            gas,
-            lst_cfg,
-            convention="mack",
-        )
-        for row in rows:
-            alpha_L = complex(row["alpha_real"], row["alpha_imag"])
-            alpha_delta = alpha_L * delta_over_l
-            omega_L = float(row["omega"])
-            R = float(row["R"])
-            records.append({
-                "freq_parameter": float(freq),
-                "R_L": R,
-                "omega_L": omega_L,
-                "omega_delta": float(omega_L * delta_over_l),
-                "Re_delta": float(R * delta_over_l),
-                "alpha_r_L": float(alpha_L.real),
-                "alpha_i_L": float(alpha_L.imag),
-                "phase_speed_L": float(row["phase_speed"]),
-                "wavelength_L": float(
-                    2.0 * np.pi / alpha_L.real
-                    if np.isfinite(alpha_L.real) and alpha_L.real > 0.0
-                    else np.nan
-                ),
-                "sigma_L": float(row["growth"]),
-                "alpha_r_delta": float(alpha_delta.real),
-                "alpha_i_delta": float(alpha_delta.imag),
-                "sigma_delta": float(row["growth"] * delta_over_l),
-                "n_candidates": int(row["n_candidates"]),
-                "n_filtered_candidates": int(row["n_candidates"]),
-                "target_alpha_L": float(omega_L / args.c_phase),
-                "status": "ok" if row["selected"] else "not_tracked",
-            })
+    workers = max(1, int(args.workers))
+    chunks = _chunk_array(freqs, workers)
+    if workers == 1 or len(chunks) == 1:
+        for chunk in chunks:
+            payload = dict(payload_base)
+            payload["freqs"] = [float(freq) for freq in chunk]
+            records.extend(_dense_records_for_frequency_chunk(payload))
+    else:
+        with ProcessPoolExecutor(
+            max_workers=workers,
+            initializer=_configure_worker_threads,
+        ) as executor:
+            futures = []
+            for chunk in chunks:
+                payload = dict(payload_base)
+                payload["freqs"] = [float(freq) for freq in chunk]
+                futures.append(executor.submit(_dense_records_for_frequency_chunk, payload))
+            for future in as_completed(futures):
+                records.extend(future.result())
+    records.sort(key=lambda row: (float(row["freq_parameter"]), float(row["R_L"])))
 
     transport = dict(transport)
     transport["backend"] = "pymack_dense"
     transport["dense_y_max_lstar"] = y_max_lstar
+    transport["workers"] = workers
     return records, delta_over_l, freqs, R_L, sutherland_s, transport
 
 
@@ -887,6 +939,15 @@ def parse_args():
     )
     parser.add_argument("--n-modes", type=int, default=10)
     parser.add_argument(
+        "--workers",
+        type=int,
+        default=1,
+        help=(
+            "Number of process workers for independent dense-backend "
+            "frequency branches. The ms_lst backend remains serial here."
+        ),
+    )
+    parser.add_argument(
         "--backend",
         choices=["ms_lst", "pymack_dense"],
         default="ms_lst",
@@ -1018,6 +1079,7 @@ def main():
             "wall_bc": args.wall_bc,
             "N": int(args.N),
             "backend": args.backend,
+            "workers": int(args.workers),
             "solver_length_scale": args.solver_length_scale,
             "y_max_delta": float(args.y_max_delta),
             "y_max_lstar": (

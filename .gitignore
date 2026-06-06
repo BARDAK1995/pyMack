@@ -25,3 +25,6 @@ PYMACK_COMPARISON_AUDIT.md
 **/diagnostics/**/benchmark_*/
 **/diagnostics/**/pymack_*/
 **/diagnostics/**/smoke_*/
+
+# Generated result outputs (regenerable; archived privately, not committed)
+chapters/**/results/
