@@ -33,6 +33,5 @@ PYMACK_COMPARISON_AUDIT.md
 # Generated result outputs (regenerable; archived privately, not committed)
 chapters/**/results/
 
-# Internal comparison/provenance artifacts (leak local paths; kept private)
+# Internal provenance/comparison artifacts (regenerable; kept private)
 **/trusted_manifests/
-**/codexfinal_current_verification/
