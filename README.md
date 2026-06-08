@@ -6,6 +6,9 @@ solver for disturbance **growth rates, eigenvalue spectra, neutral curves, and
 N-factors** — including **Mack's second mode**, the instability that governs
 hypersonic transition.
 
+[![CI](https://github.com/BARDAK1995/pyMack/actions/workflows/ci.yml/badge.svg)](https://github.com/BARDAK1995/pyMack/actions/workflows/ci.yml)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20588214.svg)](https://doi.org/10.5281/zenodo.20588214)
+
 Named after Leslie M. Mack, author of *Boundary-Layer Linear Stability Theory*
 (AGARD-R-709, 1984).
 
@@ -76,14 +79,26 @@ pip install -e .
 
 Requires Python ≥ 3.9.
 
+## Testing
+
+```bash
+# Install with development dependencies
+pip install -e ".[dev]"
+
+# Run the validation test suite
+pytest validation/ -q
+```
+
+The `validation/` directory contains the main benchmark tests (Orr-Sommerfeld, Mack mean flow, Table 10.1 oblique growth, spatial amplification guardrails, etc.).
+
 ## Usage
 
-Runnable scripts and tests:
+Runnable scripts and examples:
 
 - `scripts/compute_spatial_neutral_curve.py` — spatial neutral curves.
 - `scripts/compute_spatial_fixed_frequency_curves.py` — fixed-frequency growth and N-factor.
 - `scripts/compute_mach6_growth_nfactor.py` — the Mach 6 second-mode workflow.
-- `validation/` — benchmark tests (incompressible core).
+- `validation/` — benchmark tests (incompressible core + compressible diagnostics).
 
 ## Citing
 

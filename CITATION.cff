@@ -12,10 +12,14 @@ authors:
   - family-names: Senkardesler
     given-names: Mert
     email: mert.senkardesler@gmail.com
-version: 0.1.0
-date-released: "2026-06-06"
+version: 0.0.1
+date-released: "2026-06-07"
 license: MIT
 repository-code: "https://github.com/BARDAK1995/pymack"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.20588214"
+    description: "Archived snapshot of version 0.0.1"
 keywords:
   - linear stability theory
   - boundary-layer transition
