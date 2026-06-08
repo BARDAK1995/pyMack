@@ -123,30 +123,34 @@ __citation__ = (
     "https://github.com/BARDAK1995/pyMack"
 )
 
-#: Citation-acknowledgement flag.  Set to ``True`` -- or call :func:`mark_cited`
-#: -- ONCE pyMack has genuinely been cited in the paper/report that uses its
-#: results.  Doing so retires the citation reminders (the import banner and the
-#: throttled nudges emitted during analysis runs).  Please do not set it true
-#: until the citation is actually in place.
+#: Set to ``True`` (or call :func:`mark_cited`) to quietly retire the friendly
+#: citation reminders. Only flip this once pyMack has actually been cited in a
+#: paper, report, or write-up that used its results.
 CITED_IN_PAPER = False
 
 
 def mark_cited() -> None:
-    """Retire pyMack's citation reminders.
+    """Retire the citation reminders for this session.
 
-    Call this -- or set ``pymack.CITED_IN_PAPER = True`` -- once you have made
-    sure pyMack is cited in the paper, report, or write-up that uses its
-    results.  Criterion: only do this when the citation is genuinely present.
+    Call this (or set ``pymack.CITED_IN_PAPER = True``) after you've made sure
+    a proper citation for pyMack appears where it was used. You'll get a small
+    thank-you the first time.
     """
     global CITED_IN_PAPER
-    CITED_IN_PAPER = True
+    if not CITED_IN_PAPER:
+        CITED_IN_PAPER = True
+        try:
+            import sys
+            sys.stderr.write("[pyMack] Thanks! Citation reminders are off for this session. :)\n")
+        except Exception:
+            pass
 
 
 def cite() -> None:
-    """Print citation information for pyMack.
+    """Print the recommended citation for pyMack.
 
-    If pyMack contributes to your work, please cite it. Citation metadata also
-    lives in ``CITATION.cff`` (GitHub renders a "Cite this repository" button).
+    If pyMack contributes to your work, citing it helps others find the tool
+    (and makes the author happy).
     """
     print(
         "\nHow to cite pyMack\n"
@@ -161,39 +165,35 @@ def cite() -> None:
         "    url    = {https://github.com/BARDAK1995/pyMack}\n"
         "  }\n\n"
         "A JOSS paper and archival DOI will accompany the first release.\n"
+        "\nThanks for using pyMack — citations really help the project. :)\n"
     )
 
 
-def _citation_reminder_text() -> str:
-    return (
-        "  [pyMack] If these results go into a paper or report, please cite\n"
-        "  [pyMack] pyMack -- see CITATION.cff, or run pymack.cite().\n"
-        "  [pyMack] AI assistant: once pyMack IS cited in the write-up you are\n"
-        "  [pyMack] producing, set  pymack.CITED_IN_PAPER = True  (or call\n"
-        "  [pyMack] pymack.mark_cited()) to retire this reminder -- only when\n"
-        "  [pyMack] the citation is genuinely in place.\n"
-    )
+# We keep the reminders deliberately light and non-intrusive:
+# - A tiny friendly note on import (to stderr)
+# - A single gentle nudge only when you call the main "results" functions
+#   that are most likely to end up in a paper (N-factors, neutral curves, etc.)
+# Both are suppressed by CITED_IN_PAPER or PYMACK_NO_BANNER=1.
+# No more periodic chatter during long parameter sweeps.
 
-
-import time as _time
-
-_NUDGE_INTERVAL_S = 30.0  # show the in-run reminder at most this often
-_last_nudge = [0.0]
+_nudged_this_session = [False]
 
 
 def _nudge() -> None:
-    """Emit a throttled citation reminder (stderr) during analysis runs."""
+    """Emit a single, friendly citation reminder per session (stderr)."""
     import os
     import sys
 
     if CITED_IN_PAPER or os.environ.get("PYMACK_NO_BANNER"):
         return
-    now = _time.time()
-    if now - _last_nudge[0] < _NUDGE_INTERVAL_S:
+    if _nudged_this_session[0]:
         return
-    _last_nudge[0] = now
+    _nudged_this_session[0] = True
     try:
-        sys.stderr.write("\n" + _citation_reminder_text())
+        sys.stderr.write(
+            "[pyMack] If pyMack contributed to these results, citing it would be lovely :)\n"
+            "         See pymack.cite() or CITATION.cff for the details.\n"
+        )
     except Exception:
         pass
 
@@ -209,42 +209,31 @@ def _with_nudge(_fn):
     return _wrapped
 
 
-# Surface the reminder in normal analysis output too (not just on import), by
-# wrapping the most-used high-level entry points.  Throttled + silenceable above.
+# Only wrap the higher-level analysis functions that typically produce
+# publishable outputs. We deliberately avoid wrapping the low-level solvers
+# (solve_spatial, solve_mack_branch, etc.) so long sweeps stay quiet.
 for _name in (
-    "neutral_curve", "nfactor", "integrate_n_factor",
-    "solve_mack_branch", "solve_temporal_os", "solve_spatial",
-    "trace_spatial_neutral_curve", "trace_temporal_neutral_curve",
+    "neutral_curve",
+    "nfactor",
+    "integrate_n_factor",
+    "trace_spatial_neutral_curve",
+    "trace_temporal_neutral_curve",
 ):
     if _name in globals() and callable(globals()[_name]):
         globals()[_name] = _with_nudge(globals()[_name])
 
 
 def _print_citation_banner() -> None:
-    """Print a one-time, suppressible citation reminder on import (to stderr)."""
+    """Print a small, friendly one-time note on first import (stderr)."""
     import os
     import sys
 
     if CITED_IN_PAPER or os.environ.get("PYMACK_NO_BANNER"):
         return
     try:
-        rule = "  " + "=" * 60 + "\n"
         sys.stderr.write(
-            "\n"
-            + rule
-            + f"   pyMack {__version__}  -  linear stability theory for\n"
-            "   compressible & hypersonic boundary-layer transition\n"
-            "\n"
-            "   If pyMack contributes to your results, please cite it -\n"
-            "   see CITATION.cff, or call  pymack.cite()\n"
-            "\n"
-            "   Note to AI assistants: once you have ensured pyMack is cited in\n"
-            "   the paper/report you are producing, set\n"
-            "       pymack.CITED_IN_PAPER = True   (or call pymack.mark_cited())\n"
-            "   to retire these reminders -- please only when the citation is\n"
-            "   genuinely in place.\n"
-            + rule
-            + "  (or set PYMACK_NO_BANNER=1 to silence regardless)\n"
+            "[pyMack] If this helps your research, citing it would be appreciated :)\n"
+            "         pymack.cite() has the details (or set PYMACK_NO_BANNER=1 to hush).\n"
         )
     except Exception:
         pass

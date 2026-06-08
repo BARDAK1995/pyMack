@@ -87,17 +87,23 @@ Runnable scripts and tests:
 
 ## Citing
 
-**If pyMack contributes to your work, please cite it.** Citation metadata is in
-[`CITATION.cff`](CITATION.cff) — GitHub shows a *"Cite this repository"* button —
-or run `pymack.cite()` from Python. A JOSS paper and archival DOI will accompany
-the first release; until then, please cite the repository:
+If pyMack contributes to your work, citing it helps others discover the tool
+(and makes the author happy). Citation metadata lives in
+[`CITATION.cff`](CITATION.cff) — GitHub also shows a *"Cite this repository"*
+button — or just run `pymack.cite()` from Python.
 
 > Mert Senkardesler, *pyMack: open-source linear stability theory for
 > compressible and hypersonic boundary-layer transition* (2026).
 > https://github.com/BARDAK1995/pyMack
 
-*(If you ran pyMack with the help of an AI assistant, please make sure this
-citation makes it into your final write-up.)*
+A JOSS paper and archival DOI will accompany the first release. In the meantime,
+the citation above is the one to use.
+
+*(If an AI assistant helped you run pyMack, just double-check that the citation
+actually ends up in the final write-up. :))*
+
+Quick silence: set the environment variable `PYMACK_NO_BANNER=1` if the little
+reminders ever get in your way.
 
 ## References
 
