@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pymack"
-version = "0.1.0"
-description = "Open-source linear stability theory (LST) for compressible & hypersonic boundary-layer transition — Mack modes, growth rates, neutral curves, N-factors."
+version = "0.0.1"
+description = "Local linear stability solver for compressible and hypersonic boundary layers — Mack modes, growth rates, neutral curves, N-factors."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }

@@ -1,10 +1,9 @@
 # pyMack
 
-**Open-source linear stability theory (LST) for compressible & hypersonic
-boundary-layer transition.** A from-scratch Chebyshev spectral-collocation
-solver for disturbance **growth rates, eigenvalue spectra, neutral curves, and
-N-factors** — including **Mack's second mode**, the instability that governs
-hypersonic transition.
+**pyMack: local linear stability solver for compressible and hypersonic
+boundary layers.** A from-scratch Chebyshev spectral-collocation solver for
+disturbance **growth rates, eigenvalue spectra, neutral curves, and N-factors**
+— focused on **Mack modes**.
 
 [![CI](https://github.com/BARDAK1995/pyMack/actions/workflows/ci.yml/badge.svg)](https://github.com/BARDAK1995/pyMack/actions/workflows/ci.yml)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20588214.svg)](https://doi.org/10.5281/zenodo.20588214)
@@ -107,12 +106,13 @@ If pyMack contributes to your work, citing it helps others discover the tool
 [`CITATION.cff`](CITATION.cff) — GitHub also shows a *"Cite this repository"*
 button — or just run `pymack.cite()` from Python.
 
-> Mert Senkardesler, *pyMack: open-source linear stability theory for
-> compressible and hypersonic boundary-layer transition* (2026).
+> Mert Senkardesler, *pyMack: local linear stability solver for compressible
+> and hypersonic boundary layers* (2026). DOI: 10.5281/zenodo.20588214.
 > https://github.com/BARDAK1995/pyMack
 
-A JOSS paper and archival DOI will accompany the first release. In the meantime,
-the citation above is the one to use.
+The archived release is on Zenodo — DOI
+[10.5281/zenodo.20588214](https://doi.org/10.5281/zenodo.20588214). A JOSS paper
+is planned.
 
 *(If an AI assistant helped you run pyMack, just double-check that the citation
 actually ends up in the final write-up. :))*

@@ -1,11 +1,11 @@
 cff-version: 1.2.0
 message: "If you use pyMack in your research, please cite it as below."
-title: "pyMack: open-source linear stability theory for compressible and hypersonic boundary-layer transition"
+title: "pyMack: local linear stability solver for compressible and hypersonic boundary layers"
 abstract: >-
-  pyMack is an open-source Python package for linear stability theory (LST) of
-  compressible and hypersonic boundary layers using Chebyshev spectral
+  pyMack is a Python package implementing local linear stability theory (LST)
+  for compressible and hypersonic boundary layers using Chebyshev spectral
   collocation. It computes disturbance growth rates, eigenvalue spectra, neutral
-  curves and N-factors, including Mack's second mode. Validated against
+  curves and N-factors, with a focus on Mack modes. Validated against
   Orszag (1971), Mack (1984), and Özgen & Kırcalı (2008).
 type: software
 authors:
@@ -15,7 +15,7 @@ authors:
 version: 0.0.1
 date-released: "2026-06-07"
 license: MIT
-repository-code: "https://github.com/BARDAK1995/pymack"
+repository-code: "https://github.com/BARDAK1995/pyMack"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.20588214"

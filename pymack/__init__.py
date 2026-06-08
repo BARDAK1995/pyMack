@@ -1,5 +1,5 @@
 """
-Compressible Linear Stability Theory (LST) Solver
+Local Linear Stability Solver for Compressible and Hypersonic Boundary Layers (Mack Modes)
 ==================================================
 
 Spatial stability analysis for compressible boundary layers using
@@ -114,13 +114,13 @@ from .mack_table_10_1 import (
     load_low_mid_table_10_1_families,
 )
 
-__version__ = "0.1.0"
+__version__ = "0.0.1"
 
 # --- Citation -----------------------------------------------------------------
 __citation__ = (
-    "Mert Senkardesler, pyMack: open-source linear stability theory for "
-    "compressible and hypersonic boundary-layer transition (2026). "
-    "https://github.com/BARDAK1995/pyMack"
+    "Mert Senkardesler, pyMack: local linear stability solver for "
+    "compressible and hypersonic boundary layers (2026). "
+    "DOI: 10.5281/zenodo.20588214. https://github.com/BARDAK1995/pyMack"
 )
 
 #: Set to ``True`` (or call :func:`mark_cited`) to quietly retire the friendly
@@ -158,13 +158,15 @@ def cite() -> None:
         f"  {__citation__}\n\n"
         "BibTeX:\n"
         "  @software{pymack,\n"
-        "    author = {Senkardesler, Mert},\n"
-        "    title  = {pyMack: open-source linear stability theory for\n"
-        "              compressible and hypersonic boundary-layer transition},\n"
-        "    year   = {2026},\n"
-        "    url    = {https://github.com/BARDAK1995/pyMack}\n"
+        "    author  = {Senkardesler, Mert},\n"
+        "    title   = {pyMack: local linear stability solver for compressible\n"
+        "               and hypersonic boundary layers},\n"
+        "    year    = {2026},\n"
+        "    version = {0.0.1},\n"
+        "    doi     = {10.5281/zenodo.20588214},\n"
+        "    url     = {https://github.com/BARDAK1995/pyMack}\n"
         "  }\n\n"
-        "A JOSS paper and archival DOI will accompany the first release.\n"
+        "Archived release DOI: 10.5281/zenodo.20588214 (a JOSS paper is planned).\n"
         "\nThanks for using pyMack — citations really help the project. :)\n"
     )
 
