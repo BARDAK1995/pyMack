@@ -13,7 +13,7 @@ where `y` is non-dimensionalized by the physical displacement thickness.
 """
 
 import numpy as np
-from scipy.integrate import cumulative_trapezoid, solve_bvp, solve_ivp
+from scipy.integrate import cumulative_trapezoid, solve_bvp, solve_ivp, trapezoid
 from scipy.optimize import brentq
 from scipy.interpolate import CubicSpline
 
@@ -191,7 +191,7 @@ class BlasiusProfile:
         self._fpp = w[2]
         fppp = -0.5 * w[0] * w[2]
 
-        self._delta_star_eta = np.trapz(1.0 - self._fp, eta)
+        self._delta_star_eta = trapezoid(1.0 - self._fp, eta)
 
         self._spl_fp = CubicSpline(eta, self._fp)
         self._spl_fpp = CubicSpline(eta, self._fpp)
@@ -524,8 +524,8 @@ class CompressibleBlasiusProfile:
         y_L = np.sqrt(2.0) * cumulative_trapezoid(T_arr, eta, initial=0.0)
 
         # delta*/L* and theta/L*
-        self._delta_star = np.sqrt(2.0) * np.trapz(T_arr - U_arr, eta)
-        self._theta = np.sqrt(2.0) * np.trapz(U_arr * (T_arr - U_arr), eta)
+        self._delta_star = np.sqrt(2.0) * trapezoid(T_arr - U_arr, eta)
+        self._theta = np.sqrt(2.0) * trapezoid(U_arr * (T_arr - U_arr), eta)
 
         y_nd = y_L / self._delta_star
 
@@ -779,8 +779,8 @@ class OzgenFlatPlateProfile:
 
         y_L = eta.copy()
         rho_arr = 1.0 / T_arr
-        self._delta_star = np.trapz(1.0 - rho_arr * fp_arr, eta)
-        self._theta = np.trapz(rho_arr * fp_arr * (1.0 - fp_arr), eta)
+        self._delta_star = trapezoid(1.0 - rho_arr * fp_arr, eta)
+        self._theta = trapezoid(rho_arr * fp_arr * (1.0 - fp_arr), eta)
         y_nd = y_L / self._delta_star
 
         mu_arr = self._mu_ratio(T_arr)
