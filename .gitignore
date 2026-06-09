@@ -8,6 +8,9 @@ build/
 .venv/
 .pytest_cache/
 
+# OS/editor files
+.DS_Store
+
 # Never commit copyrighted papers / reproductions (kept locally only, link instead)
 *.pdf
 latex_papers/
