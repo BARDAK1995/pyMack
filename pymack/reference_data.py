@@ -29,6 +29,20 @@ class MackTable101Case:
         return self.alpha_L * math.tan(math.radians(self.psi_deg))
 
 
+@dataclass(frozen=True)
+class DimensionalNeutralCurvePoint:
+    """One dimensional neutral-curve row in frequency/x-branch coordinates."""
+
+    frequency_hz: float
+    frequency_khz: float
+    x0_m: float
+    x1_m: float
+    x_left_m: float
+    x_right_m: float
+    x_left_mm: float
+    x_right_mm: float
+
+
 def reference_data_root() -> Path:
     """Return the root directory for shared paper reference data."""
     return _REFERENCE_ROOT
@@ -71,6 +85,31 @@ def load_mack_table_10_1_cases():
             psi_deg=float(row['psi_deg']),
             omega_i_6th=float(row['omega_i_6th']),
             omega_i_8th=float(row['omega_i_8th']),
+        )
+        for row in rows
+    ]
+
+
+def load_collaborator_mach5p35_conditions():
+    """Load the Mach 5.35 collaborator benchmark condition metadata."""
+    conditions_path = _REFERENCE_ROOT / 'collaborator_mach5p35' / 'conditions.json'
+    with conditions_path.open('r', encoding='utf-8') as handle:
+        return json.load(handle)
+
+
+def load_collaborator_mach5p35_neutral_curve():
+    """Load the Mach 5.35 dimensional LST neutral-curve benchmark."""
+    rows = load_reference_csv('collaborator_mach5p35/LST_neutral_curve_M5p35.csv')
+    return [
+        DimensionalNeutralCurvePoint(
+            frequency_hz=float(row['frequency_hz']),
+            frequency_khz=float(row['frequency_khz']),
+            x0_m=float(row['x0_m']),
+            x1_m=float(row['x1_m']),
+            x_left_m=float(row['x_left_m']),
+            x_right_m=float(row['x_right_m']),
+            x_left_mm=float(row['x_left_mm']),
+            x_right_mm=float(row['x_right_mm']),
         )
         for row in rows
     ]

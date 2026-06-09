@@ -50,6 +50,8 @@ class DenseLSTConfig:
     y_max: float = 30.0
     c_min: float = 0.86
     c_max: float = 0.97
+    c_target: float = 0.92
+    c_target_half_width: float = 0.08
     max_abs_alpha: float = 8.0
     max_abs_ai: float = 0.4
     max_ai_over_ar: float = 1.0
@@ -407,7 +409,15 @@ def _select_seed(vals: np.ndarray, omega: float, cfg: DenseLSTConfig) -> Optiona
         return None
     growth = -vals[idx].imag
     phase = omega / vals[idx].real
-    score = growth - 0.03 * np.abs(phase - 0.92)
+    target_distance = np.abs(phase - cfg.c_target)
+    target_mask = target_distance <= cfg.c_target_half_width
+    if np.any(target_mask):
+        local_idx = idx[target_mask]
+        local_growth = growth[target_mask]
+        local_distance = target_distance[target_mask]
+        score = local_growth - 0.02 * local_distance
+        return int(local_idx[np.argmax(score)])
+    score = growth - 0.03 * target_distance
     return int(idx[np.argmax(score)])
 
 
@@ -423,7 +433,9 @@ def _select_nearest(
     scale = max(abs(previous_alpha), 1.0e-3)
     dist = np.abs(vals[idx] - previous_alpha) / scale
     growth = -vals[idx].imag
-    score = dist - 0.02 * growth
+    phase = omega / vals[idx].real
+    phase_dist = np.abs(phase - cfg.c_target) / max(cfg.c_target_half_width, 1.0e-12)
+    score = dist + 0.15 * phase_dist - 0.02 * growth
     return int(idx[np.argmin(score)])
 
 

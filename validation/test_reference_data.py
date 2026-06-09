@@ -7,6 +7,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.reference_data import (
     iter_registry_reference_paths,
+    load_collaborator_mach5p35_conditions,
+    load_collaborator_mach5p35_neutral_curve,
     load_mack_table_10_1_cases,
     load_paper_target_registry,
     load_reference_csv,
@@ -115,6 +117,29 @@ def test_mack_table_10_1_reference_loader_is_typed_and_filterable():
     print('  PASSED\n')
 
 
+def test_collaborator_mach5p35_benchmark_is_loadable():
+    """The imported Mach 5.35 LST benchmark should be self-consistent."""
+    print('Test 4: Collaborator Mach 5.35 neutral-curve benchmark')
+
+    conditions = load_collaborator_mach5p35_conditions()
+    curve = load_collaborator_mach5p35_neutral_curve()
+
+    assert conditions['benchmark_id'] == 'collaborator_mach5p35_second_mode_neutral'
+    assert conditions['flow_conditions']['mach'] == 5.35
+    assert conditions['flow_conditions']['gas'] == 'molecular nitrogen'
+    assert conditions['flow_conditions']['unit_reynolds_number_per_m_used_in_lst_conversion'] == 1.176e7
+    assert conditions['flow_conditions']['unit_reynolds_number_per_m_dsmc_prot0'] == 1.1935e7
+    assert conditions['curve_data']['row_count'] == 251
+
+    assert len(curve) == 251
+    assert curve[0].frequency_khz == 100.0
+    assert curve[-1].frequency_khz == 600.0
+    assert min(point.x_left_mm for point in curve) == 14.95
+    assert max(point.x_right_mm for point in curve) == 997.525
+    assert all(point.x_left_mm <= point.x_right_mm for point in curve)
+    print('  PASSED\n')
+
+
 if __name__ == '__main__':
     print('=' * 60)
     print('REFERENCE DATA VALIDATION')
@@ -123,6 +148,7 @@ if __name__ == '__main__':
     test_registry_and_reference_files_exist()
     test_registry_has_individual_mack_and_ozgen_targets()
     test_mack_table_10_1_reference_loader_is_typed_and_filterable()
+    test_collaborator_mach5p35_benchmark_is_loadable()
 
     print('=' * 60)
     print('REFERENCE DATA TESTS COMPLETE')

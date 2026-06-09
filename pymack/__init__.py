@@ -111,7 +111,10 @@ from .analysis import (
     trace_temporal_neutral_curve_shooting,
 )
 from .reference_data import (
+    DimensionalNeutralCurvePoint,
     find_paper_target,
+    load_collaborator_mach5p35_conditions,
+    load_collaborator_mach5p35_neutral_curve,
     load_mack_table_10_1_cases,
     load_paper_target_registry,
     load_reference_csv,

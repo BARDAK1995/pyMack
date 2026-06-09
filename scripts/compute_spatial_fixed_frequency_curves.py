@@ -725,6 +725,7 @@ def _compute_curves_pymack_dense(args, delta_over_l, freqs, R_L, sutherland_s, t
             "y_max": y_max_lstar,
             "c_min": float(args.phase_min),
             "c_max": float(args.phase_max),
+            "c_target": float(args.c_phase),
             "max_abs_alpha": float(args.dense_max_abs_alpha),
             "max_abs_ai": float(args.dense_max_abs_ai),
             "max_ai_over_ar": float(args.dense_max_ai_over_ar),

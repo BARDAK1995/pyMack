@@ -1,0 +1,70 @@
+{
+  "benchmark_id": "collaborator_mach5p35_second_mode_neutral",
+  "title": "Mach 5.35 flat-plate second-mode LST neutral-curve benchmark",
+  "created_on": "2026-06-09",
+  "benchmark_scope": "Dimensional second-mode neutral envelope used for the DNS-DSMC particulate collaboration case.",
+  "provenance": {
+    "source_repository": "/Users/mertb/Desktop/DNS_DSMC_particulateCollab",
+    "source_file": "/Users/mertb/Desktop/DNS_DSMC_particulateCollab/2025_waveTrackingStudy/reference_data/blasius/LST_neutral_curve_M5p35.dat",
+    "aviation_manuscript_copy": "/Users/mertb/Desktop/papers/abstracts/AviationAbstract2_particulate/LST_neutral_curve_M5p35.dat",
+    "known_plotting_script": "/Users/mertb/Desktop/DNS_DSMC_particulateCollab/2026_DNS_DSMC_particulate/NEWDNS_umd_M5p35_Rp_50micron/plot_dns_frequency_neutral_overlay.py",
+    "known_manuscript": "/Users/mertb/Desktop/papers/abstracts/AviationAbstract2_particulate/Aviation2_Particulate_abstract2.tex"
+  },
+  "flow_conditions": {
+    "mach": 5.35,
+    "gas": "molecular nitrogen",
+    "gas_constant_j_per_kg_k": 296.89,
+    "freestream_velocity_m_per_s": 857.0,
+    "freestream_temperature_k": 64.0,
+    "freestream_pressure_pa": 1300.0,
+    "freestream_density_kg_per_m3": 0.0684,
+    "freestream_number_density_m3": 1.471e24,
+    "unit_reynolds_number_per_m_used_in_lst_conversion": 1.176e7,
+    "unit_reynolds_number_per_m_dsmc_prot0": 1.1935e7,
+    "wall_temperature_k": 370.0,
+    "wall_thermal_condition": "adiabatic-wall approximation used in the Mach 5.35 particulate study",
+    "unit_reynolds_note": "The 2025 LST conversion scripts and analysis writeup use 11.76e6 1/m with U_edge = 857 m/s. The newer DSMC consistency check and AviationAbstract2 condition table report 1.1935e7 1/m from Prot0.dat. Both values are recorded because the imported curve is from the 2025 LST reference path."
+  },
+  "curve_data": {
+    "raw_file": "LST_neutral_curve_M5p35.dat",
+    "normalized_csv": "LST_neutral_curve_M5p35.csv",
+    "raw_columns": [
+      "frequency_hz",
+      "x0_m",
+      "x1_m"
+    ],
+    "normalized_columns": [
+      "frequency_hz",
+      "frequency_khz",
+      "x0_m",
+      "x1_m",
+      "x_left_m",
+      "x_right_m",
+      "x_left_mm",
+      "x_right_mm"
+    ],
+    "row_count": 251,
+    "frequency_range_khz": [
+      100.0,
+      600.0
+    ],
+    "x_left_range_mm": [
+      14.95,
+      64.45
+    ],
+    "x_right_range_mm": [
+      22.375,
+      997.525
+    ],
+    "interpretation": "At each frequency, x_left and x_right are the two streamwise neutral-branch locations; the unstable band lies between them where both branches exist."
+  },
+  "checksums_sha256": {
+    "LST_neutral_curve_M5p35.dat": "a045a47206681bfd25cecda62ecafb2de6b9ea974d413dd0b22220e71ebc4f90",
+    "LST_neutral_curve_M5p35.csv": "f51aef5ab566eef725bef5059bb5f6911d85e3b273825cfdca06c13b9240826c"
+  },
+  "notes": [
+    "The raw Tecplot-style file is preserved exactly as supplied.",
+    "The CSV is a unit-normalized convenience copy for automated pyMack benchmark comparison.",
+    "This benchmark records the external LST neutral curve used by the Mach 5.35 particulate study; it is not a pyMack-generated solution."
+  ]
+}

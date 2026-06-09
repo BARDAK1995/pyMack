@@ -767,13 +767,14 @@ def _write_dimensional_outputs(artifacts, args):
 
 def _write_manifest(path: Path, args, quality: SweepQuality, artifacts, dimensional_metadata=None):
     path.parent.mkdir(parents=True, exist_ok=True)
+    case_name = (
+        f"Mach {args.ma:g} {args.gas} dimensional spatial second-mode neutral envelope"
+        if args.dimensional
+        else f"Mach {args.ma:g} {args.gas} Tw/Te={args.tw_over_te:g} spatial second-mode neutral envelope"
+    )
     manifest = {
         "status": "complete",
-        "case": (
-            "APS paper baseline Mach-6 dimensional spatial second-mode neutral envelope"
-            if args.dimensional
-            else "Mach 6 air Tw/Te=5.88 spatial second-mode neutral envelope"
-        ),
+        "case": case_name,
         "policy": {
             "single_sweep": True,
             "stitching": "none",
@@ -799,6 +800,7 @@ def _write_manifest(path: Path, args, quality: SweepQuality, artifacts, dimensio
             "R_range": [float(args.r_min), float(args.r_max)],
             "F_range": [float(args.f_min), float(args.f_max)],
             "phase_speed_filter": [float(args.phase_min), float(args.phase_max)],
+            "nominal_phase_speed": float(args.c_phase),
             "quality": args.quality,
             "base_n_frequencies": int(quality.n_frequencies),
             "n_frequencies": int(getattr(args, "n_frequency_values", quality.n_frequencies)),
@@ -872,6 +874,7 @@ def parse_args(argv=None):
     parser.add_argument("--wall-bc", choices=["isothermal"], default=None)
     parser.add_argument("--phase-min", type=float, default=0.90)
     parser.add_argument("--phase-max", type=float, default=0.97)
+    parser.add_argument("--c-phase", type=float, default=0.86)
     parser.add_argument("--sigma-display-limit", type=float, default=0.00325)
     parser.add_argument(
         "--skip-compute",
@@ -970,6 +973,8 @@ def main(argv=None):
             str(args.phase_min),
             "--phase-max",
             str(args.phase_max),
+            "--c-phase",
+            str(args.c_phase),
             "--selection",
             "pymack_continuation",
             "--output-dir",
