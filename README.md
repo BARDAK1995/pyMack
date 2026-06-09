@@ -118,6 +118,11 @@ python scripts/run_mach6_spatial_neutral_case.py --quality smoke
 For the exact assumptions and artifact policy, see
 [`docs/MACH6_SPATIAL_NEUTRAL_WORKFLOW.md`](docs/MACH6_SPATIAL_NEUTRAL_WORKFLOW.md).
 
+**Dimensional plots:** convert nondimensional results (`F`, `R_L`, `alpha`,
+`sigma`) to physical units (kHz, mm, 1/m) with `pymack.DimensionalEdgeState` and
+the converters in `pymack.scales` — see the *Dimensional Units / Plots* section
+of [`docs/LST_API_CHEATSHEET.md`](docs/LST_API_CHEATSHEET.md).
+
 ## Citing
 
 If pyMack contributes to your work, citing it helps others discover the tool
