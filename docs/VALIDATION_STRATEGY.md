@@ -1,0 +1,106 @@
+# pyMack Validation Strategy
+
+*Why pyMack is validated the way it is — and deliberately **not** by replicating
+every figure of the source papers.*
+
+## The question
+
+The obvious validation plan for an LST solver is: reproduce every numbered
+figure of Mack (1984) and Özgen & Kırcalı (2008), 1:1. An earlier phase of this
+project attempted exactly that (50+ digitized curves, per-figure tolerance
+gates, a master verification harness). The result, recorded in
+[`PAPER_ALIGNMENT_AUDIT.md`](PAPER_ALIGNMENT_AUDIT.md) and
+[`FIGURE_GAP_MATRIX.md`](FIGURE_GAP_MATRIX.md): after substantial effort, the
+strongest results were the **table-based** comparisons, while most **figure**
+comparisons remained partial — and it was rarely attributable whether a gap came
+from the solver, from guessing the figure's exact flow conditions, or from
+digitization error.
+
+That experience motivates a first-principles redesign.
+
+## Why figure-by-figure replication is the wrong primary strategy
+
+1. **Digitized figures are low-precision data.** Reading curves off 1984 scanned
+   plots is good to a few percent at best (line width, scan skew, axis
+   interpolation). Comparing a spectral solver that converges to 10 digits
+   against pixel-read curves inverts the precision hierarchy. **Tables beat
+   figures** — and the project's own two strongest validations (Mack Table 10.1
+   growth rates to 0.07–0.91%; Table 11.1 mean-flow thicknesses to <0.5%) are
+   both tables.
+2. **Every figure carries hidden condition ambiguity.** Mack's figures mix
+   Table 11.1 conditions, figure-caption wind-tunnel conditions, and unstated
+   defaults. A mismatch proves nothing about the solver; diagnosing it is
+   archaeology, not validation.
+3. **Figures are massively redundant.** All of Mack's Ch. 10 figures are
+   outputs of the *same* operator, eigenvalue solver, and mode tracker. If
+   those are verified at a handful of high-precision points, the figures follow;
+   the N-th figure adds almost no independent information about correctness.
+4. **A wall of partial gates reads worse than a few decisive ones.** A
+   validation dashboard with many FAIL/NO_CURRENT entries (mostly digitization
+   noise and condition guesses) undermines exactly the trust it is meant to
+   build.
+
+Figure overlays remain useful as *qualitative demonstrations* — shapes, mode
+topology, trends — so we keep a small number of them, clearly labeled, outside
+the pass/fail machinery.
+
+## The strategy: a layered validation pyramid
+
+Each layer is verified independently, at points where the truth is known with
+the highest available precision. If every layer holds, the end products
+(neutral curves, N-factors) are validated by construction — and when something
+breaks, the failing layer localizes it.
+
+| Layer | What it verifies | Benchmark (type) | Status |
+|---|---|---|---|
+| 0 | Spectral machinery (differentiation, mapping) | Analytic functions (exact) | ✅ machine precision |
+| 1 | Compressible mean flow | Mack Table 11.1 thicknesses (**table**) | ✅ < 0.5% |
+| 2 | Incompressible eigenvalue problem | Orszag (1971) Poiseuille eigenvalue (**table**) | ✅ 5+ significant figures |
+| 3 | Compressible temporal LST, incl. oblique 3D | Mack Table 10.1, 6th & 8th order systems (**table**) | ✅ 0.07–0.91% (exact shooting) |
+| 4a | Spatial path, cross-method | Internal: dense QEP vs `solve_spatial` vs shooting/Gaster at common points (**internal redundancy**) | ⬜ to be gated |
+| 4b | Spatial path, external anchor | Malik (1990) tabulated Mach 4.5 eigenvalues (**table**) | ⬜ obtain table values, implement |
+| 5 | End-to-end dimensional product (base flow → spatial sweep → neutral branches → physical units) | **Independent-code benchmark:** collaborator Mach 5.35 N₂ flat-plate neutral curve (dimensional) | 🔄 in progress |
+| 6 | Qualitative literature agreement | One Mack overlay (e.g. Fig 10.6 family) + one Özgen overlay (Fig 3 lobes), from already-digitized data — **demonstrations, not gates** | ⬜ select & document |
+
+Design principles:
+
+- **Tables and independent codes are gates; figures are illustrations.**
+- **Internal cross-method redundancy is free validation.** Two formulations
+  (dense QEP, shooting) agreeing at roundoff catches sign/scaling/BC bugs that
+  no single-method benchmark can.
+- **One decisive benchmark per layer.** Additional benchmarks of the same layer
+  are nice-to-have, not required.
+- **The end-to-end layer (5) is the one users actually consume** — it exercises
+  the dimensional-units machinery, branch extraction, and the full pipeline in
+  the regime pyMack targets (hypersonic second mode).
+
+## Disposition of the figure-replication assets
+
+- The 50+ digitized reference CSVs and the target registry stay in
+  `reference_data/` — they are useful data and feed the Layer-6 overlays.
+- The chapter-by-chapter reproduction scripts remain in the private workspace;
+  individual reproductions can be promoted later *as demonstrations* once they
+  match qualitatively. They are **no longer validation requirements.**
+- The known Özgen oblique first-mode discrepancy (exact shooting vs reduced
+  formulations) is reclassified from "validation blocker" to a **documented
+  formulation-difference investigation**: the oblique temporal path is already
+  table-validated against Mack Table 10.1 at Layer 3.
+
+## Execution order
+
+1. **Collaborator Mach 5.35 benchmark (Layer 5)** — matched-condition pyMack
+   sweep, quantified branch-location error, tolerance-gated test, comparison
+   figure. *(Best credibility-per-effort: validates the whole product path.)*
+2. **Internal cross-method consistency gates (Layer 4a)** — a few (M, Re, F)
+   points asserted in CI. No external data needed.
+3. **Malik (1990) spatial anchor (Layer 4b)** — source the tabulated Mach 4.5
+   eigenvalues from the paper, map the nondimensionalization, gate.
+4. **Two qualitative overlays (Layer 6)** + this document linked from README.
+5. A short `VALIDATION` summary table in the README pointing here.
+
+Each step lands as its own public commit with tests.
+
+---
+*Adopted June 2026, replacing the figure-by-figure replication plan. The audit
+trail of the earlier approach is preserved in `PAPER_ALIGNMENT_AUDIT.md` /
+`FIGURE_GAP_MATRIX.md` and the private development archive.*

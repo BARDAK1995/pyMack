@@ -11,6 +11,9 @@ build/
 # OS/editor files
 .DS_Store
 
+# Local scratch runs (regenerable)
+scratch_*/
+
 # Never commit copyrighted papers / reproductions (kept locally only, link instead)
 *.pdf
 latex_papers/
