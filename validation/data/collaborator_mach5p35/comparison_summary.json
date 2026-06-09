@@ -1,0 +1,30 @@
+{
+  "comparison": "pyMack phase-targeted Mach 5.35 neutral curve versus Sean benchmark",
+  "summary_min_frequency_khz": 200.0,
+  "unit_reynolds_per_m": 11760000.0,
+  "edge_velocity_m_per_s": 857.0,
+  "branches": [
+    {
+      "branch": "left",
+      "min_frequency_khz": 200.0,
+      "n": 66,
+      "bias_mm": -5.036747555861203,
+      "mae_mm": 6.676434808773987,
+      "rmse_mm": 11.506579769959561,
+      "max_abs_error_mm": 31.22592056951876
+    },
+    {
+      "branch": "right",
+      "min_frequency_khz": 200.0,
+      "n": 66,
+      "bias_mm": 2.492845508778701,
+      "mae_mm": 3.207689755100451,
+      "rmse_mm": 3.4766536343761523,
+      "max_abs_error_mm": 8.622482531339642
+    }
+  ],
+  "artifacts": {
+    "comparison_png": "scratch_m5p35_collab\\comparison\\pymack_vs_sean_mach5p35_neutral_comparison.png",
+    "errors_csv": "scratch_m5p35_collab\\comparison\\pymack_vs_sean_mach5p35_neutral_errors.csv"
+  }
+}

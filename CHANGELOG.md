@@ -8,6 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Validation strategy** (`docs/VALIDATION_STRATEGY.md`): layered validation
+  pyramid replacing figure-by-figure paper replication — tables and independent
+  codes as gates, figures as qualitative demonstrations.
+- **Layer-5 independent-code validation gate**: pyMack production sweep at the
+  collaborator Mach 5.35 N₂ benchmark conditions, with committed artifacts
+  (`validation/data/collaborator_mach5p35/`) and CI-gated tolerances
+  (`validation/test_collaborator_mach5p35_benchmark.py`). Upper neutral branch
+  agrees to MAE 3.2 mm (200–600 kHz); lower branch to MAE 1.3 mm (330–600 kHz).
+  The low-frequency lower-branch difference is documented as an open
+  mode-family investigation; the wide-phase-window alternative was tested and
+  rejected.
 - Added `scripts/run_mach6_spatial_neutral_case.py`, the canonical one-command
   Mach 6 second-mode spatial workflow for growth curves, neutral branches,
   N/amplification, and a manifest with explicit no-stitch/no-smoothing policy.

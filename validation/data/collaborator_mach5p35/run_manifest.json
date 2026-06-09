@@ -1,0 +1,124 @@
+{
+  "status": "complete",
+  "case": "Mach 5.35 nitrogen dimensional spatial second-mode neutral envelope",
+  "policy": {
+    "single_sweep": true,
+    "stitching": "none",
+    "smoothing": "none",
+    "branch_family": "high-phase-speed second mode",
+    "dimensional_frequency_conversion": "direct F=2*pi*f_Hz*nu_e/U_e^2"
+  },
+  "parameters": {
+    "mach": 5.35,
+    "gas": "nitrogen",
+    "T_edge_K": 64.0,
+    "T_wall_K": 370.0,
+    "Tw_over_Te": 5.78125,
+    "Pr": 0.72,
+    "gamma": 1.4,
+    "profile_family": "power_law",
+    "viscosity_exponent": 0.74,
+    "sutherland_S_K": null,
+    "R_range": [
+      375.0017092809397,
+      3507.8197889597054
+    ],
+    "F_range": [
+      6.256245723175375e-05,
+      0.0003753747433905225
+    ],
+    "phase_speed_filter": [
+      0.9,
+      0.97
+    ],
+    "nominal_phase_speed": 0.86,
+    "quality": "production",
+    "base_n_frequencies": 81,
+    "n_frequencies": 83,
+    "r_points": 177,
+    "workers": 32,
+    "sigma_display_limit": 0.00325
+  },
+  "artifacts": {
+    "growth_csv": "scratch_m5p35_collab\\production\\spatial_fixed_frequency_growth_curves.csv",
+    "amplification_dir": "scratch_m5p35_collab\\production\\amplification",
+    "amplification_curves_csv": "scratch_m5p35_collab\\production\\amplification\\spatial_fixed_frequency_amplification_curves.csv",
+    "amplification_summary_csv": "scratch_m5p35_collab\\production\\amplification\\spatial_fixed_frequency_amplification_summary.csv",
+    "neutral_csv": "scratch_m5p35_collab\\production\\amplification\\spatial_fixed_frequency_neutral_envelope.csv",
+    "neutral_png": "scratch_m5p35_collab\\production\\spatial_neutral_envelope.png",
+    "neutral_metadata": "scratch_m5p35_collab\\production\\spatial_neutral_envelope_metadata.json",
+    "dimensional_growth_csv": "scratch_m5p35_collab\\production\\spatial_fixed_frequency_growth_curves_dimensional.csv",
+    "dimensional_amplification_csv": "scratch_m5p35_collab\\production\\spatial_fixed_frequency_amplification_curves_dimensional.csv",
+    "dimensional_neutral_csv": "scratch_m5p35_collab\\production\\spatial_fixed_frequency_neutral_envelope_dimensional.csv",
+    "dimensional_neutral_png": "scratch_m5p35_collab\\production\\spatial_neutral_envelope_dimensional.png",
+    "dimensional_metadata": "scratch_m5p35_collab\\production\\spatial_dimensional_metadata.json",
+    "selected_growth_png": "scratch_m5p35_collab\\production\\selected_frequency_growth_dimensional.png",
+    "selected_amplification_png": "scratch_m5p35_collab\\production\\selected_frequency_amplification_dimensional.png",
+    "selected_phase_wavelength_png": "scratch_m5p35_collab\\production\\selected_frequency_phase_speed_wavelength_dimensional.png",
+    "manifest": "scratch_m5p35_collab\\production\\mach6_spatial_neutral_case_manifest.json"
+  },
+  "dimensional": {
+    "preset": "custom-dimensional-defaults",
+    "edge_state": {
+      "U_e_m_per_s": 857.0,
+      "nu_e_m2_per_s": 7.313e-05,
+      "T_e_K": 64.0,
+      "M_e": 5.35,
+      "gamma": 1.4,
+      "gas": "nitrogen",
+      "unit_reynolds_per_m": 11760000.0,
+      "computed_unit_reynolds_per_m": 11718856.830302201,
+      "unit_reynolds_consistency_error": -0.0034985688518536385
+    },
+    "x_range_mm": [
+      12.0,
+      1050.0
+    ],
+    "frequency_range_khz": [
+      100.0,
+      600.0
+    ],
+    "selected_frequencies_khz": [
+      247.0,
+      280.0,
+      325.0
+    ],
+    "selected_F_values": [
+      0.00015452926936243178,
+      0.0001751748802489105,
+      0.00020332798600319971
+    ],
+    "neutral_windows_for_selected": {
+      "247.0": {
+        "status": "ok",
+        "frequency_khz": 247.00004897117148,
+        "F": 0.0001545293,
+        "F_times_1e4": 1.545293,
+        "lower_neutral_R_L": 588.5405288548276,
+        "upper_neutral_R_L": 1351.7684187275102,
+        "lower_neutral_x_mm": 29.557486632063224,
+        "upper_neutral_x_mm": 155.9262890851404
+      },
+      "280.0": {
+        "status": "ok",
+        "frequency_khz": 280.0000315701946,
+        "F": 0.0001751749,
+        "F_times_1e4": 1.751749,
+        "lower_neutral_R_L": 569.5698382835744,
+        "upper_neutral_R_L": 1198.5595286079572,
+        "lower_neutral_x_mm": 27.682717297435516,
+        "upper_neutral_x_mm": 122.58405102299415
+      },
+      "325.0": {
+        "status": "ok",
+        "frequency_khz": 325.00002237252323,
+        "F": 0.000203328,
+        "F_times_1e4": 2.03328,
+        "lower_neutral_R_L": 603.2984888482571,
+        "upper_neutral_R_L": 1034.456926584741,
+        "lower_neutral_x_mm": 31.058410552934852,
+        "upper_neutral_x_mm": 91.31446423955954
+      }
+    }
+  }
+}

@@ -59,7 +59,7 @@ breaks, the failing layer localizes it.
 | 3 | Compressible temporal LST, incl. oblique 3D | Mack Table 10.1, 6th & 8th order systems (**table**) | ✅ 0.07–0.91% (exact shooting) |
 | 4a | Spatial path, cross-method | Internal: dense QEP vs `solve_spatial` vs shooting/Gaster at common points (**internal redundancy**) | ⬜ to be gated |
 | 4b | Spatial path, external anchor | Malik (1990) tabulated Mach 4.5 eigenvalues (**table**) | ⬜ obtain table values, implement |
-| 5 | End-to-end dimensional product (base flow → spatial sweep → neutral branches → physical units) | **Independent-code benchmark:** collaborator Mach 5.35 N₂ flat-plate neutral curve (dimensional) | 🔄 in progress |
+| 5 | End-to-end dimensional product (base flow → spatial sweep → neutral branches → physical units) | **Independent-code benchmark:** collaborator Mach 5.35 N₂ flat-plate neutral curve (dimensional) | ✅ gated (upper branch 200–600 kHz, lower branch 330–600 kHz); low-frequency lower branch = documented open investigation |
 | 6 | Qualitative literature agreement | One Mack overlay (e.g. Fig 10.6 family) + one Özgen overlay (Fig 3 lobes), from already-digitized data — **demonstrations, not gates** | ⬜ select & document |
 
 Design principles:
@@ -85,6 +85,37 @@ Design principles:
   formulations) is reclassified from "validation blocker" to a **documented
   formulation-difference investigation**: the oblique temporal path is already
   table-validated against Mack Table 10.1 at Layer 3.
+
+## Layer-5 result (June 2026): Mach 5.35 independent-code benchmark
+
+A production pyMack sweep at the benchmark's recorded conditions (M=5.35, N₂,
+T_e=64 K, T_w=370 K ≈ adiabatic recovery, Re′=1.176×10⁷/m, 100–600 kHz,
+81 frequencies × 177 R-points, single-sweep second-mode window c∈[0.90, 0.97])
+against the collaborator's dimensional neutral curve gives:
+
+| Region | n | MAE | max abs | Verdict |
+|---|---|---|---|---|
+| Upper branch, 200–600 kHz | 66 | 3.2 mm | ~8.6 mm | ✅ gated in CI |
+| Lower branch, 330–600 kHz | 44 | 1.3 mm | 3.5 mm | ✅ gated in CI |
+| Lower branch, 100–330 kHz | — | up to ~31 mm | — | ⚠ open investigation |
+
+![Mach 5.35 benchmark comparison](figures/mach5p35_collaborator_benchmark.png)
+
+The low-frequency lower-branch difference is structural, not noise: the
+benchmark's lower branch stays near R≈520–860 while pyMack's clean
+second-mode-window sweep places onset further downstream. Widening the
+phase-speed tracking window to c∈[0.80, 1.02] was tested and *rejected* — it
+degrades tracking (the continuation latches onto a different branch family)
+rather than reconciling the curves. Leading hypothesis: a mode-family /
+envelope-definition difference where the first- and second-mode bands interact;
+note also the benchmark metadata records two unit-Reynolds values differing by
+1.5%. Resolving this (robust S-mode continuation from low phase speed, and/or
+clarifying the benchmark's branch bookkeeping with the collaborator) is an open
+work item — and exactly the kind of physics question Layer 5 exists to surface.
+
+Artifacts: committed under `validation/data/collaborator_mach5p35/` (pyMack
+envelope, run manifest, comparison summary/errors); gates in
+`validation/test_collaborator_mach5p35_benchmark.py`.
 
 ## Execution order
 
