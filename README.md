@@ -94,10 +94,29 @@ The `validation/` directory contains the main benchmark tests (Orr-Sommerfeld, M
 
 Runnable scripts and examples:
 
-- `scripts/compute_spatial_neutral_curve.py` — spatial neutral curves.
-- `scripts/compute_spatial_fixed_frequency_curves.py` — fixed-frequency growth and N-factor.
-- `scripts/compute_mach6_growth_nfactor.py` — the Mach 6 second-mode workflow.
-- `validation/` — benchmark tests (incompressible core + compressible diagnostics).
+- `scripts/run_mach6_spatial_neutral_case.py`: canonical Mach 6 second-mode
+  spatial workflow. It runs one fixed-frequency sweep, extracts lower/upper
+  neutral branches, integrates N/amplification, and writes a manifest recording
+  `stitching=none` and `smoothing=none`.
+- `scripts/compute_spatial_neutral_curve.py`: lower-level spatial neutral curves.
+- `scripts/compute_spatial_fixed_frequency_curves.py`: lower-level fixed-frequency growth and N-factor inputs.
+- `scripts/compute_mach6_growth_nfactor.py`: legacy Mach 6 envelope workflow.
+- `validation/`: benchmark tests (incompressible core + compressible diagnostics).
+
+Canonical Mach 6 reproduction command:
+
+```bash
+python scripts/run_mach6_spatial_neutral_case.py --quality production
+```
+
+Fast guardrail check before a long run:
+
+```bash
+python scripts/run_mach6_spatial_neutral_case.py --quality smoke
+```
+
+For the exact assumptions and artifact policy, see
+[`docs/MACH6_SPATIAL_NEUTRAL_WORKFLOW.md`](docs/MACH6_SPATIAL_NEUTRAL_WORKFLOW.md).
 
 ## Citing
 

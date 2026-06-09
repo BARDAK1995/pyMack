@@ -2,7 +2,7 @@
 
 This repository is trying to do two things at once:
 
-1. implement a reusable linear-stability toolkit in [`lst/`](../lst)
+1. implement a reusable linear-stability toolkit in [`pymack/`](../pymack)
 2. reproduce figures and trends from Mack's AGARD report and Ozgen & Kircali (2008)
 
 The important distinction is that "solver correctness" and "paper reproduction correctness" are not the same problem. The shared solver may be numerically reasonable while a chapter script still reproduces the wrong quantity, the wrong normalization, or a proxy problem.
@@ -65,7 +65,7 @@ Hold `alpha` and `beta` real, solve for complex `omega` or `c`.
 This is the main robust path currently implemented in the repo.
 
 For compressible oblique first-mode work, the best current branch-tracking path
-is the exact first-order shooting workflow in [`lst/analysis.py`](../lst/analysis.py):
+is the exact first-order shooting workflow in [`pymack/analysis.py`](../pymack/analysis.py):
 
 - `search_temporal_roots_3d_shooting`
 - `temporal_growth_scan_3d_shooting`
@@ -139,23 +139,23 @@ So when you say "at a given boundary layer and a given x location the growth rat
 
 ### Strongest block
 
-- incompressible Orr-Sommerfeld in [`lst/solver.py`](../lst/solver.py)
+- incompressible Orr-Sommerfeld in [`pymack/solver.py`](../pymack/solver.py)
 - validated against Poiseuille and Blasius in [`validation/test_orr_sommerfeld.py`](../validation/test_orr_sommerfeld.py)
 
 ### Usable compressible block
 
-- 2D temporal compressible EVP in [`lst/solver.py`](../lst/solver.py)
-- explicit `delta* <-> L*` conversion helpers in [`lst/scales.py`](../lst/scales.py)
+- 2D temporal compressible EVP in [`pymack/solver.py`](../pymack/solver.py)
+- explicit `delta* <-> L*` conversion helpers in [`pymack/scales.py`](../pymack/scales.py)
 - mode filtering by convergence across resolutions
-- refined spatial growth path in [`lst/analysis.py`](../lst/analysis.py)
+- refined spatial growth path in [`pymack/analysis.py`](../pymack/analysis.py)
   - temporal solve
   - Gaster-style initial guess
   - complex-`alpha` refinement
-- oblique-wave temporal solver in [`lst/solver.py`](../lst/solver.py)
+- oblique-wave temporal solver in [`pymack/solver.py`](../pymack/solver.py)
   - full 8th-order path
   - Mack-style 6th-order switch obtained by dropping the single spanwise dissipation feedback term
-- Appendix-B freestream decay basis / leakage tools in [`lst/asymptotic.py`](../lst/asymptotic.py)
-- experimental Appendix-A/B bounded shooting tools in [`lst/mack_shooting.py`](../lst/mack_shooting.py)
+- Appendix-B freestream decay basis / leakage tools in [`pymack/asymptotic.py`](../pymack/asymptotic.py)
+- experimental Appendix-A/B bounded shooting tools in [`pymack/mack_shooting.py`](../pymack/mack_shooting.py)
 
 This refined spatial route is now the default in the shared analysis utilities because the old companion-form quadratic EVP was returning near-neutral or obviously less physical branches in some cases.
 
@@ -163,13 +163,13 @@ This refined spatial route is now the default in the shared analysis utilities b
 
 ### Mean-flow and condition mismatch
 
-The shared compressible mean flow in [`lst/baseflow.py`](../lst/baseflow.py)
+The shared compressible mean flow in [`pymack/baseflow.py`](../pymack/baseflow.py)
 now solves the coupled velocity/temperature boundary-value problem and supports
 Mack's Appendix-A air transport law, but paper reproduction still fails if the
 wrong external temperature schedule is used.
 
 Mack condition sets are now separated explicitly in
-[`lst/mack_conditions.py`](../lst/mack_conditions.py):
+[`pymack/mack_conditions.py`](../pymack/mack_conditions.py):
 
 - `table_11_1`: the inferred schedule that reproduces Table 11.1 thicknesses
   and, with isothermal disturbance wall conditions, the low-/mid-Mach Table
@@ -242,15 +242,15 @@ For the first mode:
 
 ### Shared library
 
-- [`lst/baseflow.py`](../lst/baseflow.py): mean-flow profiles
-- [`lst/baseflow.py`](../lst/baseflow.py): now contains both the shared Mack and shared Ozgen flat-plate builders
-- [`lst/mack_conditions.py`](../lst/mack_conditions.py): Mack Table 11.1 vs figure-caption condition helpers
-- [`lst/equations.py`](../lst/equations.py): compressible matrix assembly
-- [`lst/solver.py`](../lst/solver.py): temporal, spatial, and mode-tracking solvers
-- [`lst/asymptotic.py`](../lst/asymptotic.py): Appendix-B freestream basis and leakage residuals
-- [`lst/mack_shooting.py`](../lst/mack_shooting.py): experimental first-order Appendix-A/B shooting path
-- [`lst/analysis.py`](../lst/analysis.py): sweeps, neutral maps, N-factors, exact-shooting helpers, and the shared high-level growth / neutral / critical-Re / wave-angle workflows
-- [`lst/reference_data.py`](../lst/reference_data.py): loaders for the shared paper target registry and numeric reference tables
+- [`pymack/baseflow.py`](../pymack/baseflow.py): mean-flow profiles
+- [`pymack/baseflow.py`](../pymack/baseflow.py): now contains both the shared Mack and shared Ozgen flat-plate builders
+- [`pymack/mack_conditions.py`](../pymack/mack_conditions.py): Mack Table 11.1 vs figure-caption condition helpers
+- [`pymack/equations.py`](../pymack/equations.py): compressible matrix assembly
+- [`pymack/solver.py`](../pymack/solver.py): temporal, spatial, and mode-tracking solvers
+- [`pymack/asymptotic.py`](../pymack/asymptotic.py): Appendix-B freestream basis and leakage residuals
+- [`pymack/mack_shooting.py`](../pymack/mack_shooting.py): experimental first-order Appendix-A/B shooting path
+- [`pymack/analysis.py`](../pymack/analysis.py): sweeps, neutral maps, N-factors, exact-shooting helpers, and the shared high-level growth / neutral / critical-Re / wave-angle workflows
+- [`pymack/reference_data.py`](../pymack/reference_data.py): loaders for the shared paper target registry and numeric reference tables
 - [`reference_data/`](../reference_data): shared Mack/Ozgen target metadata and numeric reference CSVs
 - [`validation/diagnose_mack_table_10_1.py`](../validation/diagnose_mack_table_10_1.py): current 6th-/8th-order oblique-wave diagnostic against Mack Table 10.1; reads the shared CSV and supports `--Ma`, `--Re`, `--psi`, `--limit`, and `--json`
 - [`validation/diagnose_oblique_mode_selection.py`](../validation/diagnose_oblique_mode_selection.py): compares reduced-EVP candidates against Appendix-B leakage and QR-stabilized shooting residuals for hard Chapter 10 cases

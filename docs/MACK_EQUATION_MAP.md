@@ -4,8 +4,8 @@ This is the short map from Mack's flat-plate theory to the shared code.
 
 ## Mean Flow
 
-- Shared builder: `lst.make_mack_profile(...)`
-- Condition split: `lst.mack_conditions`
+- Shared builder: `pymack.make_mack_profile(...)`
+- Condition split: `pymack.mack_conditions`
   - `table_11_1` for the thickness table and the current low-/mid-Mach Table
     10.1 exact-shooting reproduction
   - `table_10_1` for the older colder sensitivity schedule
@@ -14,16 +14,16 @@ This is the short map from Mack's flat-plate theory to the shared code.
 
 ## Temporal / Spatial Solvers
 
-- Reduced temporal 2D / 3D EVP: `lst.solver`
-- Spatial EVP plus refinement: `lst.solver` and `lst.analysis`
-- Shared workflow APIs: `lst.analysis`
+- Reduced temporal 2D / 3D EVP: `pymack.solver`
+- Spatial EVP plus refinement: `pymack.solver` and `pymack.analysis`
+- Shared workflow APIs: `pymack.analysis`
 
 ## Exact First-Order Oblique Path
 
-- Full eighth-order system: `lst.mack_shooting.mack_first_order_matrix_3d(...)`
-- Primary sixth-order system: `lst.mack_shooting.mack_first_order_matrix_6(...)`
-- Exact bounded-shooting continuation: `lst.mack_shooting`
-- Branch search / growth scans / neutral extraction: `lst.analysis`
+- Full eighth-order system: `pymack.mack_shooting.mack_first_order_matrix_3d(...)`
+- Primary sixth-order system: `pymack.mack_shooting.mack_first_order_matrix_6(...)`
+- Exact bounded-shooting continuation: `pymack.mack_shooting`
+- Branch search / growth scans / neutral extraction: `pymack.analysis`
 - Mack sixth-order production path: use
   `continue_temporal_mode_6_shooting_sigma_min(...)` or
   `search_temporal_roots_6_shooting(...)`. This solves the true primary `6x6`
@@ -47,8 +47,8 @@ This is the short map from Mack's flat-plate theory to the shared code.
   - `reference_data/mack/table_11_1_delta_star_over_lstar.csv`
 - Table 10.1 oblique temporal growth targets:
   - `reference_data/mack/table_10_1_oblique_growth.csv`
-  - shared loader: `lst.load_mack_table_10_1_cases()`
-  - filtered selectors: `lst.select_mack_table_10_1_cases(...)`
+  - shared loader: `pymack.load_mack_table_10_1_cases()`
+  - filtered selectors: `pymack.select_mack_table_10_1_cases(...)`
   - reduced-EVP diagnostic: `validation/diagnose_mack_table_10_1.py`
   - exact-shooting diagnostic:
     `validation/diagnose_low_mid_table_10_1_shooting.py --order both`

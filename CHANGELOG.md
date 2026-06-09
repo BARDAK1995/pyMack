@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added `scripts/run_mach6_spatial_neutral_case.py`, the canonical one-command
+  Mach 6 second-mode spatial workflow for growth curves, neutral branches,
+  N/amplification, and a manifest with explicit no-stitch/no-smoothing policy.
+- Added validation coverage for the Mach 6 runner dry-run contract so the
+  production command path cannot silently drift.
+- Added `docs/MACH6_SPATIAL_NEUTRAL_WORKFLOW.md` to document the canonical
+  Mach 6 case assumptions, expected endpoints, and artifact policy.
+
 ### Changed
 - Made citation reminders significantly lighter and less intrusive:
   - Import banner is now two short friendly lines (instead of a large boxed message).
@@ -15,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Removed heavy "AI assistant" language from runtime output.
   - `mark_cited()` now gives a friendly thank-you message.
 - Updated README Citing section to be warmer and mention the silence option.
+- Updated Mach 6 workflow docs to prefer the canonical single-sweep runner over
+  manual ad hoc command sequences.
 
 ## [0.1.0] - 2026-06-06
 

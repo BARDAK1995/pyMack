@@ -34,15 +34,27 @@ from .mack_conditions import (
     mack_table_11_1_edge_temperature,
 )
 from .scales import (
+    DimensionalEdgeState,
+    F_to_frequency_khz,
+    R_L_to_x_m,
+    R_L_to_x_mm,
+    alpha_L_to_per_m,
+    alpha_L_to_per_mm,
     delta_star_over_lstar,
     delta_star_to_eta,
     delta_star_to_lstar,
     eta_to_delta_star,
     eta_to_lstar,
+    frequency_khz_to_F,
+    lstar_m_from_R_L,
     lstar_to_delta_star,
     lstar_to_eta,
     momentum_thickness_over_lstar,
     rescale_baseflow_derivatives,
+    sigma_L_to_per_m,
+    sigma_L_to_per_mm,
+    wavelength_L_to_mm,
+    x_mm_to_R_L,
 )
 from .asymptotic import (
     mack_freestream_characteristic_values,

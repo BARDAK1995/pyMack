@@ -282,6 +282,142 @@ def _process_frequency(
                 "status": "no_finite_rows",
                 "n_crossings": len(crosses),
             }
+        if len(crosses) == 1 and float(crosses[0][1]["sigma_L"]) < 0.0 < float(crosses[0][2]["sigma_L"]):
+            lower = crosses[0]
+            lower_path = _integrate_from_lower_neutral(
+                freq_rows,
+                lower,
+                upper=None,
+                dx_over_lstar_per_dR=dx_over_lstar_per_dR,
+            )
+            full_path = _integrate_full_path(
+                freq_rows,
+                dx_over_lstar_per_dR=dx_over_lstar_per_dR,
+            )
+            R_lower_path = lower_path["R"]
+            signed_lower_path = lower_path["signed_N"]
+            positive_lower_path = lower_path["positive_N"]
+            envelope_lower_path = lower_path["envelope_N"]
+            R_full = full_path["R"]
+            signed_full = full_path["signed_N"]
+            positive_full = full_path["positive_N"]
+            envelope_full = full_path["envelope_N"]
+
+            out_rows = []
+            for row in freq_rows:
+                R = float(row["R_L"])
+                if R < lower_path["lower_R"]:
+                    region = "pre_lobe_stable"
+                    signed_N = 0.0
+                    positive_N = 0.0
+                    envelope_N = 0.0
+                else:
+                    region = "open_downstream_lobe"
+                    signed_N = _interp_series(
+                        R,
+                        R_lower_path,
+                        signed_lower_path,
+                        fill_before=0.0,
+                        fill_after=float(signed_lower_path[-1]),
+                    )
+                    positive_N = _interp_series(
+                        R,
+                        R_lower_path,
+                        positive_lower_path,
+                        fill_before=0.0,
+                        fill_after=float(positive_lower_path[-1]),
+                    )
+                    envelope_N = _interp_series(
+                        R,
+                        R_lower_path,
+                        envelope_lower_path,
+                        fill_before=0.0,
+                        fill_after=float(envelope_lower_path[-1]),
+                    )
+                signed_N_start = _interp_series(
+                    R,
+                    R_full,
+                    signed_full,
+                    fill_before=0.0,
+                    fill_after=float(signed_full[-1]),
+                )
+                positive_N_start = _interp_series(
+                    R,
+                    R_full,
+                    positive_full,
+                    fill_before=0.0,
+                    fill_after=float(positive_full[-1]),
+                )
+                envelope_N_start = _interp_series(
+                    R,
+                    R_full,
+                    envelope_full,
+                    fill_before=0.0,
+                    fill_after=float(envelope_full[-1]),
+                )
+                out = dict(row)
+                out.update({
+                    "lower_neutral_R_L": float(lower_path["lower_R"]),
+                    "upper_neutral_R_L": math.nan,
+                    "N_signed_from_lower": float(signed_N),
+                    "amplification_signed_from_lower": float(math.exp(signed_N)),
+                    "N_positive_from_lower": float(positive_N),
+                    "amplification_positive_from_lower": float(math.exp(positive_N)),
+                    "N_envelope_from_lower": float(envelope_N),
+                    "amplification_envelope_from_lower": float(math.exp(envelope_N)),
+                    "N_signed_from_start": float(signed_N_start),
+                    "amplification_signed_from_start": float(math.exp(signed_N_start)),
+                    "N_positive_from_start": float(positive_N_start),
+                    "amplification_positive_from_start": float(math.exp(positive_N_start)),
+                    "N_envelope_from_start": float(envelope_N_start),
+                    "amplification_envelope_from_start": float(math.exp(envelope_N_start)),
+                    "amplification_region": region,
+                })
+                out_rows.append(out)
+
+            lower_peak_index = int(np.argmax(signed_lower_path))
+            peak_index_start = int(np.argmax(signed_full))
+            open_lobe_rows = [
+                row for row in freq_rows
+                if float(row["R_L"]) >= lower_path["lower_R"]
+            ]
+            peak_growth_row = max(open_lobe_rows, key=lambda row: float(row["sigma_L"]))
+            return out_rows, {
+                "freq_parameter": float(freq),
+                "status": "open_downstream_lobe",
+                "n_crossings": len(crosses),
+                "lower_neutral_R_L": float(lower_path["lower_R"]),
+                "upper_neutral_R_L": math.nan,
+                "peak_N_R_L": float(R_lower_path[lower_peak_index]),
+                "N_signed_peak": float(signed_lower_path[lower_peak_index]),
+                "amplification_signed_peak": float(math.exp(float(signed_lower_path[lower_peak_index]))),
+                "peak_N_R_L_from_lower_full_path": float(R_lower_path[lower_peak_index]),
+                "N_signed_peak_from_lower_full_path": float(signed_lower_path[lower_peak_index]),
+                "amplification_signed_peak_from_lower_full_path": float(math.exp(float(signed_lower_path[lower_peak_index]))),
+                "peak_N_R_L_from_start": float(R_full[peak_index_start]),
+                "N_signed_peak_from_start": float(signed_full[peak_index_start]),
+                "amplification_signed_peak_from_start": float(math.exp(float(signed_full[peak_index_start]))),
+                "N_positive_at_end_from_start": float(positive_full[-1]),
+                "amplification_positive_at_end_from_start": float(math.exp(float(positive_full[-1]))),
+                "N_envelope_at_end_from_start": float(envelope_full[-1]),
+                "amplification_envelope_at_end_from_start": float(math.exp(float(envelope_full[-1]))),
+                "N_signed_at_end_from_start": float(signed_full[-1]),
+                "amplification_signed_at_end_from_start": float(math.exp(float(signed_full[-1]))),
+                "N_positive_at_upper": math.nan,
+                "amplification_positive_at_upper": math.nan,
+                "N_envelope_at_upper": math.nan,
+                "amplification_envelope_at_upper": math.nan,
+                "N_signed_at_upper": math.nan,
+                "amplification_signed_at_upper": math.nan,
+                "N_signed_at_end_from_lower": float(signed_lower_path[-1]),
+                "amplification_signed_at_end_from_lower": float(math.exp(float(signed_lower_path[-1]))),
+                "N_envelope_at_end_from_lower": float(envelope_lower_path[-1]),
+                "amplification_envelope_at_end_from_lower": float(math.exp(float(envelope_lower_path[-1]))),
+                "peak_growth_R_L": float(peak_growth_row["R_L"]),
+                "peak_sigma_L": float(peak_growth_row["sigma_L"]),
+                "peak_wavelength_L": float(peak_growth_row["wavelength_L"]),
+                "n_samples": int(len(freq_rows)),
+            }
         full_path = _integrate_full_path(
             freq_rows,
             dx_over_lstar_per_dR=dx_over_lstar_per_dR,
@@ -672,12 +808,12 @@ def _plot_linear_amplification_from_start(
 def _neutral_envelope_rows(summaries):
     rows = []
     for summary in summaries:
-        if summary.get("status") != "ok":
+        if summary.get("status") not in {"ok", "open_downstream_lobe"}:
             continue
         lower = float(summary.get("lower_neutral_R_L", math.nan))
         upper = float(summary.get("upper_neutral_R_L", math.nan))
         freq = float(summary.get("freq_parameter", math.nan))
-        if not (math.isfinite(freq) and math.isfinite(lower) and math.isfinite(upper)):
+        if not (math.isfinite(freq) and math.isfinite(lower)):
             continue
         rows.append({
             "freq_parameter": freq,

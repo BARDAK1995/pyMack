@@ -20,6 +20,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+# Process-pool workers re-import this module on Windows.  Set this before the
+# package imports so parallel sweeps do not print one banner per worker.
+os.environ.setdefault("PYMACK_NO_BANNER", "1")
+
 from pymack import CompressibleBlasiusProfile, make_ozgen_profile  # noqa: E402
 from pymack.pymack_dense import (  # noqa: E402
     DenseBaseFlowConfig,
@@ -38,6 +42,7 @@ SECOND_MODE_ALPHA_MIN_L = None
 def _configure_worker_threads():
     for key in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS"):
         os.environ.setdefault(key, "1")
+    os.environ.setdefault("PYMACK_NO_BANNER", "1")
 
 
 def _chunk_array(values, n_chunks):
@@ -1088,9 +1093,9 @@ def main():
                 else float(args.y_max_lstar)
             ),
             "solver": (
-                "lst.pymack_dense dense full-spectrum QEP"
+                "pymack.pymack_dense dense full-spectrum QEP"
                 if args.backend == "pymack_dense"
-                else "lst.solver.solve_spatial companion QEP"
+                else "pymack.solver.solve_spatial companion QEP"
             ),
             "dense_backend_config": {
                 "eta_nodes": int(args.dense_eta_nodes),

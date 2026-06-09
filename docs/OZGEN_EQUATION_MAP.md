@@ -12,8 +12,8 @@ Paper equations:
 
 Shared builder:
 
-- `lst.make_ozgen_profile(...)`
-- backing class: `lst.baseflow.OzgenFlatPlateProfile`
+- `pymack.make_ozgen_profile(...)`
+- backing class: `pymack.baseflow.OzgenFlatPlateProfile`
 
 The current shared implementation solves the coupled Ozgen mean-flow BVP rather
 than using the earlier Crocco/Walz-style temperature closure. The paper's
@@ -33,7 +33,7 @@ Implemented property model:
 
 ## Scales
 
-Use the shared helpers in `lst.scales` for:
+Use the shared helpers in `pymack.scales` for:
 
 - `delta* / L*`
 - `theta / L*`
@@ -45,12 +45,12 @@ Do not recompute these conversions locally in chapter code.
 ## Stability Workflows
 
 - 2D temporal growth / neutral work for Ozgen Fig. 3 should use
-  `lst.ozgen_solver.solve_temporal_ozgen_2d(...)`, which assembles Ozgen's
+  `pymack.ozgen_solver.solve_temporal_ozgen_2d(...)`, which assembles Ozgen's
   temperature equation directly from Eq. 2.15 instead of the Mack enthalpy row
-  in `lst.solver.solve_temporal_compressible(...)`
-- paper-agnostic temporal growth / neutral work should use `lst.analysis`
-- 3D oblique work should use the true 3D solver paths in `lst.analysis` and
-  `lst.solver`
+  in `pymack.solver.solve_temporal_compressible(...)`
+- paper-agnostic temporal growth / neutral work should use `pymack.analysis`
+- 3D oblique work should use the true 3D solver paths in `pymack.analysis` and
+  `pymack.solver`
 - Ozgen's perturbation equations use Stokes-hypothesis viscous coefficients;
   chapter stability calls therefore set `lambda_mu_ratio = 0.0` rather than
   Mack's default `1.2`

@@ -604,7 +604,7 @@ def main():
             "n_modes": int(args.n_modes),
             "phase_speed_filter": [float(args.phase_min), float(args.phase_max)],
             "target_phase_speed": float(args.target_phase_speed),
-            "solver": "lst.solver.solve_spatial companion QEP",
+            "solver": "pymack.solver.solve_spatial companion QEP",
             "lambda_mu_ratio": float(args.lambda_mu_ratio),
             "selection": "phase-filtered maximum sigma envelope",
             "n_grid_points": int(len(records)),
