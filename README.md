@@ -57,16 +57,22 @@ problem with a spectral method, returning the complete spectrum at each station.
 
 ## Validation
 
-The **incompressible core** is validated by the test suite — the
-**Orszag (1971)** plane-Poiseuille eigenvalue is reproduced to 5+ significant
-figures ($c = 0.23753 + 0.00374\,i$ at $Re=10^4$), and the Blasius
-Tollmien–Schlichting neutral curve is recovered.
+pyMack follows a **layered validation strategy** — high-precision *tables* and
+*independent codes* as CI-enforced gates, literature figures as qualitative
+demonstrations. Full rationale and status:
+[`docs/VALIDATION_STRATEGY.md`](docs/VALIDATION_STRATEGY.md).
 
-> ⚠️ **The compressible / hypersonic validation against published benchmarks is
-> a work in progress**, developed separately and **not yet included here**. The
-> Mach 6 results shown above are pyMack's own computations, cross-checked
-> internally — not yet claimed as 1:1 reproductions of the figures in
-> Mack (1984) or Özgen & Kırcalı (2008).
+| What | Benchmark | Result |
+|---|---|---|
+| Incompressible eigenvalues | Orszag (1971) plane Poiseuille | 5+ significant figures |
+| Compressible mean flow | Mack (1984) Table 11.1 thicknesses | < 0.5% |
+| Compressible temporal growth, oblique 3D | Mack (1984) Table 10.1, 6th & 8th order | 0.07–0.91% |
+| **End-to-end dimensional neutral curve** | **Independent LST code** (Mach 5.35 N₂ flat plate) | upper branch MAE 3.2 mm (200–600 kHz); lower branch MAE 1.3 mm (330–600 kHz) — CI-gated |
+
+> The low-frequency lower-branch difference vs the independent benchmark is a
+> documented open investigation (mode-family bookkeeping), not noise — see the
+> strategy doc. Exact 1:1 reproduction of individual Mack/Özgen *figures* is
+> deliberately out of scope as a validation gate.
 
 ## Install
 
