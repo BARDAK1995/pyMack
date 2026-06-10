@@ -57,7 +57,7 @@ breaks, the failing layer localizes it.
 | 1 | Compressible mean flow | Mack Table 11.1 thicknesses (**table**) | ✅ < 0.5% |
 | 2 | Incompressible eigenvalue problem | Orszag (1971) Poiseuille eigenvalue (**table**) | ✅ 5+ significant figures |
 | 3 | Compressible temporal LST, incl. oblique 3D | Mack Table 10.1, 6th & 8th order systems (**table**) | ✅ 0.07–0.91% (exact shooting) |
-| 4a | Spatial path, cross-method | Internal: dense QEP vs `solve_spatial` vs shooting/Gaster at common points (**internal redundancy**) | ⬜ to be gated |
+| 4a | Spatial path, cross-method | Internal: dense QEP vs `solve_spatial` vs Newton vs Gaster-pipeline vs Muller at common points (**internal redundancy**) | ✅ gated (`test_spatial_cross_method_consistency.py`): independent operators agree to \|Δα_r\|≤2×10⁻⁴, \|Δσ\|≤1×10⁻⁴ at the canonical M6 point; within-family ≤10⁻⁶ |
 | 4b | Spatial path, external anchor | Malik (1990) tabulated Mach 4.5 eigenvalues (**table**) | ⬜ obtain table values, implement |
 | 5 | End-to-end dimensional product (base flow → spatial sweep → neutral branches → physical units) | **Independent-code benchmark:** collaborator Mach 5.35 N₂ flat-plate neutral curve (dimensional) | ✅ gated (upper branch 200–600 kHz, lower branch 330–600 kHz); low-frequency lower branch = documented open investigation |
 | 6 | Qualitative literature agreement | One Mack overlay (e.g. Fig 10.6 family) + one Özgen overlay (Fig 3 lobes), from already-digitized data — **demonstrations, not gates** | ⬜ select & document |
@@ -85,6 +85,30 @@ Design principles:
   formulations) is reclassified from "validation blocker" to a **documented
   formulation-difference investigation**: the oblique temporal path is already
   table-validated against Mack Table 10.1 at Layer 3.
+
+## Layer-4a result (June 2026): cross-method consistency — and a pinned systematic
+
+Running all six spatial solution paths at shared Mach 6 points showed the two
+independently-implemented operators (dense companion QEP with its own
+Lees–Dorodnitsyn base flow vs the main `solve_spatial` family on
+`CompressibleBlasiusProfile`) agree to |Δα_r| ≈ 2×10⁻⁴, |Δσ| ≈ 10⁻⁴–10⁻⁵ (L*
+units), and routes within the main family (shift-invert QEP, full spectrum,
+Newton-on-temporal-EVP, Gaster-seeded pipeline, Muller) agree to ~10⁻⁶.
+
+The study also surfaced a **real systematic, now pinned by the test suite**:
+`pymack_dense` hardcodes Stokes second viscosity (λ/μ = 0) while the
+`pymack.solver` family defaults to `lambda_mu_ratio = 1.2` (Mack's choice), and
+`solve_spatial_muller` has no such parameter (fixed at 1.2). At the canonical
+point this shifts σ_L by ~9%. Cross-operator gates therefore compare at
+λ/μ = 0, the Muller gate compares against the QEP at 1.2, and one assertion
+verifies the 0-vs-1.2 offset *remains finite and visible* so a silent default
+change cannot slip through. Choosing/unifying the package-wide default is an
+open physics-documentation item.
+
+Also documented honestly: the dense backend's default ny=31 grid is
+under-resolved beyond R_L ≈ 2000 (observed Δσ = 2.5×10⁻³ at R_L=2500 vs the
+N=80 QEP) — gate points are kept below that, and production use at large R_L
+should raise `ny`.
 
 ## Layer-5 result (June 2026): Mach 5.35 independent-code benchmark
 
