@@ -58,7 +58,7 @@ breaks, the failing layer localizes it.
 | 2 | Incompressible eigenvalue problem | Orszag (1971) Poiseuille eigenvalue (**table**) | ✅ 5+ significant figures |
 | 3 | Compressible temporal LST, incl. oblique 3D | Mack Table 10.1, 6th & 8th order systems (**table**) | ✅ 0.07–0.91% (exact shooting) |
 | 4a | Spatial path, cross-method | Internal: dense QEP vs `solve_spatial` vs Newton vs Gaster-pipeline vs Muller at common points (**internal redundancy**) | ✅ gated (`test_spatial_cross_method_consistency.py`): independent operators agree to \|Δα_r\|≤2×10⁻⁴, \|Δσ\|≤1×10⁻⁴ at the canonical M6 point; within-family ≤10⁻⁶ |
-| 4b | Spatial path, external anchor | Malik (1990) tabulated Mach 4.5 eigenvalues (**table**) | ⬜ obtain table values, implement |
+| 4b | Spatial path, external anchor | Malik (1990) Test Case 6 tabulated eigenvalue (**table**) | ✅ gated (`test_malik1990_case6_anchor.py`): α matches Malik's printed value to ~5×10⁻⁶ at N=120 — inside the published literature spread for this case |
 | 5 | End-to-end dimensional product (base flow → spatial sweep → neutral branches → physical units) | **Independent-code benchmark:** collaborator Mach 5.35 N₂ flat-plate neutral curve (dimensional) | ✅ gated (upper branch 200–600 kHz, lower branch 330–600 kHz); low-frequency lower branch = documented open investigation |
 | 6 | Qualitative literature agreement | One Mack overlay (e.g. Fig 10.6 family) + one Özgen overlay (Fig 3 lobes), from already-digitized data — **demonstrations, not gates** | ⬜ select & document |
 
@@ -109,6 +109,35 @@ Also documented honestly: the dense backend's default ny=31 grid is
 under-resolved beyond R_L ≈ 2000 (observed Δσ = 2.5×10⁻³ at R_L=2500 vs the
 N=80 QEP) — gate points are kept below that, and production use at large R_L
 should raise `ny`.
+
+## Layer-4b result (June 2026): Malik (1990) Test Case 6 anchor
+
+The canonical compressible spatial LST benchmark — Malik (1990), J. Comput.
+Phys. 86, Table IX, Test Case 6 (M=4.5, R=1500, ω=0.23, insulated wall,
+T₀=611.11 K, Sutherland, Pr=0.7): **α = 0.2534048 − 0.0024921 i**. Source
+digits were verified against the original archived scan and confirmed
+digit-for-digit in two independent citing papers (arXiv:2006.05970 Table 3;
+arXiv:1712.08239 Table I).
+
+pyMack (companion QEP, `lambda_mu_ratio=1.2`, isothermal perturbation BC on the
+adiabatic mean flow) converges to Malik's printed value:
+
+| N | pyMack α | Δα_r | Δα_i |
+|---|---|---|---|
+| 100 | 0.2533856 − 0.0025138i | −1.9×10⁻⁵ | −2.2×10⁻⁵ |
+| 120 | 0.2533998 − 0.0024898i | −5.0×10⁻⁶ | +2.3×10⁻⁶ |
+| 150 | 0.2534010 − 0.0024935i | −3.8×10⁻⁶ | −1.4×10⁻⁶ |
+
+For calibration: Tumin (2007) recomputed this case with a different
+formulation and obtained α_i = −0.0027738 (~11% from Malik) — pyMack's
+agreement with Malik's printed value is far inside the literature spread.
+
+The formulation mapping itself is a validation by-product: matching Malik
+requires `lambda_mu_ratio = 1.2` (the package default; Mack's second-viscosity
+convention), **not** Stokes — empirically settling which convention the
+package default should keep. The probe matrix (λ/μ ∈ {0, 1.2} × perturbation
+wall BC ∈ {isothermal, adiabatic}) showed every other combination misses the
+anchor by 10–100×.
 
 ## Layer-5 result (June 2026): Mach 5.35 independent-code benchmark
 

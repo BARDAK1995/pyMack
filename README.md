@@ -67,6 +67,8 @@ demonstrations. Full rationale and status:
 | Incompressible eigenvalues | Orszag (1971) plane Poiseuille | 5+ significant figures |
 | Compressible mean flow | Mack (1984) Table 11.1 thicknesses | < 0.5% |
 | Compressible temporal growth, oblique 3D | Mack (1984) Table 10.1, 6th & 8th order | 0.07–0.91% |
+| **Compressible spatial eigenvalue** | **Malik (1990) Table IX, Test Case 6** (M=4.5 second mode) | α matches to ~5×10⁻⁶ — inside the published literature spread |
+| Spatial cross-method consistency | dense QEP vs `solve_spatial` vs Newton vs Gaster vs Muller | independent operators ≤2×10⁻⁴; within-family ≤10⁻⁶ |
 | **End-to-end dimensional neutral curve** | **Independent LST code** (Mach 5.35 N₂ flat plate) | upper branch MAE 3.2 mm (200–600 kHz); lower branch MAE 1.3 mm (330–600 kHz) — CI-gated |
 
 > The low-frequency lower-branch difference vs the independent benchmark is a

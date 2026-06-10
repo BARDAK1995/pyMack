@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- **Layer-4b validation gate — Malik (1990) anchor**
+  (`validation/test_malik1990_case6_anchor.py`): pyMack reproduces the
+  canonical tabulated compressible spatial eigenvalue (Malik JCP 86, Table IX,
+  Test Case 6: M=4.5, R=1500, ω=0.23, insulated wall) to ~5×10⁻⁶ at N=120 —
+  inside the published literature spread. Source digits verified against the
+  original archived paper and two independent citing papers. The match also
+  establishes that Malik's formulation corresponds to `lambda_mu_ratio=1.2`
+  (the package default), settling the second-viscosity convention question.
+- **Layer-4a validation gates — cross-method spatial consistency**
+  (`validation/test_spatial_cross_method_consistency.py`): six CI gates
+  comparing the two independent spatial operators and all solution routes
+  within the main family, with evidence-based tolerances; pins the
+  Stokes-vs-1.2 λ/μ systematic and documents dense-grid limits.
 - **Validation strategy** (`docs/VALIDATION_STRATEGY.md`): layered validation
   pyramid replacing figure-by-figure paper replication — tables and independent
   codes as gates, figures as qualitative demonstrations.
