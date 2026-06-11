@@ -164,42 +164,24 @@ def make_mack_profile(
         )
 
     # Strongly cooled or heated walls converge more reliably through
-    # isothermal continuation from the adiabatic solution.
-    profile = CompressibleBlasiusProfile(
+    # isothermal continuation from the adiabatic solution. The recipe lives in
+    # pymack.boundary_layer._solve_isothermal_with_continuation (single source).
+    from .boundary_layer import _solve_isothermal_with_continuation
+
+    engine_kwargs = dict(
         Ma=Ma,
-        T_wall=T_recovery,
         T_edge=T_edge,
         gamma=gamma,
         Pr=Pr,
         omega=omega,
         Re_delta_star=Re_delta_star,
-        wall_bc='adiabatic',
         viscosity_model='mack',
     )
-    profile = CompressibleBlasiusProfile(
-        Ma=Ma,
-        T_wall=T_recovery,
-        T_edge=T_edge,
-        gamma=gamma,
-        Pr=Pr,
-        omega=omega,
-        Re_delta_star=Re_delta_star,
-        wall_bc='isothermal',
-        viscosity_model='mack',
-        initial_guess_profile=profile,
+    profile, _n_steps = _solve_isothermal_with_continuation(
+        target_T_wall_K=T_recovery * Tw_ratio,
+        Taw_K=T_recovery,
+        engine_kwargs=engine_kwargs,
+        max_continuation_step=0.05,
+        progress=None,
     )
-    n_steps = max(4, int(np.ceil(abs(Tw_ratio - 1.0) / 0.05)))
-    for ratio in np.linspace(1.0, Tw_ratio, n_steps + 1)[1:]:
-        profile = CompressibleBlasiusProfile(
-            Ma=Ma,
-            T_wall=T_recovery * ratio,
-            T_edge=T_edge,
-            gamma=gamma,
-            Pr=Pr,
-            omega=omega,
-            Re_delta_star=Re_delta_star,
-            wall_bc='isothermal',
-            viscosity_model='mack',
-            initial_guess_profile=profile,
-        )
     return profile
