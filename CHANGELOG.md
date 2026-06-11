@@ -7,7 +7,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Momentum thickness θ/L\*** in `CompressibleBlasiusProfile` integrated the
+  wrong quantity (`U(T−U)` instead of `U(1−U)`; in Levy–Lees variables the T
+  factors cancel in θ's integrand). The bug vanished in the incompressible
+  limit (θ → Blasius 0.6641, which is why it survived) but inflated θ at high
+  Mach (~7× at Ma=4.5 adiabatic). δ\*/L\* was always correct. Found by
+  adversarial review of the new generator; corrected value verified against
+  the Blasius limit and Malik (1990) Case-6 δ\* (9.3946 vs printed 9.3992).
+
 ### Added
+- **Standalone compressible boundary-layer generator**
+  (`pymack.generate_boundary_layer`, `scripts/generate_boundary_layer.py`):
+  adiabatic/isothermal walls (`Tw_over_Te`/`Tw_over_Taw`/`T_wall_K`),
+  Sutherland/power-law/Mack transport, gas presets, automatic adiabatic-seeded
+  continuation for difficult cold walls (now the single source of the recipe —
+  `make_mack_profile` delegates to it), CSV + SI export, and
+  `as_stability_profile()` for direct solver input. 12 new validation tests.
+- **Sharp-cone (Mangler) support** (`pymack.cone`, runner `--geometry cone`):
+  station mapping `R_eq = sqrt(Re_s/3)` (half-angle cancels exactly), cone
+  N-factor path integral `N = ∫ 6 σ_L dR_eq = 3 × N_plate`, `cone_*` twins of
+  the dimensional converters, manifest geometry block, and
+  `docs/CONE_WORKFLOW.md` with the honest Mangler-only scope statement
+  (transverse curvature deferred; edge state must be the post-shock cone
+  edge). The √3 derivation was independently re-verified in adversarial
+  review; flat-plate runner behavior is bit-identical without the flag.
 - **Layer-4b validation gate — Malik (1990) anchor**
   (`validation/test_malik1990_case6_anchor.py`): pyMack reproduces the
   canonical tabulated compressible spatial eigenvalue (Malik JCP 86, Table IX,

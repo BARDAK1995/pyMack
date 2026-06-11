@@ -24,7 +24,12 @@ Named after Leslie M. Mack, author of *Boundary-Layer Linear Stability Theory*
 - **Growth rates, neutral curves, and N-factor** ($e^N$) amplification.
 - **First (Tollmien–Schlichting) and second (Mack) modes**; 2D and oblique waves.
 - Built-in base flows: incompressible Blasius, compressible self-similar
-  (adiabatic / isothermal walls), and Özgen flat-plate profiles.
+  (adiabatic / isothermal walls), and Özgen flat-plate profiles — plus a
+  **standalone boundary-layer profile generator** (`generate_boundary_layer`)
+  with CSV/SI export and automatic cold-wall continuation.
+- **Sharp-cone support** via the Mangler transformation (`pymack.cone`,
+  `--geometry cone` in the canonical runner) — see
+  [`docs/CONE_WORKFLOW.md`](docs/CONE_WORKFLOW.md).
 - Pure Python — depends only on `numpy`, `scipy`, `matplotlib`.
 
 ## Mach 6 results

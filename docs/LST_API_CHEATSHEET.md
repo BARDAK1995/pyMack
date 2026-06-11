@@ -217,3 +217,55 @@ Conventions:
 
 So a dimensional plot is just: solve nondimensionally, then map the axes with
 these converters.
+
+## Standalone Boundary-Layer Generator
+
+`pymack.generate_boundary_layer(Ma, ...)` produces a compressible flat-plate
+similarity profile usable standalone *and* as stability-solver input:
+
+```python
+from pymack import generate_boundary_layer
+from pymack.scales import DimensionalEdgeState
+
+bl = generate_boundary_layer(4.5, wall_bc='adiabatic',
+                             viscosity_model='mack', T_edge_K=300.0)
+bl.delta_star_over_Lstar, bl.theta_over_Lstar, bl.shape_factor_H
+bl.Tw_over_Te              # SOLVED adiabatic wall temperature (not the formula)
+bl.to_csv('profile.csv')   # y/L*-scaled table, JSON metadata in '#' header
+alphas, _, _ = solve_spatial(bl.as_stability_profile(), ...)  # drop-in baseflow
+dim = bl.dimensionalize(DimensionalEdgeState(U_e=900.0, nu_e=8e-5), R_L=1500)
+```
+
+- Wall: `wall_bc='adiabatic'|'isothermal'` with exactly one of
+  `Tw_over_Te` / `Tw_over_Taw` / `T_wall_K` for isothermal.
+- Transport: `viscosity_model='sutherland'|'power_law'|'mack'`; `gas='air'|'nitrogen'`
+  presets; explicit `gamma`/`Pr`/`sutherland_S_K` overrides.
+- Difficult cold walls (notably `mack` transport below the 110.4 K kink) are
+  rescued automatically by adiabatic-seeded wall-temperature **continuation**.
+- `Taw_over_Te_formula` (r = √Pr) differs from the solved adiabatic value by up
+  to ~2% (constant-Pr models) and ~10% (`mack`, variable Pr) — the result
+  object reports both.
+- CLI: `python scripts/generate_boundary_layer.py --ma 6 --wall isothermal
+  --tw-over-te 5.88 --gas nitrogen --csv profile.csv` (add the dimensional
+  edge-state group for an SI companion table).
+
+## Sharp Cone (Mangler) Support
+
+Local LST on a sharp cone (zero incidence, Mangler-only scope — no
+transverse-curvature operator terms; see `docs/CONE_WORKFLOW.md`):
+
+- **Mapping:** cone boundary layer at surface distance `s` ≡ flat-plate problem
+  at `x_eq = s/3`, so `R_eq = sqrt(Re_s/3) = R_s/√3`. Solve the *plate* problem
+  at `R_eq`; pyMack's cone layer is pure bookkeeping (`pymack.cone`):
+  `cone_s_mm_to_R_eq`, `cone_R_eq_to_s_mm`, `R_eq_from_R_s`, plus `cone_*`
+  twins of every dimensional converter.
+- **N-factor:** `N_cone = ∫ 6 σ_L dR_eq = 3 × N_plate` over the same `R_eq`
+  window — `cone_n_factor(sigma_L, R_eq)`.
+- **Frequency:** F↔kHz is geometry-independent; at fixed `ω_L` the dimensional
+  second-mode frequency at surface distance `s` is `√3 ×` the plate value at
+  `x = s`.
+- **Runner:** `run_mach6_spatial_neutral_case.py --geometry cone
+  --cone-half-angle-deg 7` (x bounds then mean surface distance `s`; flat-plate
+  default is bit-identical without the flag).
+- ⚠️ The `DimensionalEdgeState` must be the **post-shock cone edge** state
+  (e.g. Taylor–Maccoll), not the freestream.

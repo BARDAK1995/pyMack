@@ -7,12 +7,14 @@ Chebyshev spectral collocation.
 
 Modules
 -------
-spectral   : Chebyshev differentiation matrices and domain mapping
-baseflow   : Mean flow profile interfaces (Blasius, compressible, tabulated)
-equations  : Compressible stability equation coefficient matrices
-solver     : Eigenvalue solver with mode filtering and tracking
-analysis   : Parameter sweeps, neutral curves, N-factor integration
-plotting   : Publication-quality visualization
+spectral        : Chebyshev differentiation matrices and domain mapping
+baseflow        : Mean flow profile engines (Blasius, compressible self-similar)
+boundary_layer  : Standalone compressible boundary-layer profile generator
+cone            : Sharp-cone (Mangler) station mapping and N-factor helpers
+equations       : Compressible stability equation coefficient matrices
+solver          : Eigenvalue solver with mode filtering and tracking
+analysis        : Parameter sweeps, neutral curves, N-factor integration
+plotting        : Publication-quality visualization
 """
 
 from .spectral import chebyshev_points, chebyshev_D, map_domain, physical_derivatives
@@ -127,6 +129,31 @@ from .mack_table_10_1 import (
     DEFAULT_TABLE_10_1_WALL_BC,
     evaluate_table_10_1_exact_shooting,
     load_low_mid_table_10_1_families,
+)
+from .boundary_layer import (
+    BoundaryLayerResult,
+    DimensionalBoundaryLayer,
+    generate_boundary_layer,
+)
+from .cone import (
+    CONE_FREQUENCY_RATIO_AT_SAME_S,
+    MANGLER_FACTOR,
+    ConeGeometry,
+    R_eq_from_R_s,
+    R_s_from_R_eq,
+    cone_F_to_frequency_khz,
+    cone_R_eq_to_s_m,
+    cone_R_eq_to_s_mm,
+    cone_alpha_L_to_per_m,
+    cone_alpha_L_to_per_mm,
+    cone_frequency_khz_to_F,
+    cone_lstar_m_from_R_eq,
+    cone_n_factor,
+    cone_n_factor_multiplier,
+    cone_s_mm_to_R_eq,
+    cone_sigma_L_to_per_m,
+    cone_sigma_L_to_per_mm,
+    cone_wavelength_L_to_mm,
 )
 
 __version__ = "0.0.1"
