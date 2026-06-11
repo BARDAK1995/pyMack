@@ -523,9 +523,12 @@ class CompressibleBlasiusProfile:
         # y/L* = sqrt(2) * integral_0^eta (T/T_e) d_eta.
         y_L = np.sqrt(2.0) * cumulative_trapezoid(T_arr, eta, initial=0.0)
 
-        # delta*/L* and theta/L*
+        # delta*/L* and theta/L*.  With dy/L* = sqrt(2) T d_eta and
+        # rho/rho_e = 1/T:  delta*/L* = sqrt(2) int (T - U) d_eta and
+        # theta/L* = int (rho U)(1 - U) dy/L* = sqrt(2) int U (1 - U) d_eta
+        # (the T factors cancel in theta's integrand).
         self._delta_star = np.sqrt(2.0) * trapezoid(T_arr - U_arr, eta)
-        self._theta = np.sqrt(2.0) * trapezoid(U_arr * (T_arr - U_arr), eta)
+        self._theta = np.sqrt(2.0) * trapezoid(U_arr * (1.0 - U_arr), eta)
 
         y_nd = y_L / self._delta_star
 
