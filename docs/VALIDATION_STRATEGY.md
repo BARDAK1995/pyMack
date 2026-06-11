@@ -60,7 +60,7 @@ breaks, the failing layer localizes it.
 | 4a | Spatial path, cross-method | Internal: dense QEP vs `solve_spatial` vs Newton vs Gaster-pipeline vs Muller at common points (**internal redundancy**) | ✅ gated (`test_spatial_cross_method_consistency.py`): independent operators agree to \|Δα_r\|≤2×10⁻⁴, \|Δσ\|≤1×10⁻⁴ at the canonical M6 point; within-family ≤10⁻⁶ |
 | 4b | Spatial path, external anchor | Malik (1990) Test Case 6 tabulated eigenvalue (**table**) | ✅ gated (`test_malik1990_case6_anchor.py`): α matches Malik's printed value to ~5×10⁻⁶ at N=120 — inside the published literature spread for this case |
 | 5 | End-to-end dimensional product (base flow → spatial sweep → neutral branches → physical units) | **Independent-code benchmark:** collaborator Mach 5.35 N₂ flat-plate neutral curve (dimensional) | ✅ gated (upper branch 200–600 kHz, lower branch 330–600 kHz); low-frequency lower branch = documented open investigation |
-| 6 | Qualitative literature agreement | Özgen Fig 3 overlay (M=2, M=4) ✅; Mack Fig 10.3 overlay (M=1.3, ψ=45°) ⏳ — **demonstrations, not gates** | ✅ partially complete (see below) |
+| 6 | Qualitative literature agreement | Özgen Fig 3 overlay (M=2, M=4) ✅ + Mack Fig 10.3 overlay (M=1.3, ψ=45°) ✅ — **demonstrations, not gates** | ✅ complete (see below) |
 
 Design principles:
 
@@ -192,16 +192,30 @@ and M=4 (1,440 eigensolves at the paper-baseline conditions, which are exactly
   figure's JSON metadata; the c_i grid is committed alongside for
   reproducibility without recompute.
 
-**Mack (1984) Fig 10.3 (M=1.3, ψ=45°)** — deferred. The overlay script's smoke
-path reproduces the Layer-3-validated Table 10.1 points to +0.17…+0.91%, but
-the production sweep's bracket/continuation path returned non-converged
-shooting artifacts and the script's **built-in table cross-check gate refused
-to emit the figure** (exit 1) — the honest-gate design working as intended.
-The production-path bug is tracked; the figure will be added once the
-generator passes its own gate. (Fig 10.6 was evaluated and explicitly rejected
-as an overlay target: a live grid-converged probe showed a ~6× magnitude gap
-vs the digitized curve under the repo's condition mapping — exactly the
-condition-archaeology this strategy avoids.)
+**Mack (1984) Fig 10.3 (M=1.3, ψ=45°)** — pyMack's per-R maximum oblique
+first-mode growth via the Layer-3-validated exact-shooting machinery (8 R
+stations × α scans, ~94 min), overlaid on the digitized paper curve:
+
+![Mack Fig 10.3 overlay](figures/mack_fig10_3_overlay.png)
+
+- The pyMack curve **passes through both Layer-3-validated Table 10.1 anchor
+  points** (marked) and converges onto the digitized paper curve on the
+  plateau (R ≳ 1300, within a few %).
+- At low R the curves separate: pyMack (at the `table_11_1` condition schedule,
+  under which the Layer-3 table validation holds) finds the flow marginally
+  stable at R ≲ 300 where the paper's wind-tunnel-condition curve already shows
+  growth — the documented condition-schedule difference, displayed rather than
+  tuned away.
+- Provenance note: the first production attempt was **rejected by the script's
+  own built-in Table 10.1 cross-check gate** (a non-converged anchor artifact
+  had poisoned the sweep); the anchor selection was hardened to admit only
+  converged shooting roots, re-verified against the table (+0.17…+0.91%), and
+  the committed figure comes from the gated, passing run.
+
+(Fig 10.6 was evaluated and explicitly rejected as an overlay target: a live
+grid-converged probe showed a ~6× magnitude gap vs the digitized curve under
+the repo's condition mapping — exactly the condition-archaeology this strategy
+avoids.)
 
 ## Execution order
 
