@@ -87,6 +87,16 @@ DIGITIZED_REFERENCE = "digitized/mack_ch10_fig10_3_M13_paper_psi45.csv"
 # alpha_opt drifts from ~0.075 at R=500 to ~0.060 at R=1500.
 ALPHA_CENTER_KNOTS = ((500.0, 0.075), (1500.0, 0.060))
 
+# Physicality screens applied on top of the library results.
+# The first-mode branch lives at c ~ 0.45 + 0.01j; anything outside the box
+# below, or with a wall-matrix sigma_min that is not tiny, is not a converged
+# shooting root (e.g. a sigma-min penalty-boundary artifact at c ~ 1.2 + 0.3j
+# with sigma_min ~ 0.1, or a diverged Muller polish with |c_i| ~ 1e13).
+C_REAL_BOUNDS = (0.0, 1.2)
+C_IMAG_ABS_MAX = 0.3
+ROOT_SIGMA_TOL = 1e-3  # converged roots sit at sigma_min ~ 1e-9..1e-6
+ANCHOR_OMEGA_RTOL = 0.2  # anchor must land within 20 % of the table value
+
 QUALITY_PRESETS = {
     "smoke": {
         "r_list": [500.0, 1500.0],
@@ -191,7 +201,7 @@ def build_alpha_grid(R, quality, table_cases):
     return np.array(deduped, dtype=float)
 
 
-def find_anchor_root(profile, quality):
+def find_anchor_root(profile, quality, table_cases):
     """Locate the first-mode anchor root at (R=500, alpha=0.075, psi=45)."""
     family = TABLE_10_1_FAMILY_SETTINGS[MA]
     seeds = [family["fallback_initial_c"]]
@@ -215,13 +225,47 @@ def find_anchor_root(profile, quality):
         length_scale=LENGTH_SCALE,
         method="qr",
     )
-    selected_c = anchor["selected_c"]
-    if not (np.isfinite(selected_c.real) and np.isfinite(selected_c.imag)):
+
+    # Do NOT trust anchor["selected_c"]: the library helper picks the
+    # largest-omega_i candidate inside the (open) search box without
+    # requiring that it actually is a converged shooting root. With the
+    # full production seed list, one seed can wander to the corner of the
+    # sigma-min penalty box (c ~ 1.19 + 0.295j, sigma_min ~ 0.16, i.e. not
+    # a root at all) and win that selection; continuing the sweep from a
+    # non-root then diverges (omega_i ~ 1e12) and poisons every R. Select
+    # here instead: genuine roots only (tiny sigma_min, inside the physical
+    # box), closest to the validated Mack Table 10.1 growth at this point.
+    table_case = table_cases.get(float(ANCHOR_R))
+    if table_case is None:
+        raise RuntimeError(f"no Mack Table 10.1 case at the anchor R={ANCHOR_R:g}")
+    omega_expected = float(table_case.omega_i_8th)
+
+    best_c, best_err = None, None
+    for cand in anchor["candidates"]:
+        c = cand["c_final"]
+        if not (np.isfinite(c.real) and np.isfinite(c.imag)):
+            c = cand["c_sigma_min"]
+        if not (np.isfinite(c.real) and np.isfinite(c.imag)):
+            continue
+        if not (C_REAL_BOUNDS[0] < c.real < C_REAL_BOUNDS[1]):
+            continue
+        if abs(c.imag) >= C_IMAG_ABS_MAX:
+            continue
+        sigma = cand["sigma_min"]
+        if not (np.isfinite(sigma) and sigma <= ROOT_SIGMA_TOL):
+            continue
+        err = abs(ANCHOR_ALPHA * c.imag - omega_expected)
+        if best_err is None or err < best_err:
+            best_c, best_err = complex(c), err
+
+    if best_c is None or best_err > ANCHOR_OMEGA_RTOL * abs(omega_expected):
         raise RuntimeError(
-            "anchor root search failed at (R=500, alpha=0.075); "
-            "no physical exact-shooting candidate was selected"
+            "anchor root search failed at (R=500, alpha=0.075): no converged "
+            f"physical shooting root within {100 * ANCHOR_OMEGA_RTOL:.0f} % of "
+            f"the Mack Table 10.1 value {omega_expected:.3e} "
+            f"(candidates: {[str(c['c_final']) for c in anchor['candidates']]})"
         )
-    return selected_c, [complex(seed) for seed in seeds]
+    return best_c, [complex(seed) for seed in seeds]
 
 
 def refine_optimum(alphas, omega_i):
@@ -281,9 +325,30 @@ def scan_one_reynolds(profile, R, alphas, anchor_alpha, initial_c):
     )
     elapsed = time.time() - t0
 
-    optimum = refine_optimum(alphas, omega_i)
+    # Physicality screen: only converged physical roots may become the
+    # optimum (and therefore the continuation seed for the next R). A point
+    # where the sigma-min search or the Muller determinant polish ran away
+    # (sigma_min not tiny, or c outside the first-mode box) is masked out so
+    # one bad point cannot poison the whole sweep.
+    omega_arr = np.asarray(omega_i, dtype=float)
+    sigma_arr = np.asarray(sigma_min, dtype=float)
+    c_arr = np.asarray(c_vals, dtype=complex)
+    physical = (
+        np.isfinite(omega_arr)
+        & np.isfinite(sigma_arr)
+        & np.isfinite(c_arr.real)
+        & np.isfinite(c_arr.imag)
+        & (c_arr.real > C_REAL_BOUNDS[0])
+        & (c_arr.real < C_REAL_BOUNDS[1])
+        & (np.abs(c_arr.imag) < C_IMAG_ABS_MAX)
+        & (sigma_arr <= ROOT_SIGMA_TOL)
+    )
+
+    optimum = refine_optimum(alphas, np.where(physical, omega_arr, np.nan))
     if optimum is None:
-        raise RuntimeError(f"alpha scan at R={R:g} produced no finite growth rates")
+        raise RuntimeError(
+            f"alpha scan at R={R:g} produced no physical converged roots"
+        )
 
     return {
         "R": float(R),
@@ -291,6 +356,8 @@ def scan_one_reynolds(profile, R, alphas, anchor_alpha, initial_c):
         "omega_i": [float(w) if np.isfinite(w) else None for w in omega_i],
         "sigma_min": [float(s) if np.isfinite(s) else None for s in sigma_min],
         "c": [[float(c.real), float(c.imag)] for c in c_vals],
+        "physical": [bool(p) for p in physical],
+        "n_unphysical": int(np.sum(~physical)),
         "anchor_index": anchor_index,
         "elapsed_s": round(elapsed, 1),
         **optimum,
@@ -302,7 +369,7 @@ def run_sweep(profile, quality, table_cases):
     r_list = QUALITY_PRESETS[quality]["r_list"]
     print(f"[anchor] searching root at R={ANCHOR_R:g}, alpha={ANCHOR_ALPHA:g} ...", flush=True)
     t0 = time.time()
-    anchor_c, anchor_seeds = find_anchor_root(profile, quality)
+    anchor_c, anchor_seeds = find_anchor_root(profile, quality, table_cases)
     print(
         f"[anchor] selected c = {anchor_c.real:.6f}{anchor_c.imag:+.6f}j "
         f"(omega_i = {ANCHOR_ALPHA * anchor_c.imag:.4e}) in {time.time() - t0:.0f} s",
@@ -325,6 +392,11 @@ def run_sweep(profile, quality, table_cases):
                 f"omega_i_max={result['omega_i_max']:.4e} "
                 f"({len(alphas)} alphas, {result['elapsed_s']:.0f} s"
                 + (", bracket edge!" if result["bracket_edge"] else "")
+                + (
+                    f", {result['n_unphysical']} unphysical pts dropped"
+                    if result["n_unphysical"]
+                    else ""
+                )
                 + ")",
                 flush=True,
             )
@@ -406,6 +478,7 @@ def write_csv(path, results):
         "alpha_opt_discrete", "omega_i_max_discrete", "refined",
         "bracket_edge", "c_r_at_opt", "c_i_at_opt", "sigma_min_at_opt",
     ]
+    path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=fields)
         writer.writeheader()
@@ -471,6 +544,7 @@ def make_figure(path, results, table_cases, condition, t_edge, quality):
     ax.set_ylim(bottom=0.0)
 
     fig.tight_layout()
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, dpi=220)
     plt.close(fig)
