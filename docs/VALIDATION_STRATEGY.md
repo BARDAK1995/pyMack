@@ -60,7 +60,7 @@ breaks, the failing layer localizes it.
 | 4a | Spatial path, cross-method | Internal: dense QEP vs `solve_spatial` vs Newton vs Gaster-pipeline vs Muller at common points (**internal redundancy**) | ✅ gated (`test_spatial_cross_method_consistency.py`): independent operators agree to \|Δα_r\|≤2×10⁻⁴, \|Δσ\|≤1×10⁻⁴ at the canonical M6 point; within-family ≤10⁻⁶ |
 | 4b | Spatial path, external anchor | Malik (1990) Test Case 6 tabulated eigenvalue (**table**) | ✅ gated (`test_malik1990_case6_anchor.py`): α matches Malik's printed value to ~5×10⁻⁶ at N=120 — inside the published literature spread for this case |
 | 5 | End-to-end dimensional product (base flow → spatial sweep → neutral branches → physical units) | **Independent-code benchmark:** collaborator Mach 5.35 N₂ flat-plate neutral curve (dimensional) | ✅ gated (upper branch 200–600 kHz, lower branch 330–600 kHz); low-frequency lower branch = documented open investigation |
-| 6 | Qualitative literature agreement | One Mack overlay (e.g. Fig 10.6 family) + one Özgen overlay (Fig 3 lobes), from already-digitized data — **demonstrations, not gates** | ⬜ select & document |
+| 6 | Qualitative literature agreement | Özgen Fig 3 overlay (M=2, M=4) ✅; Mack Fig 10.3 overlay (M=1.3, ψ=45°) ⏳ — **demonstrations, not gates** | ✅ partially complete (see below) |
 
 Design principles:
 
@@ -169,6 +169,39 @@ work item — and exactly the kind of physics question Layer 5 exists to surface
 Artifacts: committed under `validation/data/collaborator_mach5p35/` (pyMack
 envelope, run manifest, comparison summary/errors); gates in
 `validation/test_collaborator_mach5p35_benchmark.py`.
+
+## Layer-6 result (June 2026): qualitative literature overlays
+
+**Özgen & Kırcalı (2008) Fig 3** — pyMack's 2D temporal stability maps at M=2
+and M=4 (1,440 eigensolves at the paper-baseline conditions, which are exactly
+`make_ozgen_profile`'s defaults) overlaid on the digitized paper curves:
+
+![Özgen Fig 3 overlay](figures/ozgen_fig3_overlay.png)
+
+- **M=2:** good qualitative agreement — pyMack's c_i = 0.004 contour threads
+  the digitized 0.004 markers; the neutral boundary tracks the paper's arch.
+- **M=4:** partial topology match — pyMack reproduces the lower-α flank, while
+  in the paper's upper-lobe region the genuine discrete mode in pyMack's
+  formulation is *marginally damped* (c_r ≈ 0.54–0.62, c_i ≈ −10⁻⁵…−4×10⁻⁴,
+  grid-converged). This is the precisely-localized first-mode formulation
+  discrepancy, not a plotting artifact: probes confirmed that admitting that
+  phase-speed band floods the map with continuous-spectrum junk instead of
+  recovering the lobe.
+- Selection details (mode-family classification by phase-speed band, with the
+  Mack band capped below the free-stream acoustic cluster) are recorded in the
+  figure's JSON metadata; the c_i grid is committed alongside for
+  reproducibility without recompute.
+
+**Mack (1984) Fig 10.3 (M=1.3, ψ=45°)** — deferred. The overlay script's smoke
+path reproduces the Layer-3-validated Table 10.1 points to +0.17…+0.91%, but
+the production sweep's bracket/continuation path returned non-converged
+shooting artifacts and the script's **built-in table cross-check gate refused
+to emit the figure** (exit 1) — the honest-gate design working as intended.
+The production-path bug is tracked; the figure will be added once the
+generator passes its own gate. (Fig 10.6 was evaluated and explicitly rejected
+as an overlay target: a live grid-converged probe showed a ~6× magnitude gap
+vs the digitized curve under the repo's condition mapping — exactly the
+condition-archaeology this strategy avoids.)
 
 ## Execution order
 
