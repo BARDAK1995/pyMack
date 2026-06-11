@@ -44,6 +44,12 @@ from pymack.scales import (  # noqa: E402
     wavelength_L_to_mm,
     x_mm_to_R_L,
 )
+from pymack.cone import (  # noqa: E402
+    ConeGeometry,
+    cone_R_eq_to_s_mm,
+    cone_n_factor_multiplier,
+    cone_s_mm_to_R_eq,
+)
 
 
 @dataclass(frozen=True)
@@ -201,8 +207,14 @@ def _resolve_case(args):
         if not selected_frequency_khz:
             selected_frequency_khz = [247.0, 280.0, 325.0]
 
-        args.r_min = float(x_mm_to_R_L(args.x_min_mm, edge_state))
-        args.r_max = float(x_mm_to_R_L(args.x_max_mm, edge_state))
+        if args.geometry == "cone":
+            # x positions are surface distance s along the cone ray; the solver
+            # R grid is the Mangler equivalent-plate R_eq = sqrt(Re_s/3).
+            args.r_min = float(cone_s_mm_to_R_eq(args.x_min_mm, edge_state))
+            args.r_max = float(cone_s_mm_to_R_eq(args.x_max_mm, edge_state))
+        else:
+            args.r_min = float(x_mm_to_R_L(args.x_min_mm, edge_state))
+            args.r_max = float(x_mm_to_R_L(args.x_max_mm, edge_state))
         args.f_min = float(frequency_khz_to_F(args.frequency_min_khz, edge_state))
         args.f_max = float(frequency_khz_to_F(args.frequency_max_khz, edge_state))
         selected_F = [
@@ -225,16 +237,26 @@ def _resolve_case(args):
     return args
 
 
+def _geometry_title_suffix(args) -> str:
+    if getattr(args, "geometry", "plate") == "cone":
+        return " (sharp cone, Mangler)"
+    return ""
+
+
 def _case_slug(args) -> str:
+    prefix = ""
+    if getattr(args, "geometry", "plate") == "cone":
+        angle = getattr(args, "cone_half_angle_deg", None)
+        prefix = "CONE_" if angle is None else f"CONE{angle:g}deg_".replace(".", "p")
     if args.dimensional:
-        return (
+        return prefix + (
             f"APS_M{args.ma:g}_{args.gas}_Tw{args.t_wall:g}K_"
             f"x{args.x_min_mm:g}_{args.x_max_mm:g}mm_"
             f"f{args.frequency_min_khz:g}_{args.frequency_max_khz:g}kHz_"
             f"c{args.phase_min:.2f}_{args.phase_max:.2f}_"
             f"{args.quality}_single_sweep"
         ).replace(".", "p")
-    return (
+    return prefix + (
         f"M6_air_TwTe{args.tw_over_te:g}_"
         f"F{args.f_min * 1e6:03.0f}_{args.f_max * 1e6:03.0f}_"
         f"R{args.r_min:g}_{args.r_max:g}_"
@@ -335,14 +357,31 @@ def _is_finite(value) -> bool:
         return False
 
 
-def _neutral_x_column(row, source_key, output_key, edge_state):
+def _neutral_x_column(row, source_key, output_key, edge_state, geometry=None):
     if _is_finite(row.get(source_key)):
-        row[output_key] = float(R_L_to_x_mm(float(row[source_key]), edge_state))
+        if geometry == "cone":
+            row[output_key] = float(cone_R_eq_to_s_mm(float(row[source_key]), edge_state))
+        else:
+            row[output_key] = float(R_L_to_x_mm(float(row[source_key]), edge_state))
     else:
         row[output_key] = math.nan
 
 
-def _add_dimensional_columns(row: dict, edge_state: DimensionalEdgeState) -> dict:
+def _add_dimensional_columns(
+    row: dict,
+    edge_state: DimensionalEdgeState,
+    geometry: str | None = None,
+) -> dict:
+    """Append dimensional columns to a nondimensional growth/neutral row.
+
+    ``geometry`` is ``None``/``"plate"`` (flat plate, default, unchanged) or
+    ``"cone"``.  In cone mode the solver's ``R_L`` column is the Mangler
+    equivalent-plate ``R_eq``; ``x_mm`` then means surface distance ``s`` along
+    the cone ray (so every plot helper keyed on ``x_mm`` keeps working), and an
+    extra ``x_eq_mm = s/3`` traceability column records the equivalent plate
+    station.  All per-``L*`` conversions are geometry-independent given
+    ``R = R_eq``.
+    """
     out = dict(row)
     R = float(out.get("R_L", math.nan))
     F = float(out.get("freq_parameter", math.nan))
@@ -355,11 +394,17 @@ def _add_dimensional_columns(row: dict, edge_state: DimensionalEdgeState) -> dic
         out["F_times_1e4"] = math.nan
 
     if math.isfinite(R) and R > 0.0:
-        out["x_mm"] = float(R_L_to_x_mm(R, edge_state))
+        if geometry == "cone":
+            out["x_mm"] = float(cone_R_eq_to_s_mm(R, edge_state))
+            out["x_eq_mm"] = float(R_L_to_x_mm(R, edge_state))
+        else:
+            out["x_mm"] = float(R_L_to_x_mm(R, edge_state))
         out["L_star_m"] = float(lstar_m_from_R_L(R, edge_state))
         out["L_star_mm"] = 1000.0 * out["L_star_m"]
     else:
         out["x_mm"] = math.nan
+        if geometry == "cone":
+            out["x_eq_mm"] = math.nan
         out["L_star_m"] = math.nan
         out["L_star_mm"] = math.nan
 
@@ -399,7 +444,7 @@ def _add_dimensional_columns(row: dict, edge_state: DimensionalEdgeState) -> dic
         ("peak_N_R_L_from_lower_full_path", "peak_N_x_mm_from_lower_full_path"),
     ):
         if source in out:
-            _neutral_x_column(out, source, dest, edge_state)
+            _neutral_x_column(out, source, dest, edge_state, geometry)
 
     if _is_finite(out.get("peak_wavelength_L")) and _is_finite(out.get("peak_growth_R_L")):
         out["peak_wavelength_mm"] = float(
@@ -411,8 +456,12 @@ def _add_dimensional_columns(row: dict, edge_state: DimensionalEdgeState) -> dic
     return out
 
 
-def _convert_rows_to_dimensional(rows: list[dict], edge_state: DimensionalEdgeState) -> list[dict]:
-    return [_add_dimensional_columns(row, edge_state) for row in rows]
+def _convert_rows_to_dimensional(
+    rows: list[dict],
+    edge_state: DimensionalEdgeState,
+    geometry: str | None = None,
+) -> list[dict]:
+    return [_add_dimensional_columns(row, edge_state, geometry) for row in rows]
 
 
 def _build_grid(rows, x_key, y_key, z_key):
@@ -439,6 +488,7 @@ def _plot_dimensional_neutral(
     neutral_rows: list[dict],
     output_png: Path,
     title: str,
+    x_label: str = "x (mm)",
 ):
     x_values, freq_values, sigma_grid = _build_grid(
         growth_rows,
@@ -489,7 +539,7 @@ def _plot_dimensional_neutral(
             ax.plot(upper, freq, "o-", color="#ff7433", lw=2.4, ms=4.5, label="upper neutral")
         ax.legend(loc="upper right", frameon=True, fontsize=12)
 
-    ax.set_xlabel("x (mm)", fontsize=14)
+    ax.set_xlabel(x_label, fontsize=14)
     ax.set_ylabel("frequency (kHz)", fontsize=14)
     ax.set_title(title, fontsize=19, pad=12)
     ax.grid(True, alpha=0.36, linestyle="--")
@@ -530,7 +580,7 @@ def _selected_rows(rows: list[dict], selected_frequency_khz: list[float]):
     return selected
 
 
-def _plot_selected_growth(rows: list[dict], selected_frequency_khz, output_png: Path, title: str):
+def _plot_selected_growth(rows: list[dict], selected_frequency_khz, output_png: Path, title: str, x_label: str = "x (mm)"):
     selected = _selected_rows(rows, selected_frequency_khz)
     fig, ax = plt.subplots(figsize=(8.6, 5.3))
     for target, freq_rows in selected.items():
@@ -549,7 +599,7 @@ def _plot_selected_growth(rows: list[dict], selected_frequency_khz, output_png: 
             label=f"{target:g} kHz",
         )
     ax.axhline(0.0, color="0.2", lw=1.0)
-    ax.set_xlabel("x (mm)")
+    ax.set_xlabel(x_label)
     ax.set_ylabel(r"$\sigma=-\mathrm{Im}(\alpha)$ [1/mm]")
     ax.set_title(f"{title}: selected-wave spatial growth")
     ax.grid(True, alpha=0.3, linestyle="--")
@@ -560,7 +610,7 @@ def _plot_selected_growth(rows: list[dict], selected_frequency_khz, output_png: 
     plt.close(fig)
 
 
-def _plot_selected_amplification(rows: list[dict], selected_frequency_khz, output_png: Path, title: str):
+def _plot_selected_amplification(rows: list[dict], selected_frequency_khz, output_png: Path, title: str, x_label: str = "x (mm)"):
     selected = _selected_rows(rows, selected_frequency_khz)
     fig, axes = plt.subplots(2, 1, figsize=(8.8, 7.0), sharex=True)
     for target, freq_rows in selected.items():
@@ -577,7 +627,7 @@ def _plot_selected_amplification(rows: list[dict], selected_frequency_khz, outpu
         axes[1].plot(x, [float(row["amplification_signed_from_lower"]) for row in finite], "o-", ms=3.5, lw=1.8, label=f"{target:g} kHz")
     axes[0].set_ylabel("N from lower neutral")
     axes[1].set_ylabel(r"$A/A_{\mathrm{lower}}$")
-    axes[1].set_xlabel("x (mm)")
+    axes[1].set_xlabel(x_label)
     axes[0].set_title(f"{title}: signed amplification from lower neutral")
     for ax in axes:
         ax.grid(True, alpha=0.3, linestyle="--")
@@ -588,7 +638,7 @@ def _plot_selected_amplification(rows: list[dict], selected_frequency_khz, outpu
     plt.close(fig)
 
 
-def _plot_selected_phase_wavelength(rows: list[dict], selected_frequency_khz, output_png: Path, title: str):
+def _plot_selected_phase_wavelength(rows: list[dict], selected_frequency_khz, output_png: Path, title: str, x_label: str = "x (mm)"):
     selected = _selected_rows(rows, selected_frequency_khz)
     fig, axes = plt.subplots(2, 1, figsize=(8.8, 7.0), sharex=True)
     for target, freq_rows in selected.items():
@@ -620,7 +670,7 @@ def _plot_selected_phase_wavelength(rows: list[dict], selected_frequency_khz, ou
             )
     axes[0].set_ylabel("phase speed (m/s)")
     axes[1].set_ylabel("wavelength (mm)")
-    axes[1].set_xlabel("x (mm)")
+    axes[1].set_xlabel(x_label)
     axes[0].set_title(f"{title}: phase speed and wavelength")
     for ax in axes:
         ax.grid(True, alpha=0.3, linestyle="--")
@@ -666,13 +716,14 @@ def _neutral_windows_for_selected(neutral_rows, selected_frequency_khz):
 
 def _write_dimensional_outputs(artifacts, args):
     edge_state = args.edge_state
+    geometry = getattr(args, "geometry", "plate") or "plate"
     growth_rows = _read_float_rows(artifacts["growth_csv"])
     amp_rows = _read_float_rows(artifacts["amplification_curves_csv"])
     neutral_rows = _read_float_rows(artifacts["neutral_csv"])
 
-    growth_dim = _convert_rows_to_dimensional(growth_rows, edge_state)
-    amp_dim = _convert_rows_to_dimensional(amp_rows, edge_state)
-    neutral_dim = _convert_rows_to_dimensional(neutral_rows, edge_state)
+    growth_dim = _convert_rows_to_dimensional(growth_rows, edge_state, geometry)
+    amp_dim = _convert_rows_to_dimensional(amp_rows, edge_state, geometry)
+    neutral_dim = _convert_rows_to_dimensional(neutral_rows, edge_state, geometry)
 
     _write_rows(artifacts["dimensional_growth_csv"], growth_dim)
     _write_rows(artifacts["dimensional_amplification_csv"], amp_dim)
@@ -681,31 +732,56 @@ def _write_dimensional_outputs(artifacts, args):
     title = (
         f"Mach {args.ma:g} {args.gas}, Tw={args.t_wall:g} K: "
         "spatial neutral curve"
-    )
+    ) + _geometry_title_suffix(args)
+    x_label = "s (mm)" if geometry == "cone" else "x (mm)"
     neutral_plot_metadata = _plot_dimensional_neutral(
         growth_rows=growth_dim,
         neutral_rows=neutral_dim,
         output_png=artifacts["dimensional_neutral_png"],
         title=title,
+        x_label=x_label,
     )
     _plot_selected_growth(
         growth_dim,
         args.selected_frequency_khz_values,
         artifacts["selected_growth_png"],
-        f"Mach {args.ma:g} {args.gas}, Tw={args.t_wall:g} K",
+        f"Mach {args.ma:g} {args.gas}, Tw={args.t_wall:g} K" + _geometry_title_suffix(args),
+        x_label=x_label,
     )
     _plot_selected_amplification(
         amp_dim,
         args.selected_frequency_khz_values,
         artifacts["selected_amplification_png"],
-        f"Mach {args.ma:g} {args.gas}, Tw={args.t_wall:g} K",
+        f"Mach {args.ma:g} {args.gas}, Tw={args.t_wall:g} K" + _geometry_title_suffix(args),
+        x_label=x_label,
     )
     _plot_selected_phase_wavelength(
         growth_dim,
         args.selected_frequency_khz_values,
         artifacts["selected_phase_wavelength_png"],
-        f"Mach {args.ma:g} {args.gas}, Tw={args.t_wall:g} K",
+        f"Mach {args.ma:g} {args.gas}, Tw={args.t_wall:g} K" + _geometry_title_suffix(args),
+        x_label=x_label,
     )
+
+    if geometry == "cone":
+        formulas = {
+            "x": "x_mm = s = 3*nu_e*R_eq^2/U_e (surface distance along cone ray)",
+            "x_eq": "x_eq = s/3 = nu_e*R_eq^2/U_e (equivalent plate station)",
+            "L_star": "L*_eq = nu_e * R_eq / U_e",
+            "F": "F = 2*pi*f_Hz*nu_e/U_e^2",
+            "sigma": "sigma_phys = sigma_L/L*_eq",
+            "N": "N = integral sigma_phys ds = integral 6*sigma_L dR_eq",
+            "amplification": "A/A_lower = exp(N_signed_from_lower)",
+        }
+    else:
+        formulas = {
+            "x": "x = nu_e * R_L^2 / U_e",
+            "L_star": "L* = nu_e * R_L / U_e",
+            "F": "F = 2*pi*f_Hz*nu_e/U_e^2",
+            "sigma": "sigma_phys = sigma_L/L*",
+            "N": "N = integral sigma_phys dx = integral 2*sigma_L dR_L",
+            "amplification": "A/A_lower = exp(N_signed_from_lower)",
+        }
 
     metadata = {
         "status": "computed_single_sweep_dimensional",
@@ -721,14 +797,7 @@ def _write_dimensional_outputs(artifacts, args):
             "wavelength_units": "mm",
             "phase_speed_units": "m/s",
         },
-        "formulas": {
-            "x": "x = nu_e * R_L^2 / U_e",
-            "L_star": "L* = nu_e * R_L / U_e",
-            "F": "F = 2*pi*f_Hz*nu_e/U_e^2",
-            "sigma": "sigma_phys = sigma_L/L*",
-            "N": "N = integral sigma_phys dx = integral 2*sigma_L dR_L",
-            "amplification": "A/A_lower = exp(N_signed_from_lower)",
-        },
+        "formulas": formulas,
         "plot_policy": {
             "single_sweep": True,
             "stitching": "none",
@@ -759,10 +828,30 @@ def _write_dimensional_outputs(artifacts, args):
             "selected_phase_wavelength_png": str(artifacts["selected_phase_wavelength_png"]),
         },
     }
+    if geometry == "cone":
+        metadata["geometry"] = _cone_geometry_block(args)
     artifacts["dimensional_metadata"].parent.mkdir(parents=True, exist_ok=True)
     with artifacts["dimensional_metadata"].open("w", encoding="utf-8") as handle:
         json.dump(metadata, handle, indent=2)
     return metadata
+
+
+def _cone_geometry_block(args) -> dict:
+    """Manifest/metadata block recording the sharp-cone (Mangler) conventions."""
+    block = ConeGeometry(
+        half_angle_deg=getattr(args, "cone_half_angle_deg", None)
+    ).to_dict()
+    block.update({
+        "ds_over_lstar_per_dR_eq": float(cone_n_factor_multiplier()),
+        "x_mm_meaning": "surface distance s along cone ray",
+        "frequency_note": (
+            "F<->kHz geometry-independent; at fixed omega_L the dimensional "
+            "second-mode f at the same surface distance s is sqrt(3) x the "
+            "plate value at x = s"
+        ),
+        "n_factor_note": "N_cone = 3 * N_plate over the same R_eq window",
+    })
+    return block
 
 
 def _write_manifest(path: Path, args, quality: SweepQuality, artifacts, dimensional_metadata=None):
@@ -810,6 +899,8 @@ def _write_manifest(path: Path, args, quality: SweepQuality, artifacts, dimensio
         },
         "artifacts": {key: str(value) for key, value in artifacts.items()},
     }
+    if getattr(args, "geometry", "plate") == "cone":
+        manifest["geometry"] = _cone_geometry_block(args)
     if args.dimensional:
         manifest["dimensional"] = {
             "preset": args.preset or "custom-dimensional-defaults",
@@ -845,6 +936,30 @@ def parse_args(argv=None):
     parser.add_argument("--workers", type=int, default=None)
     parser.add_argument("--preset", choices=["aps-paper-baseline"], default=None)
     parser.add_argument("--dimensional", action="store_true")
+    parser.add_argument(
+        "--geometry",
+        choices=["plate", "cone"],
+        default="plate",
+        help=(
+            "Body geometry. cone interprets --x-min-mm/--x-max-mm as surface "
+            "distance s along a sharp cone ray at zero incidence and maps "
+            "stations via the Mangler transformation (solver R grid = "
+            "R_eq = sqrt(Re_s/3)); the edge state must then be the POST-SHOCK "
+            "cone edge (e.g. Taylor-Maccoll). Transverse-curvature terms are "
+            "omitted (valid for delta << local radius). Default plate is "
+            "unchanged."
+        ),
+    )
+    parser.add_argument(
+        "--cone-half-angle-deg",
+        type=float,
+        default=None,
+        help=(
+            "Sharp-cone half angle in degrees. Metadata only: it cancels "
+            "exactly in the Mangler mapping and enters the physics solely "
+            "through the edge state you supply."
+        ),
+    )
     parser.add_argument("--r-min", type=float, default=None)
     parser.add_argument("--r-max", type=float, default=None)
     parser.add_argument("--f-min", type=float, default=None)
@@ -886,7 +1001,10 @@ def parse_args(argv=None):
         action="store_true",
         help="Print the commands and manifest location without executing them.",
     )
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+    if args.cone_half_angle_deg is not None and args.geometry != "cone":
+        parser.error("--cone-half-angle-deg requires --geometry cone")
+    return args
 
 
 def main(argv=None):
@@ -911,14 +1029,24 @@ def main(argv=None):
     env.setdefault("PYMACK_NO_BANNER", "1")
 
     if args.dimensional:
-        print(
-            "dimensional_range="
-            f"x_mm=[{args.x_min_mm:.6g}, {args.x_max_mm:.6g}] -> "
-            f"R_L=[{args.r_min:.6g}, {args.r_max:.6g}], "
-            f"frequency_khz=[{args.frequency_min_khz:.6g}, {args.frequency_max_khz:.6g}] -> "
-            f"F=[{args.f_min:.8g}, {args.f_max:.8g}]",
-            flush=True,
-        )
+        if args.geometry == "cone":
+            print(
+                "dimensional_range="
+                f"s_mm=[{args.x_min_mm:.6g}, {args.x_max_mm:.6g}] -> "
+                f"R_eq=[{args.r_min:.6g}, {args.r_max:.6g}], "
+                f"frequency_khz=[{args.frequency_min_khz:.6g}, {args.frequency_max_khz:.6g}] -> "
+                f"F=[{args.f_min:.8g}, {args.f_max:.8g}]",
+                flush=True,
+            )
+        else:
+            print(
+                "dimensional_range="
+                f"x_mm=[{args.x_min_mm:.6g}, {args.x_max_mm:.6g}] -> "
+                f"R_L=[{args.r_min:.6g}, {args.r_max:.6g}], "
+                f"frequency_khz=[{args.frequency_min_khz:.6g}, {args.frequency_max_khz:.6g}] -> "
+                f"F=[{args.f_min:.8g}, {args.f_max:.8g}]",
+                flush=True,
+            )
         for freq_khz, F_value in zip(args.selected_frequency_khz_values, args.selected_F_values):
             print(
                 f"selected_frequency={freq_khz:.6g} kHz -> F={F_value:.8g}, F*1e4={F_value * 1.0e4:.5g}",
@@ -1001,8 +1129,19 @@ def main(argv=None):
         "--plot-x-max",
         str(args.r_max),
         "--title",
-        f"Mach {args.ma:g} {args.gas}, Tw/Te={args.tw_over_te:g}",
+        f"Mach {args.ma:g} {args.gas}, Tw/Te={args.tw_over_te:g}" + _geometry_title_suffix(args),
     ]
+    if args.geometry == "cone":
+        # Cone N-factor: ds = 6 L*_eq dR_eq = 3 x the plate's dx = 2 L* dR
+        # (R = sqrt(Re_x) convention). The postprocess integrators are
+        # geometry-blind; the Mangler factor enters only through this
+        # streamwise multiplier.
+        postprocess_cmd.extend([
+            "--r-convention",
+            "custom",
+            "--dx-over-lstar-per-dr",
+            str(cone_n_factor_multiplier()),
+        ])
     _run(postprocess_cmd, cwd=REPO_ROOT, env=env, dry_run=args.dry_run)
 
     plot_cmd = [
@@ -1017,7 +1156,8 @@ def main(argv=None):
         "--output-metadata",
         str(artifacts["neutral_metadata"]),
         "--title",
-        f"Mach {args.ma:g} {args.gas}, Tw/Te={args.tw_over_te:g}: spatial neutral curve",
+        f"Mach {args.ma:g} {args.gas}, Tw/Te={args.tw_over_te:g}: spatial neutral curve"
+        + _geometry_title_suffix(args),
         "--frequency-scale",
         "raw",
         "--x-min",
