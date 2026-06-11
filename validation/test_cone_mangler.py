@@ -59,7 +59,10 @@ from scripts.run_mach6_spatial_neutral_case import (
     parse_args,
 )
 
-_TRAPZ = getattr(np, "trapezoid", np.trapz)
+# scipy's trapezoid is stable across numpy 1.x/2.x (np.trapz was removed in
+# numpy 2.3, and getattr(np, "trapezoid", np.trapz) evaluates the fallback
+# eagerly — AttributeError on import).
+from scipy.integrate import trapezoid as _TRAPZ  # noqa: E402
 
 
 def _aps_state():
