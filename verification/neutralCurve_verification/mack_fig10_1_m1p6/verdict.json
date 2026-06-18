@@ -1,24 +1,49 @@
 {
   "case_id": "mack_fig10_1_m1p6",
   "category": "neutral_curve",
-  "source": "Mack (1984) Fig 10.1",
+  "source": "Mack (1984) Fig 10.1 (AGARD R-709)",
   "conditions": {
     "Ma": 1.6,
     "gas": "air",
     "wall": "adiabatic",
     "psi_deg": 0,
-    "formulation": "temporal neutral frequency",
-    "transport": "Mack"
+    "formulation": "temporal 2D first-mode neutral frequency",
+    "transport": "Mack (viscosity_model='mack')",
+    "condition": "table_11_1 (Mack cold-edge total-temperature schedule)",
+    "length_scale": "L_star = sqrt(nu_e x / U_e); R = sqrt(Re_x)",
+    "N": 120,
+    "y_max": 30.0,
+    "lambda_mu_ratio": 0.0
   },
-  "quantity": "neutral-stability frequency vs R",
-  "metrics": {},
-  "verdict": "pending",
-  "verdict_reason": "T3 \u2014 needs a public temporal-neutral runner (not yet built)",
-  "generated": "pending",
+  "quantity": "first-mode neutral-stability frequency F x 1e4 vs R (temporal, c_i=0)",
+  "metrics": {
+    "headline_branch": "upper",
+    "headline_median_rel_err": 0.3048,
+    "median_rel_err_lower": 0.5353,
+    "median_rel_err_upper": 0.3048,
+    "median_rel_err_peak": 0.407,
+    "n_overlap_lower": 8,
+    "n_overlap_upper": 9,
+    "n_overlap_peak": 11,
+    "R_crit_pymack": 400.0,
+    "R_dig_lo": 80.0,
+    "digitized_R_coverage_fraction": 0.591,
+    "topology_ok": false,
+    "ymax_sensitivity_R800_pct": {
+      "peakF": 11,
+      "upF": 13,
+      "lowF": -11,
+      "note": "y_max 30->45; disagreement persists at 45"
+    },
+    "y_axis": "F x 1e4, F = omega_L / R, omega_L = alpha_L * c_r"
+  },
+  "verdict": "disagrees",
+  "verdict_reason": "pyMack first-mode neutral frequency (temporal, c_i=0, L* scale, condition=table_11_1) vs Mack's digitized 'complete' curve, M=1.6. Best-matching branch = 'upper': median |dF|/F = 30% over 9 R in [400,1600] (>15% -> disagrees). All branches: lower 54% (8 pts), upper 30% (9 pts), peak 41% (11 pts). Critical-R / topology gap: Mack's curve is unstable down to R=80, but pyMack's first mode is STABLE below R~400 (only 59% of the digitized R range is covered by an unstable pyMack band). pyMack's neutral frequencies are systematically too HIGH (above Mack except a narrow mid-R window) and the band decays differently with R. CONVERGENCE-CHECKED: mode selection is the continuous c_r~0.49-0.51 first mode (not a spurious low-c_r root); the alpha scan brackets both neutral crossings; and y_max is generous (delta*/L*~2.8, y_max=30 ~8x delta*). y_max 30->45 shifts the verdict-region (R=800) frequencies only ~11-13% and the disagreement persists at the better-converged y_max=45 (M1.6 R=800: upF 19% high, peakF 17% low), so this is convergence-stable physics -- the repo's documented low-Mach first-mode under-amplification / too-high critical Reynolds number, not a numerical artifact. Verdict 'disagrees'.",
+  "generated": "new",
   "artifacts": {
-    "pymack": null,
-    "reference": null,
+    "pymack": "verification/neutralCurve_verification/mack_fig10_1_m1p6/pymack_mack_fig10_1_M16_neutral.csv",
+    "reference": "verification/neutralCurve_verification/mack_fig10_1_m1p6/reference_mack_fig10_1_M16_complete.csv",
     "overlay": null
   },
-  "pymack_provenance": ""
+  "pymack_provenance": "verification/compute_mack_fig10_1.py + compare_mack_fig10_1.py (this session). make_mack_profile(M=1.6, condition='table_11_1') adiabatic Mack flat plate (viscosity_model='mack'); solve_temporal_compressible(length_scale='L_star', lambda_mu_ratio=0.0, N=120, y_max=30); first mode selected by c_r in [0.40,0.85], |c_i|<0.10, max-c_i in band. omega_i(alpha) lobe per R over alpha in [0.015,0.12]; neutral frequency F = alpha_neutral*c_r/R*1e4 from the c_i=0 crossings (lower/onset, upper/cutoff) plus F at peak omega_i. R grid 200-1600. Parallel across cores (single-thread BLAS). y_max=30->45 spot-checks at R=800 recorded for convergence (see metrics.ymax_sensitivity_R800_pct and verdict_reason)."
 }

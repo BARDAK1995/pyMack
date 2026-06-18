@@ -13,7 +13,7 @@
   "quantity": "max first-mode \u03c9_i vs R",
   "metrics": {},
   "verdict": "pending",
-  "verdict_reason": "T3 \u2014 needs a high-Mach max-growth runner (not yet built)",
+  "verdict_reason": "Superseded by per-Mach rows mack_fig10_4_M45/M58/M70/M100 (this family stub retained only as a pointer).",
   "generated": "pending",
   "artifacts": {
     "pymack": null,

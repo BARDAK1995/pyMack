@@ -1,24 +1,127 @@
 {
   "case_id": "mack_fig10_3_m2p2",
   "category": "growth_rate",
-  "source": "Mack (1984) Fig 10.3",
+  "source": "Mack (1984) Fig. 10.3 (AGARD R-709), max temporal growth rate vs R",
   "conditions": {
     "Ma": 2.2,
-    "gas": "air",
-    "wall": "adiabatic",
-    "psi_deg": 45,
-    "formulation": "temporal 3D max growth",
-    "transport": "Mack"
+    "gas": "air (ideal, Pr=0.72)",
+    "wall": "adiabatic (insulated)",
+    "psi_deg": 45.0,
+    "formulation": "temporal first mode, max growth over alpha (3D oblique)",
+    "transport": "Mack viscosity, compressible boundary layer",
+    "condition": "table_11_1",
+    "T_edge_K": 154.97967479674796,
+    "length_scale": "L_star",
+    "system": "exact first-order shooting, full 8x8 Appendix-A system (include_spanwise_dissipation_coupling=True); SELF-SEEDED, no Table 10.1 anchor (none exists for this (M,psi))",
+    "y_max": 14.9,
+    "ymax_over_delta_star": 4.01,
+    "n_steps": 800
   },
-  "quantity": "max temporal \u03c9_i vs R",
-  "metrics": {},
-  "verdict": "pending",
-  "verdict_reason": "BLOCKED with current machinery (overlay now generalized for (M,\u03c8), but this case cannot be anchored): Mack Table 10.1 tabulates M=2.2 only at \u03c8=60 (its peak-growth angle), while the digitized Fig 10.3 curve is \u03c8=45 \u2014 no coincident Layer-3 anchor at the digitized angle to seed the exact-shooting continuation. Needs an independent converged-root seed (full-spectrum temporal solve) \u2014 T3, not a quick re-run.",
-  "generated": "pending",
+  "quantity": "max temporal growth rate omega_i,max(R) on Mack's L* scale (first mode, optimized over wavenumber alpha)",
+  "metrics": {
+    "curve_median_rel_err": 0.322245380983342,
+    "curve_mean_rel_err": 0.3134995204701332,
+    "curve_max_rel_err": 0.5500590735731946,
+    "curve_mae_omega_i": 0.00038080340377756204,
+    "overlap_R_lo": 300.0,
+    "overlap_R_hi": 2000.0,
+    "n_overlap_samples": 10,
+    "n_low_R_stable_excluded": 1,
+    "low_R_stable_max_R": 200.0,
+    "topology_ok": true,
+    "delta_star_over_L": 3.7147661006698027,
+    "convergence_max_rel_change": 2.8147938020412137e-07,
+    "convergence_stable_le_5pct": true,
+    "convergence_variants": [
+      {
+        "variant": "_conv_m22_4p5x_n800.json",
+        "y_max": 16.7,
+        "ymax_over_dstar": 4.5,
+        "n_steps": 800,
+        "max_rel_change_vs_baseline": 2.4821431157570187e-07,
+        "median_rel_change_vs_baseline": 7.381427428618059e-08,
+        "per_R": [
+          {
+            "R": 500,
+            "baseline": 0.0009556763560832683,
+            "variant": 0.0009556763112337128,
+            "rel_change": 4.692964852333981e-08
+          },
+          {
+            "R": 800,
+            "baseline": 0.001025215470841008,
+            "variant": 0.0010252154832439287,
+            "rel_change": 1.2097867284614954e-08
+          },
+          {
+            "R": 1200,
+            "baseline": 0.000951672163242456,
+            "variant": 0.0009516720706950147,
+            "rel_change": 9.724718748352415e-08
+          },
+          {
+            "R": 1500,
+            "baseline": 0.0008796006915785374,
+            "variant": 0.0008796006266514507,
+            "rel_change": 7.381427428618059e-08
+          },
+          {
+            "R": 2000,
+            "baseline": 0.0007765658956312008,
+            "variant": 0.0007765657028764316,
+            "rel_change": 2.4821431157570187e-07
+          }
+        ]
+      },
+      {
+        "variant": "_conv_m22_4x_n1500.json",
+        "y_max": 14.9,
+        "ymax_over_dstar": 4.01,
+        "n_steps": 1500,
+        "max_rel_change_vs_baseline": 2.8147938020412137e-07,
+        "median_rel_change_vs_baseline": 1.8318019617220496e-08,
+        "per_R": [
+          {
+            "R": 500,
+            "baseline": 0.0009556763560832683,
+            "variant": 0.0009556763445288411,
+            "rel_change": 1.209031388754033e-08
+          },
+          {
+            "R": 800,
+            "baseline": 0.001025215470841008,
+            "variant": 0.0010252154823062734,
+            "rel_change": 1.1183273853293617e-08
+          },
+          {
+            "R": 1200,
+            "baseline": 0.000951672163242456,
+            "variant": 0.0009516718953663653,
+            "rel_change": 2.8147938020412137e-07
+          },
+          {
+            "R": 1500,
+            "baseline": 0.0008796006915785374,
+            "variant": 0.0008796007076910801,
+            "rel_change": 1.8318019617220496e-08
+          },
+          {
+            "R": 2000,
+            "baseline": 0.0007765658956312008,
+            "variant": 0.0007765657283151188,
+            "rel_change": 2.15456386814695e-07
+          }
+        ]
+      }
+    ]
+  },
+  "verdict": "disagrees",
+  "verdict_reason": "Self-seeded (NO Table 10.1 anchor): exact 8x8 Appendix-A shooting, first-mode root found at one (R,alpha) per R from a c_r~0.3-0.7 seed fan, continued across alpha and maximized. Compared pyMack omega_i_max(R) to the digitized Mack Fig.10.3 curve (M=2.2, psi=45 deg) over the positive-growth overlap R in [300, 2000] (10 samples): median rel-err 32.2% (mean 31.3%, max 55.0%, MAE 3.81e-04). Topology: single rising-then-turning first-mode branch in both (pyMack peak ~R=800, paper peak ~R=1800); topology_ok=True. CONVERGENCE-CHECKED before verdict -- _conv_m22_4p5x_n800.json (4.5x, n800): max|delta|/baseline=0.0%; _conv_m22_4x_n1500.json (4.01x, n1500): max|delta|/baseline=0.0% (stable, <=5%); the gap is NOT a y_max-starvation or n_steps artifact (y_max already 4x delta*/L*=3.7, peak alpha interior to the grid, sigma_min~1e-9). LOW-R DIVERGENCE (honest, documented condition-schedule effect): the lowest-R digitized point under-resolves; pyMack is stable at R<=200 (excluded). This is the KNOWN pyMack first-mode weakness (first-mode under-amplification): the second/Mack mode is strong but the first mode is systematically under-predicted at high R.",
+  "generated": "new",
   "artifacts": {
-    "pymack": null,
-    "reference": "reference_data/digitized/mack_ch10_fig10_3_M22_paper_psi45.csv",
-    "overlay": null
+    "pymack": "verification/growthRate_verification/mack_fig10_3_m2p2/pymack_curve.json",
+    "reference": "verification/growthRate_verification/mack_fig10_3_m2p2/reference_mack_ch10_fig10_3_M22_paper_psi45.csv",
+    "overlay": "verification/growthRate_verification/mack_fig10_3_m2p2/overlay.png"
   },
-  "pymack_provenance": ""
+  "pymack_provenance": "verification/compute_mack_fig10_3_selfseed.py --mach 2.2 --psi 45 --ymax-factor 4.0 --n-steps 800; self-seeded exact 8x8 Appendix-A first-order shooting (find_temporal_mode_anchor_3d_shooting + temporal_growth_scan_3d_shooting_from_anchor), condition=table_11_1, T_edge=155.0 K, y_max=14.9 (=4.01x delta*/L*), length_scale=L_star, wall_bc=isothermal, method=qr. Convergence-checked at y_max 4.5x and n_steps 1500."
 }
