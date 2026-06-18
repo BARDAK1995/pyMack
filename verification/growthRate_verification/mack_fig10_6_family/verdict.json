@@ -1,0 +1,24 @@
+{
+  "case_id": "mack_fig10_6_family",
+  "category": "growth_rate",
+  "source": "Mack (1984) Fig 10.6 \u26a0",
+  "conditions": {
+    "Ma": "4.5/5.8/7/10",
+    "gas": "air",
+    "wall": "adiabatic",
+    "psi_deg": 0,
+    "formulation": "temporal 2D max second-mode growth",
+    "transport": "Mack"
+  },
+  "quantity": "max second-mode \u03c9_i vs R",
+  "metrics": {},
+  "verdict": "pending",
+  "verdict_reason": "T3 \u26a0 \u2014 earlier probe showed ~6x magnitude gap under repo condition mapping; open issue",
+  "generated": "pending",
+  "artifacts": {
+    "pymack": null,
+    "reference": null,
+    "overlay": null
+  },
+  "pymack_provenance": ""
+}

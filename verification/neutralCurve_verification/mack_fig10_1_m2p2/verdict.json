@@ -1,0 +1,24 @@
+{
+  "case_id": "mack_fig10_1_m2p2",
+  "category": "neutral_curve",
+  "source": "Mack (1984) Fig 10.1",
+  "conditions": {
+    "Ma": 2.2,
+    "gas": "air",
+    "wall": "adiabatic",
+    "psi_deg": 0,
+    "formulation": "temporal neutral frequency",
+    "transport": "Mack"
+  },
+  "quantity": "neutral-stability frequency vs R",
+  "metrics": {},
+  "verdict": "pending",
+  "verdict_reason": "T3 \u2014 needs a public temporal-neutral runner (not yet built)",
+  "generated": "pending",
+  "artifacts": {
+    "pymack": null,
+    "reference": null,
+    "overlay": null
+  },
+  "pymack_provenance": ""
+}

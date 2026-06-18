@@ -1,0 +1,56 @@
+{
+  "purpose": "Qualitative overlay (demonstration, not a gate) of pyMack's 2D temporal stability map against digitized Ozgen & Kircali (2008) Fig. 3 curves. Layer 6 of docs/VALIDATION_STRATEGY.md.",
+  "quality": "production",
+  "panels_requested": "3",
+  "re_range": [
+    300.0,
+    4500.0
+  ],
+  "re_spacing": "log",
+  "alpha_range": [
+    0.02,
+    0.24
+  ],
+  "alpha_spacing": "linear",
+  "length_scale": "L_star",
+  "wall_bc": "isothermal (Ozgen Eq. 19: T_tilde(0)=0; mean flow adiabatic)",
+  "y_max_rule": "6 * delta_star_over_lstar (L* units)",
+  "mode_classification": {
+    "ci_abs_max": 0.05,
+    "ts_family_cr_max": 0.45,
+    "mack_family_cr_min": 0.88,
+    "mack_family_cr_max": 0.99,
+    "excluded_bands": "0.45 < c_r < 0.88 (inflectional/continuous) and c_r >= 0.99 (free-stream c~1 continuous-spectrum cluster)"
+  },
+  "profile": "pymack.make_ozgen_profile(Ma) defaults (T_edge=288 K, adiabatic wall, Ozgen transport)",
+  "known_artifacts": [
+    "At M=2, high-Re/high-alpha corner: weak (c_i ~ 1e-3) spurious instability from the discretized slow-acoustic continuous spectrum (c_r <= 1 - 1/Ma overlaps the TS band); it is y_max-sensitive, unlike the converged mid-lobe discrete modes.",
+    "At M=4, the genuine mid-band first mode (c_r ~ 0.54-0.62, inside the excluded 0.45-0.88 band) is marginally damped in this formulation where the paper shows marginal growth \u2014 the repo's documented first-mode formulation discrepancy. The excluded band cannot be admitted: it also carries spurious weakly-unstable continuous-spectrum modes that flood the map."
+  ],
+  "output_png": "verification\\neutralCurve_verification\\_ozgen_compute\\ozgen_M3.png",
+  "output_grid_csv": "verification\\neutralCurve_verification\\_ozgen_compute\\ozgen_M3_ci_grid.csv",
+  "total_wall_time_s": 1593.009481099958,
+  "panels": [
+    {
+      "Ma": 3.0,
+      "N": 128,
+      "delta_star_over_lstar": 5.0093839064126575,
+      "y_max_lstar": 30.056303438475943,
+      "n_re": 24,
+      "n_alpha": 30,
+      "n_nodes": 720,
+      "n_classified": 696,
+      "ci_min": -0.04942559466760103,
+      "ci_max": 0.019663892091097496,
+      "neutral_contour_present": true,
+      "wall_time_s": 1592.4567410000018,
+      "digitized_curves": [
+        {
+          "path": "digitized/ozgen_fig3_M3_neutral.csv",
+          "level": 0.0,
+          "n_points": 20
+        }
+      ]
+    }
+  ]
+}

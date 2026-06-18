@@ -1,0 +1,24 @@
+{
+  "case_id": "mack_fig10_3_m2p2",
+  "category": "growth_rate",
+  "source": "Mack (1984) Fig 10.3",
+  "conditions": {
+    "Ma": 2.2,
+    "gas": "air",
+    "wall": "adiabatic",
+    "psi_deg": 45,
+    "formulation": "temporal 3D max growth",
+    "transport": "Mack"
+  },
+  "quantity": "max temporal \u03c9_i vs R",
+  "metrics": {},
+  "verdict": "pending",
+  "verdict_reason": "BLOCKED with current machinery (overlay now generalized for (M,\u03c8), but this case cannot be anchored): Mack Table 10.1 tabulates M=2.2 only at \u03c8=60 (its peak-growth angle), while the digitized Fig 10.3 curve is \u03c8=45 \u2014 no coincident Layer-3 anchor at the digitized angle to seed the exact-shooting continuation. Needs an independent converged-root seed (full-spectrum temporal solve) \u2014 T3, not a quick re-run.",
+  "generated": "pending",
+  "artifacts": {
+    "pymack": null,
+    "reference": "reference_data/digitized/mack_ch10_fig10_3_M22_paper_psi45.csv",
+    "overlay": null
+  },
+  "pymack_provenance": ""
+}
