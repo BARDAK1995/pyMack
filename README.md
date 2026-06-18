@@ -81,6 +81,38 @@ demonstrations. Full rationale and status:
 > strategy doc. Exact 1:1 reproduction of individual Mack/Özgen *figures* is
 > deliberately out of scope as a validation gate.
 
+### Verification audit (literature & cross-code)
+
+Beyond the CI gates above, pyMack carries a standalone **verification audit** that
+runs **benchmark cases at the published conditions** of Mack (1984), Malik (1990),
+Balakumar & Malik (1992), Ma & Zhong (2003), Özgen & Kırcalı (2008), Egorov et al.
+(2006), and an external collaborator code — and reports agreement *honestly*,
+including where pyMack disagrees. Every verdict (with metrics, provenance, and
+convergence checks) lives in
+[`verification/SUCCESS_MATRIX.md`](verification/SUCCESS_MATRIX.md); methodology in
+[`verification/README.md`](verification/README.md). Tiers: **≤5 % agrees**,
+**5–15 % acceptable**, otherwise **disagrees**.
+
+**The second (Mack) mode — pyMack's design target — is validated against multiple
+independent sources across Mach 4.5–10 and on a cone:**
+
+| Benchmark | Mode / quantity | Result |
+|---|---|---|
+| Mack (1984) Fig 10.6 | second-mode max growth, **M=4.5→10** | 1–7 % (M10 4.0 %) |
+| Ma & Zhong (2003) | M=4.5 second-mode neutral branches | Branch I/II to ~3 % |
+| Balakumar & Malik (1992) | M=4.5 spatial eigenvalue + discrete/continuous branch structure | α_r exact; α_i ~10 % (literature spread) |
+| Egorov, Fedorov & Soudakov (2006) | M=6 DNS-vs-LST second mode | most-amplified frequency ~7 % |
+| Sivasubramanian & Fasel (2015) | **M=6 sharp cone** N-factor (Mangler path) | N ≈ 7.1 vs ~7–8 |
+
+> **Honest limitation.** pyMack's **first mode** at low-to-moderate Mach is
+> systematically **under-amplified** — confirmed across Özgen (M2–6) and Mack
+> Figs 10.1 / 10.3 / 10.4, and the dominant source of the "disagrees" rows in the
+> matrix. pyMack is built and validated for the **second (Mack) mode**; first-mode
+> growth-rate and neutral-curve results should be treated with caution. This is
+> stated plainly rather than hidden — see the matrix for every case, including the
+> numerical-artifact checks that distinguish real disagreements from box-size /
+> mode-selection / reference-digitization errors.
+
 ## Install
 
 ```bash
