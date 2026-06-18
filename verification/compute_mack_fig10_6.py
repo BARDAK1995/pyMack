@@ -95,6 +95,26 @@ ALPHA_SCAN = {
     10.0: (0.02, 0.22, 0.005),
 }
 
+# Per-Mach wall-normal domain + resolution. The domain (y_max, in L* units) MUST
+# contain the boundary layer with margin: delta*/L* grows from ~8 (M4.5) to ~37
+# (M10). A fixed y_max=30 is 3.6x delta* at M4.5 (fine) but only 1.4-1.9x at
+# M7/M5.8 and 0.8x at M10 -> the second mode is starved and under-predicted (or
+# returns only decaying roots, as M10 did). The M10 probe showed the mode is
+# starved below ~2x delta* and converges by ~3-4x. So y_max is set to ~4x
+# delta*/L* per Mach, with N scaled to resolve the larger domain. This makes the
+# Fig 10.6 high-Mach comparison a domain-converged result rather than an artifact
+# of a too-short box.
+Y_MAX_BY_MACH = {4.5: 40.0, 5.8: 64.0, 7.0: 88.0, 10.0: 140.0}
+N_BY_MACH = {4.5: 120, 5.8: 150, 7.0: 170, 10.0: 200}
+
+
+def _ymax_for(mach):
+    return Y_MAX_BY_MACH.get(round(float(mach), 1), Y_MAX_DEFAULT)
+
+
+def _N_for(mach):
+    return N_BY_MACH.get(round(float(mach), 1), N_DEFAULT)
+
 
 def make_profile(mach: float):
     """Mack cold-tunnel (table_11_1) adiabatic flat-plate profile."""
@@ -201,8 +221,10 @@ def compute_curves_parallel(machs, *, N=N_DEFAULT, y_max=Y_MAX_DEFAULT,
         rl = DEFAULT_R_SWEEPS.get(round(float(mach), 1))
         if rl is None:
             raise ValueError(f"no default R sweep for M={mach}")
+        # Per-Mach domain/resolution (e.g. M10 needs a much wider y_max).
+        mN, mY = _N_for(mach), _ymax_for(mach)
         for R in rl:
-            units.append((float(mach), float(R), N, y_max))
+            units.append((float(mach), float(R), mN, mY))
 
     n_workers = max(1, min(max_workers, len(units)))
     print(f"parallel: {len(units)} (mach,R) units across {n_workers} workers "

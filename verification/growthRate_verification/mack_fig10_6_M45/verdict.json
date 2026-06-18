@@ -13,20 +13,22 @@
   },
   "quantity": "max second-mode temporal omega_i vs R (Mack L* scale)",
   "metrics": {
-    "curve_median_rel_err": 0.009108741120948059,
+    "curve_median_rel_err": 0.009948563327532259,
     "n_overlap": 11,
     "n_valid_stations": 11,
-    "omega_i_max_at_R1500": 0.003364801476479839,
+    "omega_i_max_at_R1500": 0.0033799324677025407,
     "condition": "table_11_1",
+    "N": 120,
+    "y_max": 40.0,
     "topology_ok": true
   },
   "verdict": "agrees",
-  "verdict_reason": "Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=4.5, adiabatic, COLD table_11_1 edge (the condition fix that resolves the historical ~6x gap \u2014 an edge-temperature error, not a length-scale mapping issue). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 0.9% over 11 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=110). At/again below the 5% digitization floor \u2014 the condition-corrected second mode matches Mack.",
+  "verdict_reason": "Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=4.5, adiabatic. Two corrections make this a defensible comparison: (1) the COLD table_11_1 edge (resolves the historical ~6x gap \u2014 an edge-temperature error, not a length-scale mapping issue); (2) a wall-normal domain y_max=40 ~4x delta*/L* (a fixed short box starves the thick high-Mach boundary layer and spuriously under-predicts or kills the mode \u2014 e.g. M10 needs y_max~140). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 1.0% over 11 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=120, y_max=40). At/below the 5% digitization floor \u2014 the domain-converged, cold-edge second mode matches Mack.",
   "generated": "new",
   "artifacts": {
     "pymack": "verification/growthRate_verification/mack_fig10_6_M45/pymack_curve.json",
     "reference": "reference_data\\digitized\\mack_ch10_fig10_6_M45_paper.csv",
     "overlay": null
   },
-  "pymack_provenance": "verification/compute_mack_fig10_6.py compute_curve(M=4.5); solve_temporal_compressible N=110, y_max=30.0, L*, lambda_mu_ratio=0.0, condition=table_11_1; single-thread BLAS."
+  "pymack_provenance": "verification/compute_mack_fig10_6.py (M=4.5); solve_temporal_compressible N=120, y_max=40 (~4x delta*/L*), L*, lambda_mu_ratio=0.0, condition=table_11_1; single-thread BLAS."
 }

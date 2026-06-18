@@ -1,0 +1,46 @@
+{
+  "case_id": "egorov2006_m6",
+  "category": "growth_rate",
+  "source": "Egorov, Fedorov & Soudakov (2006) TCFD 20:41-54 (DOI 10.1007/s00162-006-0027-9); M6 flat-plate second-mode DNS-vs-LST",
+  "conditions": {
+    "Ma": 6.0,
+    "gas": "air (perfect gas)",
+    "gamma": 1.4,
+    "Pr": 0.72,
+    "wall": "adiabatic (dTw/dy=0)",
+    "psi_deg": 0,
+    "viscosity": "power_law exponent 0.7",
+    "transport": "power_law(0.7)",
+    "Re_L_plate": 2000000.0,
+    "station": "x=1 (local Re_x=2e6, R=sqrt(Re_x)=1414.2)",
+    "omega_egorov_modeS": 200.0,
+    "F_mack": 0.0001,
+    "formulation": "spatial 2D second mode (solve_spatial, L*)"
+  },
+  "quantity": "second-mode instability band & most-amplified dimensionless frequency at Egorov station (omega in plate-length units; LST -alpha_i at omega=200)",
+  "metrics": {
+    "rel_err": 0.075,
+    "pymack_value": 215.0,
+    "benchmark_value": 200.0,
+    "condition": "M6 adiabatic flat plate, R=1414 (Re_x=2e6)",
+    "pymack_peak_omega_E": 215.0,
+    "pymack_growth_at_omega200": 0.002900269711605724,
+    "pymack_c_r_at_omega200": 0.9342719664495401,
+    "unstable_band_omega_E": [
+      140.0,
+      260.0
+    ],
+    "band_brackets_200": true,
+    "topology_ok": true,
+    "N": 140
+  },
+  "verdict": "acceptable",
+  "verdict_reason": "Egorov, Fedorov & Soudakov (2006, TCFD 20:41-54, DOI 10.1007/s00162-006-0027-9) report that small-amplitude 2-D DNS second-mode growth rates over a Mach-6 ADIABATIC flat plate agree with LST. Web-confirmed conditions (from the same group's EUCASS wave-packet paper and the Unnikrishnan & Gaitonde reproduction, arXiv:2007.06726, which cite this paper directly): perfect gas gamma=1.4, Pr=0.72, power-law viscosity mu/mu_e=(T/T_e)^0.7, M_inf=6, Re_inf=rho U L*/mu=2e6, adiabatic wall; mode-S circular frequency omega~200 (plate-length units) at the FS-synchronization station x=1 (local Re_x=2e6), where the linear second mode was forced (A=5e-4). The paper presents the DNS-vs-LST comparison as a growth-rate-vs-x CURVE with no printed growth-rate digit, so no <=5% numeric anchor exists. What pyMack reproduces, at the mapped station R=sqrt(2e6)=1414 (F=omega/Re_L): the discrete SECOND mode (Mack mode, c_r~0.92-0.94) is UNSTABLE across omega_E in [140,260] (brackets Egorov's omega=200), most-amplified at omega_E~215 (7.5% from omega=200), and at exactly omega=200 the spatial growth is -alpha_i=2.90e-03 with c_r=0.934. pyMack thus places the M6 second-mode instability exactly in Egorov's stated band with the amplified frequency on top of their forcing choice. Verdict reflects the frequency-match metric; the absence of a tabulated LST growth-rate digit in the source is recorded honestly (no number was tuned to).",
+  "generated": "new",
+  "artifacts": {
+    "pymack": "verification/growthRate_verification/egorov2006_m6/pymack_band.json",
+    "reference": null,
+    "overlay": null
+  },
+  "pymack_provenance": "verification/compare_egorov2006_m6.py: CompressibleBlasiusProfile(Ma=6, adiabatic, viscosity_model='power_law', omega=0.7); solve_spatial N=140, y_max=40, length_scale='L_star', lambda_mu_ratio=1.2; station R=sqrt(2e6)=1414.2, frequency F=omega_Egorov/Re_L. Single-thread BLAS. Converged to 4 digits in N (120/140/160) and independent of absolute T_edge (power-law is scale-free, matching Egorov's nondimensional setup)."
+}

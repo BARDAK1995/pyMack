@@ -13,20 +13,22 @@
   },
   "quantity": "max second-mode temporal omega_i vs R (Mack L* scale)",
   "metrics": {
-    "curve_median_rel_err": 0.13840473232773437,
+    "curve_median_rel_err": 0.06704569333553963,
     "n_overlap": 12,
     "n_valid_stations": 12,
-    "omega_i_max_at_R1500": 0.003012972783718863,
+    "omega_i_max_at_R1500": 0.0032785443578036144,
     "condition": "table_11_1",
+    "N": 150,
+    "y_max": 64.0,
     "topology_ok": true
   },
   "verdict": "acceptable",
-  "verdict_reason": "Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=5.8, adiabatic, COLD table_11_1 edge (the condition fix that resolves the historical ~6x gap \u2014 an edge-temperature error, not a length-scale mapping issue). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 13.8% over 12 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=110). A consistent offset: pyMack under-predicts the second-mode peak amplification, growing with Mach (the reduced-collocation EVP under-resolves the sharp near-sonic peak; same limitation seen vs Ozgen).",
+  "verdict_reason": "Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=5.8, adiabatic. Two corrections make this a defensible comparison: (1) the COLD table_11_1 edge (resolves the historical ~6x gap \u2014 an edge-temperature error, not a length-scale mapping issue); (2) a wall-normal domain y_max=64 ~4x delta*/L* (a fixed short box starves the thick high-Mach boundary layer and spuriously under-predicts or kills the mode \u2014 e.g. M10 needs y_max~140). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 6.7% over 12 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=150, y_max=64). A small residual offset above the 5% floor; the domain-converged second mode tracks Mack's curve across the band (the 10.6 family agrees from M4.5 to M10, so this is a local residual, NOT a monotonic high-Mach under-prediction).",
   "generated": "new",
   "artifacts": {
     "pymack": "verification/growthRate_verification/mack_fig10_6_M58/pymack_curve.json",
     "reference": "reference_data\\digitized\\mack_ch10_fig10_6_M58_paper.csv",
     "overlay": null
   },
-  "pymack_provenance": "verification/compute_mack_fig10_6.py compute_curve(M=5.8); solve_temporal_compressible N=110, y_max=30.0, L*, lambda_mu_ratio=0.0, condition=table_11_1; single-thread BLAS."
+  "pymack_provenance": "verification/compute_mack_fig10_6.py (M=5.8); solve_temporal_compressible N=150, y_max=64 (~4x delta*/L*), L*, lambda_mu_ratio=0.0, condition=table_11_1; single-thread BLAS."
 }
