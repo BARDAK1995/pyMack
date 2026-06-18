@@ -1,0 +1,40 @@
+# Mack (1984) Fig 10.1(b), M1=2.2, COMPLETE-EQUATIONS neutral loop (innermost of 3 curves).
+# Re-digitized 2026-06-18 from AGARD-R-709 p.90 (PDF index 90) embedded figure (522x794 px scan,
+#   rendered at 4x => 2448x3168). Pixel calibration (panel b):
+#   R: col 896 = R0, col 1638 = R1200  (62 px / 100 R)
+#   F: row 2121 = F0, row 1499 = F4.0  (155.5 px / unit F*1e4)
+# Conventions: x = R = sqrt(Re_x); y = F*1e4, F = omega/R = alpha*c_r/R.
+# Geometry: 3 nested loops; Complete Equations = INNERMOST. Critical R (nose) ~300, the
+#   LARGEST of the three (asymptotic ~180, numerical ~250).
+# branch: nose (critical-R apex) | upper (cutoff) | lower (onset).
+# Digitization uncertainty: dR ~ +/-15, dF ~ +/-0.05-0.08 in F*1e4 on branches
+#   (~6-12% of local F at mid/high R; bundling at high R is the dominant source).
+#   Nose R uncertain to ~+/-25 (R280-325), nose F ~ +/-0.08.
+R,F_x1e4,branch
+300,1.38,nose
+315,1.10,lower
+335,0.85,lower
+360,0.70,lower
+400,0.55,lower
+450,0.46,lower
+500,0.40,lower
+600,0.32,lower
+700,0.265,lower
+800,0.225,lower
+900,0.195,lower
+1000,0.17,lower
+1100,0.155,lower
+1200,0.14,lower
+315,1.22,upper
+335,1.05,upper
+360,0.92,upper
+400,0.78,upper
+450,0.66,upper
+500,0.58,upper
+600,0.47,upper
+700,0.39,upper
+800,0.335,upper
+900,0.295,upper
+1000,0.26,upper
+1100,0.235,upper
+1200,0.215,upper
