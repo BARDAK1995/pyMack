@@ -1,0 +1,29 @@
+{
+  "case_id": "mack_fig10_6_M100",
+  "category": "growth_rate",
+  "source": "Mack (1984) Fig 10.6 (AGARD R-709), max second-mode temporal growth vs R",
+  "conditions": {
+    "Ma": 10.0,
+    "gas": "air",
+    "wall": "adiabatic",
+    "psi_deg": 0,
+    "formulation": "temporal 2D max second-mode growth",
+    "transport": "Mack",
+    "condition_schedule": "table_11_1 (cold edge)"
+  },
+  "quantity": "max second-mode temporal omega_i vs R (Mack L* scale)",
+  "metrics": {
+    "n_valid_stations": 0,
+    "n_stations": 11,
+    "condition": "table_11_1"
+  },
+  "verdict": "pending",
+  "verdict_reason": "Mack Fig 10.6 M=10.0: pyMack isolated the discrete second mode at only 0 of 11 R-stations under the generic temporal scan (N=110, y_max=30.0). The highest-Mach second-mode peak sits near c_r->1 and needs a dedicated near-sonic tracker + wider domain; not reported rather than fabricate a spurious root.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": "verification/growthRate_verification/mack_fig10_6_M100/pymack_curve.json",
+    "reference": "reference_data\\digitized\\mack_ch10_fig10_6_M100_paper.csv",
+    "overlay": null
+  },
+  "pymack_provenance": "verification/compute_mack_fig10_6.py compute_curve(M=10.0); solve_temporal_compressible N=110, y_max=30.0, L*, lambda_mu_ratio=0.0, condition=table_11_1; single-thread BLAS."
+}

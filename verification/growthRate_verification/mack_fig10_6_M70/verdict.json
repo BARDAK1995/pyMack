@@ -1,0 +1,32 @@
+{
+  "case_id": "mack_fig10_6_M70",
+  "category": "growth_rate",
+  "source": "Mack (1984) Fig 10.6 (AGARD R-709), max second-mode temporal growth vs R",
+  "conditions": {
+    "Ma": 7.0,
+    "gas": "air",
+    "wall": "adiabatic",
+    "psi_deg": 0,
+    "formulation": "temporal 2D max second-mode growth",
+    "transport": "Mack",
+    "condition_schedule": "table_11_1 (cold edge)"
+  },
+  "quantity": "max second-mode temporal omega_i vs R (Mack L* scale)",
+  "metrics": {
+    "curve_median_rel_err": 0.4377092217172098,
+    "n_overlap": 11,
+    "n_valid_stations": 11,
+    "omega_i_max_at_R1500": 0.0014386570229204757,
+    "condition": "table_11_1",
+    "topology_ok": true
+  },
+  "verdict": "disagrees",
+  "verdict_reason": "Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=7.0, adiabatic, COLD table_11_1 edge (the condition fix that resolves the historical ~6x gap \u2014 an edge-temperature error, not a length-scale mapping issue). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 43.8% over 11 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=110). pyMack substantially under-predicts the high-Mach second-mode peak amplification (the near-sonic peak is under-resolved) \u2014 a genuine, documented formulation limitation that worsens with Mach.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": "verification/growthRate_verification/mack_fig10_6_M70/pymack_curve.json",
+    "reference": "reference_data\\digitized\\mack_ch10_fig10_6_M70_paper.csv",
+    "overlay": null
+  },
+  "pymack_provenance": "verification/compute_mack_fig10_6.py compute_curve(M=7.0); solve_temporal_compressible N=110, y_max=30.0, L*, lambda_mu_ratio=0.0, condition=table_11_1; single-thread BLAS."
+}

@@ -1,0 +1,36 @@
+{
+  "case_id": "malik_case1",
+  "category": "eigenvalue_anchor",
+  "source": "Malik (1990) JCP 86:376, tabulated test case (Malik #1); published value via Hildebrand et al. arXiv:1712.08239 Table I.",
+  "conditions": {
+    "Ma": 0.5,
+    "Re_l": 2000.0,
+    "alpha_fixed": 0.1,
+    "beta": 0.0,
+    "gamma": 1.4,
+    "wall": "adiabatic (insulated)",
+    "problem": "temporal (fixed real alpha -> complex omega)",
+    "compressibility": "INCOMPRESSIBLE",
+    "malik_case_number": 1,
+    "T0_K": "not openly recoverable",
+    "length_scale": "L_star"
+  },
+  "quantity": "temporal frequency eigenvalue omega = omega_r + i*omega_i at fixed real alpha",
+  "metrics": {
+    "malik_omega": [
+      0.0291,
+      0.00224
+    ],
+    "pymack_omega": null,
+    "topology_ok": false
+  },
+  "verdict": "pending",
+  "verdict_reason": "Malik (1990) Case 1: M=0.5, Re=2000, temporal alpha=0.10, published eigenvalue omega=0.0291+0.00224i (Hildebrand Table I). This is the low-speed / effectively INCOMPRESSIBLE case -- the task scopes incompressible cases to the existing Orszag (1971) coverage, so no pyMack run is performed here. Recorded for completeness of the extracted Malik table.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": null,
+    "reference": null,
+    "overlay": null
+  },
+  "pymack_provenance": "No reproducible pyMack run: ambiguous dimensional conditions (unknown T0) and/or temporal mode not isolated. See verdict_reason."
+}

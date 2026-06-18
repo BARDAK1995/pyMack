@@ -18,6 +18,7 @@ from _compare_lib import VERDICT_BADGE, VERDICT_ORDER, read_verdict  # noqa: E40
 CATEGORIES = [
     ("neutralCurve_verification", "Neutral curves"),
     ("growthRate_verification", "Growth rates"),
+    ("eigenvalueAnchor_verification", "Eigenvalue anchors"),
 ]
 
 
@@ -55,6 +56,19 @@ def _headline(v: dict) -> str:
     if "median_rel_err_alpha" in m:
         topo = "closed-arch" if m.get("topology_ok") else "open-lobe"
         return f"median |Δα|/α {_pct(m['median_rel_err_alpha'])}; topology {topo}"
+    # Eigenvalue-anchor cases (Malik 1990 etc.)
+    if "alpha_r_rel_err" in m:
+        return (f"α_r {_pct(m['alpha_r_rel_err'])}, "
+                f"α_i {_pct(m['alpha_i_rel_err'])} (N={m.get('N', '?')})")
+    if "malik_omega" in m:
+        o = m["malik_omega"]
+        return f"Malik ω={o[0]:.4f}{o[1]:+.5f}i (temporal; no pyMack run)"
+    # Ma & Zhong second-mode neutral-branch Reynolds numbers (R = sqrt(Re_x))
+    if "branch_I_rel_err" in m and "branch_II_rel_err" in m:
+        topo = "closed band" if m.get("topology_ok") else "topology mismatch"
+        return (f"Branch I R {m['branch_I_R_pymack']:g} ({_pct(m['branch_I_rel_err'])}), "
+                f"Branch II R {m['branch_II_R_pymack']:g} ({_pct(m['branch_II_rel_err'])}); "
+                f"{topo}")
     # Sean dimensional neutral curve
     if "upper_branch_MAE_mm_200_600kHz" in m:
         return (f"upper {m['upper_branch_MAE_mm_200_600kHz']:.1f} mm; "
