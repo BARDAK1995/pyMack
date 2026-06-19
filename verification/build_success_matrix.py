@@ -127,6 +127,11 @@ def main() -> int:
     L.append("from per-case `verdict.json`. Methodology & thresholds:")
     L.append("`verification/README.md` (≤5% agrees · 5–15% acceptable · else disagrees).")
     L.append("")
+    L.append("Each case name below links to its pyMack-vs-reference **overlay plot**. "
+             "At-a-glance galleries: "
+             "[second-mode](second_mode_gallery.png) · "
+             "[first-mode](first_mode_gallery.png).")
+    L.append("")
     L.append(f"**Overall ({total} cases):** {_tally_str(overall)}")
     L.append("")
     L.append("**Headline:** every *second-mode* case agrees/acceptable; every *disagreement* "
@@ -157,8 +162,15 @@ def main() -> int:
             L.append("| Case | Source | Conditions | Verdict | Headline |")
             L.append("|---|---|---|---|---|")
             for v in rows:
-                L.append("| `{cid}` | {src} | {cond} | {verd} | {head} |".format(
-                    cid=v.get("case_id", "?"),
+                cid = v.get("case_id", "?")
+                ov = (v.get("artifacts", {}) or {}).get("overlay")
+                if ov:
+                    rel = ov[len("verification/"):] if ov.startswith("verification/") else ov
+                    cid_cell = f"[`{cid}`]({rel})"  # case name links to its overlay plot
+                else:
+                    cid_cell = f"`{cid}`"
+                L.append("| {cid} | {src} | {cond} | {verd} | {head} |".format(
+                    cid=cid_cell,
                     src=v.get("source", "?").split(",")[0],
                     cond=_cond(v.get("conditions", {})),
                     verd=VERDICT_BADGE.get(v.get("verdict", "pending"), "?"),

@@ -40,7 +40,7 @@
   "artifacts": {
     "pymack": "verification/second_mode/egorov2006_m6/pymack_band.json",
     "reference": null,
-    "overlay": null
+    "overlay": "verification/second_mode/egorov2006_m6/overlay.png"
   },
   "pymack_provenance": "verification/compare_egorov2006_m6.py: CompressibleBlasiusProfile(Ma=6, adiabatic, viscosity_model='power_law', omega=0.7); solve_spatial N=140, y_max=40, length_scale='L_star', lambda_mu_ratio=1.2; station R=sqrt(2e6)=1414.2, frequency F=omega_Egorov/Re_L. Single-thread BLAS. Converged to 4 digits in N (120/140/160) and independent of absolute T_edge (power-law is scale-free, matching Egorov's nondimensional setup).",
   "mode": "second"

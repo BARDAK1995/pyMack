@@ -28,7 +28,7 @@
   "artifacts": {
     "pymack": "verification/second_mode/mack_fig10_6_M70/pymack_curve.json",
     "reference": "reference_data\\digitized\\mack_ch10_fig10_6_M70_paper.csv",
-    "overlay": null
+    "overlay": "verification/second_mode/mack_fig10_6_M70/overlay.png"
   },
   "pymack_provenance": "verification/compute_mack_fig10_6.py (M=7.0); solve_temporal_compressible N=170, y_max=88 (~4x delta*/L*), L*, lambda_mu_ratio=0.0, condition=table_11_1; single-thread BLAS.",
   "mode": "second"

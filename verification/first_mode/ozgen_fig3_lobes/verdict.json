@@ -98,7 +98,7 @@
   "artifacts": {
     "pymack": "verification/first_mode/ozgen_fig3_lobes/pymack_ozgen_M2_ci004.csv",
     "reference": "verification/first_mode/ozgen_fig3_lobes/reference_ozgen_fig3_M2_004.csv",
-    "overlay": null
+    "overlay": "verification/first_mode/ozgen_fig3_lobes/overlay.png"
   },
   "pymack_provenance": "c_i grid verification/neutralCurve_verification/_ozgen_compute/ozgen_combined_ci_grid.csv (24x30 mesh per Mach, log-spaced Re x linear alpha), from the \u00d6zgen Fig.3 overlay pipeline (solve_temporal_ozgen_2d, L* scale, TS/Mack-classified). For each digitized constant-c_i lobe point (Re*, alpha*) the c_i field is bilinearly interpolated (linear in log-Re between bracketing columns, linear in alpha) and pyMack's alpha on the c_i=LEVEL contour nearest alpha* is located; median |\u0394\u03b1|/\u03b1 is the headline metric. Mirrors the neutral-curve engine (compare_ozgen_fig3.py) at c_i=LEVEL instead of c_i=0. Per-lobe pyMack contour artifacts: verification/growthRate_verification/ozgen_fig3_lobes/pymack_ozgen_M2_ci004.csv, verification/growthRate_verification/ozgen_fig3_lobes/pymack_ozgen_M2_ci012.csv, verification/growthRate_verification/ozgen_fig3_lobes/pymack_ozgen_M4_ci004.csv.",
   "mode": "first"

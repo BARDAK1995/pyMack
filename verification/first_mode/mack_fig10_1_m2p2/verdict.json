@@ -40,7 +40,7 @@
   "artifacts": {
     "pymack": "verification/first_mode/mack_fig10_1_m2p2/pymack_mack_fig10_1_M22_neutral.csv",
     "reference": "verification/first_mode/mack_fig10_1_m2p2/reference_mack_fig10_1_M22_complete_equations.csv",
-    "overlay": null
+    "overlay": "verification/first_mode/mack_fig10_1_m2p2/overlay.png"
   },
   "pymack_provenance": "verification/compute_mack_fig10_1.py + compare_mack_fig10_1.py (this session). make_mack_profile(M=2.2, condition='table_11_1') adiabatic Mack flat plate (viscosity_model='mack'); solve_temporal_compressible(length_scale='L_star', lambda_mu_ratio=0.0, N=120, y_max=30); first mode selected by c_r in [0.40,0.85], |c_i|<0.10, max-c_i in band. omega_i(alpha) lobe per R over alpha in [0.015,0.135]; neutral frequency F = alpha_neutral*c_r/R*1e4 from the c_i=0 crossings (lower/onset, upper/cutoff) plus F at peak omega_i. R grid 200-1600. Parallel across cores (single-thread BLAS). y_max=30->45 spot-checks at R=800 recorded for convergence (see metrics.ymax_sensitivity_R800_pct and verdict_reason). | RE-JUDGED via verification/rejudge_mack_fig10_1_complete.py (2026-06-18): pyMack neutral CSV reused unchanged; reference replaced by re-digitized mack_ch10_fig10_1_M22_paper_complete_equations.csv (full Complete-Equations loop, both branches + nose). classify_relative(loop_avg_median_rel_err, topology_ok), thresholds 5%/15%.",
   "mode": "first"

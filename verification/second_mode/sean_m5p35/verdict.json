@@ -35,7 +35,7 @@
   "artifacts": {
     "pymack": "verification/second_mode/sean_m5p35/pymack_neutral_envelope_dimensional.csv",
     "reference": "verification/second_mode/sean_m5p35/LST_neutral_curve_M5p35.csv",
-    "overlay": null
+    "overlay": "verification/second_mode/sean_m5p35/overlay.png"
   },
   "pymack_provenance": "Layer-5 production single-sweep (no stitching/smoothing); validation/data/collaborator_mach5p35/run_manifest.json. CI-gated by validation/test_collaborator_mach5p35_benchmark.py.",
   "mode": "second"

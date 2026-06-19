@@ -52,7 +52,7 @@
   "artifacts": {
     "pymack": null,
     "reference": null,
-    "overlay": null
+    "overlay": "verification/second_mode/balakumar_malik1992_branches/overlay.png"
   },
   "pymack_provenance": "pymack.solver.solve_spatial_full_spectrum (full companion QEP, no shift-invert) on CompressibleBlasiusProfile (adiabatic, Sutherland S=110.33 K), N=150, y_max=40, lambda_mu_ratio=1.2, length_scale='L_star', wall_bc='isothermal'; same physical setup as validation/test_malik1990_case6_anchor.py / the via_xirenfu anchor.",
   "mode": "second"

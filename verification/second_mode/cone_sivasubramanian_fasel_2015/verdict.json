@@ -49,7 +49,7 @@
   "artifacts": {
     "pymack": "verification/second_mode/cone_sivasubramanian_fasel_2015/pymack_cone_curve.json",
     "reference": null,
-    "overlay": null
+    "overlay": "verification/second_mode/cone_sivasubramanian_fasel_2015/overlay.png"
   },
   "pymack_provenance": "verification/growthRate_verification/cone_sivasubramanian_fasel_2015/compute_cone_sf2015.py: CompressibleBlasiusProfile(Ma=5.356,T_edge=63.78,T_wall=300,Sutherland S=110.4,Pr=0.72,gamma=1.4,isothermal,n_points=3000,eta_max=20) + solve_spatial(N=90,y_max=40,L*,lambda_mu_ratio=1.2,second-mode band c_r in [0.80,0.985]); cone.cone_s_mm_to_R_eq maps s->R_eq=sqrt(Re_s/3); cone.cone_n_factor integrates N=int 6 sigma_L dR_eq (clip_negative). Edge state from taylor_maccoll_edge_state.py. Single-thread BLAS.",
   "mode": "second"
