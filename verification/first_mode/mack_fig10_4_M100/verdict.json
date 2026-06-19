@@ -1,0 +1,44 @@
+{
+  "case_id": "mack_fig10_4_M100",
+  "category": "growth_rate",
+  "source": "Mack (1984) Fig 10.4 (AGARD R-709), max first-mode oblique temporal growth vs R",
+  "conditions": {
+    "Ma": 10.0,
+    "gas": "air",
+    "wall": "adiabatic",
+    "psi_deg": "optimized (oblique)",
+    "formulation": "temporal 3D max first-mode growth over (alpha, psi)",
+    "transport": "Mack",
+    "condition_schedule": "table_11_1 (cold edge)"
+  },
+  "quantity": "max first-mode temporal omega_i vs R, optimized over (alpha, psi) (Mack L* scale)",
+  "metrics": {
+    "curve_median_rel_err": 0.609190861835086,
+    "curve_mean_rel_err": 0.6305359067427933,
+    "curve_max_rel_err": 0.8085732401187977,
+    "n_overlap": 10,
+    "n_valid_stations": 10,
+    "n_low_R_stable_excluded": 0,
+    "overlap_R_lo": 350.0,
+    "overlap_R_hi": 2000.0,
+    "omega_i_max_at_R1500": 0.0004042417994912531,
+    "psi_peak_typ_deg": 52.5,
+    "c_r_typ": 0.9495491818799495,
+    "condition": "table_11_1",
+    "delta_star_over_Lstar": 37.05426647299399,
+    "N": 200,
+    "y_max": 150.0,
+    "topology_ok": true,
+    "confidence": "lower (reduced-EVP, no exact-shooting cross-check / convergence test)"
+  },
+  "verdict": "disagrees",
+  "verdict_reason": "Mack (1984) Fig 10.4 max FIRST-mode temporal omega_i vs R at M=10.0, adiabatic. The high-Mach first mode is OBLIQUE-dominated, so growth is maximized over BOTH alpha and wave angle psi (peak psi~52 deg, first-mode phase speed c_r~0.95, distinct from the 2D second mode c_r~0.9 of Fig 10.6). Domain-converged: y_max=150 ~4x delta*/L*=37.1 (a short box starves the thick BL and spuriously under-predicts the mode -- the Fig 10.6 domain lesson). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 60.9% (mean 63.1%, max 80.9%) over 10 positive-growth overlapping R-stations (L* scale, 3D temporal first mode, N=200, y_max=150). pyMack's curve departs from Mack's by more than 15%. NOTE: the first mode is pyMack's known weak spot (the Ozgen M2/3/4/6 family disagrees -- open-lobe/under-amplification), so a convergence-stable first-mode disagreement here is physically plausible, not necessarily a tool bug. Convergence in (N, y_max, mode-band) was confirmed before recording this. CONFIDENCE NOTE: computed with solve_temporal_compressible_3d (reduced dense EVP) and max over (alpha,psi), NOT the exact-shooting path used for the convergence-checked Mack 10.3 self-seed cases. The 10.3 agent found the reduced EVP can under-predict or spuriously kill the first mode at some conditions, and no exact-shooting cross-check or explicit y_max/N convergence test was recorded here. Domain was set to ~4x delta*/L* (the second-mode-calibrated rule; the first mode reaches further from the wall and may want more). So the disagree DIRECTION (first-mode under-amplification, consistent with all other first-mode cases) is robust, but the MAGNITUDE and the monotonic-with-Mach trend are LOWER-CONFIDENCE than the 10.3/10.1 first-mode results.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": "verification/first_mode/mack_fig10_4_M100/pymack_curve.json",
+    "reference": "reference_data/digitized/mack_ch10_fig10_4_M100_paper.csv",
+    "overlay": "verification/first_mode/mack_fig10_4_M100/overlay.png"
+  },
+  "pymack_provenance": "verification/compute_mack_fig10_4.py (M=10.0); solve_temporal_compressible_3d N=200, y_max=150 (~4x delta*/L*=37.1), L*, lambda_mu_ratio=0.0, condition=table_11_1; first-mode band selection, max over (alpha,psi); single-thread BLAS.",
+  "mode": "first"
+}

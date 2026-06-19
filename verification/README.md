@@ -12,17 +12,34 @@ This is deliberately separate from `validation/` (the CI gates): here we run
 
 ## Layout
 
+Cases are organized by physical **mode** — the meaningful axis (pyMack's second
+mode is validated; its first mode is the documented weak spot). Each case's
+`verdict.json` carries `mode` ("second"/"first"/"other") and `category`
+("neutral_curve"/"growth_rate"/"eigenvalue_anchor"); the matrix groups by mode,
+then category.
+
 ```
 verification/
   README.md                     this file
-  TARGETS.md                    exact conditions per case (from the registry)
+  TARGETS.md                    exact conditions per case
   _compare_lib.py               shared metrics + the 3-tier classifier
-  build_success_matrix.py       verdict.json -> SUCCESS_MATRIX.md
-  compare_*.py                  per-source comparison engines (rigor lives here)
+  build_success_matrix.py       verdict.json -> SUCCESS_MATRIX.md (mode-grouped)
+  _migrate_by_mode.py           one-shot: the authoritative case->mode mapping
+  compare_*.py / compute_*.py / verify_*.py   per-source engines (see note below)
   SUCCESS_MATRIX.md             the deliverable
-  neutralCurve_verification/<case>/{pymack..., reference..., overlay.png, verdict.json}
-  growthRate_verification/<case>/{...}
+  second_mode/<case>/{pymack..., reference..., overlay.png, verdict.json}
+  first_mode/<case>/{...}       (+ first_mode/_ozgen_compute/ shared Özgen grids)
+  other/<case>/{...}            incompressible / unrecoverable-condition cases
 ```
+
+> **Note on the engines.** `compare_*.py`, `compute_*.py`, and `verify_*.py` were
+> authored against the original *by-quantity* layout
+> (`neutralCurve_/growthRate_/eigenvalueAnchor_verification/`) and were used to
+> *produce* the verdicts; the results were then reorganized **by mode**
+> (`_migrate_by_mode.py` holds the exact case→mode map). They are kept as run
+> provenance. Re-running one writes to the legacy by-quantity path; move its
+> output to the matching `mode/` folder (or repoint the script's output constant)
+> before rebuilding the matrix.
 
 ## Verdict tiers
 

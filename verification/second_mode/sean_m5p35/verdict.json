@@ -1,0 +1,42 @@
+{
+  "case_id": "sean_m5p35",
+  "category": "neutral_curve",
+  "source": "Collaborator (Sean) independent LST code, Mach 5.35 N2 study",
+  "conditions": {
+    "Ma": 5.35,
+    "gas": "nitrogen",
+    "wall": "adiabatic~370K",
+    "psi_deg": 0,
+    "formulation": "spatial second mode",
+    "transport": "power-law Blasius (viscosity exponent 0.74, Pr 0.72)",
+    "T_edge_K": 64.0,
+    "U_e_m_per_s": 857.0,
+    "unit_Re_per_m": 11760000.0
+  },
+  "quantity": "dimensional neutral branch locations vs frequency (mm): lower=x_left, upper=x_right",
+  "metrics": {
+    "upper_branch_MAE_mm_200_600kHz": 3.2077,
+    "upper_branch_ref_span_mm_200_600kHz": 220.275,
+    "upper_branch_n_points": 66,
+    "upper_branch_verdict": "agrees",
+    "lower_branch_MAE_mm_330_600kHz": 1.2928,
+    "lower_branch_ref_span_mm_330_600kHz": 19.8,
+    "lower_branch_n_points_330_600kHz": 44,
+    "lower_branch_verdict_330_600kHz": "acceptable",
+    "lower_branch_MAE_mm_full_200kHz": 6.6764,
+    "lower_branch_ref_span_mm_full_200kHz": 49.5,
+    "lower_branch_n_points_full_200kHz": 66,
+    "lower_branch_verdict_full_200kHz": "acceptable",
+    "topology_ok": true
+  },
+  "verdict": "acceptable",
+  "verdict_reason": "Upper branch MAE 3.21 mm over 200-600 kHz (ref span 220.3 mm -> agrees); lower branch MAE 1.29 mm over 330-600 kHz (ref span 19.8 mm -> acceptable). Full 200+ kHz lower-branch MAE 6.68 mm (acceptable).",
+  "generated": "reuse",
+  "artifacts": {
+    "pymack": "verification/second_mode/sean_m5p35/pymack_neutral_envelope_dimensional.csv",
+    "reference": "verification/second_mode/sean_m5p35/LST_neutral_curve_M5p35.csv",
+    "overlay": null
+  },
+  "pymack_provenance": "Layer-5 production single-sweep (no stitching/smoothing); validation/data/collaborator_mach5p35/run_manifest.json. CI-gated by validation/test_collaborator_mach5p35_benchmark.py.",
+  "mode": "second"
+}

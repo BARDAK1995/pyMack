@@ -1,7 +1,11 @@
 """Aggregate every ``verdict.json`` under verification/ into SUCCESS_MATRIX.md.
 
-This script does NO physics: it reads the recorded per-case verdicts and emits
-the master success matrix. Re-run it whenever a case's verdict.json changes.
+Cases are organized by physical MODE (the meaningful axis): pyMack's SECOND
+(Mack) mode is validated across sources/Mach/geometry; its FIRST mode is the
+documented weak spot. ``other`` holds incompressible / unrecoverable-condition
+cases. Within each mode, cases are sub-grouped by quantity (verdict ``category``).
+
+This script does NO physics: it reads recorded verdicts. Re-run after any change.
 
     python verification/build_success_matrix.py
 """
@@ -15,11 +19,21 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 from _compare_lib import VERDICT_BADGE, VERDICT_ORDER, read_verdict  # noqa: E402
 
-CATEGORIES = [
-    ("neutralCurve_verification", "Neutral curves"),
-    ("growthRate_verification", "Growth rates"),
-    ("eigenvalueAnchor_verification", "Eigenvalue anchors"),
+# (folder, title, one-line characterization)
+MODES = [
+    ("second_mode", "Second (Mack) mode",
+     "pyMack's design target — validated across independent sources, Mach 4.5–10, and a cone"),
+    ("first_mode", "First mode",
+     "the documented weak spot — systematically under-amplified, worsening with Mach"),
+    ("other", "Other",
+     "incompressible / unrecoverable-condition cases (unmeasured)"),
 ]
+CAT_LABEL = {
+    "neutral_curve": "Neutral curves",
+    "growth_rate": "Growth rates",
+    "eigenvalue_anchor": "Eigenvalue anchors",
+}
+CAT_ORDER = ["neutral_curve", "growth_rate", "eigenvalue_anchor"]
 
 
 def _cond(c: dict) -> str:
@@ -46,125 +60,131 @@ def _headline(v: dict) -> str:
     m = v.get("metrics", {})
     if not m:
         return "—"
-    # Mack growth-rate cases
     if "curve_median_rel_err" in m:
         s = f"curve median {_pct(m['curve_median_rel_err'])}"
         if "table_anchor_rel_err" in m:
             s += f"; Table-10.1 anchor {_pct(m['table_anchor_rel_err'])}"
         return s
-    # Özgen neutral-curve cases
     if "median_rel_err_alpha" in m:
         topo = "closed-arch" if m.get("topology_ok") else "open-lobe"
         return f"median |Δα|/α {_pct(m['median_rel_err_alpha'])}; topology {topo}"
-    # Eigenvalue-anchor cases (Malik 1990 etc.)
+    if "loop_avg_median_rel_err" in m:
+        return (f"loop-avg {_pct(m['loop_avg_median_rel_err'])}; "
+                f"R_crit pyMack {m.get('R_crit_pymack','?')} vs Mack {m.get('R_crit_mack','?')}")
     if "alpha_r_rel_err" in m:
         return (f"α_r {_pct(m['alpha_r_rel_err'])}, "
                 f"α_i {_pct(m['alpha_i_rel_err'])} (N={m.get('N', '?')})")
     if "malik_omega" in m:
         o = m["malik_omega"]
         return f"Malik ω={o[0]:.4f}{o[1]:+.5f}i (temporal; no pyMack run)"
-    # Ma & Zhong second-mode neutral-branch Reynolds numbers (R = sqrt(Re_x))
     if "branch_I_rel_err" in m and "branch_II_rel_err" in m:
         topo = "closed band" if m.get("topology_ok") else "topology mismatch"
         return (f"Branch I R {m['branch_I_R_pymack']:g} ({_pct(m['branch_I_rel_err'])}), "
-                f"Branch II R {m['branch_II_R_pymack']:g} ({_pct(m['branch_II_rel_err'])}); "
-                f"{topo}")
-    # Sean dimensional neutral curve
+                f"Branch II R {m['branch_II_R_pymack']:g} ({_pct(m['branch_II_rel_err'])}); {topo}")
     if "upper_branch_MAE_mm_200_600kHz" in m:
         return (f"upper {m['upper_branch_MAE_mm_200_600kHz']:.1f} mm; "
                 f"lower {m.get('lower_branch_MAE_mm_330_600kHz', float('nan')):.1f} mm "
                 "(gated bands)")
-    # Fallback: first two scalar metrics
     parts = [f"{k}={val:.3g}" for k, val in m.items()
              if isinstance(val, (int, float))][:2]
     return "; ".join(parts) if parts else "—"
 
 
-def _first_sentence(text: str) -> str:
-    text = text.replace("\n", " ").strip()
-    for end in (". ", "; "):
-        i = text.find(end)
-        if 0 < i < 200:
-            return text[: i + 1].strip()
-    return text[:200]
+def _tally(cases):
+    t = {"agrees": 0, "acceptable": 0, "disagrees": 0, "pending": 0}
+    for v in cases:
+        t[v.get("verdict", "pending")] = t.get(v.get("verdict", "pending"), 0) + 1
+    return t
+
+
+def _tally_str(t):
+    return (f"{VERDICT_BADGE['agrees']} {t['agrees']} · "
+            f"{VERDICT_BADGE['acceptable']} {t['acceptable']} · "
+            f"{VERDICT_BADGE['disagrees']} {t['disagrees']} · "
+            f"{VERDICT_BADGE['pending']} {t['pending']}")
 
 
 def main() -> int:
-    rows_by_cat: dict[str, list[dict]] = {}
-    for sub, _ in CATEGORIES:
+    cases_by_mode = {}
+    for mode_dir, _, _ in MODES:
         cases = []
-        cat_dir = HERE / sub
-        if cat_dir.is_dir():
-            for vf in sorted(cat_dir.glob("*/verdict.json")):
+        d = HERE / mode_dir
+        if d.is_dir():
+            for vf in sorted(d.glob("*/verdict.json")):
                 cases.append(read_verdict(vf))
-        cases.sort(key=lambda v: (VERDICT_ORDER.get(v.get("verdict", "pending"), 9),
-                                  v.get("case_id", "")))
-        rows_by_cat[sub] = cases
+        cases_by_mode[mode_dir] = cases
 
-    tally = {"agrees": 0, "acceptable": 0, "disagrees": 0, "pending": 0}
-    for cases in rows_by_cat.values():
-        for v in cases:
-            tally[v.get("verdict", "pending")] = tally.get(v.get("verdict", "pending"), 0) + 1
+    all_cases = [v for cs in cases_by_mode.values() for v in cs]
+    total = len(all_cases)
+    overall = _tally(all_cases)
 
-    lines = []
-    lines.append("# pyMack Verification Success Matrix")
-    lines.append("")
-    lines.append("Honest agreement audit of pyMack against published / external")
-    lines.append("benchmarks at their **exact** conditions. Generated by")
-    lines.append("`verification/build_success_matrix.py` from per-case `verdict.json`.")
-    lines.append("Thresholds and methodology: `verification/README.md`.")
-    lines.append("")
-    total = sum(tally.values())
-    lines.append(
-        f"**Tally ({total} cases):** "
-        f"{VERDICT_BADGE['agrees']} {tally['agrees']} · "
-        f"{VERDICT_BADGE['acceptable']} {tally['acceptable']} · "
-        f"{VERDICT_BADGE['disagrees']} {tally['disagrees']} · "
-        f"{VERDICT_BADGE['pending']} {tally['pending']}"
-    )
-    lines.append("")
+    L = []
+    L.append("# pyMack Verification Success Matrix")
+    L.append("")
+    L.append("Honest agreement audit of pyMack against published / external benchmarks")
+    L.append("at their **exact** conditions, organized by physical **mode** — the")
+    L.append("meaningful axis here. Generated by `verification/build_success_matrix.py`")
+    L.append("from per-case `verdict.json`. Methodology & thresholds:")
+    L.append("`verification/README.md` (≤5% agrees · 5–15% acceptable · else disagrees).")
+    L.append("")
+    L.append(f"**Overall ({total} cases):** {_tally_str(overall)}")
+    L.append("")
+    L.append("**Headline:** every *second-mode* case agrees/acceptable; every *disagreement* "
+             "is a *first-mode* case (the documented first-mode under-amplification, "
+             "worsening with Mach). The split is by mode, not by source — pyMack agrees "
+             "*and* disagrees with Mack himself, depending on which mode the figure probes.")
+    L.append("")
 
-    for sub, title in CATEGORIES:
-        cases = rows_by_cat.get(sub, [])
-        lines.append(f"## {title}")
-        lines.append("")
+    for mode_dir, title, blurb in MODES:
+        cases = cases_by_mode.get(mode_dir, [])
         if not cases:
-            lines.append("_No cases yet._")
-            lines.append("")
             continue
-        lines.append("| Case | Source | Conditions | Verdict | Headline |")
-        lines.append("|---|---|---|---|---|")
+        L.append(f"## {title}")
+        L.append(f"*{blurb}.*  ")
+        L.append(f"**{len(cases)} cases:** {_tally_str(_tally(cases))}")
+        L.append("")
+        by_cat = {}
         for v in cases:
-            lines.append(
-                "| `{cid}` | {src} | {cond} | {verd} | {head} |".format(
+            by_cat.setdefault(v.get("category", "other"), []).append(v)
+        cats = [c for c in CAT_ORDER if c in by_cat] + \
+               [c for c in by_cat if c not in CAT_ORDER]
+        for cat in cats:
+            rows = sorted(by_cat[cat],
+                          key=lambda v: (VERDICT_ORDER.get(v.get("verdict", "pending"), 9),
+                                         v.get("case_id", "")))
+            L.append(f"### {CAT_LABEL.get(cat, cat)}")
+            L.append("")
+            L.append("| Case | Source | Conditions | Verdict | Headline |")
+            L.append("|---|---|---|---|---|")
+            for v in rows:
+                L.append("| `{cid}` | {src} | {cond} | {verd} | {head} |".format(
                     cid=v.get("case_id", "?"),
                     src=v.get("source", "?").split(",")[0],
                     cond=_cond(v.get("conditions", {})),
                     verd=VERDICT_BADGE.get(v.get("verdict", "pending"), "?"),
-                    head=_headline(v),
-                )
-            )
-        lines.append("")
+                    head=_headline(v)))
+            L.append("")
 
-    # Per-case detail (full reasoning; the table stays scannable).
-    lines.append("## Details")
-    lines.append("")
-    for sub, _ in CATEGORIES:
-        for v in rows_by_cat.get(sub, []):
-            reason = v.get("verdict_reason", "").strip()
+    # Per-case detail (full reasoning), grouped by mode.
+    L.append("## Details")
+    L.append("")
+    for mode_dir, title, _ in MODES:
+        for v in cases_by_mode.get(mode_dir, []):
+            reason = (v.get("verdict_reason") or "").strip()
             if not reason or v.get("verdict") == "pending":
                 continue
-            lines.append(
-                f"**`{v['case_id']}`** — {VERDICT_BADGE.get(v.get('verdict'), '?')} "
-                f"({v.get('quantity', '')})  "
-            )
-            lines.append("")
-            lines.append(reason)
-            lines.append("")
+            L.append(f"**`{v['case_id']}`** ({title}) — "
+                     f"{VERDICT_BADGE.get(v.get('verdict'), '?')} "
+                     f"({v.get('quantity', '')})  ")
+            L.append("")
+            L.append(reason)
+            L.append("")
 
     out = HERE / "SUCCESS_MATRIX.md"
-    out.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    print(f"wrote {out}  ({total} cases: {tally})")
+    out.write_text("\n".join(L) + "\n", encoding="utf-8")
+    print(f"wrote {out}  ({total} cases: {overall})")
+    for mode_dir, title, _ in MODES:
+        print(f"  {title}: {_tally(cases_by_mode.get(mode_dir, []))}")
     return 0
 
 

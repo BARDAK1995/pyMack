@@ -1,0 +1,105 @@
+{
+  "case_id": "ozgen_fig3_lobes",
+  "category": "growth_rate",
+  "source": "\u00d6zgen & K\u0131rcal\u0131 (2008) Fig 3",
+  "conditions": {
+    "Ma": "2,4 (c_i=0.004); 2 (c_i=0.012 secondary)",
+    "gas": "air",
+    "wall": "adiabatic",
+    "psi_deg": 0,
+    "formulation": "temporal 2D",
+    "transport": "\u00d6zgen T-dependent"
+  },
+  "quantity": "constant growth-rate contours c_i={0.004,0.012} alpha_L(Re_L)",
+  "metrics": {
+    "per_mach": {
+      "M2_ci004": {
+        "mach": 2,
+        "c_i_level": 0.004,
+        "role": "primary",
+        "median_rel_err_alpha": 0.15703549412423098,
+        "n": 19,
+        "n_in_range": 20,
+        "n_no_crossing": 1,
+        "fraction_within_acceptable_band": 0.45,
+        "lobe_closed": false,
+        "lobe_topology": {
+          "closed": false,
+          "reason": "open_right",
+          "peak_ci": 0.010906,
+          "n_cells_above": 74,
+          "open_on_high_Re_edge": true,
+          "touches_alpha_floor": false,
+          "touches_alpha_ceiling": false
+        }
+      },
+      "M4_ci004": {
+        "mach": 4,
+        "c_i_level": 0.004,
+        "role": "primary",
+        "median_rel_err_alpha": 0.26522812530803375,
+        "n": 20,
+        "n_in_range": 20,
+        "n_no_crossing": 0,
+        "fraction_within_acceptable_band": 0.3,
+        "lobe_closed": false,
+        "lobe_topology": {
+          "closed": false,
+          "reason": "open_right",
+          "peak_ci": 0.024591,
+          "n_cells_above": 67,
+          "open_on_high_Re_edge": true,
+          "touches_alpha_floor": false,
+          "touches_alpha_ceiling": false
+        }
+      },
+      "M2_ci012": {
+        "mach": 2,
+        "c_i_level": 0.012,
+        "role": "secondary",
+        "median_rel_err_alpha": null,
+        "n": 0,
+        "n_in_range": 19,
+        "n_no_crossing": 19,
+        "fraction_within_acceptable_band": 0.0,
+        "lobe_closed": false,
+        "lobe_topology": {
+          "closed": false,
+          "reason": "absent",
+          "peak_ci": 0.010906,
+          "n_cells_above": 0
+        }
+      }
+    },
+    "overall_median_rel_err_alpha": 0.18787469953551045,
+    "levels_compared": [
+      0.004,
+      0.012
+    ],
+    "primary_levels": [
+      0.004
+    ],
+    "secondary_levels": [
+      0.012
+    ],
+    "topology_ok": false,
+    "grid_Re_span": [
+      300.0,
+      4500.0
+    ],
+    "grid_alpha_span": [
+      0.02,
+      0.24
+    ]
+  },
+  "verdict": "disagrees",
+  "verdict_reason": "GROWTH-CONTOUR match of pyMack's c_i = 0.004 lobe to the digitized \u00d6zgen Fig. 3 lobes, by nearest-crossing in alpha at each digitized Re: M=2 median |\u0394\u03b1|/\u03b1 = 15.7% (19/20 matched), M=4 median 26.5% (20/20 matched); overall median (pooled M2+M4 at c_i=0.004) = 18.8%. Secondary check \u2014 M=2 c_i = 0.012 lobe: NOT reproducible by pyMack (19/19 points had no crossing). pyMack's peak M=2 growth rate (c_i,max = 0.010906) is below 0.012, so the entire interior 0.012 lobe is ABSENT \u2014 pyMack under-predicts peak M=2 amplification. Topology: pyMack does NOT close the c_i = 0.004 lobe in the same (Re, alpha) region as the paper [M=2: OPEN \u2014 the c_i>0.004 region runs off the high-Re grid edge (does not descend back to small alpha); M=4: OPEN \u2014 the c_i>0.004 region runs off the high-Re grid edge (does not descend back to small alpha)]. The digitized lobe is a closed arch; pyMack's super-level set stays unstable out to the grid's Re_max, so topology_ok is False. Growth-vs-neutral context: the SEPARATELY-measured neutral curves (c_i = 0 contour) for these same Machs were classified 'disagrees' on open-lobe topology, with full-arch median rel-errs ~16% (M2) / ~17% (M4) and only the cutoff/apex sub-region matching to ~3-10%. The growth contours do NOT agree better overall: the c_i = 0.004 lobe matches at a comparable 15.7% for M=2 and a WORSE 26.5% for M=4 (pyMack's 0.004 contour is nearly flat in alpha rather than tracking the arch's descent), and the interior c_i = 0.012 lobe is entirely absent for M=2. The same open-lobe / under-amplification formulation discrepancy seen in the neutral curves persists in the growth-rate contours, so the verdict is 'disagrees', not 'agrees'.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": "verification/first_mode/ozgen_fig3_lobes/pymack_ozgen_M2_ci004.csv",
+    "reference": "verification/first_mode/ozgen_fig3_lobes/reference_ozgen_fig3_M2_004.csv",
+    "overlay": null
+  },
+  "pymack_provenance": "c_i grid verification/neutralCurve_verification/_ozgen_compute/ozgen_combined_ci_grid.csv (24x30 mesh per Mach, log-spaced Re x linear alpha), from the \u00d6zgen Fig.3 overlay pipeline (solve_temporal_ozgen_2d, L* scale, TS/Mack-classified). For each digitized constant-c_i lobe point (Re*, alpha*) the c_i field is bilinearly interpolated (linear in log-Re between bracketing columns, linear in alpha) and pyMack's alpha on the c_i=LEVEL contour nearest alpha* is located; median |\u0394\u03b1|/\u03b1 is the headline metric. Mirrors the neutral-curve engine (compare_ozgen_fig3.py) at c_i=LEVEL instead of c_i=0. Per-lobe pyMack contour artifacts: verification/growthRate_verification/ozgen_fig3_lobes/pymack_ozgen_M2_ci004.csv, verification/growthRate_verification/ozgen_fig3_lobes/pymack_ozgen_M2_ci012.csv, verification/growthRate_verification/ozgen_fig3_lobes/pymack_ozgen_M4_ci004.csv.",
+  "mode": "first"
+}
