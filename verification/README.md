@@ -30,7 +30,13 @@ verification/
   second_mode/<case>/{pymack..., reference..., overlay.png, verdict.json}
   first_mode/<case>/{...}       (+ first_mode/_ozgen_compute/ shared Özgen grids)
   other/<case>/{...}            incompressible / unrecoverable-condition cases
+  comparisons/                  cross-case overlays (not single-case verdicts)
 ```
+
+`comparisons/ozgenM6_vs_pymack_M5p85_M6_neutral.png` overlays Özgen's M=6
+*first-mode* neutral curve with pyMack's M=5.85 N₂ and M=6 air *second-mode*
+neutral curves in a common (R, F) plane — a where-do-they-sit view (different
+instabilities), not a like-for-like verdict.
 
 > **Note on the engines.** `compare_*.py`, `compute_*.py`, and `verify_*.py` were
 > authored against the original *by-quantity* layout
