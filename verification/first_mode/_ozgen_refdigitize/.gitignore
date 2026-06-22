@@ -1,0 +1,16 @@
+# Working folder for the Özgen & Kırcalı (2008) Fig-3 neutral-curve re-extraction.
+#
+# Image renders here are derived from Özgen & Kırcalı (2008) Fig 3, which is
+# copyrighted. This is a PUBLIC repository — never commit the figure renders.
+# Only the digitized (Re, alpha) data points (reference_data/digitized/*_v2.csv)
+# and the analysis scripts belong in version control.
+*.png
+panels/
+panels_v2/
+
+# Regenerable compute artifacts / scratch
+__pycache__/
+*.log
+*.output
+firstmode_grid.csv
+secondmode_grid.csv
