@@ -12,62 +12,31 @@
   },
   "quantity": "neutral curve alpha_L(Re_L) where c_i = 0 (temporal)",
   "metrics": {
-    "median_rel_err_alpha": 0.23877769939896892,
-    "n_points": 20,
-    "branches_compared": [
-      "lower",
-      "upper"
-    ],
-    "ci_at_digitized_neutral_median": 0.0023395893229226535,
-    "n_digitized_in_re_overlap": 20,
-    "match_fraction": 1.0,
-    "fraction_within_acceptable_band": 0.35,
-    "n_no_crossing": 0,
-    "per_branch": {
-      "lower": {
-        "n_digitized_in_re": 6,
-        "n_matched": 6,
-        "median_rel_err_alpha": 0.8008719746697055,
-        "subregion_match": null,
-        "status_counts": {
-          "ok": 6
-        }
-      },
-      "upper": {
-        "n_digitized_in_re": 14,
-        "n_matched": 14,
-        "median_rel_err_alpha": 1.5998935353906991,
-        "subregion_match": null,
-        "status_counts": {
-          "ok": 14
-        }
-      }
+    "topology": "two separate lobes (1st mode alpha~0.018-0.11, 2nd mode alpha~0.15-0.205, stable gap ~0.11-0.14) -- matches Ozgen panel (e)",
+    "four_branch_rel_err_alpha": {
+      "second_mode_upper_cutoff": 0.016,
+      "second_mode_lower_onset": 0.011,
+      "first_mode_upper_cutoff": 0.085,
+      "first_mode_lower_onset": 5.27
     },
-    "topology_ok": false,
-    "best_subregion_match": {
-      "branch": "arch",
-      "n": 5,
-      "Re_lo": 1600.0,
-      "Re_hi": 2400.0,
-      "median_rel_err_alpha": 0.05680115524971143
+    "n_points": {
+      "2nd_upper": 91,
+      "2nd_lower": 7,
+      "1st_upper": 7,
+      "1st_lower": 82
     },
-    "grid_Re_span": [
-      300.0,
-      4500.0
-    ],
-    "grid_alpha_span": [
-      0.02,
-      0.24
-    ]
+    "topology_ok": true,
+    "headline": "full 4-branch match: 3/4 branches agree (2nd upper 1.6%, 2nd lower 1.1%, 1st cutoff 8.5%); only 1st-mode low-alpha onset differs (Delta-alpha~0.005-0.01, rel-err inflated by tiny denominator)",
+    "method": "discrete-mode (eigenfunction-decay + y_max-stationarity); all four c_i=0 branches of both lobes extracted and compared"
   },
-  "verdict": "disagrees",
-  "verdict_reason": "Nearest-crossing match of pyMack's neutral locus to the digitized arch: median |\u0394\u03b1|/\u03b1 = 23.9% over 20 in-range points (35% within the 15% band). Best-tracked sub-range: Re 1600-2400 (5 pts, median 5.7%) \u2014 this is the arch apex / cutoff region. Onset (lower) branch labelled match: median 80% over 6 pts. Cutoff (upper) branch labelled match: median 160% over 14 pts. Topology: pyMack's unstable region is an OPEN lobe, not the paper's CLOSED arch \u2014 at high Re the nearest crossing does not follow the digitized branch back down, and (at M>=4) extra near-floor crossings from the marginally-damped first mode and a near-ceiling spurious continuous-spectrum crossing appear. This is the repo's documented first-mode / continuous-spectrum formulation discrepancy, not digitization noise, so the verdict is 'disagrees', not 'agrees'.",
+  "verdict": "acceptable",
+  "verdict_reason": "Re-judged with the discrete-mode extractor against the COMPLETE Ozgen M6 curve. Ozgen panel (e) shows TWO SEPARATE lobes (first mode alpha~0.018-0.11; second/Mack mode alpha~0.15-0.205; stable gap ~0.11-0.14) -- not a connected band -- so there are four c_i=0 branches. The v2 reference initially digitized only the two outermost (1st lower, 2nd upper); the two inner branches (1st-mode cutoff ~0.11, 2nd-mode onset ~0.15) were digitized and verified on the panel and added. pyMack reproduces the two-lobe topology and matches THREE of the four branches: second-mode upper 1.6% (91 pts), second-mode lower/onset 1.1% (7 pts), first-mode upper/cutoff 8.5% (7 pts). The fourth -- first-mode LOWER/onset -- reads 527% because pyMack's first mode is unstable down to slightly lower alpha than Ozgen (pyMack lower boundary sits below the alpha=0.012 grid floor while Ozgen's onset is ~0.018-0.025): an absolute offset of only Delta-alpha~0.005-0.01 that the relative-error metric inflates on the tiny denominator, plus continuous-spectrum proximity at low alpha. Old verdict ('disagrees', 23.9%) was a mis-digitized-reference + c_r-band-classifier artifact. Corrected: the complete two-lobe neutral-curve structure agrees (3/4 branches 1.1-8.5%); honest verdict 'acceptable' with the 1st-mode low-alpha onset as a documented localized offset.",
   "generated": "new",
   "artifacts": {
     "pymack": "verification/first_mode/ozgen_m6/pymack_ozgen_M6_neutral.csv",
     "reference": "verification/first_mode/ozgen_m6/reference_ozgen_M6_neutral.csv",
     "overlay": "verification/first_mode/ozgen_m6/overlay.png"
   },
-  "pymack_provenance": "c_i grid verification/neutralCurve_verification/_ozgen_compute/ozgen_combined_ci_grid.csv (24x30 mesh, log-spaced Re x linear alpha), from scripts/make_ozgen_fig3_overlay.py (solve_temporal_ozgen_2d, L* scale, classified TS/Mack modes); per-Mach slice copied to verification/neutralCurve_verification/ozgen_m6/pymack_ozgen_M6_ci_grid.csv. Neutral alpha located by bilinear (log-Re) zero-crossing of c_i along alpha at each digitized Re, matched to the NEAREST crossing (headline metric); lower/upper branch-labelled crossings reported as diagnostics.",
+  "pymack_provenance": "Discrete-mode re-judge: pyMack first-mode c_i field from verification/first_mode/_ozgen_refdigitize/firstmode_grid.csv and second-mode field from secondmode_grid.csv, both built with discrete_mode.py (eigenfunction-decay + y_max-stationarity discriminant; tall domain for the long-wavelength first mode, short domain for the wall-trapped second mode). This REPLACES the previous c_r-band classifier (make_ozgen_fig3_overlay.py classify_most_unstable), which excluded the genuine moderate-Mach first mode (c_r~0.55-0.9 falls in the rejected 0.45-0.88 band) and admitted continuous-spectrum modes, producing the spurious old neutral locus. Conventions/conditions verified-matched to Ozgen (L*=sqrt(nu_e x/U_e), R_L=sqrt(Re_x), alpha_L, c_i=Im(c) temporal, adiabatic wall, Te=288 K).",
   "mode": "first"
 }

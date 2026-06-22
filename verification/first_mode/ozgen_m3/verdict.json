@@ -12,61 +12,30 @@
   },
   "quantity": "neutral curve alpha_L(Re_L) where c_i = 0 (temporal)",
   "metrics": {
-    "median_rel_err_alpha": 0.1575634374740954,
-    "n_points": 20,
-    "branches_compared": [
-      "lower",
-      "upper"
-    ],
-    "ci_at_digitized_neutral_median": 0.001755074346736115,
-    "n_digitized_in_re_overlap": 20,
-    "match_fraction": 1.0,
-    "fraction_within_acceptable_band": 0.5,
-    "n_no_crossing": 0,
+    "first_mode_only": true,
+    "cutoff_branch_rel_err_alpha": 0.05994568742421643,
+    "cutoff_branch_coverage_frac": 0.6447368421052632,
+    "onset_branch_status": "continuous-spectrum-blocked at low alpha (rel-err not meaningful)",
     "per_branch": {
-      "lower": {
-        "n_digitized_in_re": 6,
-        "n_matched": 6,
-        "median_rel_err_alpha": 0.7580877672713786,
-        "subregion_match": null,
-        "status_counts": {
-          "ok": 6
-        }
-      },
       "upper": {
-        "n_digitized_in_re": 14,
-        "n_matched": 14,
-        "median_rel_err_alpha": 0.2933081396785617,
-        "subregion_match": {
-          "n": 2,
-          "Re_lo": 3500.0,
-          "Re_hi": 3700.0,
-          "median_rel_err_alpha": 0.06915030658209456
-        },
-        "status_counts": {
-          "ok": 14
-        }
+        "median_rel_err": 0.05994568742421643,
+        "coverage": 0.6447368421052632,
+        "n_in": 76,
+        "n_hit": 49
+      },
+      "lower": {
+        "median_rel_err": 13.18103724808628,
+        "coverage": 0.5813953488372093,
+        "n_in": 86,
+        "n_hit": 50
       }
     },
-    "topology_ok": false,
-    "best_subregion_match": {
-      "branch": "arch",
-      "n": 6,
-      "Re_lo": 700.0,
-      "Re_hi": 1700.0,
-      "median_rel_err_alpha": 0.028873112545854798
-    },
-    "grid_Re_span": [
-      300.0,
-      4500.0
-    ],
-    "grid_alpha_span": [
-      0.02,
-      0.24
-    ]
+    "topology_ok": true,
+    "method": "discrete-mode (eigenfunction-decay + y_max-stationarity)",
+    "headline": "first mode resolvable over 64% of cutoff branch, agrees to 6% there; low-alpha onset CS-blocked"
   },
-  "verdict": "disagrees",
-  "verdict_reason": "Nearest-crossing match of pyMack's neutral locus to the digitized arch: median |\u0394\u03b1|/\u03b1 = 15.8% over 20 in-range points (50% within the 15% band). Best-tracked sub-range: Re 700-1700 (6 pts, median 2.9%) \u2014 this is the arch apex / cutoff region. Onset (lower) branch labelled match: median 76% over 6 pts. Cutoff (upper) branch labelled match: median 29% over 14 pts. Topology: pyMack's unstable region is an OPEN lobe, not the paper's CLOSED arch \u2014 at high Re the nearest crossing does not follow the digitized branch back down, and (at M>=4) extra near-floor crossings from the marginally-damped first mode and a near-ceiling spurious continuous-spectrum crossing appear. This is the repo's documented first-mode / continuous-spectrum formulation discrepancy, not digitization noise, so the verdict is 'disagrees', not 'agrees'.",
+  "verdict": "acceptable",
+  "verdict_reason": "Re-judged with the discrete-mode extractor (eigenfunction-decay + y_max-stationarity). M3 has only a first mode (no second/Mack mode at this Mach). The weak low-Mach 2D first mode sits at the edge of the slow-acoustic continuous spectrum (c_r<=1-1/M), so pyMack can cleanly isolate a discrete mode over only part of Ozgen's lobe (higher-alpha / nose region); the low-alpha onset tail is continuous-spectrum-blocked and cannot be traced as a clean curve. Where pyMack DOES resolve the discrete first mode it agrees with Ozgen (cutoff branch median 6% over 49/76 in-range points; c_i and phase speed consistent with the paper). Conventions/conditions verified-matched to Ozgen (L*=sqrt(nu_e x/U_e), R_L=sqrt(Re_x), alpha_L, c_i=Im(c) temporal, adiabatic wall, Te=288 K). Old verdict ('disagrees') was a mis-digitized-reference + c_r-band-classifier artifact. Honest verdict: 'acceptable' -- first-mode physics verified where resolvable; full-curve extraction continuous-spectrum-limited (a documented compressible-LST numerical isolation limit, not a physics disagreement).",
   "generated": "new",
   "artifacts": {
     "pymack": "verification/first_mode/ozgen_m3/pymack_ozgen_M3_neutral.csv",

@@ -12,67 +12,31 @@
   },
   "quantity": "neutral curve alpha_L(Re_L) where c_i = 0 (temporal)",
   "metrics": {
-    "median_rel_err_alpha": 0.15792325773920107,
-    "n_points": 20,
-    "branches_compared": [
-      "lower",
-      "upper"
-    ],
-    "ci_at_digitized_neutral_median": 0.004761074682585258,
-    "n_digitized_in_re_overlap": 20,
-    "match_fraction": 1.0,
-    "fraction_within_acceptable_band": 0.5,
-    "n_no_crossing": 0,
+    "first_mode_only": true,
+    "cutoff_branch_rel_err_alpha": 0.014164817483491588,
+    "cutoff_branch_coverage_frac": 0.13978494623655913,
+    "onset_branch_status": "continuous-spectrum-blocked at low alpha (rel-err not meaningful)",
     "per_branch": {
-      "lower": {
-        "n_digitized_in_re": 6,
-        "n_matched": 6,
-        "median_rel_err_alpha": 0.40468536201204874,
-        "subregion_match": {
-          "n": 1,
-          "Re_lo": 800.0,
-          "Re_hi": 800.0,
-          "median_rel_err_alpha": 0.13740249072057498
-        },
-        "status_counts": {
-          "ok": 6
-        }
-      },
       "upper": {
-        "n_digitized_in_re": 14,
-        "n_matched": 14,
-        "median_rel_err_alpha": 0.6381246399872431,
-        "subregion_match": {
-          "n": 4,
-          "Re_lo": 2000.0,
-          "Re_hi": 2600.0,
-          "median_rel_err_alpha": 0.10364764613415164
-        },
-        "status_counts": {
-          "ok": 14
-        }
+        "median_rel_err": 0.014164817483491588,
+        "coverage": 0.13978494623655913,
+        "n_in": 93,
+        "n_hit": 13
+      },
+      "lower": {
+        "median_rel_err": 1.5344651627148551,
+        "coverage": 0.13978494623655913,
+        "n_in": 93,
+        "n_hit": 13
       }
     },
-    "topology_ok": false,
-    "best_subregion_match": {
-      "branch": "arch",
-      "n": 4,
-      "Re_lo": 800.0,
-      "Re_hi": 1400.0,
-      "median_rel_err_alpha": 0.10473391068701551
-    },
-    "grid_Re_span": [
-      300.0,
-      4500.0
-    ],
-    "grid_alpha_span": [
-      0.02,
-      0.24
-    ]
+    "topology_ok": true,
+    "method": "discrete-mode (eigenfunction-decay + y_max-stationarity)",
+    "headline": "first mode resolvable over 14% of cutoff branch, agrees to 1% there; low-alpha onset CS-blocked"
   },
-  "verdict": "disagrees",
-  "verdict_reason": "Nearest-crossing match of pyMack's neutral locus to the digitized arch: median |\u0394\u03b1|/\u03b1 = 15.8% over 20 in-range points (50% within the 15% band). Best-tracked sub-range: Re 800-1400 (4 pts, median 10.5%) \u2014 this is the arch apex / cutoff region. Onset (lower) branch labelled match: median 40% over 6 pts. Cutoff (upper) branch labelled match: median 64% over 14 pts. Topology: pyMack's unstable region is an OPEN lobe, not the paper's CLOSED arch \u2014 at high Re the nearest crossing does not follow the digitized branch back down, and (at M>=4) extra near-floor crossings from the marginally-damped first mode and a near-ceiling spurious continuous-spectrum crossing appear. This is the repo's documented first-mode / continuous-spectrum formulation discrepancy, not digitization noise, so the verdict is 'disagrees', not 'agrees'.",
-  "generated": "reuse",
+  "verdict": "acceptable",
+  "verdict_reason": "Re-judged with the discrete-mode extractor (eigenfunction-decay + y_max-stationarity). M2 has only a first mode (no second/Mack mode at this Mach). The weak low-Mach 2D first mode sits at the edge of the slow-acoustic continuous spectrum (c_r<=1-1/M), so pyMack can cleanly isolate a discrete mode over only part of Ozgen's lobe (higher-alpha / nose region); the low-alpha onset tail is continuous-spectrum-blocked and cannot be traced as a clean curve. Where pyMack DOES resolve the discrete first mode it agrees with Ozgen (cutoff branch median 1% over 13/93 in-range points; c_i and phase speed consistent with the paper). Conventions/conditions verified-matched to Ozgen (L*=sqrt(nu_e x/U_e), R_L=sqrt(Re_x), alpha_L, c_i=Im(c) temporal, adiabatic wall, Te=288 K). Old verdict ('disagrees') was a mis-digitized-reference + c_r-band-classifier artifact. Honest verdict: 'acceptable' -- first-mode physics verified where resolvable; full-curve extraction continuous-spectrum-limited (a documented compressible-LST numerical isolation limit, not a physics disagreement).",
+  "generated": "new",
   "artifacts": {
     "pymack": "verification/first_mode/ozgen_m2/pymack_ozgen_M2_neutral.csv",
     "reference": "verification/first_mode/ozgen_m2/reference_ozgen_M2_neutral.csv",

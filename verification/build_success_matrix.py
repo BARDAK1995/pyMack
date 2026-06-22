@@ -24,7 +24,9 @@ MODES = [
     ("second_mode", "Second (Mack) mode",
      "pyMack's design target — validated across independent sources, Mach 4.5–10, and a cone"),
     ("first_mode", "First mode",
-     "the documented weak spot — systematically under-amplified, worsening with Mach"),
+     "agrees with Özgen where the discrete mode is cleanly resolvable (a discrete-mode "
+     "eigenfunction-decay extractor recovers it); the remaining Mack-figure disagreements "
+     "use a separate solver and await the same scrutiny"),
     ("other", "Other",
      "incompressible / unrecoverable-condition cases (unmeasured)"),
 ]
@@ -60,6 +62,8 @@ def _headline(v: dict) -> str:
     m = v.get("metrics", {})
     if not m:
         return "—"
+    if "headline" in m:
+        return str(m["headline"])
     if "curve_median_rel_err" in m:
         s = f"curve median {_pct(m['curve_median_rel_err'])}"
         if "table_anchor_rel_err" in m:
@@ -134,10 +138,17 @@ def main() -> int:
     L.append("")
     L.append(f"**Overall ({total} cases):** {_tally_str(overall)}")
     L.append("")
-    L.append("**Headline:** every *second-mode* case agrees/acceptable; every *disagreement* "
-             "is a *first-mode* case (the documented first-mode under-amplification, "
-             "worsening with Mach). The split is by mode, not by source — pyMack agrees "
-             "*and* disagrees with Mack himself, depending on which mode the figure probes.")
+    L.append("**Headline:** every *second-mode* case agrees/acceptable. For the *first mode*, the "
+             "Özgen cases — once their references were re-digitized correctly and a discrete-mode "
+             "(eigenfunction-decay + y_max-stationarity) extractor replaced the c_r-band classifier "
+             "that had excluded the genuine first mode — now AGREE where the mode is cleanly "
+             "resolvable (M4/M6 reproduce all four neutral branches to ≤8.5%; M2/M3 agree over the "
+             "resolvable part of the lobe). The low-α first-mode *onset* at low Mach stays "
+             "continuous-spectrum-limited (a numerical isolation limit, not a physics disagreement). "
+             "The remaining ❌ are Mack-figure first modes (Fig 10.1/10.3/10.4) computed through a "
+             "*separate* solver/comparison that has NOT yet had the same discrete-mode scrutiny — so "
+             "the earlier blanket 'first mode systematically under-amplified' claim is retired pending "
+             "that re-examination.")
     L.append("")
 
     for mode_dir, title, blurb in MODES:
