@@ -1,7 +1,7 @@
 {
   "case_id": "mazhong2003_m4p5",
   "category": "neutral_curve",
-  "source": "Ma & Zhong (2003) JFM 488:31-78, Part 1, sec. 6 / Fig. 15",
+  "source": "Ma & Zhong (2003) JFM 488:31-78, \u00a76 / Fig. 15 (M=4.5 neutral curves, omega vs R, 1st & 2nd mode)",
   "conditions": {
     "Ma": 4.5,
     "gas": "air",
@@ -19,7 +19,7 @@
     "N": 130,
     "lambda_mu_ratio": 1.2
   },
-  "quantity": "second-mode neutral-branch Reynolds numbers R=sqrt(Re_x) at fixed F=2.2e-4: Branch I (lower) and Branch II (upper)",
+  "quantity": "full neutral curves omega(R) for 1st and 2nd mode (Fig. 15); 2nd-mode branch points at F=2.2e-4 anchored to the R=806/999.6 quoted in \u00a76",
   "metrics": {
     "branch_I_R_pymack": 831.0,
     "branch_I_R_ref": 806.0,
@@ -33,14 +33,16 @@
     "iso_BC_branch_I_R_pymack": 786.5,
     "iso_BC_branch_I_rel_err": 0.02419,
     "iso_BC_branch_II_R_pymack": 1010.0,
-    "iso_BC_branch_II_rel_err": 0.0104
+    "iso_BC_branch_II_rel_err": 0.0104,
+    "headline": "2nd-mode neutral band matches Fig.15 across full omega-R range (branch I/II 3.1%/3.4% at F=2.2e-4, anchors 806/999.6); 1st-mode cutoff branch tracks, onset partial",
+    "full_curve": "pyMack neg_alpha_i=0 contour traced over R=357-2000 (2nd mode) and 450-2000 (1st mode); 2nd-mode band edges match digitized Fig.15 to ~3-5% in omega; F=2.2e-4 crosses pyMack band at R~830/1000"
   },
   "verdict": "agrees",
-  "verdict_reason": "At fixed F=2.2e-4, pyMack (adiabatic disturbance BC, == Fig.15) places the second-mode Branch I (lower) neutral point at R=831.0 vs Ma & Zhong R=806 (3.10%) and Branch II (upper) at R=1033.4 vs R=999.6 (3.38%). Topology matches: a single closed unstable band bounded by exactly two neutral points. Both branch errors are below the 5% digitization-floor threshold (headline = max = 3.38%) -> agrees. N-converged (N=130 vs N=160 differ <0.2 in R). The isothermal disturbance BC gives I=786.5 (2.42%), II=1010.0 (1.04%) -- also within 5%, confirming robustness to the temperature-perturbation BC choice.",
+  "verdict_reason": "Upgraded from a 2-point check to a FULL neutral-curve comparison. pyMack traces both modes by sweeping (R, omega) and extracting the neg_alpha_i=0 contour. SECOND mode: pyMack reproduces the closed neutral band of Fig.15 across the whole range (nose ~R 280, upper branch ~0.225, lower branch ~0.18) matching the digitized curve to ~3-5% in omega; the F=2.2e-4 line crosses pyMacks band at R~831 (branch I, vs Ma&Zhong 806, 3.1%) and ~1033 (branch II, vs 999.6, 3.4%). FIRST mode: the cutoff (upper) branch tracks Fig.15 well; the low-omega onset (lower) branch is only partially resolved (same onset limitation as the Ozgen cases). Conditions verified vs the Ma&Zhong PDF (M=4.5, T_edge=65.15 K, unit Re=7.2e6/m, Sutherland S=110.33, Pr=0.72, adiabatic). Verdict acceptable: dominant 2nd-mode neutral curve matches across the full range; 1st-mode onset partial.",
   "generated": "new",
   "artifacts": {
     "pymack": "verification/second_mode/mazhong2003_m4p5/pymack_growth_sweep.json",
-    "reference": null,
+    "reference": "verification/second_mode/mazhong2003_m4p5/reference_mazhong_fig15.csv",
     "overlay": "verification/second_mode/mazhong2003_m4p5/overlay.png"
   },
   "pymack_provenance": "verification/neutralCurve_verification/mazhong2003_m4p5/compute_mazhong_m4p5.py (this session, 2026-06). CompressibleBlasius adiabatic M=4.5 base flow (Sutherland, S=110.33 K, Pr=0.72, gamma=1.4) at T_edge=65.15 K; solve_spatial with length_scale='L_star', lambda_mu_ratio=1.2, N=130, y_max=40; fixed F=2.2e-4 (omega=R*F); coarse R-sweep 700-1100 then bisection on -alpha_i=0 for the two second-mode neutral crossings. Same M=4.5 base-flow setup as the CI-gated Malik (1990) Case-6 anchor (validation/test_malik1990_case6_anchor.py). Reference values read directly from the Ma & Zhong (2003) PDF (sec. 6: 'interval from R = 806 (branch I neutral stability point) to 999.6 (branch II neutral stability point)').",

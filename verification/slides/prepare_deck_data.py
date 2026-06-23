@@ -73,8 +73,10 @@ def tw_over_te(c, ma):
     return 1.0 + sqrt(pr) * 0.5 * (g - 1.0) * ma * ma
 
 
-def conditions_rows(case_id, c):
-    """Ordered (label, value) rows for the spec sheet."""
+def conditions_rows(case_id, c, prov="", metrics=None):
+    """Ordered (label, value) rows for the spec sheet (flow + LST/solver params)."""
+    import re
+    prov = prov or ""
     ma = mach_of(c)
     rows = []
     rows.append(("Mach", f"{ma:g}" + (f"  (edge; M∞ = {c['Ma_freestream']:g})" if "Ma_edge" in c and "Ma_freestream" in c else "")))
@@ -106,15 +108,15 @@ def conditions_rows(case_id, c):
     rows.append(("Prandtl Pr", f"{c.get('Pr', 0.72):g}"))
     # transport / viscosity
     if is_ozgen:
-        rows.append(("Transport", "Özgen T-dependent μ, κ (Sutherland-type)"))
+        rows.append(("Viscosity / transport", "Özgen T-dependent μ, κ (Sutherland-type)"))
     else:
         t = c.get("transport") or c.get("viscosity")
         if t:
-            rows.append(("Transport", str(t)))
+            rows.append(("Viscosity / transport", str(t)))
     # Reynolds
-    re = fmt_re(c)
-    if re:
-        rows.append(("Reynolds", re))
+    re_s = fmt_re(c)
+    if re_s:
+        rows.append(("Reynolds", re_s))
     # frequency / wavenumber
     if "F" in c:
         rows.append(("Reduced freq F", f"{c['F']:g}  (ω = R·F)"))
@@ -133,6 +135,32 @@ def conditions_rows(case_id, c):
         form = f"{form}, ψ = {psi}°" if form else f"ψ = {psi}°"
     if form:
         rows.append(("Formulation", str(form)))
+
+    # --- LST / solver parameters (the numerics) ---
+    def _find(pat):
+        m = re.search(pat, prov)
+        return m.group(1) if m else None
+    # 2nd-viscosity ratio (Mack lambda_mu / bulk viscosity)
+    lmu = c.get("lambda_mu_ratio")
+    if lmu is None:
+        lmu = _find(r"lambda_mu_ratio[=\s]+([\d.]+)")
+    if lmu is not None and not is_ozgen:
+        rows.append(("2nd viscosity λ", f"{float(lmu):g}  (λμ/μ; 0 = Stokes)"))
+    # collocation N and domain height
+    N = c.get("N") or (metrics or {}).get("N_collocation") or _find(r"\bN\s*=\s*(\d+)")
+    ym = c.get("y_max") or _find(r"y_max\s*=\s*([\d.]+)")
+    if is_ozgen:
+        rows.append(("Collocation / domain", "N ≈ 180–240 Cheb.; y_max 8–45 δ*/L*"))
+        rows.append(("Disturbance T BC", "isothermal T̂(0)=0 (Özgen Eq. 19)"))
+        rows.append(("Mode selection", "eigenfunction-decay + y_max-stationarity"))
+    else:
+        if N or ym:
+            s = (f"N = {N} Cheb." if N else "")
+            s += ("; " if (N and ym) else "") + (f"y_max = {float(ym):g} L*" if ym else "")
+            rows.append(("Collocation / domain", s))
+        dbc = c.get("disturbance_temperature_BC") or c.get("wall_bc") or _find(r"wall_bc[=\s'\"]+([a-z]+)")
+        if dbc:
+            rows.append(("Disturbance T BC", str(dbc)[:40]))
     return rows
 
 
@@ -163,8 +191,8 @@ def main():
                 "source": v.get("source"),
                 "verdict": v.get("verdict"),
                 "badge": VERDICT_BADGE.get(v.get("verdict"), ""),
-                "agreement": _headline(v),
-                "conditions": conditions_rows(cid, c),
+                "agreement": (lambda h: (h[:158].rsplit(" ", 1)[0] + " …") if len(h) > 160 else h)(_headline(v) or "—"),
+                "conditions": conditions_rows(cid, c, v.get("pymack_provenance", ""), v.get("metrics", {})),
                 "overlay": ov_abs.replace("\\", "/"),
             })
     out.sort(key=lambda r: (MODE_ORDER.get(r["mode_dir"], 9), r["case_id"]))

@@ -12,25 +12,35 @@
   },
   "quantity": "neutral curve alpha_L(Re_L) where c_i = 0 (temporal)",
   "metrics": {
-    "topology": "two separate lobes (1st mode alpha~0.018-0.11, 2nd mode alpha~0.15-0.205, stable gap ~0.11-0.14) -- matches Ozgen panel (e)",
-    "four_branch_rel_err_alpha": {
-      "second_mode_upper_cutoff": 0.016,
-      "second_mode_lower_onset": 0.011,
-      "first_mode_upper_cutoff": 0.085,
-      "first_mode_lower_onset": 5.27
+    "per_branch_nearest_rel_err": {
+      "second_upper": {
+        "median_rel_err": 0.01716288135466486,
+        "n": 86,
+        "covered": 0.7678571428571429
+      },
+      "first_lower": {
+        "median_rel_err": 0.5035487021749684,
+        "n": 73,
+        "covered": 0.8795180722891566
+      },
+      "second_lower": {
+        "median_rel_err": 0.025662621136828455,
+        "n": 7,
+        "covered": 0.7
+      },
+      "first_upper": {
+        "median_rel_err": 0.08891840275965392,
+        "n": 6,
+        "covered": 0.75
+      }
     },
-    "n_points": {
-      "2nd_upper": 91,
-      "2nd_lower": 7,
-      "1st_upper": 7,
-      "1st_lower": 82
-    },
+    "robust_branch_median_rel_err": 0.05304064205715939,
     "topology_ok": true,
-    "headline": "full 4-branch match: 3/4 branches agree (2nd upper 1.6%, 2nd lower 1.1%, 1st cutoff 8.5%); only 1st-mode low-alpha onset differs (Delta-alpha~0.005-0.01, rel-err inflated by tiny denominator)",
-    "method": "discrete-mode (eigenfunction-decay + y_max-stationarity); all four c_i=0 branches of both lobes extracted and compared"
+    "method": "full c_i=0 contour (marching squares) incl. Phase-2 onset; nearest-point match",
+    "headline": "full-contour match: robust branches median 5.3%; second_upper 2%(77%cov); first_lower 50%(88%cov); second_lower 3%(70%cov); first_upper 9%(75%cov)"
   },
   "verdict": "acceptable",
-  "verdict_reason": "Re-judged with the discrete-mode extractor against the COMPLETE Ozgen M6 curve. Ozgen panel (e) shows TWO SEPARATE lobes (first mode alpha~0.018-0.11; second/Mack mode alpha~0.15-0.205; stable gap ~0.11-0.14) -- not a connected band -- so there are four c_i=0 branches. The v2 reference initially digitized only the two outermost (1st lower, 2nd upper); the two inner branches (1st-mode cutoff ~0.11, 2nd-mode onset ~0.15) were digitized and verified on the panel and added. pyMack reproduces the two-lobe topology and matches THREE of the four branches: second-mode upper 1.6% (91 pts), second-mode lower/onset 1.1% (7 pts), first-mode upper/cutoff 8.5% (7 pts). The fourth -- first-mode LOWER/onset -- reads 527% because pyMack's first mode is unstable down to slightly lower alpha than Ozgen (pyMack lower boundary sits below the alpha=0.012 grid floor while Ozgen's onset is ~0.018-0.025): an absolute offset of only Delta-alpha~0.005-0.01 that the relative-error metric inflates on the tiny denominator, plus continuous-spectrum proximity at low alpha. Old verdict ('disagrees', 23.9%) was a mis-digitized-reference + c_r-band-classifier artifact. Corrected: the complete two-lobe neutral-curve structure agrees (3/4 branches 1.1-8.5%); honest verdict 'acceptable' with the 1st-mode low-alpha onset as a documented localized offset.",
+  "verdict_reason": "Full-contour comparison, four branches. Second-mode upper 2% and lower 3%, first-mode cutoff 9% all agree; first-mode onset 50% (low-alpha, partially CS-limited). pyMack reproduces both separate lobes; only the deep low-alpha onset is extraction-limited.",
   "generated": "new",
   "artifacts": {
     "pymack": "verification/first_mode/ozgen_m6/pymack_ozgen_M6_neutral.csv",

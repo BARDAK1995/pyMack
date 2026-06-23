@@ -99,7 +99,7 @@ function caseSlide(c) {
   s.addImage({ path: c.overlay, x: fx + pad, y: fy + pad, w: iw, h: ih });
 
   // conditions card (right)
-  const cx = 8.45, cw = 4.35, cy = 1.42, ch = 3.78;
+  const cx = 8.45, cw = 4.35, cy = 1.42, ch = 3.85;
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: cx, y: cy, w: cw, h: ch, fill: { color: CARD }, rectRadius: 0.06, shadow: sh() });
   s.addText("RUN CONDITIONS", { x: cx + 0.26, y: cy + 0.16, w: cw - 0.5, h: 0.3, fontSize: 11.5, bold: true, color: TEAL, charSpacing: 2, fontFace: SANS, margin: 0 });
   const rt = [];
@@ -107,16 +107,16 @@ function caseSlide(c) {
     rt.push({ text: lab + ":  ", options: { bold: true, color: SLATE, breakLine: false } });
     rt.push({ text: String(val), options: { color: BODY, breakLine: true } });
   });
-  s.addText(rt, { x: cx + 0.26, y: cy + 0.52, w: cw - 0.5, h: ch - 0.68, fontSize: 11, fontFace: SANS, margin: 0, valign: "top", paraSpaceAfter: 5, fit: "shrink" });
+  s.addText(rt, { x: cx + 0.26, y: cy + 0.5, w: cw - 0.5, h: ch - 0.66, fontSize: 9.5, fontFace: SANS, margin: 0, valign: "top", paraSpaceAfter: 3, fit: "shrink" });
 
   // agreement card (right, below)
-  const ay = cy + ch + 0.16, ah = 6.92 - ay;
+  const ay = cy + ch + 0.1, ah = 6.92 - ay;
   const agree = c.verdict === "agrees";
   const tint = agree ? GREEN_T : AMBER_T, accent = agree ? GREEN : AMBER;
   s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: cx, y: ay, w: cw, h: ah, fill: { color: tint }, rectRadius: 0.06, shadow: sh() });
   s.addText("AGREEMENT", { x: cx + 0.26, y: ay + 0.14, w: 2.2, h: 0.3, fontSize: 11.5, bold: true, color: accent, charSpacing: 2, fontFace: SANS, margin: 0 });
   s.addText((agree ? "AGREES" : "ACCEPTABLE"), { x: cx + cw - 1.85, y: ay + 0.12, w: 1.6, h: 0.32, fontSize: 12, bold: true, color: "FFFFFF", fontFace: SANS, align: "center", valign: "middle", fill: { color: accent }, rectRadius: 0.04, margin: 0 });
-  s.addText(String(c.agreement), { x: cx + 0.26, y: ay + 0.52, w: cw - 0.5, h: ah - 0.66, fontSize: 10.5, color: SLATE, fontFace: SANS, margin: 0, valign: "top", fit: "shrink" });
+  s.addText(String(c.agreement), { x: cx + 0.26, y: ay + 0.5, w: cw - 0.5, h: ah - 0.62, fontSize: 9.5, color: SLATE, fontFace: SANS, margin: 0, valign: "top", fit: "shrink" });
 
   // footer
   s.addText([

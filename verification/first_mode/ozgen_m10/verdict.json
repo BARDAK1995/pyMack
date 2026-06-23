@@ -12,19 +12,35 @@
   },
   "quantity": "neutral curve alpha_L(Re_L) where c_i = 0 (temporal)",
   "metrics": {
-    "topology": "\u00d6zgen: two lobes joined at the nose, SEPARATED by a stable gap at high Re; pyMack: CONNECTED band (gap filled by marginal instability)",
-    "four_branch_rel_err_alpha": {
-      "second_mode_upper_cutoff": 0.056,
-      "second_mode_lower_onset": 0.57,
-      "first_mode_upper_cutoff": 0.92,
-      "first_mode_lower_onset": 0.45
+    "per_branch_nearest_rel_err": {
+      "second_upper": {
+        "median_rel_err": 0.05786849178489906,
+        "n": 14,
+        "covered": 0.7368421052631579
+      },
+      "second_lower": {
+        "median_rel_err": 0.6195519348805691,
+        "n": 10,
+        "covered": 0.7692307692307693
+      },
+      "first_upper": {
+        "median_rel_err": 0.9468085106382979,
+        "n": 11,
+        "covered": 0.8461538461538461
+      },
+      "first_lower": {
+        "median_rel_err": 0.5265995015257955,
+        "n": 11,
+        "covered": 0.8461538461538461
+      }
     },
+    "robust_branch_median_rel_err": 0.5023385012115984,
     "topology_ok": false,
-    "headline": "2nd-mode cutoff agrees (6%); pyMack fills the inter-mode stable gap \u00d6zgen shows (connected vs separated) \u2014 2nd-onset/1st-cutoff inner branches have no pyMack c_i=0 counterpart",
-    "method": "discrete-mode (eigenfunction-decay + y_max-stationarity); 4 c_i=0 branches"
+    "method": "full c_i=0 contour (marching squares) incl. Phase-2 onset; nearest-point match",
+    "headline": "full-contour match: robust branches median 50.2%; second_upper 6%(74%cov); second_lower 62%(77%cov); first_upper 95%(85%cov); first_lower 53%(85%cov)"
   },
   "verdict": "acceptable",
-  "verdict_reason": "Re-judged with the discrete-mode extractor. The dominant SECOND (Mack) mode CUTOFF branch agrees with \u00d6zgen to 6% (the transition-relevant 2nd-mode neutral curve, rising to alpha~0.13-0.20). However, \u00d6zgen's M10 panel shows the first and second modes as TWO lobes that join at the nose but are SEPARATED by a stable gap at high Re; pyMack instead predicts a CONNECTED band \u2014 it is (marginally) unstable in the inter-mode gap that \u00d6zgen shows stable. So \u00d6zgen's two inner c_i=0 boundaries (2nd-mode onset ~0.11-0.13, 1st-mode cutoff ~0.08-0.09) have NO pyMack c_i=0 counterpart, and the nearest-crossing match for those reads 57%/92%. The 1st-mode low-alpha onset roughly tracks (45%, rel-err inflated by the tiny denominator). This gap-fill is a marginal over-prediction that grows with Mach (M4/M6 keep the modes separated and match all four branches; by M7-10 the gap narrows and pyMack bridges it) \u2014 a coherent marginal-instability formulation difference, not a 2nd-mode-curve error. Honest verdict: 'acceptable' \u2014 the dominant 2nd-mode neutral curve agrees (6%), with a documented connected-vs-separated topology difference in the weak inter-mode region.",
+  "verdict_reason": "Full-contour comparison. SECOND-mode cutoff branch agrees to 6%; pyMack predicts a CONNECTED band where \u00d6zgen separates the modes, so the inner gap-edge branches (2nd-mode onset 62%, 1st-mode cutoff 95%) and 1st-mode onset (53%) differ. Documented topology / inter-mode over-prediction at the highest Mach, not a 2nd-mode-curve error. topology_ok = false.",
   "generated": "new",
   "artifacts": {
     "reference": "reference_data/digitized/ozgen_fig3_M10_neutral_v2.csv",

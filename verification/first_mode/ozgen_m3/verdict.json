@@ -12,30 +12,25 @@
   },
   "quantity": "neutral curve alpha_L(Re_L) where c_i = 0 (temporal)",
   "metrics": {
-    "first_mode_only": true,
-    "cutoff_branch_rel_err_alpha": 0.05994568742421643,
-    "cutoff_branch_coverage_frac": 0.6447368421052632,
-    "onset_branch_status": "continuous-spectrum-blocked at low alpha (rel-err not meaningful)",
-    "per_branch": {
-      "upper": {
+    "per_branch_nearest_rel_err": {
+      "first_upper": {
         "median_rel_err": 0.05994568742421643,
-        "coverage": 0.6447368421052632,
-        "n_in": 76,
-        "n_hit": 49
+        "n": 31,
+        "covered": 0.40789473684210525
       },
-      "lower": {
-        "median_rel_err": 13.18103724808628,
-        "coverage": 0.5813953488372093,
-        "n_in": 86,
-        "n_hit": 50
+      "first_lower": {
+        "median_rel_err": 7.309621051704913,
+        "n": 36,
+        "covered": 0.4186046511627907
       }
     },
+    "robust_branch_median_rel_err": 0.05994568742421643,
     "topology_ok": true,
-    "method": "discrete-mode (eigenfunction-decay + y_max-stationarity)",
-    "headline": "first mode resolvable over 64% of cutoff branch, agrees to 6% there; low-alpha onset CS-blocked"
+    "method": "full c_i=0 contour (marching squares) incl. Phase-2 onset; nearest-point match",
+    "headline": "full-contour match: robust branches median 6.0%; first_upper 6%(41%cov); first_lower 731%(42%cov)"
   },
   "verdict": "acceptable",
-  "verdict_reason": "Re-judged with the discrete-mode extractor (eigenfunction-decay + y_max-stationarity). M3 has only a first mode (no second/Mack mode at this Mach). The weak low-Mach 2D first mode sits at the edge of the slow-acoustic continuous spectrum (c_r<=1-1/M), so pyMack can cleanly isolate a discrete mode over only part of Ozgen's lobe (higher-alpha / nose region); the low-alpha onset tail is continuous-spectrum-blocked and cannot be traced as a clean curve. Where pyMack DOES resolve the discrete first mode it agrees with Ozgen (cutoff branch median 6% over 49/76 in-range points; c_i and phase speed consistent with the paper). Conventions/conditions verified-matched to Ozgen (L*=sqrt(nu_e x/U_e), R_L=sqrt(Re_x), alpha_L, c_i=Im(c) temporal, adiabatic wall, Te=288 K). Old verdict ('disagrees') was a mis-digitized-reference + c_r-band-classifier artifact. Honest verdict: 'acceptable' -- first-mode physics verified where resolvable; full-curve extraction continuous-spectrum-limited (a documented compressible-LST numerical isolation limit, not a physics disagreement).",
+  "verdict_reason": "Full-contour comparison. First-mode cutoff branch agrees to 6% over ~41% of the curve; the low-alpha onset is continuous-spectrum-blocked. Weak M=3 first mode (\u00d6zgen c_i<=0.00045); physics correct where resolvable, coverage CS-limited.",
   "generated": "new",
   "artifacts": {
     "pymack": "verification/first_mode/ozgen_m3/pymack_ozgen_M3_neutral.csv",
