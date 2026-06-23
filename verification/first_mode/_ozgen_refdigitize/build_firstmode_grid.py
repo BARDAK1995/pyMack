@@ -35,10 +35,20 @@ GRID = {
         "alpha": np.linspace(0.010, 0.075, 15)},
     3: {"re": np.logspace(np.log10(650), np.log10(5500), 13),
         "alpha": np.linspace(0.006, 0.055, 15)},
+    7: {"re": np.logspace(np.log10(600), np.log10(5500), 13),
+        "alpha": np.linspace(0.005, 0.12, 15)},
+    8: {"re": np.logspace(np.log10(600), np.log10(5500), 13),
+        "alpha": np.linspace(0.005, 0.12, 15)},
+    10: {"re": np.logspace(np.log10(600), np.log10(5500), 13),
+         "alpha": np.linspace(0.005, 0.12, 15)},
 }
 
 N = 200
-YMF = (35.0, 45.0)
+# y_max as (short, tall) multiples of delta*/L*, set so the ABSOLUTE domain is
+# ~450-600 L* (delta*/L* grows with Mach, so the multiple shrinks).
+YMF_BY_MACH = {2: (35.0, 45.0), 3: (35.0, 45.0), 4: (35.0, 45.0), 6: (35.0, 45.0),
+               7: (28.0, 37.0), 8: (23.0, 31.0), 10: (17.0, 22.0)}
+YMF = (35.0, 45.0)  # fallback
 
 
 def done_nodes():
@@ -68,7 +78,8 @@ def main(machs):
                     key = (f"{Ma:g}", f"{Re:.1f}", f"{al:.5f}")
                     if key in seen:
                         continue
-                    m = discrete_mode(float(Ma), float(Re), float(al), N=N, ymf_pair=YMF)
+                    m = discrete_mode(float(Ma), float(Re), float(al), N=N,
+                                      ymf_pair=YMF_BY_MACH.get(Ma, YMF))
                     if m is None:
                         w.writerow([f"{Ma:g}", f"{Re:.1f}", f"{al:.5f}", "", "", "", 0])
                     else:

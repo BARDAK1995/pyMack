@@ -27,6 +27,12 @@ GRID = {
         "alpha": np.linspace(0.27, 0.40, 14)},
     6: {"re": np.logspace(np.log10(600), np.log10(5500), 13),
         "alpha": np.linspace(0.12, 0.22, 14)},
+    7: {"re": np.logspace(np.log10(600), np.log10(5500), 13),
+        "alpha": np.linspace(0.09, 0.21, 14)},
+    8: {"re": np.logspace(np.log10(600), np.log10(5500), 13),
+        "alpha": np.linspace(0.09, 0.21, 14)},
+    10: {"re": np.logspace(np.log10(500), np.log10(5500), 13),
+         "alpha": np.linspace(0.08, 0.22, 14)},
 }
 N = 180
 YMF = (8.0, 12.0)            # short domain: 2nd mode is wall-trapped

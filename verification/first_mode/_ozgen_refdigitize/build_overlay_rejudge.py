@@ -98,7 +98,7 @@ def compare(grid_ma, up, lo):
 def main():
     G1 = load_grid(FIRST_CSV)
     G2 = load_grid(SECOND_CSV)
-    for Ma in (4, 6):
+    for Ma in (4, 6, 7, 8, 10):
         modes = {}
         # first mode
         if Ma in G1:
