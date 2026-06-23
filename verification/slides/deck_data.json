@@ -1,0 +1,874 @@
+[
+ {
+  "case_id": "balakumar_malik1992_branches",
+  "mode_dir": "second_mode",
+  "category": "eigenvalue_anchor",
+  "title": "Balakumar & Malik (1992)",
+  "subtitle": "M = 4.5 · discrete vs continuous spectrum",
+  "source": "Balakumar & Malik (1992), 'Discrete modes and continuous spectra in supersonic boundary layers', JFM 239:631-656. The paper shows the harmonic-point-source disturbance field = discrete eigenmodes + continuous spectrum, with the continuous spectrum forming several branches in the complex-wavenumber plane and the discrete (second) mode off those branches (M=2 and M=4.5 flat plates). Branch eigenvalues are presented graphically (no openly tabulated values). Condition used here is the verified M4.5 anchor (Xi/Ren/Fu arXiv:2006.05970 Table B 'Case 1': T0=311 K, Pr=0.72, Re=1000, omega=0.2).",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "discrete_c_phase=0.908; disc_alpha_r_rel_err=0.000953",
+  "conditions": [
+   [
+    "Mach",
+    "4.5"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 4.44)"
+   ],
+   [
+    "Edge temp Te",
+    "61.6 K  (T0 = 311 K)"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Reynolds",
+    "R = 1000  (= √Re_x)"
+   ],
+   [
+    "Frequency ω",
+    "0.2"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ)"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/balakumar_malik1992_branches/overlay.png"
+ },
+ {
+  "case_id": "balakumar_malik1992_via_xirenfu",
+  "mode_dir": "second_mode",
+  "category": "eigenvalue_anchor",
+  "title": "Balakumar & Malik (1992)",
+  "subtitle": "M = 4.5 · spatial eigenvalue α",
+  "source": "Balakumar & Malik (1992), spatial second-mode anchor as reproduced in Xi, Ren & Fu (arXiv:2006.05970, Table 3, 'Case 1'): M=4.5, T0=311 K, Pr=0.72, Re=1000, omega=0.2. Published alpha=0.220-0.003091i (Tumin 2007 same; Xi/Ren/Fu solver 0.220199-0.003098i).",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "α_r 0.1%, α_i 9.7% (N=120)",
+  "conditions": [
+   [
+    "Mach",
+    "4.5"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 4.44)"
+   ],
+   [
+    "Edge temp Te",
+    "61.6 K  (T0 = 311 K)"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Reynolds",
+    "R = 1000  (= √Re_x)"
+   ],
+   [
+    "Frequency ω",
+    "0.2"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ)"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/balakumar_malik1992_via_xirenfu/overlay.png"
+ },
+ {
+  "case_id": "cone_sivasubramanian_fasel_2015",
+  "mode_dir": "second_mode",
+  "category": "growth_rate",
+  "title": "Sivasubramanian & Fasel (2015)",
+  "subtitle": "7° cone, M_e = 5.36 · 2nd-mode growth / N",
+  "source": "Sivasubramanian & Fasel (2015) JFM 768:175-218, sharp 7-deg cone Mach 6 (BAM6QT); second-mode most-amplified frequency band ~220-280 kHz and peak linear N~7-8 at end of cone (cross-checked vs BAM6QT design review arXiv:2509.10411 and Stetson sharp-cone N~7 at transition)",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "pymack_peak_N_frequency_khz=210; pymack_peak_N=7.06",
+  "conditions": [
+   [
+    "Mach",
+    "5.356  (edge; M∞ = 6)"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "isothermal Tw=300 K (Tw/Te=4.70)"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Sutherland (S=110.4 K), Pr=0.72, gamma=1.4"
+   ],
+   [
+    "Formulation",
+    "spatial 2nd mode (L* scale, lambda_mu_ratio=1.2), cone Mangler N=int 6 sigma_L dR_eq"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/cone_sivasubramanian_fasel_2015/overlay.png"
+ },
+ {
+  "case_id": "egorov2006_m6",
+  "mode_dir": "second_mode",
+  "category": "growth_rate",
+  "title": "Egorov, Fedorov & Soudakov (2006)",
+  "subtitle": "M = 6 · 2nd-mode growth band",
+  "source": "Egorov, Fedorov & Soudakov (2006) TCFD 20:41-54 (DOI 10.1007/s00162-006-0027-9); M6 flat-plate second-mode DNS-vs-LST",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "rel_err=0.075; pymack_value=215",
+  "conditions": [
+   [
+    "Mach",
+    "6"
+   ],
+   [
+    "Gas / γ",
+    "air (perfect gas) / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 7.11)"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "power_law(0.7)"
+   ],
+   [
+    "Reynolds",
+    "Re_x = 2×10⁶ (R = √Re_x)"
+   ],
+   [
+    "Formulation",
+    "spatial 2D second mode (solve_spatial, L*)"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/egorov2006_m6/overlay.png"
+ },
+ {
+  "case_id": "mack_fig10_6_M100",
+  "mode_dir": "second_mode",
+  "category": "growth_rate",
+  "title": "Mack (1984) Fig 10.6",
+  "subtitle": "M = 10 · max 2nd-mode temporal growth",
+  "source": "Mack (1984) Fig 10.6 (AGARD R-709), max second-mode temporal growth vs R",
+  "verdict": "agrees",
+  "badge": "✅ agrees",
+  "agreement": "curve median 4.0%",
+  "conditions": [
+   [
+    "Mach",
+    "10"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 17.97)"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Mack"
+   ],
+   [
+    "Formulation",
+    "temporal 2D max second-mode growth"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/mack_fig10_6_M100/overlay.png"
+ },
+ {
+  "case_id": "mack_fig10_6_M45",
+  "mode_dir": "second_mode",
+  "category": "growth_rate",
+  "title": "Mack (1984) Fig 10.6",
+  "subtitle": "M = 4.5 · max 2nd-mode temporal growth",
+  "source": "Mack (1984) Fig 10.6 (AGARD R-709), max second-mode temporal growth vs R",
+  "verdict": "agrees",
+  "badge": "✅ agrees",
+  "agreement": "curve median 1.0%",
+  "conditions": [
+   [
+    "Mach",
+    "4.5"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 4.44)"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Mack"
+   ],
+   [
+    "Formulation",
+    "temporal 2D max second-mode growth"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/mack_fig10_6_M45/overlay.png"
+ },
+ {
+  "case_id": "mack_fig10_6_M58",
+  "mode_dir": "second_mode",
+  "category": "growth_rate",
+  "title": "Mack (1984) Fig 10.6",
+  "subtitle": "M = 5.8 · max 2nd-mode temporal growth",
+  "source": "Mack (1984) Fig 10.6 (AGARD R-709), max second-mode temporal growth vs R",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "curve median 6.7%",
+  "conditions": [
+   [
+    "Mach",
+    "5.8"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 6.71)"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Mack"
+   ],
+   [
+    "Formulation",
+    "temporal 2D max second-mode growth"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/mack_fig10_6_M58/overlay.png"
+ },
+ {
+  "case_id": "mack_fig10_6_M70",
+  "mode_dir": "second_mode",
+  "category": "growth_rate",
+  "title": "Mack (1984) Fig 10.6",
+  "subtitle": "M = 7.0 · max 2nd-mode temporal growth",
+  "source": "Mack (1984) Fig 10.6 (AGARD R-709), max second-mode temporal growth vs R",
+  "verdict": "agrees",
+  "badge": "✅ agrees",
+  "agreement": "curve median 2.8%",
+  "conditions": [
+   [
+    "Mach",
+    "7"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 9.32)"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Mack"
+   ],
+   [
+    "Formulation",
+    "temporal 2D max second-mode growth"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/mack_fig10_6_M70/overlay.png"
+ },
+ {
+  "case_id": "malik_case6",
+  "mode_dir": "second_mode",
+  "category": "eigenvalue_anchor",
+  "title": "Malik (1990) Case 6",
+  "subtitle": "M = 4.5 · spatial eigenvalue α",
+  "source": "Malik (1990) JCP 86:376 Table IX, Case 6 (M_e=4.5, R=1500, omega=0.23, adiabatic). Published alpha cross-checked digit-for-digit against Xi, Ren & Fu (arXiv:2006.05970, Table 3) and to 4-5 digits against Hildebrand et al. (arXiv:1712.08239, Table I).",
+  "verdict": "agrees",
+  "badge": "✅ agrees",
+  "agreement": "α_r 0.0%, α_i 0.1% (N=120)",
+  "conditions": [
+   [
+    "Mach",
+    "4.5"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 4.39)"
+   ],
+   [
+    "Edge temp Te",
+    "121.0 K  (T0 = 611 K)"
+   ],
+   [
+    "Prandtl Pr",
+    "0.7"
+   ],
+   [
+    "Reynolds",
+    "R = 1500  (= √Re_x)"
+   ],
+   [
+    "Frequency ω",
+    "0.23"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ)"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/malik_case6/overlay.png"
+ },
+ {
+  "case_id": "mazhong2003_m4p5",
+  "mode_dir": "second_mode",
+  "category": "neutral_curve",
+  "title": "Ma & Zhong (2003), JFM",
+  "subtitle": "M = 4.5 · 2nd-mode neutral curve",
+  "source": "Ma & Zhong (2003) JFM 488:31-78, Part 1, sec. 6 / Fig. 15",
+  "verdict": "agrees",
+  "badge": "✅ agrees",
+  "agreement": "Branch I R 831 (3.1%), Branch II R 1033.4 (3.4%); closed band",
+  "conditions": [
+   [
+    "Mach",
+    "4.5"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 4.44)"
+   ],
+   [
+    "Edge temp Te",
+    "65.2 K"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Sutherland viscosity (S=110.33 K), constant Pr=0.72"
+   ],
+   [
+    "Reynolds",
+    "unit Re = 7.2×10⁶ /m"
+   ],
+   [
+    "Reduced freq F",
+    "0.00022  (ω = R·F)"
+   ],
+   [
+    "Formulation",
+    "spatial second mode (Mack), F fixed"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/mazhong2003_m4p5/overlay.png"
+ },
+ {
+  "case_id": "sean_m5p35",
+  "mode_dir": "second_mode",
+  "category": "neutral_curve",
+  "title": "Independent collaborator LST",
+  "subtitle": "M = 5.35 · N₂ · 2nd-mode neutral curve",
+  "source": "Collaborator (Sean) independent LST code, Mach 5.35 N2 study",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "upper 3.2 mm; lower 1.3 mm (gated bands)",
+  "conditions": [
+   [
+    "Mach",
+    "5.35"
+   ],
+   [
+    "Gas / γ",
+    "nitrogen / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 5.86)"
+   ],
+   [
+    "Edge temp Te",
+    "64.0 K"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "power-law Blasius (viscosity exponent 0.74, Pr 0.72)"
+   ],
+   [
+    "Reynolds",
+    "unit Re = 11.76×10⁶ /m"
+   ],
+   [
+    "Formulation",
+    "spatial second mode"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/second_mode/sean_m5p35/overlay.png"
+ },
+ {
+  "case_id": "mack_fig10_3_m1p3",
+  "mode_dir": "first_mode",
+  "category": "growth_rate",
+  "title": "Mack (1984) Fig 10.3",
+  "subtitle": "M = 1.3, ψ = 45° · max 1st-mode growth",
+  "source": "Mack (1984) Fig. 10.3 (AGARD R-709), max temporal growth rate vs R",
+  "verdict": "agrees",
+  "badge": "✅ agrees",
+  "agreement": "curve median 3.8%; Table-10.1 anchor 0.9%",
+  "conditions": [
+   [
+    "Mach",
+    "1.3"
+   ],
+   [
+    "Gas / γ",
+    "air (ideal, Pr=0.72) / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 1.29)"
+   ],
+   [
+    "Edge temp Te",
+    "228.0 K"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Sutherland viscosity, compressible boundary layer"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ)"
+   ],
+   [
+    "Formulation",
+    "temporal first mode, max growth over alpha (3D oblique), ψ = 45.0°"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/first_mode/mack_fig10_3_m1p3/overlay.png"
+ },
+ {
+  "case_id": "mack_fig10_4_M45",
+  "mode_dir": "first_mode",
+  "category": "growth_rate",
+  "title": "Mack (1984) Fig 10.4",
+  "subtitle": "M = 4.5 · max 1st-mode growth (oblique)",
+  "source": "Mack (1984) Fig 10.4 (AGARD R-709), max first-mode oblique temporal growth vs R",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "curve median 6.9%",
+  "conditions": [
+   [
+    "Mach",
+    "4.5"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 4.44)"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Mack"
+   ],
+   [
+    "Formulation",
+    "temporal 3D max first-mode growth over (alpha, psi)"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/first_mode/mack_fig10_4_M45/overlay.png"
+ },
+ {
+  "case_id": "ozgen_m10",
+  "mode_dir": "first_mode",
+  "category": "neutral_curve",
+  "title": "Özgen & Kırcalı (2008) Fig 3",
+  "subtitle": "M = 10 · neutral curve",
+  "source": "Özgen & Kırcalı (2008) Fig 3",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "2nd-mode cutoff agrees (6%); pyMack fills the inter-mode stable gap Özgen shows (connected vs separated) — 2nd-onset/1st-cutoff inner branches have no pyMack c_i=0 counterpart",
+  "conditions": [
+   [
+    "Mach",
+    "10"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 17.97)"
+   ],
+   [
+    "Edge temp Te",
+    "288 K"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Özgen T-dependent μ, κ (Sutherland-type)"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ),  R = √Re_x"
+   ],
+   [
+    "Formulation",
+    "temporal 2D"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/first_mode/ozgen_m10/overlay.png"
+ },
+ {
+  "case_id": "ozgen_m2",
+  "mode_dir": "first_mode",
+  "category": "neutral_curve",
+  "title": "Özgen & Kırcalı (2008) Fig 3",
+  "subtitle": "M = 2 · neutral curve",
+  "source": "Özgen & Kırcalı (2008) Fig 3",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "first mode resolvable over 14% of cutoff branch, agrees to 1% there; low-alpha onset CS-blocked",
+  "conditions": [
+   [
+    "Mach",
+    "2"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 1.68)"
+   ],
+   [
+    "Edge temp Te",
+    "288 K"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Özgen T-dependent μ, κ (Sutherland-type)"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ),  R = √Re_x"
+   ],
+   [
+    "Formulation",
+    "temporal 2D"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/first_mode/ozgen_m2/overlay.png"
+ },
+ {
+  "case_id": "ozgen_m3",
+  "mode_dir": "first_mode",
+  "category": "neutral_curve",
+  "title": "Özgen & Kırcalı (2008) Fig 3",
+  "subtitle": "M = 3 · neutral curve",
+  "source": "Özgen & Kırcalı (2008) Fig 3",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "first mode resolvable over 64% of cutoff branch, agrees to 6% there; low-alpha onset CS-blocked",
+  "conditions": [
+   [
+    "Mach",
+    "3"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 2.53)"
+   ],
+   [
+    "Edge temp Te",
+    "288 K"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Özgen T-dependent μ, κ (Sutherland-type)"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ),  R = √Re_x"
+   ],
+   [
+    "Formulation",
+    "temporal 2D"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/first_mode/ozgen_m3/overlay.png"
+ },
+ {
+  "case_id": "ozgen_m4",
+  "mode_dir": "first_mode",
+  "category": "neutral_curve",
+  "title": "Özgen & Kırcalı (2008) Fig 3",
+  "subtitle": "M = 4 · neutral curve (two lobes)",
+  "source": "Özgen & Kırcalı (2008) Fig 3",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "full 4-branch match: 3/4 branches agree (2nd upper 0.2%, 2nd lower 0.1%, 1st cutoff 2.4%); only 1st-mode low-alpha onset tail CS-limited",
+  "conditions": [
+   [
+    "Mach",
+    "4"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 3.72)"
+   ],
+   [
+    "Edge temp Te",
+    "288 K"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Özgen T-dependent μ, κ (Sutherland-type)"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ),  R = √Re_x"
+   ],
+   [
+    "Formulation",
+    "temporal 2D"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/first_mode/ozgen_m4/overlay.png"
+ },
+ {
+  "case_id": "ozgen_m6",
+  "mode_dir": "first_mode",
+  "category": "neutral_curve",
+  "title": "Özgen & Kırcalı (2008) Fig 3",
+  "subtitle": "M = 6 · neutral curve (two lobes)",
+  "source": "Özgen & Kırcalı (2008) Fig 3",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "full 4-branch match: 3/4 branches agree (2nd upper 1.6%, 2nd lower 1.1%, 1st cutoff 8.5%); only 1st-mode low-alpha onset differs (Delta-alpha~0.005-0.01, rel-err inflated by tiny denominator)",
+  "conditions": [
+   [
+    "Mach",
+    "6"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 7.11)"
+   ],
+   [
+    "Edge temp Te",
+    "288 K"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Özgen T-dependent μ, κ (Sutherland-type)"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ),  R = √Re_x"
+   ],
+   [
+    "Formulation",
+    "temporal 2D"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/first_mode/ozgen_m6/overlay.png"
+ },
+ {
+  "case_id": "ozgen_m7",
+  "mode_dir": "first_mode",
+  "category": "neutral_curve",
+  "title": "Özgen & Kırcalı (2008) Fig 3",
+  "subtitle": "M = 7 · neutral curve",
+  "source": "Özgen & Kırcalı (2008) Fig 3",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "2nd-mode cutoff agrees (2%); pyMack fills the inter-mode stable gap Özgen shows (connected vs separated) — 2nd-onset/1st-cutoff inner branches have no pyMack c_i=0 counterpart",
+  "conditions": [
+   [
+    "Mach",
+    "7"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 9.32)"
+   ],
+   [
+    "Edge temp Te",
+    "288 K"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Özgen T-dependent μ, κ (Sutherland-type)"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ),  R = √Re_x"
+   ],
+   [
+    "Formulation",
+    "temporal 2D"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/first_mode/ozgen_m7/overlay.png"
+ },
+ {
+  "case_id": "ozgen_m8",
+  "mode_dir": "first_mode",
+  "category": "neutral_curve",
+  "title": "Özgen & Kırcalı (2008) Fig 3",
+  "subtitle": "M = 8 · neutral curve",
+  "source": "Özgen & Kırcalı (2008) Fig 3",
+  "verdict": "acceptable",
+  "badge": "🟡 acceptable",
+  "agreement": "2nd-mode cutoff agrees (4%); pyMack fills the inter-mode stable gap Özgen shows (connected vs separated) — 2nd-onset/1st-cutoff inner branches have no pyMack c_i=0 counterpart",
+  "conditions": [
+   [
+    "Mach",
+    "8"
+   ],
+   [
+    "Gas / γ",
+    "air / 1.4"
+   ],
+   [
+    "Wall BC",
+    "adiabatic (recovery Tw/Te ≈ 11.86)"
+   ],
+   [
+    "Edge temp Te",
+    "288 K"
+   ],
+   [
+    "Prandtl Pr",
+    "0.72"
+   ],
+   [
+    "Transport",
+    "Özgen T-dependent μ, κ (Sutherland-type)"
+   ],
+   [
+    "Length scale",
+    "L* = √(νₑ x / Uₑ),  R = √Re_x"
+   ],
+   [
+    "Formulation",
+    "temporal 2D"
+   ]
+  ],
+  "overlay": "C:/Users/merts/OneDrive/Masaüstü/MS_LST/verification/first_mode/ozgen_m8/overlay.png"
+ }
+]
