@@ -52,12 +52,12 @@ Each case name below links to its pyMack-vs-reference **overlay plot**. At-a-gla
 | Case | Source | Conditions | Verdict | Headline |
 |---|---|---|---|---|
 | [`ozgen_m4`](first_mode/ozgen_m4/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=4, ψ=0°, air, adiabatic | ✅ agrees | full-contour match: robust branches median 1.3%; first_lower 32%(85%cov); first_upper 2%(85%cov); second_upper 0%(86%cov); second_lower 0%(86%cov) |
-| [`ozgen_m10`](first_mode/ozgen_m10/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=10, ψ=0°, air, adiabatic | 🟡 acceptable | full-contour match: robust branches median 50.2%; second_upper 6%(74%cov); second_lower 62%(77%cov); first_upper 95%(85%cov); first_lower 53%(85%cov) |
-| [`ozgen_m2`](first_mode/ozgen_m2/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=2, ψ=0°, air, adiabatic | 🟡 acceptable | full-contour match: robust branches median 1.3%; first_upper 1%(17%cov); first_lower 138%(17%cov) |
+| [`ozgen_m10`](first_mode/ozgen_m10/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=10, ψ=0°, air, adiabatic | 🟡 acceptable | full-contour match: robust branches median 50.0%; second_upper 5%(84%cov); second_lower 62%(77%cov); first_upper 95%(85%cov); first_lower 53%(85%cov) |
+| [`ozgen_m2`](first_mode/ozgen_m2/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=2, ψ=0°, air, adiabatic | 🟡 acceptable | full-contour match: robust branches median 8.0%; first_upper 8%(100%cov); first_lower 7%(100%cov) |
 | [`ozgen_m3`](first_mode/ozgen_m3/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=3, ψ=0°, air, adiabatic | 🟡 acceptable | full-contour match: robust branches median 6.0%; first_upper 6%(41%cov); first_lower 731%(42%cov) |
 | [`ozgen_m6`](first_mode/ozgen_m6/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=6, ψ=0°, air, adiabatic | 🟡 acceptable | full-contour match: robust branches median 5.3%; second_upper 2%(77%cov); first_lower 50%(88%cov); second_lower 3%(70%cov); first_upper 9%(75%cov) |
-| [`ozgen_m7`](first_mode/ozgen_m7/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=7, ψ=0°, air, adiabatic | 🟡 acceptable | full-contour match: robust branches median 48.3%; second_upper 2%(54%cov); second_lower 59%(67%cov); first_upper 94%(42%cov); first_lower 20%(75%cov) |
-| [`ozgen_m8`](first_mode/ozgen_m8/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=8, ψ=0°, air, adiabatic | 🟡 acceptable | full-contour match: robust branches median 48.0%; second_upper 4%(45%cov); second_lower 80%(45%cov); first_upper 92%(45%cov); first_lower 51%(73%cov) |
+| [`ozgen_m7`](first_mode/ozgen_m7/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=7, ψ=0°, air, adiabatic | 🟡 acceptable | full-contour match: robust branches median 48.1%; second_upper 2%(77%cov); second_lower 58%(83%cov); first_upper 94%(42%cov); first_lower 20%(75%cov) |
+| [`ozgen_m8`](first_mode/ozgen_m8/overlay.png) | Özgen & Kırcalı (2008) Fig 3 | M=8, ψ=0°, air, adiabatic | 🟡 acceptable | full-contour match: robust branches median 44.7%; second_upper 4%(64%cov); second_lower 72%(64%cov); first_upper 86%(64%cov); first_lower 51%(73%cov) |
 | [`mack_fig10_1_m1p6`](first_mode/mack_fig10_1_m1p6/overlay.png) | Mack (1984) Fig 10.1 (AGARD R-709) | M=1.6, ψ=0°, air, adiabatic | ❌ disagrees | loop-avg 36.6%; R_crit pyMack 400.0 vs Mack 215 |
 | [`mack_fig10_1_m2p2`](first_mode/mack_fig10_1_m2p2/overlay.png) | Mack (1984) Fig 10.1 (AGARD R-709) | M=2.2, ψ=0°, air, adiabatic | ❌ disagrees | loop-avg 128.0%; R_crit pyMack 300.0 vs Mack 300 |
 
@@ -180,7 +180,7 @@ Full-contour comparison. SECOND-mode cutoff branch agrees to 6%; pyMack predicts
 
 **`ozgen_m2`** (First mode) — 🟡 acceptable (neutral curve alpha_L(Re_L) where c_i = 0 (temporal))  
 
-Full-contour comparison. pyMack's first mode agrees with Özgen where it is resolvable (cutoff branch 1.3%) but only over the nose (~17% of the curve); the rest of the low-Mach M=2 first-mode curve is continuous-spectrum-blocked (the Phase-2 onset extension found 0 resolvable discrete points below the nose). Physics correct where resolvable; coverage CS-limited.
+M=2 first-mode neutral curve now traced over the FULL range (R~400-4960, BOTH branches) by eigenvalue CONTINUATION: seed at the clean nose, then follow the discrete mode's eigenvalue (nearest-c) past the slow-acoustic continuous spectrum where the band-filter previously stalled at ~17% (nose-only) coverage. Both branches now match Özgen at 100% coverage — lower branch median 7%, upper branch 8% |Δα|/α (the upper branch falls slightly below Özgen at high R). A major completeness gain over the prior nose-only result; the residual ~8% is the high-R upper-branch offset, not a coverage gap.
 
 **`ozgen_m3`** (First mode) — 🟡 acceptable (neutral curve alpha_L(Re_L) where c_i = 0 (temporal))  
 

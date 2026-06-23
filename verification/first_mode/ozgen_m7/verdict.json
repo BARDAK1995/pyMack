@@ -14,14 +14,14 @@
   "metrics": {
     "per_branch_nearest_rel_err": {
       "second_upper": {
-        "median_rel_err": 0.02493979053157025,
-        "n": 7,
-        "covered": 0.5384615384615384
+        "median_rel_err": 0.021248051868488684,
+        "n": 10,
+        "covered": 0.7692307692307693
       },
       "second_lower": {
-        "median_rel_err": 0.5875052053075933,
-        "n": 8,
-        "covered": 0.6666666666666666
+        "median_rel_err": 0.5791988045995815,
+        "n": 10,
+        "covered": 0.8333333333333334
       },
       "first_upper": {
         "median_rel_err": 0.9413833528722156,
@@ -34,10 +34,10 @@
         "covered": 0.75
       }
     },
-    "robust_branch_median_rel_err": 0.48316157170189294,
+    "robust_branch_median_rel_err": 0.48131570237035215,
     "topology_ok": false,
     "method": "full c_i=0 contour (marching squares) incl. Phase-2 onset; nearest-point match",
-    "headline": "full-contour match: robust branches median 48.3%; second_upper 2%(54%cov); second_lower 59%(67%cov); first_upper 94%(42%cov); first_lower 20%(75%cov)"
+    "headline": "full-contour match: robust branches median 48.1%; second_upper 2%(77%cov); second_lower 58%(83%cov); first_upper 94%(42%cov); first_lower 20%(75%cov)"
   },
   "verdict": "acceptable",
   "verdict_reason": "Full-contour comparison. The dominant SECOND-mode cutoff branch agrees with \u00d6zgen to 2% (the transition-relevant high-Mach instability boundary). HOWEVER pyMack predicts a CONNECTED first-second-mode unstable band where \u00d6zgen's panel (f) shows two lobes separated by a stable gap, so the inner gap-edge branches (2nd-mode onset 59%, 1st-mode cutoff 94%) and the 1st-mode onset (20%) do not match. This is a documented topology / inter-mode over-prediction at high Mach (the marginal first-mode weak spot), not a 2nd-mode-curve error. topology_ok = false.",

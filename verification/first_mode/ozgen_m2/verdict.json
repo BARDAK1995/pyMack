@@ -14,23 +14,23 @@
   "metrics": {
     "per_branch_nearest_rel_err": {
       "first_upper": {
-        "median_rel_err": 0.01274332702291444,
-        "n": 16,
-        "covered": 0.17204301075268819
+        "median_rel_err": 0.07983974358974359,
+        "n": 93,
+        "covered": 1.0
       },
       "first_lower": {
-        "median_rel_err": 1.3780733219022587,
-        "n": 16,
-        "covered": 0.17204301075268819
+        "median_rel_err": 0.0742105263157894,
+        "n": 93,
+        "covered": 1.0
       }
     },
-    "robust_branch_median_rel_err": 0.01274332702291444,
+    "robust_branch_median_rel_err": 0.07983974358974359,
     "topology_ok": true,
     "method": "full c_i=0 contour (marching squares) incl. Phase-2 onset; nearest-point match",
-    "headline": "full-contour match: robust branches median 1.3%; first_upper 1%(17%cov); first_lower 138%(17%cov)"
+    "headline": "full-contour match: robust branches median 8.0%; first_upper 8%(100%cov); first_lower 7%(100%cov)"
   },
   "verdict": "acceptable",
-  "verdict_reason": "Full-contour comparison. pyMack's first mode agrees with \u00d6zgen where it is resolvable (cutoff branch 1.3%) but only over the nose (~17% of the curve); the rest of the low-Mach M=2 first-mode curve is continuous-spectrum-blocked (the Phase-2 onset extension found 0 resolvable discrete points below the nose). Physics correct where resolvable; coverage CS-limited.",
+  "verdict_reason": "M=2 first-mode neutral curve now traced over the FULL range (R~400-4960, BOTH branches) by eigenvalue CONTINUATION: seed at the clean nose, then follow the discrete mode's eigenvalue (nearest-c) past the slow-acoustic continuous spectrum where the band-filter previously stalled at ~17% (nose-only) coverage. Both branches now match \u00d6zgen at 100% coverage \u2014 lower branch median 7%, upper branch 8% |\u0394\u03b1|/\u03b1 (the upper branch falls slightly below \u00d6zgen at high R). A major completeness gain over the prior nose-only result; the residual ~8% is the high-R upper-branch offset, not a coverage gap.",
   "generated": "new",
   "artifacts": {
     "pymack": "verification/first_mode/ozgen_m2/pymack_ozgen_M2_neutral.csv",

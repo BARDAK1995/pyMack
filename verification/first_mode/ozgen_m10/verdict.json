@@ -14,9 +14,9 @@
   "metrics": {
     "per_branch_nearest_rel_err": {
       "second_upper": {
-        "median_rel_err": 0.05786849178489906,
-        "n": 14,
-        "covered": 0.7368421052631579
+        "median_rel_err": 0.053531680978473675,
+        "n": 16,
+        "covered": 0.8421052631578947
       },
       "second_lower": {
         "median_rel_err": 0.6195519348805691,
@@ -34,10 +34,10 @@
         "covered": 0.8461538461538461
       }
     },
-    "robust_branch_median_rel_err": 0.5023385012115984,
+    "robust_branch_median_rel_err": 0.5001700958083858,
     "topology_ok": false,
     "method": "full c_i=0 contour (marching squares) incl. Phase-2 onset; nearest-point match",
-    "headline": "full-contour match: robust branches median 50.2%; second_upper 6%(74%cov); second_lower 62%(77%cov); first_upper 95%(85%cov); first_lower 53%(85%cov)"
+    "headline": "full-contour match: robust branches median 50.0%; second_upper 5%(84%cov); second_lower 62%(77%cov); first_upper 95%(85%cov); first_lower 53%(85%cov)"
   },
   "verdict": "acceptable",
   "verdict_reason": "Full-contour comparison. SECOND-mode cutoff branch agrees to 6%; pyMack predicts a CONNECTED band where \u00d6zgen separates the modes, so the inner gap-edge branches (2nd-mode onset 62%, 1st-mode cutoff 95%) and 1st-mode onset (53%) differ. Documented topology / inter-mode over-prediction at the highest Mach, not a 2nd-mode-curve error. topology_ok = false.",

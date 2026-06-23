@@ -14,19 +14,19 @@
   "metrics": {
     "per_branch_nearest_rel_err": {
       "second_upper": {
-        "median_rel_err": 0.038407856634577416,
-        "n": 5,
-        "covered": 0.45454545454545453
+        "median_rel_err": 0.03514695985859234,
+        "n": 7,
+        "covered": 0.6363636363636364
       },
       "second_lower": {
-        "median_rel_err": 0.801238104256723,
-        "n": 5,
-        "covered": 0.45454545454545453
+        "median_rel_err": 0.715920990924781,
+        "n": 7,
+        "covered": 0.6363636363636364
       },
       "first_upper": {
-        "median_rel_err": 0.921953137020419,
-        "n": 5,
-        "covered": 0.45454545454545453
+        "median_rel_err": 0.8582644367628595,
+        "n": 7,
+        "covered": 0.6363636363636364
       },
       "first_lower": {
         "median_rel_err": 0.5104344471233163,
@@ -34,10 +34,10 @@
         "covered": 0.7272727272727273
       }
     },
-    "robust_branch_median_rel_err": 0.48018049682749825,
+    "robust_branch_median_rel_err": 0.44670569831072593,
     "topology_ok": false,
     "method": "full c_i=0 contour (marching squares) incl. Phase-2 onset; nearest-point match",
-    "headline": "full-contour match: robust branches median 48.0%; second_upper 4%(45%cov); second_lower 80%(45%cov); first_upper 92%(45%cov); first_lower 51%(73%cov)"
+    "headline": "full-contour match: robust branches median 44.7%; second_upper 4%(64%cov); second_lower 72%(64%cov); first_upper 86%(64%cov); first_lower 51%(73%cov)"
   },
   "verdict": "acceptable",
   "verdict_reason": "Full-contour comparison. SECOND-mode cutoff branch agrees to 4%; but pyMack predicts a CONNECTED band where \u00d6zgen separates the two modes by a stable gap, so the inner gap-edge branches (2nd-mode onset 80%, 1st-mode cutoff 92%) and 1st-mode onset (51%) differ. Documented connected-vs-separated topology difference (inter-mode over-prediction), not a 2nd-mode-curve error. topology_ok = false.",

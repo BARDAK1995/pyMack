@@ -658,7 +658,7 @@
   "source": "Özgen & Kırcalı (2008) Fig 3",
   "verdict": "acceptable",
   "badge": "🟡 acceptable",
-  "agreement": "full-contour match: robust branches median 50.2%; second_upper 6%(74%cov); second_lower 62%(77%cov); first_upper 95%(85%cov); first_lower 53%(85%cov)",
+  "agreement": "full-contour match: robust branches median 50.0%; second_upper 5%(84%cov); second_lower 62%(77%cov); first_upper 95%(85%cov); first_lower 53%(85%cov)",
   "conditions": [
    [
     "Mach",
@@ -716,7 +716,7 @@
   "source": "Özgen & Kırcalı (2008) Fig 3",
   "verdict": "acceptable",
   "badge": "🟡 acceptable",
-  "agreement": "full-contour match: robust branches median 1.3%; first_upper 1%(17%cov); first_lower 138%(17%cov)",
+  "agreement": "full-contour match: robust branches median 8.0%; first_upper 8%(100%cov); first_lower 7%(100%cov)",
   "conditions": [
    [
     "Mach",
@@ -948,7 +948,7 @@
   "source": "Özgen & Kırcalı (2008) Fig 3",
   "verdict": "acceptable",
   "badge": "🟡 acceptable",
-  "agreement": "full-contour match: robust branches median 48.3%; second_upper 2%(54%cov); second_lower 59%(67%cov); first_upper 94%(42%cov); first_lower 20%(75%cov)",
+  "agreement": "full-contour match: robust branches median 48.1%; second_upper 2%(77%cov); second_lower 58%(83%cov); first_upper 94%(42%cov); first_lower 20%(75%cov)",
   "conditions": [
    [
     "Mach",
@@ -1006,7 +1006,7 @@
   "source": "Özgen & Kırcalı (2008) Fig 3",
   "verdict": "acceptable",
   "badge": "🟡 acceptable",
-  "agreement": "full-contour match: robust branches median 48.0%; second_upper 4%(45%cov); second_lower 80%(45%cov); first_upper 92%(45%cov); first_lower 51%(73%cov)",
+  "agreement": "full-contour match: robust branches median 44.7%; second_upper 4%(64%cov); second_lower 72%(64%cov); first_upper 86%(64%cov); first_lower 51%(73%cov)",
   "conditions": [
    [
     "Mach",

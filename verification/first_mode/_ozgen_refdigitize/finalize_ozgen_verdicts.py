@@ -8,11 +8,13 @@ VER = Path(__file__).resolve().parents[2]
 
 CASES = {
     2: ("acceptable",
-        "Full-contour comparison. pyMack's first mode agrees with Özgen where it is resolvable "
-        "(cutoff branch 1.3%) but only over the nose (~17% of the curve); the rest of the low-Mach "
-        "M=2 first-mode curve is continuous-spectrum-blocked (the Phase-2 onset extension found 0 "
-        "resolvable discrete points below the nose). Physics correct where resolvable; coverage "
-        "CS-limited."),
+        "M=2 first-mode neutral curve now traced over the FULL range (R~400-4960, BOTH branches) by "
+        "eigenvalue CONTINUATION: seed at the clean nose, then follow the discrete mode's eigenvalue "
+        "(nearest-c) past the slow-acoustic continuous spectrum where the band-filter previously "
+        "stalled at ~17% (nose-only) coverage. Both branches now match Özgen at 100% coverage — lower "
+        "branch median 7%, upper branch 8% |Δα|/α (the upper branch falls slightly below Özgen at high "
+        "R). A major completeness gain over the prior nose-only result; the residual ~8% is the high-R "
+        "upper-branch offset, not a coverage gap."),
     3: ("acceptable",
         "Full-contour comparison. First-mode cutoff branch agrees to 6% over ~41% of the curve; the "
         "low-alpha onset is continuous-spectrum-blocked. Weak M=3 first mode (Özgen c_i<=0.00045); "

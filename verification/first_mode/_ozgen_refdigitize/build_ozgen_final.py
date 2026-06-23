@@ -54,6 +54,20 @@ def segs_of(Ma):
     return out
 
 
+def continuation_segs(Ma):
+    """Continuation-traced first-mode branches (continuation_M{Ma}.csv), if present —
+    the real M2/M3 onset curve the grid couldn't capture."""
+    import collections
+    p = HERE / f"continuation_M{Ma}.csv"
+    if not p.exists():
+        return []
+    br = collections.defaultdict(list)
+    with open(p) as f:
+        for r in csv.DictReader(f):
+            br[r["branch"]].append((float(r["R"]), float(r["alpha"])))
+    return [np.array(sorted(v)) for v in br.values() if len(v) >= 2]
+
+
 def ozgen(Ma):
     ref = REPO / f"reference_data/digitized/ozgen_fig3_M{Ma}_neutral_v2.csv"
     out = {}
@@ -80,7 +94,9 @@ def nearest_alpha(segs, Re, al, dR=120.0):
 def main(machs):
     summary = {}
     for Ma in machs:
-        segs = segs_of(Ma); oz = ozgen(Ma)
+        cs = continuation_segs(Ma)        # continuation is the real curve where it exists (M2)
+        segs = cs if cs else segs_of(Ma)
+        oz = ozgen(Ma)
         per = {}
         for (mode, lobe), arr in oz.items():
             errs = []
