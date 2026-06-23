@@ -41,17 +41,17 @@ from matplotlib.patches import ConnectionPatch
 
 # --- HARD style rules --------------------------------------------------------
 plt.rcParams.update({
-    "axes.labelsize": 15,     # >= 14 pt
-    "xtick.labelsize": 13,    # >= 12 pt
-    "ytick.labelsize": 13,
+    "axes.labelsize": 17,     # >= 14 pt
+    "xtick.labelsize": 14,    # >= 12 pt
+    "ytick.labelsize": 14,
     "axes.titlesize": 17,     # >= 16 pt
-    "legend.fontsize": 12,    # >= 11 pt
+    "legend.fontsize": 12.5,  # >= 11 pt
     "font.family": "DejaVu Sans",
     "axes.linewidth": 1.0,
 })
 
 # Colorblind-friendly (Okabe-Ito)
-PYMACK_BLUE = "#0072B2"   # pyMack -> solid / filled
+PYMACK_BLUE = "#000000"   # pyMack -> solid / filled (thick black)
 REF_ORANGE = "#D55E00"    # first reference -> dashed / hollow square
 REF_GREEN = "#009E73"     # second reference -> hollow triangle
 CONT_TEAL = "#009E73"     # continuous-spectrum cluster

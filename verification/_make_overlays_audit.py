@@ -22,19 +22,19 @@ from matplotlib.lines import Line2D
 
 # --- HARD style rules ---------------------------------------------------------
 plt.rcParams.update({
-    "axes.labelsize": 15,      # >= 14 pt
-    "xtick.labelsize": 13,     # >= 12 pt
-    "ytick.labelsize": 13,
+    "axes.labelsize": 17,      # >= 14 pt
+    "xtick.labelsize": 14,     # >= 12 pt
+    "ytick.labelsize": 14,
     "axes.titlesize": 17,      # >= 16 pt
-    "legend.fontsize": 11.5,   # >= 11 pt
+    "legend.fontsize": 12.5,   # >= 11 pt
     "font.family": "DejaVu Sans",
     "axes.linewidth": 1.0,
     "figure.dpi": 110,
 })
 
 # Colorblind-friendly (Okabe-Ito)
-PYMACK_BLUE = "#0072B2"     # pyMack solid
-PYMACK_GREEN = "#009E73"    # pyMack second branch
+PYMACK_BLUE = "#000000"     # pyMack solid -> thick black
+PYMACK_GREEN = "#000000"    # pyMack second branch -> thick black
 REF_ORANGE = "#D55E00"      # reference dashed/hollow
 REF_VERM = "#CC79A7"
 GREY = "#999999"
@@ -122,9 +122,9 @@ def plot_sean():
     # reserve bottom strip for the note
     fig.get_layout_engine().set(rect=(0.0, 0.16, 1.0, 0.84))
 
-    ax.plot(lo_pm, f_pm, "-", color=PYMACK_BLUE, lw=2.6,
+    ax.plot(lo_pm, f_pm, "-", color=PYMACK_BLUE, lw=3.4,
             label="pyMack lower branch (x_left)")
-    ax.plot(up_pm, f_pm, "-", color=PYMACK_GREEN, lw=2.6,
+    ax.plot(up_pm, f_pm, "-", color=PYMACK_GREEN, lw=3.4,
             label="pyMack upper branch (x_right)")
     ax.plot(lo_rf, f_rf, "--", color=REF_ORANGE, lw=2.0,
             marker="o", mfc="none", mec=REF_ORANGE, ms=4.5, markevery=4,
@@ -178,13 +178,13 @@ def plot_mazhong():
 
     ax.fill_between(R, 0, sigma, where=(sigma > 0), color=PYMACK_BLUE,
                     alpha=0.12, label="pyMack unstable band ($\\sigma>0$)")
-    ax.plot(R, sigma, "-o", color=PYMACK_BLUE, lw=2.6, ms=5.5, mfc=PYMACK_BLUE,
+    ax.plot(R, sigma, "-o", color=PYMACK_BLUE, lw=3.4, ms=5.5, mfc=PYMACK_BLUE,
             label="pyMack spatial growth  $\\sigma=-\\alpha_i$")
     ax.axhline(0, color="black", lw=1.0)
 
-    ax.axvline(bI_pm, color=PYMACK_GREEN, lw=2.4, ls="-",
+    ax.axvline(bI_pm, color=PYMACK_GREEN, lw=3.4, ls="-",
                label=f"pyMack Branch I (R={bI_pm:.0f})")
-    ax.axvline(bII_pm, color=PYMACK_GREEN, lw=2.4, ls="-",
+    ax.axvline(bII_pm, color=PYMACK_GREEN, lw=3.4, ls="-",
                label=f"pyMack Branch II (R={bII_pm:.0f})")
     ax.axvline(bI_rf, color=REF_ORANGE, lw=2.2, ls="--",
                label=f"Ma & Zhong Branch I (R={bI_rf:.0f})")
@@ -258,9 +258,9 @@ def plot_mack_fig10_1(mtag, mlabel, headline):
 
     m_lo = np.isfinite(Flo)
     m_up = np.isfinite(Fup)
-    ax.plot(R_pm[m_lo], Flo[m_lo], "-", color=PYMACK_BLUE, lw=2.6,
+    ax.plot(R_pm[m_lo], Flo[m_lo], "-", color=PYMACK_BLUE, lw=3.4,
             marker="o", ms=6, label="pyMack lower (onset)")
-    ax.plot(R_pm[m_up], Fup[m_up], "-", color=PYMACK_GREEN, lw=2.6,
+    ax.plot(R_pm[m_up], Fup[m_up], "-", color=PYMACK_GREEN, lw=3.4,
             marker="^", ms=6, label="pyMack upper (cutoff)")
 
     ax.set_xlabel("Reynolds number  R = $\\sqrt{Re_x}$")
@@ -328,9 +328,9 @@ def plot_ozgen(m, headline):
 
     sl = np.argsort(Re_pm[lo])
     su = np.argsort(Re_pm[up])
-    ax.plot(Re_pm[lo][sl], al_pm[lo][sl], "-", color=PYMACK_BLUE, lw=2.4,
+    ax.plot(Re_pm[lo][sl], al_pm[lo][sl], "-", color=PYMACK_BLUE, lw=3.4,
             marker="o", ms=5, label="pyMack lower (onset)")
-    ax.plot(Re_pm[up][su], al_pm[up][su], "-", color=PYMACK_GREEN, lw=2.4,
+    ax.plot(Re_pm[up][su], al_pm[up][su], "-", color=PYMACK_GREEN, lw=3.4,
             marker="^", ms=5, label="pyMack upper (cutoff)")
 
     sr = np.argsort(x_rf)

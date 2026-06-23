@@ -113,17 +113,17 @@ def main(machs):
         # overlay
         fig, ax = plt.subplots(figsize=(9, 6))
         for s in segs:
-            ax.plot(s[:, 0], s[:, 1], "-", color="#1a1a1a", lw=2.2)
-        ax.plot([], [], "-", color="#1a1a1a", lw=2.2, label="pyMack neutral ($c_i=0$, full contour)")
+            ax.plot(s[:, 0], s[:, 1], "-", color="black", lw=3.4)
+        ax.plot([], [], "-", color="black", lw=3.4, label="pyMack neutral ($c_i=0$, full contour)")
         for (mode, lobe), arr in oz.items():
             cc = "#d55e00" if mode == "second" else "#009e73"
             mk = "s" if mode == "second" else "o"
             ax.plot(arr[:, 0], arr[:, 1], mk, mfc="none", mec=cc, mew=1.6, ms=6)
         ax.plot([], [], "o", mfc="none", mec="#009e73", label="Özgen 1st-mode (digitized)")
         ax.plot([], [], "s", mfc="none", mec="#d55e00", label="Özgen 2nd-mode (digitized)")
-        ax.set_xlabel(r"$R_L=\sqrt{Re_x}$", fontsize=15); ax.set_ylabel(r"$\alpha_{L^*}$", fontsize=15)
-        ax.set_title(f"M={Ma}: pyMack full neutral curve vs Özgen Fig 3 (v2)", fontsize=14)
-        ax.tick_params(labelsize=12); ax.legend(fontsize=10.5, loc="best"); ax.grid(True, alpha=0.25)
+        ax.set_xlabel(r"$R_L=\sqrt{Re_x}$", fontsize=17); ax.set_ylabel(r"$\alpha_{L^*}$", fontsize=17)
+        ax.set_title(f"M={Ma}: pyMack full neutral curve vs Özgen Fig 3 (v2)", fontsize=16)
+        ax.tick_params(labelsize=14); ax.legend(fontsize=12.5, loc="best"); ax.grid(True, alpha=0.25)
         fig.tight_layout(); fig.savefig(VER / f"first_mode/ozgen_m{Ma}/overlay.png", dpi=160); plt.close(fig)
         # verdict
         verdict = classify_relative(headline_err, topology_ok=True) if np.isfinite(headline_err) else "acceptable"

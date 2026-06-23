@@ -31,6 +31,8 @@ latex_papers/
 **/_p11_*.txt
 **/_*.npy
 *Backup.pptx
+**/crop_*.png
+**/overlay_fig15_full.png
 
 # Process logs / scratch (not part of the public project)
 *.log

@@ -19,11 +19,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 plt.rcParams.update({
-    "axes.labelsize": 15, "xtick.labelsize": 13, "ytick.labelsize": 13,
-    "axes.titlesize": 17, "legend.fontsize": 12, "font.family": "DejaVu Sans",
-    "axes.linewidth": 1.0, "lines.linewidth": 2.2,
+    "axes.labelsize": 17, "xtick.labelsize": 14, "ytick.labelsize": 14,
+    "axes.titlesize": 17, "legend.fontsize": 12.5, "font.family": "DejaVu Sans",
+    "axes.linewidth": 1.0, "lines.linewidth": 3.4,
 })
-PYMACK_BLUE = "#0072B2"; REF_ORANGE = "#D55E00"; REF_VERMIL = "#E69F00"; BAND_GREEN = "#009E73"
+PYMACK_BLUE = "#000000"; REF_ORANGE = "#D55E00"; REF_VERMIL = "#E69F00"; BAND_GREEN = "#009E73"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 d = json.load(open(os.path.join(HERE, "domain_matched_result.json")))
@@ -64,7 +64,7 @@ axL.legend(loc="lower center", bbox_to_anchor=(0.5, -0.40), ncol=1,
            framealpha=0.95, borderaxespad=0.0)
 
 # ---- RIGHT: N(x*) at 210 kHz ----
-axR.plot(thesis_x, thesis_N, "s--", color=REF_ORANGE, ms=8, mec="k", mew=0.6,
+axR.plot(thesis_x, thesis_N, "s--", color=REF_ORANGE, lw=2.0, ms=8, mec="k", mew=0.6,
          zorder=4, label="thesis Fig. 5.1  (kc=0, F=1.071e-5)")
 axR.plot(x_axial, N, "-", color=PYMACK_BLUE, zorder=5,
          label="pyMack domain-matched  (210 kHz)")

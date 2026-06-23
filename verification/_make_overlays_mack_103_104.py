@@ -44,15 +44,15 @@ GROWTH = REPO / "verification" / "first_mode"
 DIGITIZED = REPO / "reference_data" / "digitized"
 
 # Uniform style ---------------------------------------------------------------
-PYMACK_COLOR = "#1f4fd8"     # blue, solid + filled  (pyMack)
+PYMACK_COLOR = "#000000"     # black, solid + filled  (pyMack)
 REF_COLOR = "#333333"        # dark grey, dashed + hollow (reference)
 ANCHOR_COLOR = "#e8741c"     # orange star (Table 10.1 anchor)
 
 FS_TITLE = 16
-FS_LABEL = 14
-FS_TICK = 12
-FS_LEGEND = 11
-FS_ANNOT = 11
+FS_LABEL = 17
+FS_TICK = 14
+FS_LEGEND = 12.5
+FS_ANNOT = 12
 
 plt.rcParams.update({
     "font.size": FS_TICK,
@@ -152,7 +152,7 @@ def make_fig10_3(case_dir: Path, ref_name: str, pymack_kind: str,
             ms=6, mfc="none", mec=REF_COLOR, mew=1.4,
             label=r"Mack (1984) Fig. 10.3 (digitized)", zorder=3)
     # pyMack: solid + filled
-    ax.plot(xp, yp, ls="-", lw=2.4, color=PYMACK_COLOR, marker="o",
+    ax.plot(xp, yp, ls="-", lw=3.4, color=PYMACK_COLOR, marker="o",
             ms=7, mfc=PYMACK_COLOR, mec=PYMACK_COLOR,
             label=r"pyMack  $\max_{\alpha}\,\omega_i$  (exact 8$\times$8 shooting)",
             zorder=4)
@@ -230,7 +230,7 @@ def make_fig10_4(case_dir: Path, mach_label: str):
     ax.plot(xr, yr, ls="--", lw=1.8, color=REF_COLOR, marker="o",
             ms=6, mfc="none", mec=REF_COLOR, mew=1.4,
             label="Mack (1984) Fig. 10.4 (digitized)", zorder=3)
-    ax.plot(xp, yp, ls="-", lw=2.4, color=PYMACK_COLOR, marker="s",
+    ax.plot(xp, yp, ls="-", lw=3.4, color=PYMACK_COLOR, marker="s",
             ms=7, mfc=PYMACK_COLOR, mec=PYMACK_COLOR,
             label=r"pyMack  $\max_{\alpha,\psi}\,\omega_i$  (3D first mode)",
             zorder=4)

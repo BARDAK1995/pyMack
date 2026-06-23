@@ -24,18 +24,18 @@ import matplotlib.pyplot as plt
 
 # ---- HARD style rule ----
 plt.rcParams.update({
-    "axes.labelsize": 15,   # >= 14
-    "xtick.labelsize": 13,  # >= 12
-    "ytick.labelsize": 13,  # >= 12
+    "axes.labelsize": 17,   # >= 14
+    "xtick.labelsize": 14,  # >= 12
+    "ytick.labelsize": 14,  # >= 12
     "axes.titlesize": 17,   # >= 16
-    "legend.fontsize": 12,  # >= 11
+    "legend.fontsize": 12.5,  # >= 11
     "font.family": "DejaVu Sans",
     "axes.linewidth": 1.0,
-    "lines.linewidth": 2.2,
+    "lines.linewidth": 3.4,   # thick, very visible pyMack curve
 })
 
 # Colorblind-friendly (Okabe-Ito)
-PYMACK_BLUE = "#0072B2"   # pyMack
+PYMACK_BLUE = "#000000"   # pyMack -> thick black
 REF_ORANGE = "#D55E00"    # reference / paper
 REF_VERMIL = "#E69F00"
 BAND_GREEN = "#009E73"
