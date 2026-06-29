@@ -18,6 +18,9 @@ from scipy.optimize import brentq
 from scipy.interpolate import CubicSpline
 
 
+# Transport-property correlations of Ozgen & Kircali (2008), Eqs. 2.36-2.38
+# (their specific air viscosity/conductivity/cp curve-fits -- kept named, like
+#  "Sutherland's law", because they identify a specific published model).
 OZGEN_SUTHERLAND_S1 = 110.0
 OZGEN_CONDUCTIVITY_S2 = 2.646e-3
 OZGEN_CONDUCTIVITY_S3 = 245.4
@@ -628,12 +631,13 @@ class CompressibleBlasiusProfile:
         return result
 
 
-class OzgenFlatPlateProfile:
-    """Ozgen-style compressible self-similar flat-plate profile.
+class FlatPlateProfile:
+    """Compressible self-similar flat-plate boundary-layer profile.
 
-    This profile solves Ozgen & Kircali's coupled mean-flow equations,
-    Eqs. 2.32-2.35, using their temperature-dependent viscosity, conductivity,
-    heat capacity, and local Prandtl-number laws.
+    Solves the coupled mean-flow equations with temperature-dependent
+    viscosity, conductivity, heat capacity, and local Prandtl-number laws,
+    following Ozgen & Kircali (2008), Eqs. 2.32-2.38.
+    (Alias ``OzgenFlatPlateProfile`` is kept for backwards compatibility.)
     """
 
     def __init__(
@@ -918,7 +922,7 @@ def ozgen_adiabatic_wall_temperature(Ma, T_edge, Pr=0.72, gamma=1.4):
     return T_edge * (1.0 + Pr**0.5 * 0.5 * (gamma - 1.0) * Ma**2)
 
 
-def make_ozgen_profile(
+def make_flatplate_profile(
     Ma,
     T_edge=288.0,
     T_wall=None,
@@ -929,8 +933,11 @@ def make_ozgen_profile(
     n_points=4000,
     eta_max=40.0,
 ):
-    """Build the shared Ozgen-style compressible flat-plate profile."""
-    return OzgenFlatPlateProfile(
+    """Build the compressible self-similar flat-plate profile.
+
+    Uses the Ozgen & Kircali (2008) temperature-dependent transport laws.
+    """
+    return FlatPlateProfile(
         Ma=Ma,
         T_wall=T_wall,
         T_edge=T_edge,
@@ -941,3 +948,9 @@ def make_ozgen_profile(
         n_points=n_points,
         eta_max=eta_max,
     )
+
+
+# Backwards-compatible aliases: the profile/factory formerly carried the
+# reference name. New code should use FlatPlateProfile / make_flatplate_profile.
+OzgenFlatPlateProfile = FlatPlateProfile
+make_ozgen_profile = make_flatplate_profile

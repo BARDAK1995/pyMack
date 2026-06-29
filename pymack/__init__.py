@@ -21,8 +21,10 @@ from .spectral import chebyshev_points, chebyshev_D, map_domain, physical_deriva
 from .baseflow import (
     BlasiusProfile,
     CompressibleBlasiusProfile,
-    OzgenFlatPlateProfile,
-    make_ozgen_profile,
+    FlatPlateProfile,
+    make_flatplate_profile,
+    OzgenFlatPlateProfile,   # deprecated alias of FlatPlateProfile
+    make_ozgen_profile,      # deprecated alias of make_flatplate_profile
     ozgen_adiabatic_wall_temperature,
     ozgen_conductivity_ratio,
     ozgen_cp_ratio,
@@ -85,7 +87,7 @@ from .pymack_dense import (
     prepare_dense_case,
     solve_mack_branch,
 )
-from .ozgen_solver import solve_temporal_ozgen_2d
+from .temporal_solver import solve_temporal_2d, solve_temporal_ozgen_2d
 from .analysis import (
     critical_reynolds_from_growth_series,
     critical_reynolds_by_max_growth,
