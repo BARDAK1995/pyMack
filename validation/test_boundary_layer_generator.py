@@ -422,10 +422,13 @@ def test_slow_cold_wall_mack_rescue():
         6.0, wall_bc='isothermal', Tw_over_Te=0.2,
         viscosity_model='mack', T_edge_K=300.0, n_points=N_FAST)
     print(f'  rescued: d* = {r.delta_star_over_Lstar:.4f} (anchor 4.019), '
-          f'theta = {r.theta_over_Lstar:.4f} (anchor 2.3147)')
+          f'theta = {r.theta_over_Lstar:.4f} (anchor 0.6196)')
     assert r.used_continuation is True
     assert abs(r.delta_star_over_Lstar - 4.019) / 4.019 < 0.01
-    assert abs(r.theta_over_Lstar - 2.3147) / 2.3147 < 0.01
+    # theta anchor corrected to the U(1-U) momentum-thickness integrand (commit
+    # b6ed898); the old 2.3147 was the pre-fix U(T-U) value, stale (this slow
+    # test is gated off by default, so it was missed when the fix landed).
+    assert abs(r.theta_over_Lstar - 0.6196) / 0.6196 < 0.01
 
     # Counter-case: sutherland handles the same cold wall directly at Ma=10.
     r2 = gen(Ma=10.0, wall_bc='isothermal', Tw_over_Te=0.2,
