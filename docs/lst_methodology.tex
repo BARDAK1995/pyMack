@@ -284,6 +284,36 @@ differs.}
 \bridge{We now perturb the mean flow by an infinitesimal wave and reduce the governing PDEs to ordinary
 differential equations in $y$ --- the equations the rest of the document discretises and solves.}
 
+\paragraph{From the governing equations to the matrix problem the code solves.} Part~III, and the two
+Parts after it, are a single chain of transformations carrying the \emph{full governing equations} (top ---
+nonlinear, unsolvable by hand) into the \emph{one matrix problem the code actually solves} (bottom ---
+boxed). Those two are the forms worth remembering; everything in between is how we get from the first to the
+last.
+
+\begin{center}\small
+$\partial_t\rho+\nabla\!\cdot(\rho\mathbf u)=0,\qquad \rho\,\tfrac{\D\mathbf u}{\D t}=-\nabla p+\nabla\!\cdot\boldsymbol\tau,$\\[1pt]
+$\rho\,c_p\,\tfrac{\D T}{\D t}=\tfrac{\D p}{\D t}+\nabla\!\cdot(\kappa\nabla T)+\Phi,\qquad p=\rho R T$\\[2pt]
+{\footnotesize the \textbf{governing equations}: nonlinear, compressible Navier--Stokes in $(x,y,t)$ for $\mathbf q=(u,v,T,p,\rho)$ --- Eqs.~\eqref{eq:ns-mass}--\eqref{eq:ns-state}}\\[6pt]
+{\footnotesize$\downarrow$\quad split $\mathbf q=\bar{\mathbf q}+\mathbf q'$, subtract the mean (it solves the equations on its own), drop products of the small primes\quad(\S\ref{sec:lin}, Steps~1--2)}\\[6pt]
+linear PDEs for the disturbance $\mathbf q'=(u',v',T',p',\rho')$ in $(x,y,t)$\\[1pt]
+{\footnotesize every coefficient is now a \emph{known} mean profile $\bar U(y),\bar T(y),\dots$}\\[6pt]
+{\footnotesize$\downarrow$\quad parallel-flow assumption, then the normal-mode ansatz $\mathbf q'=\hatq(y)\,e^{\imag(\alpha x-\omega t)}$, so $\partial_x\!\to\!\imag\alpha,\ \partial_t\!\to\!-\imag\omega$\quad(\S\ref{sec:lin}, Steps~3--5)}\\[6pt]
+$\mathbf L(\alpha,c;\,y,\D)\,\hatq(y)=\mathbf 0$\\[1pt]
+{\footnotesize four coupled \textbf{ODEs in $y$} for the wall-normal shape $\hatq=(\hatu,\hatv,\hatT,\hatp)$ --- Eqs.~\eqref{eq:cont}--\eqref{eq:energy}}\\[6pt]
+{\footnotesize$\downarrow$\quad Chebyshev collocation: $\D\!\to\!D_1,\ \D^2\!\to\!D_2$, each mean coefficient $\to$ a diagonal matrix, the four fields stacked into one vector\quad(\S\ref{sec:cheb}--\ref{sec:assemble})}\\[6pt]
+$\boxed{\,A(\alpha)\,\boldsymbol\phi=c\,B(\alpha)\,\boldsymbol\phi\,}\qquad A,B\in\mathbb C^{4n\times4n}$\\[1pt]
+{\footnotesize the \textbf{discrete generalised eigenvalue problem} \texttt{temporal\_solver.py} assembles and solves --- Eq.~\eqref{eq:tEVP}}
+\end{center}
+
+\noindent The top line is a system of nonlinear partial differential equations no one can solve by hand;
+the bottom line is finite linear algebra. The eigenvalue carries the answer: \texttt{temporal\_solver.py}
+fills the two matrices $A,B$ and calls \texttt{scipy.linalg.eig}$(A,B)$, which returns the complex phase
+speed $c$ (the eigenvalue) and the grid-sampled mode shape $\boldsymbol\phi$ (the eigenvector). Holding
+$\alpha$ real and solving for $c$ is the \emph{temporal} problem (\S\ref{sec:temporal}); holding $\omega$
+real and regrouping the same ODEs by powers of $\alpha$ turns the last line into the \emph{spatial}
+quadratic problem (\S\ref{sec:spatial}). The rest of Part~III derives the two middle lines; Parts~IV--V
+derive the last.
+
 \section{Linearisation and the normal-mode ansatz}\label{sec:lin}
 
 \paragraph{Step 1 --- split into mean plus disturbance.}
@@ -492,6 +522,15 @@ and each mean coefficient becomes a diagonal matrix (e.g.\ $\bar U\to\operatorna
 of the four equations contributes one block-row of four $n\times n$ blocks; the operator is the $4\times4$
 array of blocks (Figure~\ref{fig:blocks}).
 
+\paragraph{The construction recipe (how a term becomes a matrix entry).} Turning an equation into blocks is
+mechanical: \emph{(i)} every mean coefficient $f(y)$ becomes the diagonal $\operatorname{diag}\!\big(f(y_j)\big)$;
+\emph{(ii)} $\D\!\to\!D_1$ and $\D^2\!\to\!D_2$, so a term $f\,\D$ becomes $\operatorname{diag}(f)\,D_1$
+(coefficient times derivative matrix, in that order); \emph{(iii)} the constants $\imag\alpha$ (from
+$\partial_x$) and $-\alpha^2$ (from $\partial_x^2$) multiply through; \emph{(iv)} the result is deposited in the
+block at \emph{(its equation's row, its field's column)}; \emph{(v)} anything carrying the eigenvalue $c$ is
+stripped of $c$ and placed in $B$ at the same address --- everything else stays in $A$. Four equations
+$\times$ four fields $=$ a $4\times4$ grid of $n\times n$ blocks per matrix.
+
 \paragraph{The eigenvalue split (which terms go where).} For the temporal problem (\S\ref{sec:temporal})
 the only place $c$ appears is the factor $\imag\alpha(\bar U-c)$. Writing each such factor as
 $\imag\alpha\bar U-c\,(\imag\alpha)$ splits the operator: the $\imag\alpha\bar U$ part stays in $A$, the
@@ -505,18 +544,34 @@ result is that \textbf{$A$ is the full block matrix whose rows are exactly Eqs.~
   B_{(Y,\hatv)}=\imag\alpha,\quad
   B_{(E,\hatT)}=\imag\alpha .
 \end{equation}
-(The continuity row contributes \emph{two} $B$-blocks, on $\hatp$ and $\hatT$ --- the eigenvalue multiplies
-the state-law pressure/temperature terms there, not a convective velocity.) Reading the $A$-blocks straight
-off the four equations, a few representative ones are
-\begin{equation}\label{eq:Ablocks}
-  A_{(C,\hatu)}=\imag\alpha I,\quad
-  A_{(C,\hatv)}=D_1-\tfrac{\bar T'}{\bar T},\quad
-  A_{(X,\hatp)}=\imag\alpha\bar\rho^{-1},\quad
-  A_{(Y,\hatp)}=\bar\rho^{-1}D_1,\quad
-  A_{(E,\hatT)}=\imag\alpha\bar U-\mathcal C_\kappa\mathcal L_c-\mathcal C_d\tfrac{\mathrm d\mu}{\mathrm dT}(\bar U')^2 ,
-\end{equation}
-and every other block is the corresponding coefficient in Eqs.~\eqref{eq:cont}--\eqref{eq:energy} with
-$\D\to D_1,\D^2\to D_2$. The pressure column of the energy row is zero ($A_{(E,\hatp)}=0$).
+\paragraph{Worked example --- the continuity block-row, built term by term.} Apply the recipe to
+Eq.~\eqref{eq:cont}, splitting the convective factor $\imag\alpha(\bar U-c)=\imag\alpha\bar U-c\,\imag\alpha$
+so the $\imag\alpha\bar U$ part stays in $A$ and the $c$-coefficient $\imag\alpha$ goes to $B$. Reading off
+the four fields:
+\begin{align*}
+A_{(C,\hatu)}&=\imag\alpha I, & A_{(C,\hatv)}&=D_1-\operatorname{diag}(\bar T'/\bar T),\\
+A_{(C,\hatp)}&=\imag\alpha\gamma\Mae^2\operatorname{diag}(\bar U), & A_{(C,\hatT)}&=-\imag\alpha\operatorname{diag}(\bar U/\bar T),\\
+B_{(C,\hatp)}&=\imag\alpha\gamma\Mae^2 I, & B_{(C,\hatT)}&=-\imag\alpha\operatorname{diag}(1/\bar T).
+\end{align*}
+Six non-zero entries --- four in $A$, two in $B$. The eigenvalue here multiplies the state-law $\hatp,\hatT$
+terms (not a convective velocity), which is why row $C$ contributes \emph{two} $B$-blocks while the
+momentum/energy rows each contribute one. Every other equation is processed identically.
+
+\paragraph{All sixteen $A$-blocks (complete listing, transcribed from \texttt{pymack/temporal\_solver.py}).}
+Rows are the four equations, columns the four fields $(\hatu,\hatv,\hatT,\hatp)$; $\nuR=1/(\Ree\bar\rho)$,
+with $\mathcal C_\kappa,\mathcal C_d,\mathcal L_c$ as defined under Eq.~\eqref{eq:energy}, and a bare mean
+symbol denotes its diagonal matrix. The five $B$-blocks are Eq.~\eqref{eq:Bblocks}; \emph{every block not
+listed is zero} --- notably $A_{(E,\hatp)}=0$, since the energy row has no pressure term.
+{\footnotesize
+\begin{itemize}[leftmargin=2.4em,itemsep=3pt]
+\item[\emph{(C)}] $\hatu\!\to\imag\alpha I$;\quad $\hatv\!\to D_1-\bar T'/\bar T$;\quad $\hatT\!\to-\imag\alpha\bar U/\bar T$;\quad $\hatp\!\to\imag\alpha\gamma\Mae^2\bar U$.
+\item[\emph{(X)}] $\hatu\!\to\imag\alpha\bar U-\nuR(\bar\mu D_2+\bar\mu'D_1)+\tfrac43\alpha^2\nuR\bar\mu$;\quad $\hatv\!\to\bar U'-\imag\alpha\nuR(\tfrac13\bar\mu D_1+\bar\mu')$;\quad $\hatT\!\to-\nuR\big[\tfrac{\mathrm d\mu}{\mathrm dT}(\bar U'D_1+\bar U'')+\tfrac{\mathrm d^2\mu}{\mathrm dT^2}\bar U'\bar T'\big]$;\quad $\hatp\!\to\imag\alpha\bar\rho^{-1}$.
+\item[\emph{(Y)}] $\hatu\!\to-\imag\alpha\nuR(\tfrac13\bar\mu D_1-\tfrac23\bar\mu')$;\quad $\hatv\!\to\imag\alpha\bar U-\nuR(\tfrac43\bar\mu D_2+\tfrac43\bar\mu'D_1)+\alpha^2\nuR\bar\mu$;\quad $\hatT\!\to-\imag\alpha\nuR\tfrac{\mathrm d\mu}{\mathrm dT}\bar U'$;\quad $\hatp\!\to\bar\rho^{-1}D_1$.
+\item[\emph{(E)}] $\hatu\!\to\imag\alpha(\gamma-1)\bar\rho^{-1}-2\mathcal C_d\bar\mu\bar U'D_1$;\quad $\hatv\!\to\bar T'+(\gamma-1)\bar\rho^{-1}D_1-2\imag\alpha\mathcal C_d\bar\mu\bar U'$;\quad $\hatT\!\to\imag\alpha\bar U-\mathcal C_\kappa\mathcal L_c-\mathcal C_d\tfrac{\mathrm d\mu}{\mathrm dT}(\bar U')^2$;\quad $\hatp\!\to0$.
+\end{itemize}}
+\noindent Holding these against \texttt{temporal\_solver.py} line for line: row $C$ is \texttt{A[blk(0,$\cdot$)]},
+row $X$ \texttt{A[blk(1,$\cdot$)]}, and so on; the diagonals $\bar U,\bar\mu,\dots$ are the \texttt{np.diag(\dots)}
+arrays, $D_1,D_2$ the differentiation matrices, and $\nuR=$ \texttt{rhob\_inv/Re}.
 
 \begin{figure}[h]\centering
   \includegraphics[width=0.95\linewidth]{fig_blocks.pdf}

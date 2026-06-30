@@ -214,31 +214,56 @@ def fig_diffmat():
 
 
 def fig_blocks():
-    fig, (aA, aB) = plt.subplots(1, 2, figsize=(9.6, 5.2))
+    fig, (aA, aB) = plt.subplots(1, 2, figsize=(11.0, 5.8))
     rows = ["continuity\n+ state", "x-momentum", "y-momentum", "energy"]
     cols = [r"$\hat u$", r"$\hat v$", r"$\hat T$", r"$\hat p$"]
-    A_nz = {(i, j) for i in range(4) for j in range(4)}      # A is block-dense
-    B_nz = {(0, 2), (0, 3), (1, 0), (2, 1), (3, 2)}          # B holds the c-terms
-    labelsA = {(0, 0): r"$i\alpha I$", (1, 3): r"$i\alpha/\bar\rho$",
-               (2, 3): r"$\bar\rho^{-1}D$", (3, 2): r"$i\alpha\bar U-\mathcal{C}_\kappa\mathcal{L}_c$"}
-    for ax, nz, ttl, c in ((aA, A_nz, r"$A$  (dense operator)", PM),
-                            (aB, B_nz, r"$B$  (holds the $c$ coefficients)", REF)):
+    A_zero = {(3, 3)}                                        # energy row has no pressure term
+    A_nz = {(i, j) for i in range(4) for j in range(4)} - A_zero
+    B_nz = {(0, 2), (0, 3), (1, 0), (2, 1), (3, 2)}          # B holds the c-terms only
+    # short structural tag per block (full expressions live in the doc table)
+    labelsA = {
+        (0, 0): r"$i\alpha I$",
+        (0, 1): r"$D_1{-}\frac{\bar T'}{\bar T}$",
+        (0, 2): r"$-i\alpha\frac{\bar U}{\bar T}$",
+        (0, 3): r"$i\alpha\gamma M^2\bar U$",
+        (1, 0): "$i\\alpha\\bar U$\n$+\\,$visc.",
+        (1, 1): "$\\bar U'$\n$+\\,$visc.",
+        (1, 2): "transport",
+        (1, 3): r"$i\alpha\bar\rho^{-1}$",
+        (2, 0): "visc.",
+        (2, 1): "$i\\alpha\\bar U$\n$+\\,$visc.",
+        (2, 2): "transport",
+        (2, 3): r"$\bar\rho^{-1}D_1$",
+        (3, 0): "dissip.",
+        (3, 1): r"$\bar T'{+}\cdots$",
+        (3, 2): "$i\\alpha\\bar U$\n$-\\,\\mathcal{C}_\\kappa\\mathcal{L}_c$",
+        (3, 3): r"$\mathbf{0}$",
+    }
+    labelsB = {
+        (0, 2): r"$-\frac{i\alpha}{\bar T}$", (0, 3): r"$i\alpha\gamma M^2$",
+        (1, 0): r"$i\alpha$", (2, 1): r"$i\alpha$", (3, 2): r"$i\alpha$",
+    }
+    panels = ((aA, A_nz, labelsA, r"$A$  —  dense operator (15 blocks)", PM),
+              (aB, B_nz, labelsB, r"$B$  —  the $c$-terms only (5 blocks)", REF))
+    for ax, nz, labels, ttl, c in panels:
         for i in range(4):
             for j in range(4):
                 on = (i, j) in nz
                 ax.add_patch(Rectangle((j, 3 - i), 1, 1, facecolor=(c if on else "white"),
-                             edgecolor=INK, lw=1.2, alpha=0.55 if on else 1.0))
-                if ax is aA and (i, j) in labelsA:
-                    ax.text(j + 0.5, 3 - i + 0.5, labelsA[(i, j)], ha="center",
-                            va="center", fontsize=10.5)
+                             edgecolor=INK, lw=1.2, alpha=0.5 if on else 1.0))
+                lab = labels.get((i, j))
+                if lab:
+                    ax.text(j + 0.5, 3 - i + 0.5, lab, ha="center", va="center",
+                            fontsize=9.0, color=INK)
         for j, cl in enumerate(cols):
-            ax.text(j + 0.5, 4.18, cl, ha="center", fontsize=13.5)
+            ax.text(j + 0.5, 4.2, cl, ha="center", fontsize=14)
         for i, rl in enumerate(rows):
-            ax.text(-0.12, 3 - i + 0.5, rl, ha="right", va="center", fontsize=11.5)
-        ax.set_xlim(-1.7, 4.2); ax.set_ylim(-0.3, 4.6)
-        ax.set_title(ttl); ax.axis("off")
-    fig.suptitle(r"Each $4n\times4n$ matrix is a $4\times4$ grid of $n\times n$ blocks",
-                 fontsize=15, y=1.02)
+            ax.text(-0.14, 3 - i + 0.5, rl, ha="right", va="center", fontsize=14)
+        ax.set_xlim(-2.2, 4.2); ax.set_ylim(-0.3, 4.7)
+        ax.set_title(ttl, fontsize=16); ax.axis("off")
+    fig.suptitle(r"$A\,\phi=c\,B\,\phi$: each $4n\times4n$ matrix is a "
+                 r"$4\times4$ grid of $n\times n$ blocks (rows $=$ equations, columns $=$ fields)",
+                 fontsize=16, y=1.03)
     fig.tight_layout()
     save(fig, "fig_blocks.pdf")
 
