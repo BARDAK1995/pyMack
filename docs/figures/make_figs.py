@@ -1,4 +1,5 @@
-"""Generate the illustrative figures for docs/lst_methodology.tex.
+"""Generate the illustrative figures for the pyMack LST document set
+(mean_boundary_layer.tex, disturbance_equations.tex, numerical_methods.tex).
 
 All figures are written as vector PDFs into this directory. Data-driven panels
 (base flow, Chebyshev grid, differentiation matrix, operator occupancy, neutral

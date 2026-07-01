@@ -1,0 +1,758 @@
+\documentclass[11pt]{article}
+\input{lst_preamble}
+
+\title{\textbf{Numerical Methods: Eigenvalue Assembly and the Shooting Solver}\\[3pt]
+\large Two routes to the same compressible boundary-layer eigenvalue --- the global\\
+spectral (Chebyshev collocation) assembly and the marching (shooting) solver of \texttt{pyMack}}
+\author{Personal reference note}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent This note documents the two numerical machines that \texttt{pyMack} uses to extract a
+boundary-layer stability eigenvalue from the linearised disturbance equations. \textbf{Part~A} is the
+\emph{spectral} route: Chebyshev collocation turns the wall-normal derivative into a dense matrix, the four
+disturbance equations are assembled into one $4n\times4n$ generalised eigenvalue problem
+$A\boldsymbol\phi=cB\boldsymbol\phi$ (the full block structure, all sixteen $A$-blocks, the five $B$-blocks,
+and the boundary-condition row indices are given explicitly), and a single call to a dense eigensolver
+returns \emph{all} eigenvalues at once --- ideal for surveying the spectrum and sweeping neutral curves and
+$N$-factors. \textbf{Part~B} documents the \emph{shooting} route (\texttt{pymack/temporal\_shooting.py}):
+the \emph{same} temporal problem is recast as a small first-order system, integrated from the freestream to
+the wall by Runge--Kutta with re-orthonormalisation, and the eigenvalue is pinpointed by driving a
+$3\times3$ wall matrix singular. Both return the same physical phase speed $c$. Every equation, coefficient,
+and default is transcribed from the code, cited by file, so the document doubles as a code$\leftrightarrow$math
+map. The spectral prose, equations, and figures are reproduced from the companion methodology note (verified
+line-by-line against the solver); the shooting material is written fresh from the source.
+\end{abstract}
+
+\tableofcontents
+\bigskip
+
+\noindent\textbf{How to read this.} Part~A and Part~B are two independent solvers for the \emph{same}
+eigenvalue; either can be read alone. Boxes marked {\color{kicol}\textbf{``What problem is solved here''}}
+state, at each stage, exactly which equation, which boundary conditions, and which unknown (the eigenvalue)
+are involved. \emph{In plain words} notes give the intuition; grey \textsf{Remark} asides hold secondary
+detail. The physical formulation this document discretises --- the mean flow, the linearisation, and the four
+disturbance equations $\hatq=(\hatu,\hatv,\hatT,\hatp)$ --- is developed in the companion Disturbance
+Equations note and summarised in the notation table below.
+
+\paragraph{Notation.} Overbars are mean (base-flow) quantities; hats are complex disturbance amplitudes.
+The continuous wall-normal amplitude is $\hatq(y)=(\hatu,\hatv,\hatT,\hatp)$; its discrete (stacked,
+grid-sampled) form is the vector $\boldsymbol\phi$. A prime on a mean quantity is $\D\equiv\mathrm d/\mathrm dy$.
+\begin{center}\footnotesize
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{@{}ll@{\hspace{1.4em}}ll@{}}
+\toprule
+\multicolumn{2}{@{}l}{\textbf{Base flow \& transport}} & \multicolumn{2}{l}{\textbf{Disturbance / eigenvalue}}\\
+$\bar U,\bar T,\bar\rho{=}1/\bar T$ & mean velocity, temp., density & $\hatq;\ \boldsymbol\phi$ & amplitude (cont.; discrete)\\
+$\bar\mu,\bar\kappa$ & viscosity, conductivity & $\hatu,\hatv,\hatT,\hatp$ & velocity/temp./pressure amplitudes\\
+$C{=}\bar\mu/\bar T$ & Chapman--Rubesin group & $\alpha,\ \omega$ & wavenumber, frequency\\
+$\Mae,\ \Ree,\ \mathit{Pr},\ \gamma$ & Mach, Reynolds, Prandtl, $c_p/c_v$ & $c{=}\omega/\alpha$ & complex phase speed; $c_r,c_i$ its parts\\
+$L^*$ & Mack length $\sqrt{\nu_e x/U_e}$ & $\omega_i{=}\alpha c_i$ & temporal growth rate\\
+$R{=}\sqrt{Re_x}$ & Mack Reynolds number & $\sigma{=}-\Imag(\alpha)$ & spatial growth rate\\
+$\nuR{=}1/(\Ree\bar\rho)$ & viscous prefactor & $N,\ n{=}N{+}1$ & collocation points; grid size\\
+\bottomrule
+\end{tabular}
+\end{center}
+\noindent{\footnotesize\textbf{Operator shorthands:}\ $D_1,D_2$ derivative matrices;\
+$\nuR{=}1/(\Ree\bar\rho)$;\ $\mathcal C_\kappa,\mathcal C_d,d_R$ conduction/dissipation prefactors;\
+$\mathcal L_c$ conduction operator;\ $A,B$ (temporal) and $C_0,C_1,C_2$ (spatial) operator blocks;\
+$Y,\ M(c),\ \sigma_{\min}(c)$ (Part~B) shooting state, wall matrix, and its smallest singular value.\par}
+
+%=====================================================================
+\part*{Part A --- The spectral (Chebyshev collocation) method}
+\addcontentsline{toc}{section}{Part A --- The spectral (Chebyshev collocation) method}
+%=====================================================================
+\bridge{The disturbance equations are four coupled ODEs in $y$ with known base-flow coefficients but no
+closed-form solution. Part~A converts them into a finite matrix, assembles the eigenvalue problem, and reads
+off the growth rate; it then sweeps the solve into neutral curves and $N$-factors.}
+
+\section{Chebyshev collocation, from scratch}\label{sec:cheb}
+\problembox{Replace the wall-normal derivative $\D$ by a finite matrix so the disturbance ODEs become
+linear algebra; each continuous amplitude $\hatq(y)$ becomes a vector of its values at chosen grid points.}
+
+\paragraph{Why Chebyshev?} For smooth functions a polynomial interpolant through Chebyshev points converges
+\emph{exponentially}, so few points give many digits. The Chebyshev--Gauss--Lobatto (GLL) nodes on $[-1,1]$,
+\begin{equation}\label{eq:gll}
+  \xi_j=\cos\!\Big(\frac{\pi j}{N}\Big),\quad j=0,1,\dots,N,
+\end{equation}
+cluster near the ends $\xi=\pm1$. \textbf{Node ordering matters:} $\xi_0=+1$ and $\xi_N=-1$, so $j$ runs
+from $+1$ down to $-1$.
+
+\paragraph{The differentiation matrix.} One polynomial of degree $\le N$ passes through the values
+$\{f(\xi_j)\}$; differentiating and evaluating at the nodes is linear, $f'(\xi_j)\approx\sum_kD_{jk}f(\xi_k)$,
+with (Don \& Solomonoff; \texttt{spectral.py:chebyshev\_D})
+\begin{equation}\label{eq:Dformula}
+  D_{jk}=\frac{c_j}{c_k}\frac{(-1)^{j+k}}{\xi_j-\xi_k}\ (j\neq k),\qquad
+  D_{jj}=-\!\!\sum_{k\neq j}D_{jk},\qquad c_0=c_N=2,\ c_{\text{else}}=1 .
+\end{equation}
+The diagonal is set so each row sums to zero (a constant function has zero slope); $c_0=c_N=2$ accounts for
+the doubled weight of the two endpoints.
+\plain{$D$ turns ``the list of function values'' into ``the list of slope values.'' It is dense --- every
+node's slope uses every other node's value --- which is why the final stability matrices are dense.}
+
+\paragraph{A 3-point worked example.} For $N=2$, $\xi=(1,0,-1)$ and \eqref{eq:Dformula} gives
+\begin{equation}
+  D=\begin{bmatrix}1.5&-2&0.5\\0.5&0&-0.5\\-0.5&2&-1.5\end{bmatrix},\qquad
+  f'(\xi_1)\approx\tfrac12f(\xi_0)-\tfrac12f(\xi_2)\ \text{(centred difference).}
+\end{equation}
+The second derivative on $[-1,1]$ is the matrix square, $D^2_\xi=D_\xi D_\xi$ (\emph{not} the physical
+$D_1$ squared --- see below).
+
+\paragraph{Mapping to the physical layer.} The flow lives on $y\in[0,y_{\max}]$ with points clustered at the
+\emph{wall}. The algebraic map (Malik 1990; \texttt{spectral.py:map\_domain}) is
+\begin{equation}\label{eq:map}
+  y(\xi)=L\,\frac{1+\xi}{1-\xi+2L/y_{\max}},\qquad L=\frac{y_{\max}}{6}\ (\text{stretching parameter}).
+\end{equation}
+This sends $\xi=+1$ (node $j{=}0$) to $y=y_{\max}$ (\textbf{freestream}) and $\xi=-1$ (node $j{=}N$) to
+$y=0$ (\textbf{wall}); the grid median sits at $y(\xi{=}0)=y_{\max}/8$ and roughly half the points lie below
+$y\approx L$. By the chain rule, with $\xi_y=1/y_\xi$ and $\xi_{yy}=-y_{\xi\xi}/y_\xi^3$, the physical
+operators are
+\begin{equation}\label{eq:Dmats}
+  D_1=\operatorname{diag}(\xi_y)\,D_\xi,\qquad
+  D_2=\operatorname{diag}(\xi_y^2)\,D_\xi^2+\operatorname{diag}(\xi_{yy})\,D_\xi .
+\end{equation}
+\remark{Common pitfall.}{The chain rule is applied to the \emph{computational} second-derivative matrix
+$D_\xi^2=D_\xi D_\xi$, then mapped by \eqref{eq:Dmats}. The physical $D_2$ is \emph{not} $D_1D_1$.}
+
+The physical domain must reach well past the boundary layer, so the truncation is set as a \emph{multiple of
+the boundary-layer scale}, $y_{\max}=m\,(\delta^*/L^*)$, with $m\approx8$--$12$ for the wall-trapped second
+mode and larger ($m\approx35$--$45$) for the more diffuse first mode; the bare values $y_{\max}=6$/$12$ are
+only a fallback. The default resolution is $N=128$ ($n{=}N{+}1{=}129$); $N$ is a free accuracy parameter, and
+because the method is spectral the eigenvalue converges \emph{exponentially} in $N$ (Figure~\ref{fig:conv}).
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.92\linewidth]{fig_cheb_grid.pdf}
+  \caption{The GLL nodes $\xi_j=\cos(\pi j/N)$ on $[-1,1]$ (top) map by Eq.~\eqref{eq:map} to the physical
+  grid $y\in[0,y_{\max}]$ (bottom), piling up at the wall ($\xi=-1$) where eigenfunctions vary fastest.}
+\end{figure}
+\begin{figure}[h]\centering
+  \includegraphics[width=0.45\linewidth]{fig_diffmat.pdf}\hfill
+  \includegraphics[width=0.49\linewidth]{fig_convergence.pdf}
+  \caption{\emph{Left:} the physical first-derivative matrix $D_1$ ($25\times25$ here) is dense ($\log_{10}$
+  of the entry magnitudes shown); spectral accuracy couples every node to every other. \emph{Right:} the
+  payoff --- the worked-example eigenvalue error $|c(N)-c(200)|$ falls \emph{exponentially} with $N$ (a
+  straight line on this semilog axis), so the default $N=128$ already gives many digits.}\label{fig:conv}
+\end{figure}
+
+\section{Assembling the operator and its boundary conditions}\label{sec:assemble}
+\problembox{Stack the four nodal-value vectors into one length-$4n$ unknown and turn the four disturbance
+equations into one $4n\times4n$ matrix (two matrices, for the generalised problem). Then overwrite the
+wall/freestream rows with boundary conditions.}
+
+An ODE in $y$ is an \emph{infinite-dimensional} statement (``this holds for every $y$''); a computer needs
+something finite. We get there in four mechanical steps that turn the four disturbance equations into the two
+matrices $A,B$. The worked example and complete block listing that follow simply carry these steps out.
+
+\paragraph{Step 1 --- vectorise the unknowns.} Sample each amplitude at the $n$ grid points, so the
+\emph{function} $\hatu(y)$ is represented by the \emph{vector} of its nodal values
+$\hatu=(\hatu(y_0),\dots,\hatu(y_{n-1}))^{\mathsf T}$, and stack the four fields into one column,
+\begin{equation*}
+  \boldsymbol\phi=[\hatu;\hatv;\hatT;\hatp]\in\mathbb C^{4n}.
+\end{equation*}
+This $\boldsymbol\phi$ is the discrete eigenvector; un-stacked it is the mode shape $\hatu(y),\hatv(y),\hatT(y),\hatp(y)$.
+
+\paragraph{Step 2 --- replace each operation by its matrix.} Every operation acting on those samples has a
+matrix counterpart, so a continuous term turns into a matrix multiplying a field-vector:
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+operation in the ODE & becomes & example\\
+\midrule
+$\D=\mathrm d/\mathrm dy$ \ (and $\D^2$) & the differentiation matrix $D_1$ (and $D_2$), \emph{dense} & $\hatu'(y)\to D_1\hatu$\\
+multiply by a mean profile $f(y)$ & the \emph{diagonal} $\operatorname{diag}\!\big(f(y_j)\big)$ & $\bar U\,\hatu\to\operatorname{diag}(\bar U)\,\hatu$\\
+multiply by a scalar $\imag\alpha,\,-\alpha^2$ & that scalar times $I$ & $\imag\alpha\,\hatu\to\imag\alpha I\,\hatu$\\
+\bottomrule
+\end{tabular}
+\end{center}
+\noindent Multiplication becomes \emph{diagonal} because $f(y)$ merely rescales each sample by its local value
+$f(y_j)$; differentiation couples every node to every other, so $D_1,D_2$ are full. A combined term keeps the
+order $f\,\D\to\operatorname{diag}(f)\,D_1$ (coefficient times derivative matrix).
+
+\paragraph{Step 3 --- each equation becomes a block-row.} Read an equation left to right: every term drops
+into the block addressed by \emph{(its equation's row, its field's column)}. Continuity, $x$-momentum,
+$y$-momentum and energy thus fill rows $C,X,Y,E$, while the fields $\hatu,\hatv,\hatT,\hatp$ index the columns.
+Because each equation is imposed at all $n$ nodes it furnishes $n$ rows, so every block is $n\times n$; four
+equations $\times$ four fields make a $4\times4$ grid of $n\times n$ blocks --- a single $4n\times4n$ matrix
+(Figure~\ref{fig:blocks}).
+
+\paragraph{Step 4 --- split off the eigenvalue.} The eigenvalue $c$ enters \emph{only linearly}, through the
+convective factor $\imag\alpha(\bar U-c)$ (and, in continuity, the state-law terms it multiplies); it never
+appears squared or inside a derivative. Writing $\imag\alpha(\bar U-c)=\imag\alpha\bar U-c\,\imag\alpha$ and
+collecting the whole discretised stack by its dependence on $c$,
+\begin{equation*}
+  \underbrace{(\text{$c$-free terms})}_{\textstyle A}\,\boldsymbol\phi
+  \;-\;c\,\underbrace{(\text{$c$-coefficient terms})}_{\textstyle B}\,\boldsymbol\phi=0
+  \qquad\Longleftrightarrow\qquad
+  \boxed{\,A\,\boldsymbol\phi=c\,B\,\boldsymbol\phi\,}.
+\end{equation*}
+The two matrices drop out directly: $A$ is the $c$-free part --- equivalently the full Step-3 block operator
+with every $\imag\alpha(\bar U-c)\!\to\!\imag\alpha\bar U$, so \textbf{its rows are exactly the four
+disturbance equations} --- and $B=-\partial(\text{operator})/\partial c$. The problem is
+\emph{generalised} (a second matrix $B$ on the right, not merely $c\boldsymbol\phi$) precisely because $c$
+multiplies only those few terms: $A$ is block-dense, while $B$ holds only five non-zero blocks,
+\begin{equation}\label{eq:Bblocks}
+  B_{(C,\hatT)}=-\frac{\imag\alpha}{\bar T},\quad
+  B_{(C,\hatp)}=\imag\alpha\gamma\Mae^2,\quad
+  B_{(X,\hatu)}=\imag\alpha,\quad
+  B_{(Y,\hatv)}=\imag\alpha,\quad
+  B_{(E,\hatT)}=\imag\alpha .
+\end{equation}
+\paragraph{Worked example --- the continuity block-row, built term by term.} Apply the recipe to the
+continuity equation, splitting the convective factor $\imag\alpha(\bar U-c)=\imag\alpha\bar U-c\,\imag\alpha$
+so the $\imag\alpha\bar U$ part stays in $A$ and the $c$-coefficient $\imag\alpha$ goes to $B$. Reading off
+the four fields:
+\begin{align*}
+A_{(C,\hatu)}&=\imag\alpha I, & A_{(C,\hatv)}&=D_1-\operatorname{diag}(\bar T'/\bar T),\\
+A_{(C,\hatp)}&=\imag\alpha\gamma\Mae^2\operatorname{diag}(\bar U), & A_{(C,\hatT)}&=-\imag\alpha\operatorname{diag}(\bar U/\bar T),\\
+B_{(C,\hatp)}&=\imag\alpha\gamma\Mae^2 I, & B_{(C,\hatT)}&=-\imag\alpha\operatorname{diag}(1/\bar T).
+\end{align*}
+Six non-zero entries --- four in $A$, two in $B$. The eigenvalue here multiplies the state-law $\hatp,\hatT$
+terms (not a convective velocity), which is why row $C$ contributes \emph{two} $B$-blocks while the
+momentum/energy rows each contribute one. Every other equation is processed identically.
+
+\paragraph{All sixteen $A$-blocks (complete listing, transcribed from \texttt{pymack/temporal\_solver.py}).}
+Rows are the four equations, columns the four fields $(\hatu,\hatv,\hatT,\hatp)$; $\nuR=1/(\Ree\bar\rho)$,
+with conduction/dissipation prefactors $\mathcal C_\kappa=\gamma\bar\mu/(\mathit{Pr}\,\Ree\,\bar\rho)$,
+$\mathcal C_d=\gamma(\gamma-1)\Mae^2/(\Ree\,\bar\rho)$ and conduction operator
+$\mathcal L_c=\D^2-\alpha^2+\tfrac1{\bar\kappa}\tfrac{\mathrm d\kappa}{\mathrm dT}(2\bar T'\D+\bar T'')
++\tfrac1{\bar\kappa}\tfrac{\mathrm d^2\kappa}{\mathrm dT^2}(\bar T')^2$, and a bare mean symbol denotes its
+diagonal matrix. The five $B$-blocks are Eq.~\eqref{eq:Bblocks}; \emph{every block not listed is zero} ---
+notably $A_{(E,\hatp)}=0$, since the energy row has no pressure term.
+{\footnotesize
+\begin{itemize}[leftmargin=2.4em,itemsep=3pt]
+\item[\emph{(C)}] $\hatu\!\to\imag\alpha I$;\quad $\hatv\!\to D_1-\bar T'/\bar T$;\quad $\hatT\!\to-\imag\alpha\bar U/\bar T$;\quad $\hatp\!\to\imag\alpha\gamma\Mae^2\bar U$.
+\item[\emph{(X)}] $\hatu\!\to\imag\alpha\bar U-\nuR(\bar\mu D_2+\bar\mu'D_1)+\tfrac43\alpha^2\nuR\bar\mu$;\quad $\hatv\!\to\bar U'-\imag\alpha\nuR(\tfrac13\bar\mu D_1+\bar\mu')$;\quad $\hatT\!\to-\nuR\big[\tfrac{\mathrm d\mu}{\mathrm dT}(\bar U'D_1+\bar U'')+\tfrac{\mathrm d^2\mu}{\mathrm dT^2}\bar U'\bar T'\big]$;\quad $\hatp\!\to\imag\alpha\bar\rho^{-1}$.
+\item[\emph{(Y)}] $\hatu\!\to-\imag\alpha\nuR(\tfrac13\bar\mu D_1-\tfrac23\bar\mu')$;\quad $\hatv\!\to\imag\alpha\bar U-\nuR(\tfrac43\bar\mu D_2+\tfrac43\bar\mu'D_1)+\alpha^2\nuR\bar\mu$;\quad $\hatT\!\to-\imag\alpha\nuR\tfrac{\mathrm d\mu}{\mathrm dT}\bar U'$;\quad $\hatp\!\to\bar\rho^{-1}D_1$.
+\item[\emph{(E)}] $\hatu\!\to\imag\alpha(\gamma-1)\bar\rho^{-1}-2\mathcal C_d\bar\mu\bar U'D_1$;\quad $\hatv\!\to\bar T'+(\gamma-1)\bar\rho^{-1}D_1-2\imag\alpha\mathcal C_d\bar\mu\bar U'$;\quad $\hatT\!\to\imag\alpha\bar U-\mathcal C_\kappa\mathcal L_c-\mathcal C_d\tfrac{\mathrm d\mu}{\mathrm dT}(\bar U')^2$;\quad $\hatp\!\to0$.
+\end{itemize}}
+\noindent Holding these against \texttt{temporal\_solver.py} line for line: row $C$ is \texttt{A[blk(0,$\cdot$)]},
+row $X$ \texttt{A[blk(1,$\cdot$)]}, and so on; the diagonals $\bar U,\bar\mu,\dots$ are the \texttt{np.diag(\dots)}
+arrays, $D_1,D_2$ the differentiation matrices, and $\nuR=$ \texttt{rhob\_inv/Re}.
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.95\linewidth]{fig_blocks.pdf}
+  \caption{Block structure of $A\boldsymbol\phi=cB\boldsymbol\phi$. Rows = the four equations
+  (continuity, $x$-mom, $y$-mom, energy); columns = the four fields $\hatu,\hatv,\hatT,\hatp$. \emph{Shaded
+  = non-zero block.} $A$ (left) is block-dense; $B$ (right) holds only the five blocks of
+  Eq.~\eqref{eq:Bblocks} --- every term carrying the eigenvalue $c$.}\label{fig:blocks}
+\end{figure}
+
+\paragraph{Boundary conditions = row replacement, with explicit indices.} A collocation row says ``the
+equation holds at node $y_j$.'' At the wall and freestream we overwrite those rows. With the stacking
+$\boldsymbol\phi=[\hatu;\hatv;\hatT;\hatp]$, field block $b\in\{0,1,2,3\}$ occupies global indices
+$bn,\dots,bn+n-1$, and (from the ordering above) local index $0$ is the freestream, local index $n{-}1$ the
+wall. Hence:
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+condition & field & global row & row becomes \\
+\midrule
+no-slip (wall)        & $\hatu$ & $n-1$    & identity ($\hatu=0$)\\
+no-slip (wall)        & $\hatv$ & $2n-1$   & identity ($\hatv=0$)\\
+thermal (wall)        & $\hatT$ & $3n-1$   & identity ($\hatT=0$, isothermal) \emph{or} $D_1[\text{wall},:]$ ($\D\hatT=0$, adiabatic)\\
+decay (freestream)    & $\hatu$ & $0$      & identity\\
+decay (freestream)    & $\hatv$ & $n$      & identity\\
+decay (freestream)    & $\hatT$ & $2n$     & identity\\
+\bottomrule
+\end{tabular}
+\end{center}
+The same rows of $B$ are zeroed so the constraint is algebraic; $\hatp$ carries no explicit boundary row.
+\remark{Getting this backwards silently fails.}{Because $\xi_0=+1\to y_{\max}$ and $\xi_N=-1\to y=0$, node
+index $0$ is the freestream and index $n{-}1$ is the wall --- the opposite of the naive guess. Swapping them
+produces plausible-looking but wrong eigenvalues.}
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.32\linewidth]{fig_bc_rows.pdf}
+  \caption{The boundary conditions as row replacement: the stacked state $[\hatu;\hatv;\hatT;\hatp]$ with the
+  six overwritten rows highlighted (wall and freestream for $\hatu,\hatv,\hatT$); $\hatp$ carries no boundary
+  row. Note index $0$ is the freestream and $n{-}1$ the wall.}
+\end{figure}
+
+\section{Temporal problem: a generalised eigenvalue problem}\label{sec:temporal}
+\problembox{\textbf{Given} a real wavenumber $\alpha$, \textbf{find} the complex phase speed $c$ and shape
+$\boldsymbol\phi$. \textbf{Equation:} the four disturbance equations. \textbf{Eigenvalue:} $c$.
+\textbf{Growth:} $\omega_i=\alpha\Imag(c)$.}
+
+With $A,B$ from \S\ref{sec:assemble} this is a \textbf{generalised eigenvalue problem}
+\begin{equation}\label{eq:tEVP}
+  A\boldsymbol\phi=cB\boldsymbol\phi,\qquad A,B\in\mathbb C^{4n\times4n},
+\end{equation}
+solved directly by the QZ algorithm (\texttt{scipy.linalg.eig}), which returns all $4n$ eigenvalues at once.
+\plain{An ordinary eigenproblem is $A\phi=c\phi$; a \emph{generalised} one allows a second matrix $B$ on the
+right. The discrete eigenvector $\boldsymbol\phi$ is just the eigenfunction $\hatq(y)$ sampled at the grid
+points --- ``eigenfunction'' and ``eigenvector'' are the continuous and discrete names for the same shape.}
+
+A disturbance $\propto e^{\imag\alpha(x-ct)}$ with $\alpha$ real behaves as $e^{\alpha c_it}$ in time, so
+\begin{equation}\label{eq:tgrowth}
+  c_i=\Imag(c)>0\ \Rightarrow\ \textbf{unstable (grows in time)},\qquad c_r=\Real(c)=\text{wave speed.}
+\end{equation}
+The wave speed classifies the mode: a first (viscous/Tollmien--Schlichting) mode has $c_r\!\approx\!0.3$--$0.6$;
+a second (Mack) mode has $c_r\!\approx\!1-1/\Mae$. The raw spectrum is filtered to
+$\Real(c)\in(-0.5,1.5)$, $|\Imag(c)|<0.5$ and sorted by $c_i$.
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.95\linewidth]{fig_evp_planes.pdf}
+  \caption{Where the eigenvalues live. \emph{Left (temporal):} input real $\alpha$; the phase speeds $c$
+  populate the complex plane; the physical discrete mode sits above the line $c_i=\Imag(c)=0$ (unstable)
+  while the continuous spectrum is damped. \emph{Right (spatial, explained in \S\ref{sec:spatial}):} input
+  real $\omega$; the wavenumbers $\alpha$ are sought near a shift target $\alpha_0$; the physical mode has
+  $\alpha_i<0$, i.e.\ growth.}\label{fig:planes}
+\end{figure}
+
+\section{Spatial problem: a quadratic eigenvalue problem}\label{sec:spatial}
+\problembox{\textbf{Given} a real frequency $\omega$, \textbf{find} the complex wavenumber $\alpha$ and
+shape. \textbf{Equation:} the same physics grouped by powers of $\alpha$. \textbf{Eigenvalue:} $\alpha$.
+\textbf{Growth:} $\sigma=-\Imag(\alpha)$.}
+
+A real source forces a fixed frequency and the disturbance grows in \emph{space}. Now $\omega$ is real and
+$\alpha$ is the unknown; because viscous/conduction terms carry $\partial_x^2\!\mapsto\!-\alpha^2$, $\alpha$
+appears \emph{quadratically}. Grouping the discretised disturbance equations by powers of
+$\alpha$ (substitute $\D\to D_1$, $\D^2\to D_2$, coefficients $\to$ diagonals, then collect $\alpha^0,\alpha^1,\alpha^2$)
+gives a \textbf{quadratic eigenvalue problem} (QEP)
+\begin{equation}\label{eq:qep}
+  \big(C_0+\alpha C_1+\alpha^2C_2\big)\boldsymbol\phi=0 .
+\end{equation}
+
+\paragraph{Opening up $C_0,C_1,C_2$ (complete listing).} The spatial assembler (\texttt{equations.py}) uses
+the \emph{enthalpy} energy form --- so $\hatp$ appears explicitly via $\D p'/\D t$ and the temperature
+equation differs from the temporal energy row --- and a bulk-viscosity ratio $\lambda/\mu=1.2$. The resulting
+viscous coefficients are
+\begin{equation}
+  c_{\alpha^2}=\tfrac{2(2+\lambda/\mu)}{3}=2.13,\qquad
+  c_\times=\tfrac{1+2\lambda/\mu}{3}=1.13,\qquad
+  c_a=\tfrac{2(\lambda/\mu-1)}{3}=0.13 \quad\text{(Mack Eq.~8.5)} .
+\end{equation}
+Because this closure is \emph{not} obtained by re-grouping the temporal equations, here are
+\emph{all} non-zero blocks, transcribed from \texttt{equations.py}. Write $\nuR=1/(\Ree\bar\rho)$ for the
+viscous/conduction prefactor and $d_R=(\gamma-1)\Mae^2\nuR$ for the dissipation prefactor; each entry below
+is the operator acting on the named field in that equation's block-row.
+{\footnotesize
+\begin{itemize}[leftmargin=2.6em,itemsep=2pt]
+\item[\emph{(C)}] $C_0\!:\ \hatv\!\to D_1-\tfrac{\bar T'}{\bar T},\ \ \hatT\!\to\tfrac{\imag\omega}{\bar T},\ \ \hatp\!\to-\imag\omega\gamma\Mae^2$.\quad
+  $C_1\!:\ \hatu\!\to\imag I,\ \ \hatT\!\to-\tfrac{\imag\bar U}{\bar T},\ \ \hatp\!\to\imag\gamma\Mae^2\bar U$.\quad $C_2\!:$ none.
+\item[\emph{(X)}] $C_0\!:\ \hatu\!\to-\imag\omega-\nuR(\bar\mu D_2+\bar\mu'D_1),\ \ \hatv\!\to\bar U',\ \
+  \hatT\!\to-\nuR\big[\tfrac{\mathrm d\mu}{\mathrm dT}(\bar U''+\bar U'D_1)+\tfrac{\mathrm d^2\mu}{\mathrm dT^2}\bar U'\bar T'\big]$.\quad
+  $C_1\!:\ \hatu\!\to\imag\bar U,\ \ \hatv\!\to-\imag\nuR(c_\times\bar\mu D_1+\bar\mu'),\ \ \hatp\!\to\imag\bar\rho^{-1}$.\quad
+  $C_2\!:\ \hatu\!\to c_{\alpha^2}\nuR\bar\mu$.
+\item[\emph{(Y)}] $C_0\!:\ \hatv\!\to-\imag\omega-c_{\alpha^2}\nuR(\bar\mu D_2+\bar\mu'D_1),\ \ \hatp\!\to\bar\rho^{-1}D_1$.\quad
+  $C_1\!:\ \hatu\!\to-\imag\nuR(c_\times\bar\mu D_1+c_a\bar\mu'),\ \ \hatv\!\to\imag\bar U,\ \ \hatT\!\to-\imag\nuR\tfrac{\mathrm d\mu}{\mathrm dT}\bar U'$.\quad
+  $C_2\!:\ \hatv\!\to\nuR\bar\mu$.
+\item[\emph{(E)}] $C_0\!:\ \hatu\!\to-2d_R\bar\mu\bar U'D_1,\ \ \hatv\!\to\bar T',\ \
+  \hatT\!\to-\imag\omega-\nuR\big[\bar\kappa D_2+2\bar\kappa'D_1+\tfrac{\mathrm d\kappa}{\mathrm dT}\bar T''+\tfrac{\mathrm d^2\kappa}{\mathrm dT^2}(\bar T')^2\big]-d_R\tfrac{\mathrm d\mu}{\mathrm dT}(\bar U')^2,\ \ \hatp\!\to\imag\omega(\gamma-1)\Mae^2\bar\rho^{-1}$.\quad
+  $C_1\!:\ \hatv\!\to-2\imag d_R\bar\mu\bar U',\ \ \hatT\!\to\imag\bar U,\ \ \hatp\!\to-\imag(\gamma-1)\Mae^2\bar U\bar\rho^{-1}$.\quad
+  $C_2\!:\ \hatT\!\to\nuR\bar\kappa$.
+\end{itemize}}
+\noindent All other blocks are zero. The temporal closure (Stokes $\tfrac43,\tfrac13$ factors, temperature
+energy row) and this spatial closure (enthalpy row, $\lambda/\mu=1.2$) differ only in the bulk-viscosity
+treatment and the energy-equation arrangement; both approximate the same physical mode and agree on it to
+within discretisation error.
+
+\paragraph{Companion linearisation.} A QEP becomes an ordinary (generalised) problem of \emph{twice} the
+size by introducing $\boldsymbol\psi=\alpha\boldsymbol\phi$ (\texttt{solver.py}):
+\begin{equation}\label{eq:companion}
+  \underbrace{\begin{bmatrix}-C_1&-C_0\\ I&0\end{bmatrix}}_{\mathcal L}
+  \begin{bmatrix}\boldsymbol\psi\\ \boldsymbol\phi\end{bmatrix}
+  =\alpha\,\underbrace{\begin{bmatrix}C_2&0\\ 0&I\end{bmatrix}}_{\mathcal R}
+  \begin{bmatrix}\boldsymbol\psi\\ \boldsymbol\phi\end{bmatrix}.
+\end{equation}
+The lower block row enforces $\boldsymbol\psi=\alpha\boldsymbol\phi$; the upper row then reproduces \eqref{eq:qep}.
+The eigenvalue is $\alpha$ and the physical shape is the \emph{lower} half $\boldsymbol\phi$ (Figure~\ref{fig:companion}).
+\remark{Why ``the lower half''.}{Since $\boldsymbol\psi=\alpha\boldsymbol\phi$ the two halves are parallel, so both
+satisfy the QEP up to scaling; by convention $\boldsymbol\phi$ (lower half) is the one normalised as the eigenfunction.}
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.9\linewidth]{fig_companion.pdf}
+  \caption{Companion linearisation \eqref{eq:companion}: the $4n$-sized quadratic problem becomes an
+  ordinary generalised problem of size $8n$ in $[\boldsymbol\psi;\boldsymbol\phi]$, with $\boldsymbol\psi=\alpha\boldsymbol\phi$.
+  Its eigenvalue is exactly $\alpha$; the eigenfunction is the lower half.}\label{fig:companion}
+\end{figure}
+
+\paragraph{Shift--invert (which eigenvalue, cheaply).} We target the relevant branch with a shift
+$\alpha_0=\omega/c_{\mathrm{ph}}$ ($c_{\mathrm{ph}}=1-1/\Mae$ for $\Mae>3$, else $\approx0.4$). Subtracting
+$\alpha_0$ and inverting maps eigenvalues \emph{near} $\alpha_0$ to \emph{large} $\mu$, where
+\begin{equation}\label{eq:shift}
+  \text{eigenvalues of }(\mathcal L-\alpha_0\mathcal R)^{-1}\mathcal R\ \text{ are }\ \mu=\frac1{\alpha-\alpha_0},
+  \qquad\Rightarrow\qquad \alpha=\alpha_0+\frac1\mu .
+\end{equation}
+So returning the largest-$|\mu|$ modes returns the wavenumbers nearest the physical one (one LU
+factorisation; in \texttt{pyMack} a dense solve followed by selecting the $n_{\mathrm{modes}}{=}20$ nearest
+$\alpha_0$, then sorting by $\Imag(\alpha)$). The amplitude $\propto e^{\imag\alpha x}=e^{\imag\alpha_rx}e^{-\alpha_ix}$, so
+\begin{equation}\label{eq:sgrowth}
+  \sigma=-\Imag(\alpha)=-\alpha_i>0\ \Rightarrow\ \textbf{unstable (grows downstream).}
+\end{equation}
+
+\remark{Alternative route --- Newton with a phase-speed seed.}{A more robust path when shift--invert
+struggles (\texttt{solve\_spatial\_from\_temporal}): solve the \emph{temporal} problem at a real trial
+$\alpha_r=\omega/c_{\mathrm{est}}$ ($c_{\mathrm{est}}=0.98$ for $\Mae>3$, else $0.35$), keeping only modes
+that agree across two resolutions (tolerance $8\times10^{-3}$); form the seed
+$\Imag(\alpha)\approx-\alpha_rc_i/c_r$ (a \emph{phase-speed} estimate --- the rigorous Gaster relation uses
+the group velocity $c_g=\mathrm d\omega_r/\mathrm d\alpha_r$, but here it only seeds Newton, so precision is
+unneeded); then Newton-iterate the dispersion residual $F(\alpha)=\alpha c(\alpha)-\omega=0$,
+$\alpha^{(k+1)}=\alpha^{(k)}-F/F'$, with $F'=c+\alpha\,\mathrm dc/\mathrm d\alpha$ approximated by a finite
+difference (step $10^{-5}$, tol $10^{-6}$, $\le20$ iterations). Both routes return the same
+$\sigma=-\Imag(\alpha)$.}
+
+\section{Which eigenvalue is physical?}\label{sec:modes}
+\problembox{Given the full $4n$-element spectrum, identify the one eigenvalue that is a genuine
+boundary-layer mode rather than continuous-spectrum noise.}
+
+Besides the discrete boundary-layer modes the operator has a dense \textbf{continuous spectrum} --- on an
+infinite domain these freestream disturbances form an unbroken band rather than isolated points, and the
+finite grid renders them as a dense cluster. Two tests (\texttt{discrete\_mode.py}) keep only the physical
+mode (Figure~\ref{fig:critlayer}):
+\begin{enumerate}[nosep,leftmargin=1.8em]
+  \item \textbf{Freestream decay}: a true boundary-layer eigenfunction decays as $y\to y_{\max}$, a
+        continuous-spectrum one does not. Reject candidates whose edge-to-peak amplitude ratio exceeds
+        $\sim\!0.06$.
+  \item \textbf{Domain stationarity}: a genuine eigenvalue barely moves if the truncation changes. Recompute
+        at two domain heights and keep modes whose $c$ matches to $\sim\!4\times10^{-3}$; accept growth rates
+        with $|c_i|\lesssim0.05$ and $c_r$ in the physical band.
+\end{enumerate}
+\plain{These two tests are the difference between a clean growth rate and noise --- they are what let us
+trust a single number out of the full $4n$-element spectrum (724 modes in the worked example of
+\S\ref{sec:worked}, where the largest-growth eigenvalue is in fact spurious).}
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.95\linewidth]{fig_critlayer.pdf}
+  \caption{\emph{Left:} the critical layer is where $\bar U(y)=c_r$; the mode's amplitude $|\hatq(y)|$ tends
+  to peak near it. \emph{Right:} a discrete boundary-layer mode (solid) decays toward the freestream, while
+  a continuous-spectrum mode (dashed) keeps oscillating to the edge --- the basis for the two acceptance
+  tests.}\label{fig:critlayer}
+\end{figure}
+
+\section{Worked example: one temporal solve, start to finish}\label{sec:worked}
+Take a strong Mack-mode case: $\Mae=6.0$, $R=5500$, $\alpha_L=0.174$, adiabatic wall, $L^*$ scaling,
+$N=180$ ($n=181$, so the matrices are $4n=724$ wide). The wall-normal domain is
+$y_{\max}=10\,(\delta^*/L^*)\approx128$ (\S\ref{sec:cheb}: the domain is a multiple of the boundary-layer
+scale, not a bare number). Solving \eqref{eq:tEVP} returns 724 eigenvalues; after the physical filter the
+six least-stable are
+\begin{center}\small
+\begin{tabular}{@{}rrrll@{}}
+\toprule
+$c_r$ & $c_i$ & $\omega_i=\alpha c_i$ & $y_{\max}$-stationary? & verdict \\
+\midrule
+$+1.176$ & $+0.0249$ & $+0.00434$ & no ($|\Delta c|\!\sim\!10^{-2}$) & spurious / continuous spectrum \\
+$\mathbf{+0.930}$ & $\mathbf{+0.0200}$ & $\mathbf{+0.00348}$ & \textbf{yes} ($|\Delta c|\!\sim\!10^{-7}$) & \textbf{discrete Mack mode --- the answer} \\
+$+0.834$ & $+0.0197$ & $+0.00343$ & no & continuous spectrum \\
+$+0.740$ & $+0.0000$ & $\phantom{+}0.00000$ & --- & neutral continuous-spectrum cluster \\
+$+0.720$ & $+0.0000$ & $\phantom{+}0.00000$ & --- & continuous spectrum \\
+$+0.760$ & $+0.0000$ & $\phantom{+}0.00000$ & yes & stable discrete mode \\
+\bottomrule
+\end{tabular}
+\end{center}
+This is the trap the mode tests of \S\ref{sec:modes} exist to avoid: the \emph{largest}-growth eigenvalue
+(row~1, $c_r=1.18$) is \emph{not} the answer --- it is spurious, its $c$ shifting by $\sim\!10^{-2}$ when the
+domain height changes (and $c_r>1$ is unphysically supersonic). The physical answer is row~2, the
+\textbf{Mack (second) mode} $c=0.930+0.0200\imag$: domain-stationary to $10^{-7}$, with an eigenfunction that
+decays at the freestream (Figure~\ref{fig:eigfn}). Its growth rate is $\omega_i=\alpha c_i=+0.00348$
+(unstable) and its phase speed $c_r=0.93$ is the classic second-mode value near $1-1/\Mae$.
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.58\linewidth]{fig_eigenfunctions.pdf}
+  \caption{Computed eigenfunction of the worked-example Mack mode: the four amplitude fields
+  $|\hatu|,|\hatv|,|\hatT|,|\hatp|$ vs $y$ (each normalised). $|\hatT|$ spikes at the critical layer
+  ($\bar U=c_r$); $|\hatp|$ is wall-confined --- the acoustic signature of the second mode. All fields
+  decay at the freestream, confirming a discrete mode.}\label{fig:eigfn}
+\end{figure}
+
+\emph{This single $\omega_i>0$ is one point ``inside'' the neutral curve: repeating the solve across an
+$(R,\alpha)$ grid and finding where $\omega_i$ crosses zero traces the neutral curve of \S\ref{sec:neutral}.}
+(All numbers reproduce from \texttt{solve\_temporal\_2d}.)
+
+\section{Neutral curves}\label{sec:neutral}
+\problembox{Map the boundary between growth and decay: the locus where the growth rate is exactly zero.}
+
+The neutral curve is $c_i(R,\alpha)=0$ (temporal) or $\sigma(R,\omega)=0$ (spatial); inside it the flow is
+unstable. \texttt{pyMack} draws it in three steps:
+\begin{enumerate}[nosep,leftmargin=1.8em]
+  \item \textbf{Sweep} an $(R,\alpha)$ grid at fixed $\Mae$; at each node solve \eqref{eq:tEVP}, apply the
+        mode tests (\S\ref{sec:modes}), store $c_i$ (\texttt{build\_*\_grid.py}).
+  \item \textbf{Extract} the zero contour with marching squares (a standard method for tracing a
+        $c_i=0$ level set through a grid of values; \texttt{extract\_contours.py}); unresolved nodes are
+        tagged stable so the loop closes.
+  \item \textbf{Continuation} for hard branches: at low Mach the first-mode eigenvalue sinks into the
+        continuous spectrum. \texttt{trace\_continuation.py} tracks it \emph{by proximity} --- from a clean
+        seed it marches in $R$, follows the nearest $c$, and secant-solves $c_i=0$ at each step
+        (continuation = using each converged eigenvalue as the guess for the next nearby parameter value).
+\end{enumerate}
+
+\section{$N$-factor and transition}\label{sec:nfactor}
+\problembox{Convert local spatial growth into a single number predicting transition.}
+
+What matters for transition is the \emph{accumulated} amplification of a fixed-frequency disturbance. For a
+chosen reduced frequency $F$, solve the spatial problem (\S\ref{sec:spatial}) at successive stations to get
+$\sigma_L=-\Imag(\alpha_L)$ --- this is the same spatial growth $\sigma$ of Eq.~\eqref{eq:sgrowth}, expressed
+in the $L^*$ (Mack-length) scaling --- and integrate from the lower neutral point $R_0$
+(where $\sigma_L$ first turns positive):
+\begin{equation}\label{eq:N}
+  N(R)=\int_{R_0}^R\max(\sigma_L,0)\,\mathrm dR'\quad\text{(trapezoidal)},\qquad \frac{A(R)}{A(R_0)}=e^{N(R)} .
+\end{equation}
+The amplitude grows by $e^N$; transition is empirically expected near $N\approx9$--$11$ (the $e^N$ method;
+\texttt{analysis.py}). For a cone, surface arc length is mapped to an equivalent $R$ before integrating.
+\remark{$e^N$ is a correlation, not a criterion.}{The transition $N$ is \emph{not} universal: it depends on
+the disturbance environment (flight $\sim$9--11; noisy conventional tunnels can transition at $N\!\sim\!4$--$6$).
+It presumes a single dominant linear mode and stops at the onset of nonlinear breakdown, and it silently
+absorbs the unknown initial amplitude set by receptivity.}
+
+\section{Part A summary and replication checklist}\label{sec:summary}
+\begin{center}\small
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.7cm}>{\raggedright\arraybackslash}p{4.6cm}
+>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{2.4cm}@{}}
+\toprule
+\textbf{Goal} & \textbf{Problem solved} & \textbf{Method} & \textbf{Growth} \\
+\midrule
+Temporal growth, neutral curves
+  & generalised EVP $A\boldsymbol\phi=cB\boldsymbol\phi$, real $\alpha$ (Eq.~\ref{eq:tEVP})
+  & Chebyshev collocation $+$ QZ & $\alpha c_i$ \\
+Spatial growth, $N$-factor
+  & quadratic EVP $(C_0+\alpha C_1+\alpha^2C_2)\boldsymbol\phi=0$, real $\omega$ (Eq.~\ref{eq:qep})
+  & companion $+$ shift--invert; or temporal $+$ Newton seed & $-\alpha_i$ \\
+Neutral curve
+  & $\{c_i=0\}$ over an $(R,\alpha)$ sweep
+  & grid sweep $\to$ marching squares; continuation & --- \\
+Transition
+  & $N=\int\max(\sigma_L,0)\,\mathrm dR$ (Eq.~\ref{eq:N})
+  & fixed-$F$ spatial march $+$ integration & --- \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{To re-implement the spectral solver from scratch.}
+\begin{enumerate}[nosep,leftmargin=1.9em]
+  \item Solve the base-flow boundary-value problem (see the companion Mean Boundary Layer note); tabulate $\bar U,\bar T$ and derivatives.
+  \item Build $\xi_j$ \eqref{eq:gll}, $D_\xi$ \eqref{eq:Dformula}, map to $y$ \eqref{eq:map}, form $D_1,D_2$ \eqref{eq:Dmats}.
+  \item Assemble the $4\times4$ block operator from the four disturbance equations (temporal: $A,B$ with the split \eqref{eq:Bblocks}; spatial: $C_0,C_1,C_2$).
+  \item Overwrite the wall/freestream rows with the boundary conditions (\S\ref{sec:assemble} table), respecting the node ordering.
+  \item Solve the eigenvalue problem (temporal \eqref{eq:tEVP} or spatial \eqref{eq:companion}); filter for the discrete mode (\S\ref{sec:modes}); read $c_i$ or $-\alpha_i$.
+  \item Sweep parameters; extract $\{c_i=0\}$ for neutral curves, or integrate $-\alpha_i$ for $N$-factors.
+\end{enumerate}
+
+\bigskip
+{\sloppy
+\noindent\emph{Code map (Part~A).} spectral operators: \texttt{pymack/\allowbreak spectral.py}; temporal
+assembly: \texttt{pymack/\allowbreak temporal\_solver.py}; spatial assembly:
+\texttt{pymack/\allowbreak equations.py}; solvers / companion / Newton: \texttt{pymack/\allowbreak solver.py};
+mode selection: \texttt{discrete\_mode.py}. Neutral-curve drivers and continuation:
+\texttt{build\_*\_grid.py}, \texttt{extract\_contours.py}, and \texttt{trace\_\allowbreak continuation.py}.
+\par}
+
+%=====================================================================
+\part*{Part B --- The shooting solver}
+\addcontentsline{toc}{section}{Part B --- The shooting solver}
+%=====================================================================
+\bridge{Part~A built \emph{one large matrix} and asked a dense eigensolver for \emph{all} its eigenvalues.
+Part~B solves the identical temporal problem the opposite way: recast the disturbance equations as a small
+first-order system, integrate it across the layer, and drive a tiny wall matrix singular to pinpoint
+\emph{one} eigenvalue. This is the classical shooting method (Mack 1984), re-implemented in the file
+\texttt{pymack/\allowbreak temporal\_shooting.py} following Ozgen \& Kircali (2008).}
+
+\section{The first-order state and its coefficient matrix}\label{sec:shoot-system}
+\problembox{\textbf{Given} a real wavenumber $\alpha$ and a trial phase speed $c$, cast the four disturbance
+equations as a single first-order ODE $\D Y=A(y)\,Y$ in a 6-component complex state. \textbf{Eigenvalue:}
+$c$ (found in \S\ref{sec:shoot-search}). No global matrix is ever formed.}
+
+The spectral route discretised the four second-order disturbance ODEs \emph{all at once} on a grid. Shooting
+instead reduces them to a first-order system in $y$ and integrates it like an initial-value problem. Following
+Ozgen \& Kircali (2008), Eqs.~22--28, specialised to two dimensions (spanwise wavenumber $\beta=0$, no
+spanwise velocity), the disturbance is described by the six-component complex state
+\begin{equation}\label{eq:state}
+  Y(y)=\big(X_1,X_2,X_3,X_4,X_5,X_6\big)^{\mathsf T}\in\mathbb C^{6},
+\end{equation}
+in which $X_1,X_3,X_5$ are the \emph{primary flow amplitudes}, while $X_2,X_6$ are the wall-normal derivatives
+of $X_1,X_5$ and $X_4$ is the pressure amplitude.
+Concretely $X_1$ is the streamwise-velocity amplitude, $X_3$ the wall-normal-velocity amplitude, and $X_5$ the
+temperature amplitude (with $X_2=\D X_1$ and $X_6=\D X_5$ their wall-normal derivatives; $X_4$ is the pressure
+amplitude, coupled through the continuity and $y$-momentum rows rather than as a plain derivative). The state
+thus stacks $(u,\,u',\,v,\,p,\,T,\,T')$ in that order (Ozgen's convention); the two second-order
+momentum/energy equations and the first-order continuity relation together close the system. The whole set is written as one
+first-order ODE,
+\begin{equation}\label{eq:foode}
+  \frac{\mathrm d Y}{\mathrm d y}=A\big(y;\ \alpha,c,\Ree,\Mae\big)\,Y,\qquad A\in\mathbb C^{6\times6},
+\end{equation}
+where $A$ is assembled \emph{pointwise} --- one $6\times6$ matrix at each $y$ --- from the local mean-flow
+data: the velocity and temperature with their derivatives $\bar U,\bar U',\bar U''$ and $\bar T,\bar T'$;
+the viscosity $\bar\mu$ with $\mathrm d\mu/\mathrm dT$ and $\mathrm d^2\mu/\mathrm dT^2$; and the
+conductivity $\bar\kappa$ with its temperature derivatives (function
+\texttt{ozgen\_\allowbreak first\_order\_\allowbreak matrix\_2d}, which samples the scaled base flow at the
+single point $y$).
+
+\plain{Rows $1$ and $5$ of $A$ carry the trivial ``derivative-of'' definitions $\D X_1=X_2$ and $\D X_5=X_6$
+--- literally the single entries $A_{12}=1$ and $A_{56}=1$. The physics lives in rows $2,4,6$ (the two
+momentum balances and the energy balance) and in row $3$ (continuity plus the equation of state).}
+
+The pointwise structure mirrors the block operator of Part~A term for term: the convective factor
+$\alpha(\bar U-c)$, the viscous prefactor $\propto \Ree/(\bar\mu\bar T)$, the transport-derivative couplings
+$\tfrac{\mathrm d\mu}{\mathrm dT}\bar U'$, and the conduction group in $\bar\kappa$ all reappear, only now as
+\emph{scalar} entries of a $6\times6$ matrix evaluated at one height rather than as $n\times n$ diagonal blocks.
+The gas defaults ($\gamma=1.4$) and the length scaling (\texttt{L\_star}) match the spectral solver, so both
+routes see the identical mean flow.
+
+\section{Boundary conditions at the wall and the decaying freestream basis}\label{sec:shoot-bc}
+\problembox{Supply the six conditions that pin down a non-trivial disturbance: three homogeneous conditions
+at the wall, and three at the freestream selecting only the \emph{decaying} solutions. Together they turn
+\eqref{eq:foode} into a well-posed shooting problem.}
+
+\paragraph{Wall conditions.} At the wall $y=0$ the disturbance must obey three homogeneous conditions,
+\begin{equation}\label{eq:wallbc}
+  X_1(0)=0\ \text{(no slip)},\qquad X_3(0)=0\ \text{(no penetration)},\qquad X_5(0)=0\ \text{(isothermal wall)},
+\end{equation}
+i.e.\ the three \emph{primary} flow amplitudes ($u,v,T$) vanish at the wall. These are exactly the collocation identity rows
+of the spectral solver (\S\ref{sec:assemble}), now imposed as pointwise conditions on the integrated state.
+
+\paragraph{Freestream: the decaying basis.} As $y\to y_{\max}$ the mean flow becomes uniform, so the
+coefficient matrix $A(y_{\max})$ is essentially \emph{constant}. A constant-coefficient linear system
+$\D Y=A_\infty Y$ has solutions $Y\propto e^{\lambda y}\,v$ built from the eigenpairs $(\lambda,v)$ of
+$A_\infty$; the six eigenvalues split into three with $\Real(\lambda)>0$ (which \emph{grow} outward and are
+unphysical) and three with $\Real(\lambda)<0$ (which \emph{decay} outward, the boundedness a genuine mode
+requires). We therefore keep only the three decaying eigenvectors (function
+\texttt{ozgen\_freestream\_decay\_basis\_2d}),
+\begin{equation}\label{eq:decay}
+  A_\infty=A(y_{\max}),\qquad A_\infty v_k=\lambda_k v_k,\qquad \Real(\lambda_k)<0,\ k=1,2,3,
+\end{equation}
+and assemble them into a $6\times3$ matrix. This matrix is then orthonormalised (a QR factorisation) into an
+orthonormal $6\times3$ basis $Y(y_{\max})$ --- the starting condition for the march. Enforcing decay at the
+edge in this way is the shooting analogue of the spectral solver's freestream identity rows.
+\remark{Fallback if fewer than three decay.}{If a trial $c$ makes fewer than three eigenvalues strictly
+decaying, the code instead takes the three \emph{most} decaying (smallest $\Real\lambda$) so the march is
+always well defined; near the physical eigenvalue exactly three decay, as expected.}
+
+\section{Integrating the bounded basis to the wall}\label{sec:shoot-integrate}
+\problembox{Propagate the three admissible (decaying) freestream solutions down to the wall, keeping the
+integration numerically clean, so their wall values can be tested against \eqref{eq:wallbc}.}
+
+Because we track three independent solutions simultaneously, the state is not a vector but the $6\times3$
+matrix $Y$ whose columns are the three solutions. It is marched from $y_{\max}$ \emph{down} to the wall
+$y=0$ on a fixed grid of about $n_{\text{steps}}=800$ steps with the classical fourth-order Runge--Kutta
+scheme (function \texttt{integrate\_ozgen\_bounded\_basis\_2d}). Over one step of size $h$ (here $h<0$, since
+we integrate toward the wall),
+\begin{equation}\label{eq:rk4}
+\begin{aligned}
+  k_1&=A(y_0)\,Y, & k_2&=A(y_m)\big(Y+\tfrac12 h\,k_1\big), \\
+  k_3&=A(y_m)\big(Y+\tfrac12 h\,k_2\big), & k_4&=A(y_1)\big(Y+h\,k_3\big),
+\end{aligned}
+\qquad
+Y\leftarrow Y+\frac{h}{6}\big(k_1+2k_2+2k_3+k_4\big),
+\end{equation}
+with $y_m=\tfrac12(y_0+y_1)$ the step midpoint and $A(\cdot)$ the pointwise matrix of \S\ref{sec:shoot-system}.
+
+\paragraph{Re-orthonormalisation.} The three solutions decay at very different rates, so after only a short
+march the fast-decaying columns are numerically swamped by the slow one and the basis collapses toward a
+single direction (a parasitic-growth / stiffness pathology well known in shooting). To suppress it, after
+\emph{every} RK4 step the three columns are re-orthonormalised by a QR (Gram--Schmidt) step,
+\begin{equation}\label{eq:reortho}
+  Y\ \longleftarrow\ Q,\qquad\text{where}\quad Y=QR\ \ (Q\in\mathbb C^{6\times3}\ \text{orthonormal}).
+\end{equation}
+Only the orthonormal factor $Q$ is retained; the upper-triangular $R$ (which merely records the discarded
+scaling) is thrown away. This keeps the three columns well-conditioned all the way to the wall without
+changing the \emph{space} they span --- and it is that span, not the individual column magnitudes, that the
+eigenvalue condition below depends on.
+\plain{QR after every step is a re-basing: it rotates the three tangled solutions back to a clean orthonormal
+frame while preserving the subspace they represent. The eigenvalue test cares only about which
+three-dimensional subspace of $\mathbb C^6$ arrives at the wall, so this scaling is harmless yet essential
+for accuracy.}
+
+\section{The eigenvalue condition and the wall matrix}\label{sec:shoot-wall}
+\problembox{Detect the special $c$ for which a non-trivial disturbance satisfies all three wall conditions
+\eqref{eq:wallbc} at once. \textbf{Eigenvalue:} the phase speed $c$ that makes the wall matrix singular.}
+
+At the wall the integrated basis is a $6\times3$ matrix $Y(0)$; any admissible disturbance is a combination
+$Y(0)\,a$ of its three columns with coefficients $a\in\mathbb C^3$. The three wall conditions \eqref{eq:wallbc}
+ask that rows $1,3,5$ of that combination vanish. Collecting those rows gives the $3\times3$ \textbf{wall
+matrix} (function \texttt{ozgen\_temporal\_wall\_matrix\_2d})
+\begin{equation}\label{eq:wallmat}
+  M(c)=\begin{bmatrix} Y_{1}(0)\\ Y_{3}(0)\\ Y_{5}(0)\end{bmatrix}\in\mathbb C^{3\times3},
+  \qquad\text{wall conditions:}\quad M(c)\,a=0 .
+\end{equation}
+A \emph{non-trivial} coefficient vector $a\neq0$ exists only when $M(c)$ is \textbf{singular}. Rather than
+test a determinant (which is poorly scaled after the repeated QR re-scaling), the code monitors the
+\emph{smallest singular value} of $M(c)$ (function \texttt{ozgen\_temporal\_sigma\_min\_2d}),
+\begin{equation}\label{eq:sigmamin}
+  \sigma_{\min}(c)=\min\ \operatorname{svd}\!\big(M(c)\big),\qquad
+  \boxed{\,\sigma_{\min}(c)\to0\ \Longleftrightarrow\ c\ \text{is an eigenvalue}\,}.
+\end{equation}
+\plain{$\sigma_{\min}$ is a clean, always-non-negative ``distance to singular.'' It is zero exactly when the
+three decaying solutions can be combined to meet all three wall conditions --- that is, exactly when a genuine
+boundary-layer mode exists at that $c$. The eigenvalue search below just hunts for the $c$ that drives this
+one real number to zero.}
+
+\section{The eigenvalue search}\label{sec:shoot-search}
+\problembox{Locate the complex phase speed $c=c_r+\imag c_i$ at which $\sigma_{\min}(c)=0$, starting from a
+physics-based guess. This single $c$ is the temporal eigenvalue, identical to the one Part~A returns.}
+
+Because $c$ is complex, driving $\sigma_{\min}(c)\to0$ is a two-dimensional real minimisation over
+$(c_r,c_i)$. \texttt{pyMack} runs a Nelder--Mead simplex (\texttt{scipy.optimize.minimize}, function
+\texttt{solve\_\allowbreak ozgen\_\allowbreak temporal\_\allowbreak mode\_2d\_\allowbreak sigma\_min}) on the objective $\sigma_{\min}$, from a physics-based
+initial guess $c_{\text{guess}}$ (e.g.\ the second-mode value $c_r\!\approx\!1-1/\Mae$). The search is
+confined to the physical strip
+\begin{equation}\label{eq:bounds}
+  c_r\in(0,\,1.2),\qquad c_i\in(-0.2,\,0.2),
+\end{equation}
+enforced by returning a large penalty ($10^{6}$) whenever a trial leaves the box, and it converges to the
+simplex tolerances
+\begin{equation}\label{eq:tols}
+  \texttt{xatol}=10^{-7}\ (\text{in }c),\qquad \texttt{fatol}=10^{-8}\ (\text{in }\sigma_{\min}),
+\end{equation}
+within at most $\sim\!120$ iterations. Each objective evaluation runs the \emph{entire} pipeline of
+\S\S\ref{sec:shoot-bc}--\ref{sec:shoot-wall}: build the freestream decay basis, RK4-integrate with QR
+re-orthonormalisation to the wall, form $M(c)$, and take $\sigma_{\min}$. The converged minimiser
+$c=c_r+\imag c_i$ is the eigenvalue, and the temporal growth rate follows exactly as in Part~A,
+$\omega_i=\alpha c_i$.
+
+\begin{center}\footnotesize
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}r>{\raggedright\arraybackslash}p{5.5cm}>{\raggedright\arraybackslash}p{6.2cm}@{}}
+\toprule
+step & operation & function \\
+\midrule
+1 & build the $6\times6$ pointwise matrix $A(y)$ from the mean flow & \texttt{ozgen\_first\_order\_matrix\_2d} \\
+2 & eigen-decompose $A(y_{\max})$; keep the 3 decaying modes; QR to a $6\times3$ basis & \texttt{ozgen\_freestream\_decay\_basis\_2d} \\
+3 & RK4-march the $6\times3$ basis $y_{\max}\!\to\!0$, QR after every step & \texttt{integrate\_ozgen\_bounded\_basis\_2d} \\
+4 & collect wall rows $(X_1,X_3,X_5)$ into $M(c)$; take $\sigma_{\min}(c)$ & \texttt{ozgen\_temporal\_wall\_matrix\_2d}, \texttt{ozgen\_temporal\_sigma\_min\_2d} \\
+5 & Nelder--Mead over $(c_r,c_i)$ until $\sigma_{\min}\!\to\!0$; return $c$ & \texttt{solve\_ozgen\_temporal\_mode\_2d\_sigma\_min} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Spectral versus shooting: the same eigenvalue, two temperaments}\label{sec:shoot-compare}
+The two solvers answer the identical question --- ``for this real $\alpha$, what complex $c$ admits a
+non-trivial disturbance decaying at the freestream and vanishing at the wall?'' --- and return the same
+physical phase speed $c$, but they trade off differently:
+
+\begin{center}\small
+\renewcommand{\arraystretch}{1.28}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{5.2cm}>{\raggedright\arraybackslash}p{5.2cm}@{}}
+\toprule
+ & \textbf{Spectral (Part~A)} & \textbf{Shooting (Part~B)} \\
+\midrule
+core object & one $4n\times4n$ pair $(A,B)$ & one $6\times6$ matrix $A(y)$, evaluated pointwise \\
+what it returns & \emph{all} $4n$ eigenvalues at once & \emph{one} eigenvalue near a guess \\
+freestream decay & identity rows on the edge nodes & keep the 3 decaying eigenvectors of $A(y_{\max})$ \\
+wall conditions & identity row-replacement & $M(c)$ singular, $\sigma_{\min}(c)\to0$ \\
+how the answer is found & dense QZ / shift--invert & RK4 march $+$ QR, then Nelder--Mead on $\sigma_{\min}$ \\
+memory / cost & large dense matrix, $O((4n)^3)$ & tiny system, cheap per evaluation \\
+best used for & surveying the whole spectrum; sweeping neutral curves and $N$-factors & pinpointing one mode to high accuracy from a good guess \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\plain{Think of the spectral method as a \emph{census} --- it enumerates every eigenvalue on the grid, which
+is exactly what you want when tracing a neutral curve or hunting an unknown branch --- and shooting as a
+\emph{sniper}: given a good guess it drives one mode to machine-tolerance accuracy with almost no memory and
+no large matrix. Used together, the spectral solver locates a mode and shooting refines and cross-checks it;
+their agreement on $c$ is a strong verification that the eigenvalue is real physics, not a discretisation
+artefact.}
+
+\bigskip
+{\sloppy
+\noindent\emph{Code map (Part~B).} first-order matrix, decay basis, integration, wall matrix, singular value,
+and search: all in \texttt{pymack/\allowbreak temporal\_shooting.py}; base-flow sampling shared via
+\texttt{pymack/\allowbreak mack\_shooting.py} (\texttt{\_sample\_\allowbreak scaled\_baseflow}). References:
+Ozgen \& Kircali (2008), \emph{Theor.\ Comput.\ Fluid Dyn.}, Eqs.~22--28; Mack (1984), AGARD-R-709.
+\par}
+
+\end{document}

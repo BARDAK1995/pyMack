@@ -1,0 +1,410 @@
+\documentclass[11pt]{article}
+\input{lst_preamble}
+
+\title{\textbf{Derivation of the Disturbance Equations}\\[3pt]
+\large From the compressible Navier--Stokes equations to the four\\
+disturbance ODEs solved by \texttt{pyMack}}
+\author{Personal reference note}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\noindent This note derives, step by step, the ordinary differential equations that govern an
+infinitesimal disturbance riding on a compressible laminar boundary layer. Starting from the compressible
+Navier--Stokes equations, we split every field into a steady mean plus a small disturbance, drop products of
+disturbances to linearise, invoke the parallel-flow assumption, and insert the normal-mode ansatz
+$q'=\hatq(y)\,e^{\imag(\alpha x-\omega t)}$. The result is four coupled ODEs in the wall-normal coordinate
+$y$ --- continuity (with the equation of state folded in), $x$- and $y$-momentum, and energy --- exactly as
+assembled in \texttt{pymack/temporal\_solver.py}. The mean-flow profiles that appear as coefficients are
+taken as given (they are computed in the companion \emph{Mean Boundary Layer} note); the discretisation of
+these ODEs into matrices and the eigenvalue solve are carried out in the companion \emph{Numerical Methods}
+note. A closing section explains what the resulting eigenmodes physically \emph{are} --- first and second
+(Mack) modes --- and the four idealisations behind the equations.
+\end{abstract}
+
+\tableofcontents
+\bigskip
+
+\noindent\textbf{How to read this.} Boxes marked {\color{kicol}\textbf{``What problem is solved here''}}
+state exactly which equation and unknown are involved at each stage. \emph{In plain words} notes give the
+intuition; grey \textsf{Remark} asides hold secondary detail you can skip on a first read.
+
+\paragraph{Notation.} Overbars are mean (base-flow) quantities; hats are complex disturbance amplitudes.
+The continuous wall-normal amplitude is $\hatq(y)=(\hatu,\hatv,\hatT,\hatp)$. A prime on a mean quantity is
+$\D\equiv\mathrm d/\mathrm dy$.
+\begin{center}\footnotesize
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{@{}ll@{\hspace{1.4em}}ll@{}}
+\toprule
+\multicolumn{2}{@{}l}{\textbf{Base flow \& transport}} & \multicolumn{2}{l}{\textbf{Disturbance / eigenvalue}}\\
+$\bar U,\bar T,\bar\rho{=}1/\bar T$ & mean velocity, temp., density & $\hatq$ & amplitude shape, Eq.~\eqref{eq:ansatz}\\
+$\bar\mu,\bar\kappa$ & viscosity, conductivity & $\hatu,\hatv,\hatT,\hatp$ & velocity/temp./pressure amplitudes\\
+$\Mae,\ \Ree,\ \mathit{Pr},\ \gamma$ & Mach, Reynolds, Prandtl, $c_p/c_v$ & $\alpha,\ \omega$ & wavenumber, frequency\\
+$\nuR{=}1/(\Ree\bar\rho)$ & viscous prefactor & $c{=}\omega/\alpha$ & complex phase speed; $c_r,c_i$ its parts\\
+$\mathcal C_\kappa,\mathcal C_d,\mathcal L_c$ & conduction/dissipation groups & $M_{\rm rel}$ & relative Mach number, \S\ref{sec:mechanisms}\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%=====================================================================
+\section{What stability theory asks, and the plan}\label{sec:idea}
+%=====================================================================
+A laminar boundary layer is a smooth, steady flow that eventually becomes turbulent. The first stage of
+that process is the amplification of tiny disturbances --- noise, roughness, free-stream turbulence ---
+always present in a real flow. \emph{Linear} Stability Theory asks the cleanest version of the question:
+
+\begin{quote}
+If we add one infinitesimally small wave to the laminar flow, does that wave \textbf{grow} or
+\textbf{decay} as it travels?
+\end{quote}
+
+We will write that small wave as $q'(x,y,t)$ --- shorthand for the collection of all disturbance
+quantities (velocity, temperature, pressure; defined precisely in Eq.~\eqref{eq:split}). ``Infinitesimal''
+is the key word: if $q'$ is small enough, products of small quantities are negligible and its governing
+equations become \emph{linear}.
+
+\paragraph{Why this becomes an eigenvalue problem.} After linearising, the coefficients of the equations
+depend only on the wall-normal coordinate $y$. Because they are \emph{constant in $x$ and $t$},
+substituting a single trial wave $q'\propto e^{\imag(\alpha x-\omega t)}$ turns every $x$- and
+$t$-derivative into multiplication by a constant; the equations then no longer involve $x$ or $t$ at all,
+only the wave's wall-normal shape. The requirement that a \emph{non-zero} shape exist is precisely an
+\textbf{eigenvalue condition} --- solved numerically in the companion \emph{Numerical Methods} note.
+
+\plain{An eigenvalue problem is the statement ``$\mathsf{A}\hatq=\lambda\hatq$'': for most $\lambda$ the
+only solution is $\hatq=0$ (no wave), but for special values $\lambda$ --- the eigenvalues --- a non-zero
+shape $\hatq$ (the eigenfunction) exists. Here the eigenvalue carries the growth rate, so its sign tells us
+grow or decay.}
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.86\linewidth]{fig_setup.pdf}
+  \caption{The physical setup. A steady compressible boundary layer grows along a wall; its mean velocity
+  $\bar U(y)$ and temperature $\bar T(y)$ vary across the layer of thickness $\delta(x)$. LST tracks one
+  small disturbance $q'(x,y,t)$ riding in this layer and asks whether it amplifies downstream.}
+\end{figure}
+
+LST is one stage of a longer story (Figure~\ref{fig:roadmap}): disturbances first \emph{enter} the layer
+(receptivity), then grow linearly (LST --- this document), then break down nonlinearly to turbulence. We
+treat only the linear-growth stage; \S\ref{sec:scope} states exactly what that leaves out.
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.95\linewidth]{fig_transition_roadmap.pdf}
+  \caption{The transition process. This document covers the highlighted linear-modal-growth stage (which
+  produces the $e^N$ amplification); receptivity and nonlinear breakdown are separate problems
+  (\S\ref{sec:scope}).}\label{fig:roadmap}
+\end{figure}
+
+The computation itself is a short pipeline (Figure~\ref{fig:workflow}):
+\begin{enumerate}[nosep,leftmargin=2.2em]
+  \item compute the steady \textbf{mean (base) flow} (companion \emph{Mean Boundary Layer} note);
+  \item \textbf{linearise} and insert a wave \textbf{ansatz} to get ordinary differential equations in $y$ (\S\ref{sec:lin}--\ref{sec:eqs}, this note);
+  \item \textbf{discretise} those ODEs into matrices with Chebyshev collocation (companion \emph{Numerical Methods} note);
+  \item solve the resulting \textbf{eigenvalue problem} for the growth rate (companion \emph{Numerical Methods} note);
+  \item sweep parameters to draw \textbf{neutral curves} and integrate \textbf{$N$-factors} (companion \emph{Numerical Methods} note).
+\end{enumerate}
+This note delivers stage~2: it takes the mean flow of stage~1 as a known coefficient and produces the
+disturbance ODEs that stages~3--5 discretise and solve.
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.6\linewidth]{fig_workflow.pdf}
+  \caption{End-to-end workflow. The single eigenvalue solve (stage~5) forks into a \emph{temporal} route
+  (real wavenumber $\alpha$ in, complex phase speed $c$ out; used for neutral curves) and a \emph{spatial}
+  route (real frequency $\omega$ in, complex $\alpha$ out; used for $N$-factors).}\label{fig:workflow}
+\end{figure}
+
+%=====================================================================
+\section{Overview: from the governing equations to the matrix problem}\label{sec:overview}
+%=====================================================================
+\bridge{Before the derivation itself, here is the whole arc in one picture --- where these equations come
+from and where they lead.}
+
+\paragraph{From the governing equations to the matrix problem the code solves.} This note, together with the
+companion \emph{Numerical Methods} note, is a single chain of transformations carrying the \emph{full
+governing equations} (top --- nonlinear, unsolvable by hand) into the \emph{one matrix problem the code
+actually solves} (bottom --- boxed). Those two are the forms worth remembering; everything in between is how
+we get from the first to the last.
+
+\begin{center}\small
+$\partial_t\rho+\nabla\!\cdot(\rho\mathbf u)=0,\qquad \rho\,\tfrac{\D\mathbf u}{\D t}=-\nabla p+\nabla\!\cdot\boldsymbol\tau,$\\[1pt]
+$\rho\,c_p\,\tfrac{\D T}{\D t}=\tfrac{\D p}{\D t}+\nabla\!\cdot(\kappa\nabla T)+\Phi,\qquad p=\rho R T$\\[2pt]
+{\footnotesize the \textbf{governing equations}: nonlinear, compressible Navier--Stokes in $(x,y,t)$ for $\mathbf q=(u,v,T,p,\rho)$ --- Eqs.~\eqref{eq:ns-mass}--\eqref{eq:ns-state}}\\[6pt]
+{\footnotesize$\downarrow$\quad split $\mathbf q=\bar{\mathbf q}+\mathbf q'$, subtract the mean (it solves the equations on its own), drop products of the small primes\quad(\S\ref{sec:lin}, Steps~1--2)}\\[6pt]
+linear PDEs for the disturbance $\mathbf q'=(u',v',T',p',\rho')$ in $(x,y,t)$\\[1pt]
+{\footnotesize every coefficient is now a \emph{known} mean profile $\bar U(y),\bar T(y),\dots$}\\[6pt]
+{\footnotesize$\downarrow$\quad parallel-flow assumption, then the normal-mode ansatz $\mathbf q'=\hatq(y)\,e^{\imag(\alpha x-\omega t)}$, so $\partial_x\!\to\!\imag\alpha,\ \partial_t\!\to\!-\imag\omega$\quad(\S\ref{sec:lin}, Steps~3--5)}\\[6pt]
+$\mathbf L(\alpha,c;\,y,\D)\,\hatq(y)=\mathbf 0$\\[1pt]
+{\footnotesize four coupled \textbf{ODEs in $y$} for the wall-normal shape $\hatq=(\hatu,\hatv,\hatT,\hatp)$ --- Eqs.~\eqref{eq:cont}--\eqref{eq:energy}, the endpoint of this note}\\[6pt]
+{\footnotesize$\downarrow$\quad Chebyshev collocation: $\D\!\to\!D_1,\ \D^2\!\to\!D_2$, each mean coefficient $\to$ a diagonal matrix, the four fields stacked into one vector\quad(companion \emph{Numerical Methods} note)}\\[6pt]
+$\boxed{\,A(\alpha)\,\boldsymbol\phi=c\,B(\alpha)\,\boldsymbol\phi\,}\qquad A,B\in\mathbb C^{4n\times4n}$\\[1pt]
+{\footnotesize the \textbf{discrete generalised eigenvalue problem} \texttt{temporal\_solver.py} assembles and solves --- derived in the companion \emph{Numerical Methods} note}
+\end{center}
+
+\noindent The top line is a system of nonlinear partial differential equations no one can solve by hand;
+the bottom line is finite linear algebra. The eigenvalue carries the answer: \texttt{temporal\_solver.py}
+fills the two matrices $A,B$ and calls \texttt{scipy.linalg.eig}$(A,B)$, which returns the complex phase
+speed $c$ (the eigenvalue) and the grid-sampled mode shape $\boldsymbol\phi$ (the eigenvector). Holding
+$\alpha$ real and solving for $c$ is the \emph{temporal} problem; holding $\omega$ real and regrouping the
+same ODEs by powers of $\alpha$ turns the last line into the \emph{spatial} quadratic problem. \textbf{The
+present note derives the two middle lines} --- the linear PDEs and the four ODEs in $y$; the discretisation
+and eigenvalue-problem steps that produce the boxed bottom line are carried out in the companion
+\emph{Numerical Methods} note.
+
+\remark{Where the coefficients come from.}{Every overbarred symbol in the chain --- $\bar U(y)$, $\bar T(y)$,
+$\bar\mu$, $\bar\kappa$ and their $y$-derivatives --- is a \emph{known} function once the steady laminar
+base flow has been solved. That boundary-value problem, its non-dimensionalisation, and the Mack length/Reynolds
+scales are the subject of the companion \emph{Mean Boundary Layer} note; here we simply treat those profiles
+as given data.}
+
+%=====================================================================
+\section{Linearisation and the normal-mode ansatz}\label{sec:lin}
+%=====================================================================
+\bridge{We now perturb the mean flow by an infinitesimal wave and reduce the governing PDEs to ordinary
+differential equations in $y$ --- the equations the rest of the LST pipeline discretises and solves.}
+
+The flow obeys the compressible Navier--Stokes equations --- conservation of mass, momentum, and energy for
+a viscous, heat-conducting perfect gas:
+\begin{align}
+  \frac{\D\rho}{\D t}+\rho\,\nabla\!\cdot\!\mathbf u &= 0, &&\text{(mass)}\label{eq:ns-mass}\\
+  \rho\frac{\D\mathbf u}{\D t} &= -\nabla p+\nabla\!\cdot\!\boldsymbol\tau, &&\text{(momentum)}\label{eq:ns-mom}\\
+  \rho\,c_p\frac{\D T}{\D t} &= \frac{\D p}{\D t}+\nabla\!\cdot(\kappa\nabla T)+\Phi, &&\text{(energy)}\label{eq:ns-energy}\\
+  p &= \rho R T, &&\text{(state)}\label{eq:ns-state}
+\end{align}
+where $\mathbf u=(u,v)$ is velocity, $\rho$ density, $T$ temperature, $p$ pressure, $\mu$ viscosity,
+$\kappa$ conductivity, $c_p$ specific heat, $R$ the gas constant, $\D/\D t=\partial_t+\mathbf u\!\cdot\!\nabla$
+the material derivative, $\boldsymbol\tau$ the Newtonian viscous stress tensor, and $\Phi=\boldsymbol\tau\!:\!\nabla\mathbf u$
+the dissipation function (both linear in velocity gradients). These are the same equations solved for the
+steady mean flow in the companion \emph{Mean Boundary Layer} note; here we apply them a second time,
+linearised, for the disturbance. The reduction proceeds in five steps.
+
+\paragraph{Step 1 --- split into mean plus disturbance.}
+\begin{equation}\label{eq:split}
+  u=\bar U(y)+u',\ v=v',\ T=\bar T(y)+T',\ p=\bar p+p',\ \rho=\bar\rho(y)+\rho',\qquad |\cdot'|\ll|\bar\cdot| .
+\end{equation}
+($\bar v=0$ for a parallel flow.) The collection $q'=(u',v',T',p',\rho')$ is the disturbance.
+
+\paragraph{Step 2 --- drop products of disturbances.} Substitute \eqref{eq:split} into
+\eqref{eq:ns-mass}--\eqref{eq:ns-state}. The mean satisfies the equations by itself and cancels; any term
+with two primes is the product of two small numbers and is dropped. What remains is \emph{linear} in $q'$
+with coefficients made of the known mean profiles.
+
+\paragraph{Step 3 --- parallel-flow assumption.} The layer grows slowly, so locally $\bar q=\bar q(y)$
+only; the coefficients depend on $y$ alone. \remark{Caveat.}{This neglects the $O(1/R)$ streamwise growth of
+the mean flow and the eigenfunction; the rigorous remedy is the Parabolised Stability Equations (PSE), which
+march the disturbance downstream retaining that slow $x$-variation (\S\ref{sec:scope}).}
+
+\paragraph{Step 4 --- the normal-mode ansatz.}
+\begin{equation}\label{eq:ansatz}
+  q'(x,y,t)=\hatq(y)\,e^{\imag(\alpha x-\omega t)},\qquad \hatq=(\hatu,\hatv,\hatT,\hatp)^{\mathsf T},
+\end{equation}
+with $\alpha$ the streamwise wavenumber ($2\pi/\alpha$ = wavelength), $\omega$ the frequency, $c=\omega/\alpha$
+the complex phase speed, $\hatq(y)$ the wall-normal shape. \remark{2D wave.}{We take spanwise wavenumber
+$\beta=0$. A general oblique wave $\propto e^{\imag(\alpha x+\beta z-\omega t)}$ travels at angle
+$\psi=\arctan(\beta/\alpha)$; compressibility breaks Squire's theorem, so the \emph{first} mode is most
+unstable oblique ($\psi\!\sim\!55^\circ$) while the \emph{second} mode peaks at $\psi=0$. The 2D solver thus
+captures the second mode faithfully but under-predicts the first (\S\ref{sec:scope}).} Substitution gives
+$\partial_x\!\mapsto\!\imag\alpha$, $\partial_t\!\mapsto\!-\imag\omega$, $\partial_y\!\mapsto\!\D\equiv\mathrm d/\mathrm dy$,
+collapsing the PDEs to coupled ODEs in $y$.
+
+\paragraph{Step 5 --- eliminate density.} The linearised state law gives
+$\rho'/\bar\rho=\gamma\Mae^2\hatp-\hatT/\bar T$, removing $\rho'$. The state then has four fields
+$\hatu,\hatv,\hatT,\hatp$, with $\hatp$ the pressure amplitude scaled by $\rho_eU_e^2$ (so
+$\gamma\Mae^2\hatp=p'/p_e$).
+
+\paragraph{A worked linearisation (continuity), so the mechanics are explicit.} Take mass conservation
+\eqref{eq:ns-mass}, $\partial_t\rho+\nabla\!\cdot(\rho\mathbf u)=0$. Insert \eqref{eq:split}; the steady mean
+satisfies $\partial_x(\bar\rho\bar U)=0$ and cancels. Keeping only terms \emph{linear} in primes:
+\begin{equation}
+  \partial_t\rho'+\partial_x\!\big(\bar\rho\,u'+\rho'\bar U\big)+\partial_y\!\big(\bar\rho\,v'\big)
+  \;\Rightarrow\;
+  \partial_t\rho'+\bar U\partial_x\rho'+\bar\rho\,\partial_x u'+\partial_y(\bar\rho v')=0 .
+\end{equation}
+Now apply the ansatz ($\partial_t\!\to\!-\imag\omega=-\imag\alpha c$, $\partial_x\!\to\!\imag\alpha$,
+$\partial_y\!\to\!\D$) and substitute $\rho'$ from Step~5; collecting terms and dividing by $\bar\rho$ gives
+exactly Eq.~\eqref{eq:cont} below. \emph{The other three equations follow by the identical procedure on
+\eqref{eq:ns-mom}--\eqref{eq:ns-energy}}; the algebra is mechanical but long, so only the result is printed.
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.92\linewidth]{fig_ansatz.pdf}
+  \caption{The ansatz \eqref{eq:ansatz} factorises a disturbance $q'=\hatq(y)\,e^{\imag(\alpha x-\omega t)}$
+  into a wall-normal \emph{shape} $\hatq(y)$ (left; zero at the wall, decaying at the edge --- the
+  eigenfunction) times a travelling wave in $x$ (right; wavelength $2\pi/\alpha$, phase speed $c_r=\Real(c)$).}
+\end{figure}
+
+%=====================================================================
+\section{The four disturbance equations}\label{sec:eqs}
+%=====================================================================
+\problembox{These are the linear ODEs in $y$ for $\hatu,\hatv,\hatT,\hatp$. Fixing one of $\alpha$ or
+$\omega$ real makes the other (through $c$ or $\alpha$) the eigenvalue. Every overbarred quantity is a
+known base-flow coefficient; all transport derivatives ($\mathrm d\mu/\mathrm dT$, $\mathrm d\kappa/\mathrm dT$,
+\dots) are evaluated at the local mean temperature $\bar T(y)$ and are therefore known functions of $y$.}
+
+The form assembled in \texttt{pymack/temporal\_solver.py} follows. Momentum and energy are divided by
+$\bar\rho$; write the viscous prefactor $\nuR\equiv1/(\Ree\,\bar\rho)$. Throughout, every $\bar\rho$ is the
+base-flow density, i.e.\ the diagonal field $\bar\rho(y)=1/\bar T(y)$ --- this single substitution applies
+uniformly inside $\nuR$, $\mathcal C_\kappa$, and $\mathcal C_d$ below.
+
+\paragraph{(C) Continuity $+$ equation of state.}
+\begin{equation}\label{eq:cont}
+  \imag\alpha\hatu+\D\hatv-\frac{\bar T'}{\bar T}\hatv
+  +\imag\alpha(\bar U-c)\Big(\gamma\Mae^2\hatp-\frac{\hatT}{\bar T}\Big)=0 .
+\end{equation}
+
+\paragraph{(X) Streamwise momentum.}
+\begin{equation}\label{eq:xmom}
+\begin{aligned}
+  \imag\alpha(\bar U-c)\hatu+\bar U'\hatv+\imag\alpha\bar\rho^{-1}\hatp
+  =\nuR\Big[&\bar\mu\big(\D^2-\tfrac43\alpha^2\big)\hatu+\bar\mu'\D\hatu
+     +\imag\alpha\big(\tfrac13\bar\mu\D+\bar\mu'\big)\hatv\\
+   &+\tfrac{\mathrm d\mu}{\mathrm dT}\big(\bar U''+\bar U'\D\big)\hatT
+     +\tfrac{\mathrm d^2\mu}{\mathrm dT^2}\bar U'\bar T'\hatT\Big] .
+\end{aligned}
+\end{equation}
+
+\paragraph{(Y) Wall-normal momentum.}
+\begin{equation}\label{eq:ymom}
+\begin{aligned}
+  \imag\alpha(\bar U-c)\hatv+\bar\rho^{-1}\D\hatp
+  =\nuR\Big[&\bar\mu\big(\tfrac43\D^2-\alpha^2\big)\hatv+\tfrac43\bar\mu'\D\hatv
+   +\imag\alpha\big(\tfrac13\bar\mu\D-\tfrac23\bar\mu'\big)\hatu
+   +\imag\alpha\tfrac{\mathrm d\mu}{\mathrm dT}\bar U'\hatT\Big] .
+\end{aligned}
+\end{equation}
+
+\paragraph{(E) Energy (temperature).}
+\begin{equation}\label{eq:energy}
+  \imag\alpha(\bar U-c)\hatT+\bar T'\hatv+(\gamma-1)\bar\rho^{-1}\big(\imag\alpha\hatu+\D\hatv\big)
+  =\mathcal C_\kappa\mathcal L_c\hatT
+   +\mathcal C_d\Big[2\bar\mu\bar U'\big(\D\hatu+\imag\alpha\hatv\big)
+     +\tfrac{\mathrm d\mu}{\mathrm dT}\big(\bar U'\big)^2\hatT\Big],
+\end{equation}
+\begin{equation}
+  \mathcal L_c=\D^2-\alpha^2
+   +\tfrac1{\bar\kappa}\tfrac{\mathrm d\kappa}{\mathrm dT}\big(2\bar T'\D+\bar T''\big)
+   +\tfrac1{\bar\kappa}\tfrac{\mathrm d^2\kappa}{\mathrm dT^2}\big(\bar T'\big)^2,\quad
+  \mathcal C_\kappa=\frac{\gamma\bar\mu}{\mathit{Pr}\,\Ree\,\bar\rho},\quad
+  \mathcal C_d=\frac{\gamma(\gamma-1)\Mae^2}{\Ree\,\bar\rho}.
+\end{equation}
+
+\paragraph{Reading the equations.}
+\begin{itemize}[nosep,leftmargin=1.6em]
+  \item $\imag\alpha(\bar U-c)$ is \emph{convection by the mean relative to the wave speed}; it vanishes at
+        the \textbf{critical layer} $\bar U=c_r$, where the inviscid form of the equations becomes singular ---
+        which is why that layer governs much of the instability physics.
+  \item $\D,\D^2$ are wall-normal derivatives; $-\alpha^2$ comes from $\partial_x^2\!\mapsto\!-\alpha^2$.
+  \item the $\nuR=1/(\Ree\bar\rho)$ terms are \emph{viscous} (the $\tfrac43,\tfrac13$ are Stokes's bulk
+        viscosity; the companion \emph{Numerical Methods} note generalises this to a ratio $\lambda/\mu=1.2$
+        in the spatial closure).
+  \item the $\mathrm d\mu/\mathrm dT,\mathrm d\kappa/\mathrm dT$ terms are \emph{temperature-dependent transport} ---
+        essential at hypersonic speeds.
+  \item $\mathcal C_\kappa\mathcal L_c\hatT$ is heat conduction; $\mathcal C_d[\cdots]$ is viscous dissipation.
+\end{itemize}
+
+\bridge{These four equations are the endpoint of the derivation and the input to the numerics. Before
+handing them off, we pause to say what their solutions physically \emph{are}.}
+
+%=====================================================================
+\section{What the modes \emph{are}: two instability mechanisms}\label{sec:mechanisms}
+%=====================================================================
+The disturbance equations admit discrete eigenmodes; a temporal solve returns a complex phase speed such as
+$c=0.930+0.0200\imag$. Here is the \emph{physics} behind the mode labels, so that such a number becomes an
+understood wave.
+
+\paragraph{First (Tollmien--Schlichting) mode.} At \emph{low} speed the first mode is a viscous instability
+($c_r\!\approx\!0.3$--$0.6$): counter-intuitively, viscosity introduces a phase lag between $u'$ and $v'$ near
+the wall, so the Reynolds stress $-\bar\rho\,\overline{u'v'}$ no longer averages to zero and draws energy from
+the mean shear. As the Mach number rises, compressibility creates a generalised inflection point (below) and
+the first mode becomes increasingly \emph{inviscid/inflectional} --- governed by that point, with viscosity
+then often \emph{stabilising}. It is the dominant instability only up to $\Mae\!\approx\!4$.
+
+\paragraph{Second (Mack) mode --- a trapped acoustic wave.} Above $\Mae\!\approx\!4$ a second, usually
+stronger, instability appears: it is essentially \emph{a sound wave trapped between the wall and the
+``relative sonic line''}, reflecting in a near-wall acoustic cavity (Figure~\ref{fig:trap}). This one picture
+explains three facts we might otherwise have to accept blindly:
+\begin{itemize}[nosep,leftmargin=1.6em]
+  \item its phase speed is $c_r\!\approx\!1-1/\Mae$ --- the \emph{limiting} ``edge-sonic'' value at which the
+        wave is sonic relative to the edge flow, which is why the spatial-solve shift target
+        $\alpha_0=\omega/(1-1/\Mae)$ works; the realised $c_r$ sits somewhat above this and varies along the
+        branch ($0.93$ vs $1-1/6=0.83$ for a typical $\Mae=6$ mode), so it is a guide, not an exact value;
+  \item it is \emph{frequency-tuned}: like any resonator its wavelength is set by the cavity thickness, so the
+        most-amplified wavelength is $\sim\!2\delta$, giving the order-of-magnitude scaling
+        $f\!\sim\!U_e/2\delta$ --- the second-mode frequency rises as the layer thins downstream;
+  \item its eigenfunction has a \emph{wall-peaked pressure} --- the acoustic field in the cavity.
+\end{itemize}
+
+\paragraph{The organising quantity: relative Mach number.} Both pictures live in the \textbf{relative Mach
+number} $M_{\rm rel}(y)=(\bar U-c_r)/\bar a(y)$, with $\bar a=\sqrt{\bar T}/\Mae$ the local sound speed. The
+critical layer is $M_{\rm rel}=0$; the relative sonic line is $|M_{\rm rel}|=1$; the second-mode acoustic
+cavity is the near-wall region where $|M_{\rm rel}|>1$ (Figure~\ref{fig:trap}).
+
+\paragraph{Why a compressible layer is unstable at all (the generalised inflection point).} Rayleigh's
+theorem: an inviscid \emph{incompressible} shear flow needs a velocity inflection point ($\bar U''=0$) to be
+unstable. Compressibility generalises this (Lees--Lin) to the \textbf{generalised inflection point} where
+$\tfrac{d}{dy}(\bar\rho\,\bar U')=0$ --- the necessary condition for the inviscid \emph{first} mode.
+Aerodynamic heating puts a hot, low-density layer near the wall (the $\bar T$ bulge in a compressible base
+flow) and pushes that generalised inflection point up into the layer --- giving the robust inviscid
+first-mode instability that low-speed layers lack. The \emph{second} (Mack) mode needs no inflection point:
+its existence condition is instead the near-wall relative-supersonic cavity ($|M_{\rm rel}|>1$) above.
+
+\paragraph{The wall-cooling reversal (the key design lever).} Cooling the wall \emph{stabilises} the first
+mode (it weakens the near-wall viscous mechanism) but \emph{destabilises} the second (it thickens the
+relative-supersonic cavity and raises the tuned frequency). This is why cold-walled hypersonic vehicles are
+second-mode dominated --- and why the solver carries an isothermal-wall option.
+
+\paragraph{Phase vs group velocity.} $c_r$ is the \emph{phase} speed (crest speed); energy travels at the
+\emph{group} velocity $c_g=\mathrm d\omega_r/\mathrm d\alpha_r$. It is $c_g$ that rigorously links temporal to
+spatial growth (relevant when the companion \emph{Numerical Methods} note converts between them).
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.6\linewidth]{fig_acoustic_trapping.pdf}
+  \caption{The second-mode mechanism, for a representative Mack mode. The relative Mach number
+  $M_{\rm rel}(y)=(\bar U-c_r)/\bar a$ is supersonic ($|M_{\rm rel}|>1$, shaded) in a near-wall cavity bounded
+  by the wall and the relative sonic line ($|M_{\rm rel}|=1$), and passes through zero at the critical layer.
+  The Mack mode is a sound wave trapped in that cavity.}\label{fig:trap}
+\end{figure}
+
+\noindent A compact comparison places any computed eigenvalue at a glance:
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{5.1cm}>{\raggedright\arraybackslash}p{5.1cm}@{}}
+\toprule
+ & \textbf{First (TS) mode} & \textbf{Second (Mack) mode} \\
+\midrule
+mechanism & viscous (low speed) $\to$ inviscid inflectional (high speed) & trapped acoustic wave (wall--sonic line) \\
+phase speed $c_r$ & $0.3$--$0.6$ & $\approx 1-1/\Mae$ (here $0.93$) \\
+dominant when & low speed, $\Mae\lesssim4$ & high speed, $\Mae\gtrsim4$ \\
+frequency & broadband & tuned, $f\sim U_e/2\delta$ \\
+existence criterion & generalised inflection point (Lees--Lin) & relative-supersonic cavity, $|M_{\rm rel}|>1$ \\
+wall cooling & stabilises & destabilises \\
+most-unstable wave & oblique (3D) & 2D ($\psi=0$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%=====================================================================
+\section{Scope: the assumptions behind the equations}\label{sec:scope}
+%=====================================================================
+The equations derived above are the \emph{2D, parallel-flow, modal} disturbance equations. That is one stage
+of transition (Figure~\ref{fig:roadmap}); a careful reader should keep four idealisations in view:
+\begin{enumerate}[nosep,leftmargin=1.9em]
+  \item \textbf{Parallel flow.} Setting $\bar v=0$ and $y$-only coefficients (Step~3) neglects the $O(1/R)$
+        streamwise growth of the layer; the standard remedy is the \emph{Parabolised Stability Equations}
+        (PSE), which march the disturbance downstream retaining slow $x$-variation.
+  \item \textbf{Two-dimensionality.} The ansatz takes $\beta=0$ (Step~4). The most-unstable \emph{first} mode
+        is oblique ($\psi\!\sim\!55^\circ$, Squire's theorem fails under compressibility), so 2D first-mode
+        growth is a \emph{lower bound}; the \emph{second}/Mack mode is most unstable at $\psi=0$, so the 2D
+        result is its physical maximum.
+  \item \textbf{Modal analysis only.} Eigenvalues describe asymptotic growth; the non-normal operator also
+        permits \emph{transient (algebraic) growth} that modal analysis misses, relevant to bypass and
+        blunt-body paths.
+  \item \textbf{Receptivity and $e^N$.} LST gives the amplification \emph{ratio} $A(R)/A(R_0)=e^N$, not the
+        initial amplitude $A(R_0)$; setting that is the separate \emph{receptivity} problem, and $e^N$ is an
+        environment-dependent correlation rather than a first-principles criterion.
+\end{enumerate}
+None of these affect the equations themselves; they bound their interpretation. A strong second (Mack) mode
+is captured faithfully by the 2D modal equations derived here, which is why they are the workhorse of
+hypersonic transition prediction. With the four ODEs \eqref{eq:cont}--\eqref{eq:energy} in hand, the next
+step --- discretising them into matrices and solving the eigenvalue problem --- is carried out in the
+companion \emph{Numerical Methods} note.
+
+\end{document}
