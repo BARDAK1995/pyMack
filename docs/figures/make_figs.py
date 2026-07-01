@@ -717,12 +717,12 @@ def fig_shooting_scheme():
                  boxstyle="round,pad=0.08,rounding_size=0.12", fc="#eaf4ef", ec=PM, lw=2.0))
     ax.text(x_mid, y_top + 0.16, r"eigendecompose pointwise $A_\infty(\alpha,c)$",
             ha="center", fontsize=12.5, fontweight="bold")
-    ax.text(x_mid, y_top - 0.32, "keep the 3 decaying eigenvectors  $\\to$  QR  (orthonormal basis)",
+    ax.text(x_mid, y_top - 0.32, "keep the 3 decaying eigenvectors  $\\to$  QR (orthonormal columns of $Y$)",
             ha="center", fontsize=11, color="#333")
 
     # three marching columns, clear of the y-axis line and the RK4 labels
     cols_x = [4.0, 6.15, 8.3]
-    labels = [r"$Y_1$", r"$Y_3$", r"$Y_5$"]
+    labels = [r"$Y^{(1)}$", r"$Y^{(2)}$", r"$Y^{(3)}$"]
     n_steps = 6
     y_march_top, y_march_bot = y_top - 1.35, y_bot + 1.0
     ys = np.linspace(y_march_top, y_march_bot, n_steps)
@@ -745,7 +745,7 @@ def fig_shooting_scheme():
                  boxstyle="round,pad=0.08,rounding_size=0.12", fc="#fbe9e4", ec=REF, lw=2.0))
     ax.text(x_mid, y_wall_box + 0.20, r"wall matrix  $M(c)=[\,Y_1(0);\,Y_3(0);\,Y_5(0)\,]$  ($3\times3$)",
             ha="center", fontsize=12.2, fontweight="bold", color="#8a2f0d")
-    ax.text(x_mid, y_wall_box - 0.28, r"dispersion condition:  $\sigma_{\min}(M(c))=0$",
+    ax.text(x_mid, y_wall_box - 0.28, r"rows $1,3,5=(u,v,T)$ at the wall  $\Rightarrow$  $\sigma_{\min}(M(c))=0$",
             ha="center", fontsize=11, color="#8a2f0d")
 
     # outer Nelder-Mead loop, placed well below the wall-matrix box
