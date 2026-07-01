@@ -102,9 +102,9 @@ Three dimensionless groups control everything,
   \Ree=\frac{\rho_e U_e L_{\mathrm{ref}}}{\mu_e},\qquad
   \mathit{Pr}=\frac{\mu_e c_p}{\kappa_e},
 \end{equation}
-where $a_e$ is the edge speed of sound and $R_g$ the specific gas constant.
-with default air values $\gamma=1.4$, $\mathit{Pr}=0.72$, Sutherland constant $S=110.4~\mathrm K$, and
-power-law exponent $\omega_\mu\approx0.7$ when the power-law viscosity is used.
+where $a_e$ is the edge speed of sound and $R_g$ the specific gas constant, with default air values
+$\gamma=1.4$, $\mathit{Pr}=0.72$, Sutherland constant $S=110.4~\mathrm K$, and power-law exponent
+$\omega_\mu\approx0.7$ when the power-law viscosity is used.
 
 \paragraph{The Mack length and Reynolds scales.}\label{sec:Lstar} Boundary layers grow like $\sqrt x$, so
 the natural local scale at station $x$ is
@@ -156,20 +156,26 @@ $\mathrm d\mu/\mathrm dT$ etc.\ are taken analytically from the chosen viscosity
   \begin{cases}\bar T{}'(0)=0 &\text{(adiabatic wall)}\\ \bar T(0)=T_w/T_e &\text{(isothermal wall)}\end{cases}
 \end{equation}
 For an adiabatic wall the recovered temperature is the standard result (stated, not derived)
-$T_{aw}/T_e=1+\tfrac12(\gamma-1)\sqrt{\mathit{Pr}}\,\Mae^2$. (For a cone, the edge state itself comes first,
-from the Taylor--Maccoll equation behind the conical shock; \texttt{taylor\_maccoll\_edge\_state.py}.)
+$T_{aw}/T_e=1+\tfrac12(\gamma-1)\sqrt{\mathit{Pr}}\,\Mae^2$. (For a cone, the edge state itself comes
+first, from the Taylor--Maccoll equation behind the conical shock --- a separate calculation, outside
+\texttt{pymack/}, in the Sivasubramanian--Fasel cone verification case; not detailed further here. See
+\texttt{taylor\_\allowbreak maccoll\_\allowbreak edge\_\allowbreak state.py}.)
 
 \paragraph{Solution and the coordinate transform.} Equations \eqref{eq:bl-mom}--\eqref{eq:bl-energy} are
-solved as a 5-state first-order system $[\,f,\bar U,\bar U',\bar T,\bar T'\,]$ by
-\texttt{scipy.integrate.solve\_bvp} (collocation + Newton; \texttt{pymack/baseflow.py}), integrated to
-$\eta_{\max}\!\approx\!40$ (well beyond the edge). The similarity coordinate maps to the physical one by
+solved as a 5-state first-order system $[\,f,\bar U,\bar U',\bar T,\bar T'\,]$ by collocation and Newton
+iteration (\texttt{scipy.integrate.solve\_bvp}), integrated to $\eta_{\max}\!\approx\!40$ (well beyond the
+edge). The implementation is \texttt{pymack/baseflow.py}. The similarity coordinate maps to the physical one
+by
 \begin{equation}\label{eq:ytransform}
   \frac{y}{L^*}=\sqrt2\!\int_0^\eta\frac{\bar T}{T_e}\,\mathrm d\eta',\quad
   \frac{\delta^*}{L^*}=\sqrt2\!\int_0^\infty(\bar T-\bar U)\,\mathrm d\eta,\quad
   \frac{\theta}{L^*}=\sqrt2\!\int_0^\infty\bar U(1-\bar U)\,\mathrm d\eta,
 \end{equation}
 where the displacement thickness $\delta^*$ measures how far the wall effectively pushes the outer flow
-outward and the momentum thickness $\theta$ the momentum deficit. The solver returns, on any grid,
+outward and the momentum thickness $\theta$ the momentum deficit. Figure~\ref{fig:baseflow} (right panel)
+plots this transform directly: because $\bar T$ is elevated near the wall, the map from a uniform $\eta$
+mesh to physical $y$ is nonlinear, stretching resolution into the hot near-wall region. The solver returns,
+on any grid,
 $\bar U,\bar U',\bar U'',\ \bar T,\bar T',\bar T'',\ \bar\rho,\ \bar\mu,\ \mathrm d\mu/\mathrm dT,\
 \mathrm d^2\mu/\mathrm dT^2,\ \bar\kappa,\ \mathrm d\kappa/\mathrm dT,\ \mathrm d^2\kappa/\mathrm dT^2$.
 
@@ -182,12 +188,17 @@ $y/L^*=\eta$, no $\sqrt2$). The two give the same physical profiles; only the si
 differs.}
 
 \begin{figure}[h]\centering
-  \includegraphics[width=0.55\linewidth]{fig_baseflow.pdf}
-  \caption{A computed compressible base flow ($\Mae=4.5$, adiabatic). $\bar U(y)/U_e$ rises monotonically to
-  the edge; $\bar T(y)$ bulges near the wall from viscous heating. These curves and their $y$-derivatives are
-  the known coefficients $\bar U,\bar T,\dots$ in the disturbance equations. The dotted line marks the
-  generalised inflection point, the seat of the inviscid instability (discussed in the companion notes on
-  the instability mechanisms).}\label{fig:baseflow}
+  \includegraphics[width=0.86\linewidth]{fig_baseflow.pdf}
+  \caption{\emph{Left:} a computed compressible base flow ($\Mae=4.5$, adiabatic). $\bar U(y)/U_e$ rises
+  monotonically to the edge; $\bar T(y)$ bulges near the wall from viscous heating. These curves and their
+  $y$-derivatives are the known coefficients $\bar U,\bar T,\dots$ in the disturbance equations. The boxed
+  callout marks the generalised inflection point, the seat of the inviscid instability (discussed in the
+  companion notes on the instability mechanisms). \emph{Right:} the $\eta\to y/L^*$ transform of
+  Eq.~\eqref{eq:ytransform}, evaluated for the same case. The solid curve is $y/L^*$ computed by cumulative
+  integration of $\bar T$; the dashed grey line is the linear reference $y/L^*=\eta$. Because $\bar T>1$
+  near the wall (viscous heating), the transform outpaces the linear reference there: a uniform $\eta$ mesh
+  maps to a \emph{stretched} physical mesh close to the wall, which is why $\eta$ rather than $y$ is the
+  natural computational coordinate.}\label{fig:baseflow}
 \end{figure}
 
 \bridge{These profiles $\bar U(y),\bar T(y),\bar\rho(y),\bar\mu(y)$ and their $y$-derivatives are exactly

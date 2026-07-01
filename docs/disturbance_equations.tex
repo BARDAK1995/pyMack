@@ -182,6 +182,16 @@ linearised, for the disturbance. The reduction proceeds in five steps.
   u=\bar U(y)+u',\ v=v',\ T=\bar T(y)+T',\ p=\bar p+p',\ \rho=\bar\rho(y)+\rho',\qquad |\cdot'|\ll|\bar\cdot| .
 \end{equation}
 ($\bar v=0$ for a parallel flow.) The collection $q'=(u',v',T',p',\rho')$ is the disturbance.
+Figure~\ref{fig:split} shows this decomposition schematically: a steady mean profile plus a small-amplitude
+wiggle sums to the instantaneous total.
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.86\linewidth]{fig_split.pdf}
+  \caption{Step 1 of linearisation. \emph{Left:} the steady mean profile $\bar U(y)$ alone. \emph{Right:} the
+  same mean profile with a small-amplitude disturbance $u'(x,y)$ added, $q=\bar q+q'$, with $|q'|\ll|\bar q|$
+  as required by \eqref{eq:split}. Step 2 then discards anything quadratic in the small wiggle, leaving
+  equations that are linear in $q'$ with coefficients built from $\bar q(y)$ alone.}\label{fig:split}
+\end{figure}
 
 \paragraph{Step 2 --- drop products of disturbances.} Substitute \eqref{eq:split} into
 \eqref{eq:ns-mass}--\eqref{eq:ns-state}. The mean satisfies the equations by itself and cancels; any term
@@ -295,6 +305,10 @@ uniformly inside $\nuR$, $\mathcal C_\kappa$, and $\mathcal C_d$ below.
   \item the $\nuR=1/(\Ree\bar\rho)$ terms are \emph{viscous} (the $\tfrac43,\tfrac13$ are Stokes's bulk
         viscosity; the companion \emph{Numerical Methods} note generalises this to a ratio $\lambda/\mu=1.2$
         in the spatial closure).
+  \item $(\gamma-1)\bar\rho^{-1}\big(\imag\alpha\hatu+\D\hatv\big)$ in the energy equation \eqref{eq:energy}
+        is \emph{pressure (dilatation) work}: $\imag\alpha\hatu+\D\hatv$ is the linearised velocity
+        divergence, so compressing or expanding a fluid parcel heats or cools it, coupling the velocity field
+        back into the temperature equation.
   \item the $\mathrm d\mu/\mathrm dT,\mathrm d\kappa/\mathrm dT$ terms are \emph{temperature-dependent transport} ---
         essential at hypersonic speeds.
   \item $\mathcal C_\kappa\mathcal L_c\hatT$ is heat conduction; $\mathcal C_d[\cdots]$ is viscous dissipation.
@@ -335,7 +349,18 @@ explains three facts we might otherwise have to accept blindly:
 \paragraph{The organising quantity: relative Mach number.} Both pictures live in the \textbf{relative Mach
 number} $M_{\rm rel}(y)=(\bar U-c_r)/\bar a(y)$, with $\bar a=\sqrt{\bar T}/\Mae$ the local sound speed. The
 critical layer is $M_{\rm rel}=0$; the relative sonic line is $|M_{\rm rel}|=1$; the second-mode acoustic
-cavity is the near-wall region where $|M_{\rm rel}|>1$ (Figure~\ref{fig:trap}).
+cavity is the near-wall region where $|M_{\rm rel}|>1$ (Figure~\ref{fig:trap}). Figure~\ref{fig:critlayer}
+(left panel) shows the critical layer itself: the height at which the mean velocity $\bar U(y)$ equals the
+phase speed $c_r$, where the eigenfunction $|\hatq(y)|$ typically peaks and the convective term
+$\imag\alpha(\bar U-c)$ in Eqs.~\eqref{eq:cont}--\eqref{eq:energy} vanishes.
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.7\linewidth]{fig_critlayer.pdf}
+  \caption{The critical layer (left panel): the wall-normal location where the mean velocity $\bar U(y)$
+  crosses the phase speed $c_r$, at which the eigenfunction $|\hatq(y)|$ typically peaks. (The right panel,
+  discrete-vs-spurious mode classification, is discussed in the companion \emph{Numerical Methods}
+  note.)}\label{fig:critlayer}
+\end{figure}
 
 \paragraph{Why a compressible layer is unstable at all (the generalised inflection point).} Rayleigh's
 theorem: an inviscid \emph{incompressible} shear flow needs a velocity inflection point ($\bar U''=0$) to be
@@ -356,7 +381,7 @@ second-mode dominated --- and why the solver carries an isothermal-wall option.
 spatial growth (relevant when the companion \emph{Numerical Methods} note converts between them).
 
 \begin{figure}[h]\centering
-  \includegraphics[width=0.6\linewidth]{fig_acoustic_trapping.pdf}
+  \includegraphics[width=0.78\linewidth]{fig_acoustic_trapping.pdf}
   \caption{The second-mode mechanism, for a representative Mack mode. The relative Mach number
   $M_{\rm rel}(y)=(\bar U-c_r)/\bar a$ is supersonic ($|M_{\rm rel}|>1$, shaded) in a near-wall cavity bounded
   by the wall and the relative sonic line ($|M_{\rm rel}|=1$), and passes through zero at the critical layer.

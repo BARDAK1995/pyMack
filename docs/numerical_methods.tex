@@ -231,7 +231,8 @@ notably $A_{(E,\hatp)}=0$, since the energy row has no pressure term.
 \end{itemize}}
 \noindent Holding these against \texttt{temporal\_solver.py} line for line: row $C$ is \texttt{A[blk(0,$\cdot$)]},
 row $X$ \texttt{A[blk(1,$\cdot$)]}, and so on; the diagonals $\bar U,\bar\mu,\dots$ are the \texttt{np.diag(\dots)}
-arrays, $D_1,D_2$ the differentiation matrices, and $\nuR=$ \texttt{rhob\_inv/Re}.
+arrays, $D_1,D_2$ the differentiation matrices, and $\nuR=$ \texttt{rhob\_inv/Re}. Figure~\ref{fig:ABreal}
+shows what this listing looks like once actually assembled into numbers, for a small solved case.
 
 \begin{figure}[h]\centering
   \includegraphics[width=0.95\linewidth]{fig_blocks.pdf}
@@ -239,6 +240,16 @@ arrays, $D_1,D_2$ the differentiation matrices, and $\nuR=$ \texttt{rhob\_inv/Re
   (continuity, $x$-mom, $y$-mom, energy); columns = the four fields $\hatu,\hatv,\hatT,\hatp$. \emph{Shaded
   = non-zero block.} $A$ (left) is block-dense; $B$ (right) holds only the five blocks of
   Eq.~\eqref{eq:Bblocks} --- every term carrying the eigenvalue $c$.}\label{fig:blocks}
+\end{figure}
+
+\begin{figure}[h]\centering
+  \includegraphics[width=0.95\linewidth]{fig_AB_real.pdf}
+  \caption{The same block structure, but numerically real: $A$ and $B$ assembled from an actual solved case
+  (a small worked example, $N=6$ so $4n=28$, at the \S\ref{sec:worked} parameters), shown as $\log_{10}|\cdot|$
+  so both magnitude and sparsity are visible. Grey gridlines every $n$ rows/columns mark the same $C,X,Y,E$
+  row blocks and $\hatu,\hatv,\hatT,\hatp$ column blocks labelled symbolically in Figure~\ref{fig:blocks}: $A$
+  is densely populated throughout, while $B$ lights up only its five algebraic blocks, exactly as
+  predicted.}\label{fig:ABreal}
 \end{figure}
 
 \paragraph{Boundary conditions = row replacement, with explicit indices.} A collocation row says ``the
@@ -266,7 +277,7 @@ index $0$ is the freestream and index $n{-}1$ is the wall --- the opposite of th
 produces plausible-looking but wrong eigenvalues.}
 
 \begin{figure}[h]\centering
-  \includegraphics[width=0.32\linewidth]{fig_bc_rows.pdf}
+  \includegraphics[width=0.45\linewidth]{fig_bc_rows.pdf}
   \caption{The boundary conditions as row replacement: the stacked state $[\hatu;\hatv;\hatT;\hatp]$ with the
   six overwritten rows highlighted (wall and freestream for $\hatu,\hatv,\hatT$); $\hatp$ carries no boundary
   row. Note index $0$ is the freestream and $n{-}1$ the wall.}
@@ -480,6 +491,15 @@ unstable. \texttt{pyMack} draws it in three steps:
         (continuation = using each converged eigenvalue as the guess for the next nearby parameter value).
 \end{enumerate}
 
+\begin{figure}[h]\centering
+  \includegraphics[width=0.85\linewidth]{fig_neutral_field.pdf}
+  \caption{Step 1--2 of the neutral-curve recipe on a real case ($\Mae=7$, second mode): the coloured field is
+  the growth rate $c_i(R,\alpha)$ from the $(R,\alpha)$ sweep, and the black curve is the $\{c_i=0\}$ contour
+  extracted from it by marching squares. The flow is unstable ($c_i>0$) inside the loop; $R_{\mathrm{crit}}$
+  marks the lower branch (branch~I) where instability first turns on as $R$ increases, and the curve closes
+  again at branch~II.}\label{fig:neutral}
+\end{figure}
+
 \section{$N$-factor and transition}\label{sec:nfactor}
 \problembox{Convert local spatial growth into a single number predicting transition.}
 
@@ -498,6 +518,15 @@ the disturbance environment (flight $\sim$9--11; noisy conventional tunnels can 
 It presumes a single dominant linear mode and stops at the onset of nonlinear breakdown, and it silently
 absorbs the unknown initial amplitude set by receptivity.}
 
+\begin{figure}[h]\centering
+  \includegraphics[width=0.85\linewidth]{fig_nfactor.pdf}
+  \caption{Illustrative $N$-factor integration, Eq.~\eqref{eq:N}: the shaded area is $\max(\sigma_L,0)$, the
+  local spatial growth rate carried forward from station to station; the black curve is the running integral
+  $N(R)$. The curve shape is schematic (a rescaled synthetic $\sigma_L(R)$), not a literal solved case, but it
+  is drawn to reach the empirical transition band $N\approx9$--$11$ so its asymptote can be read directly
+  against that criterion.}\label{fig:nfactor}
+\end{figure}
+
 \section{Part A summary and replication checklist}\label{sec:summary}
 \begin{center}\small
 \renewcommand{\arraystretch}{1.25}
@@ -513,10 +542,10 @@ Spatial growth, $N$-factor
   & quadratic EVP $(C_0+\alpha C_1+\alpha^2C_2)\boldsymbol\phi=0$, real $\omega$ (Eq.~\ref{eq:qep})
   & companion $+$ shift--invert; or temporal $+$ Newton seed & $-\alpha_i$ \\
 Neutral curve
-  & $\{c_i=0\}$ over an $(R,\alpha)$ sweep
+  & $\{c_i=0\}$ over an $(R,\alpha)$ sweep (Figure~\ref{fig:neutral})
   & grid sweep $\to$ marching squares; continuation & --- \\
 Transition
-  & $N=\int\max(\sigma_L,0)\,\mathrm dR$ (Eq.~\ref{eq:N})
+  & $N=\int\max(\sigma_L,0)\,\mathrm dR$ (Eq.~\ref{eq:N}, Figure~\ref{fig:nfactor})
   & fixed-$F$ spatial march $+$ integration & --- \\
 \bottomrule
 \end{tabular}
@@ -550,6 +579,18 @@ Part~B solves the identical temporal problem the opposite way: recast the distur
 first-order system, integrate it across the layer, and drive a tiny wall matrix singular to pinpoint
 \emph{one} eigenvalue. This is the classical shooting method (Mack 1984), re-implemented in the file
 \texttt{pymack/\allowbreak temporal\_shooting.py} following Ozgen \& Kircali (2008).}
+
+\begin{figure}[h!]\centering
+  \includegraphics[width=0.92\linewidth]{fig_shooting_scheme.pdf}
+  \caption{The whole shooting pipeline in one picture, top ($y_{\max}$) to bottom (wall $y=0$), matching the
+  physical-domain sense of Figure~\ref{fig:conv}: at $y_{\max}$, $A_\infty$ is eigen-decomposed and its three
+  decaying eigenvectors are QR-orthonormalised into the starting $6\times3$ basis
+  (\S\ref{sec:shoot-bc}); the basis is then RK4-marched down to the wall with a QR re-orthonormalisation
+  after every step (\S\ref{sec:shoot-integrate}); at the wall the three arriving columns form the $3\times3$
+  matrix $M(c)$ (\S\ref{sec:shoot-wall}); and an outer Nelder--Mead loop (\S\ref{sec:shoot-search}) updates
+  the trial $c$ to drive $\sigma_{\min}(c)\to0$, feeding back into the eigen-decomposition at
+  $y_{\max}$.}\label{fig:shooting}
+\end{figure}
 
 \section{The first-order state and its coefficient matrix}\label{sec:shoot-system}
 \problembox{\textbf{Given} a real wavenumber $\alpha$ and a trial phase speed $c$, cast the four disturbance
@@ -698,10 +739,10 @@ simplex tolerances
   \texttt{xatol}=10^{-7}\ (\text{in }c),\qquad \texttt{fatol}=10^{-8}\ (\text{in }\sigma_{\min}),
 \end{equation}
 within at most $\sim\!120$ iterations. Each objective evaluation runs the \emph{entire} pipeline of
-\S\S\ref{sec:shoot-bc}--\ref{sec:shoot-wall}: build the freestream decay basis, RK4-integrate with QR
-re-orthonormalisation to the wall, form $M(c)$, and take $\sigma_{\min}$. The converged minimiser
-$c=c_r+\imag c_i$ is the eigenvalue, and the temporal growth rate follows exactly as in Part~A,
-$\omega_i=\alpha c_i$.
+\S\S\ref{sec:shoot-bc}--\ref{sec:shoot-wall} (Figure~\ref{fig:shooting}): build the freestream decay basis,
+RK4-integrate with QR re-orthonormalisation to the wall, form $M(c)$, and take $\sigma_{\min}$. The converged
+minimiser $c=c_r+\imag c_i$ is the eigenvalue, and the temporal growth rate follows exactly as in Part~A,
+$\omega_i=\alpha c_i$. The table below is the same five-stage loop as the figure, mapped to functions.
 
 \begin{center}\footnotesize
 \renewcommand{\arraystretch}{1.3}
