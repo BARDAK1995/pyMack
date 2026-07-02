@@ -2121,7 +2121,7 @@ def neutral_curve(baseflow_func, Ma, Re_range, omega_range,
     return Re_arr, omega_arr, sigma_map
 
 
-def nfactor(baseflow_func, Ma, omega, Re_range, Pr=0.72, gamma=1.4,
+def n_factor_curve(baseflow_func, Ma, omega, Re_range, Pr=0.72, gamma=1.4,
             N=128, y_max=None, wall_bc='isothermal', method='refined',
             lambda_mu_ratio=DEFAULT_LAMBDA_MU_RATIO):
     """Compute an N-factor curve by integrating spatial growth over ``Re_range``.
@@ -2301,3 +2301,15 @@ def compute_n_factor(spatial_growths, x_or_Re=None, *, clip_negative=True,
         require_monotonic=require_monotonic,
     )
     return result['path'], result['N'], result['sigma']
+
+
+def nfactor(*args, **kwargs):
+    """Deprecated alias of :func:`n_factor_curve` (renamed in 0.1.0)."""
+    import warnings
+
+    warnings.warn(
+        'pymack.analysis.nfactor is deprecated; use n_factor_curve',
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return n_factor_curve(*args, **kwargs)

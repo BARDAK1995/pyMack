@@ -7,14 +7,11 @@ Benchmarks:
 3. Critical Re for Blasius ~ 520
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
-from pymack.spectral import chebyshev_points, chebyshev_D, physical_derivatives
+from pymack.spectral import chebyshev_points, chebyshev_D
 from pymack.baseflow import BlasiusProfile
 from pymack.solver import solve_temporal_os
-from pymack.equations import assemble_orr_sommerfeld
 
 
 def make_poiseuille(y):

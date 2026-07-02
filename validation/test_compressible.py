@@ -7,12 +7,9 @@ Tests:
 3. The refined frequency sweep produces a growing branch at Ma=2.
 """
 
-import os
-import sys
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.analysis import frequency_sweep
 from pymack.baseflow import CompressibleBlasiusProfile

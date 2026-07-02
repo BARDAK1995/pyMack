@@ -31,12 +31,11 @@ from pathlib import Path
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.baseflow import CompressibleBlasiusProfile
 from pymack.boundary_layer import generate_boundary_layer
 from pymack.mack_conditions import mack_table_11_1_edge_temperature
-from pymack.pymack_dense import (
+from pymack.dense import (
     DenseBaseFlowConfig,
     DenseGasModel,
     solve_base_flow,

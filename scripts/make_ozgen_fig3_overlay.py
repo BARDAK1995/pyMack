@@ -12,7 +12,7 @@ streamwise wavenumber ``alpha_L*`` on the y-axis, matching the paper's axes.
 
 Implementation notes (the two known pitfalls):
 
-1. ``solve_temporal_ozgen_2d`` has a delta*-tuned default ``y_max``.  On the
+1. ``solve_temporal_2d`` has a delta*-tuned default ``y_max``.  On the
    L* scale the domain must be opened up explicitly: this script passes
    ``y_max = 6 * (delta*/L*)`` (about 40-45 L* units).
 2. The raw spectrum cannot be reduced with ``argmax(c_i)``: spurious
@@ -57,8 +57,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from pymack import load_reference_csv, make_ozgen_profile  # noqa: E402
-from pymack.ozgen_solver import solve_temporal_ozgen_2d  # noqa: E402
+from pymack import load_reference_csv, make_flatplate_profile  # noqa: E402
+from pymack.temporal_solver import solve_temporal_2d  # noqa: E402
 from pymack.scales import delta_star_over_lstar  # noqa: E402
 
 
@@ -145,7 +145,7 @@ def classify_most_unstable(eigenvalues):
 
 def compute_panel(Ma, re_values, alpha_values, N, *, verbose=True):
     """Compute the classified c_i / c_r maps for one Mach number."""
-    profile = make_ozgen_profile(Ma)
+    profile = make_flatplate_profile(Ma)
     delta_over_l = delta_star_over_lstar(profile)
     y_max = Y_MAX_FACTOR * delta_over_l
 
@@ -157,7 +157,7 @@ def compute_panel(Ma, re_values, alpha_values, N, *, verbose=True):
     t0 = time.perf_counter()
     for j, Re in enumerate(re_values):
         for i, alpha in enumerate(alpha_values):
-            evals, _, _ = solve_temporal_ozgen_2d(
+            evals, _, _ = solve_temporal_2d(
                 profile,
                 float(alpha),
                 float(Re),
@@ -402,7 +402,7 @@ def build_metadata(panels, digitized_by_ma, args, paths, total_wall_s):
                 "c_r >= 0.99 (free-stream c~1 continuous-spectrum cluster)"
             ),
         },
-        "profile": "pymack.make_ozgen_profile(Ma) defaults "
+        "profile": "pymack.make_flatplate_profile(Ma) defaults "
                    "(T_edge=288 K, adiabatic wall, Ozgen transport)",
         "known_artifacts": [
             "At M=2, high-Re/high-alpha corner: weak (c_i ~ 1e-3) spurious "

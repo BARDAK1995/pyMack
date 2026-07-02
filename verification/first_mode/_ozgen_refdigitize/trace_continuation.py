@@ -13,20 +13,20 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 REPO = HERE.parents[2]; sys.path.insert(0, str(REPO))
-from pymack import make_ozgen_profile  # noqa: E402
-from pymack.ozgen_solver import solve_temporal_ozgen_2d  # noqa: E402
+from pymack import make_flatplate_profile  # noqa: E402
+from pymack.temporal_solver import solve_temporal_2d  # noqa: E402
 from pymack.scales import delta_star_over_lstar  # noqa: E402
 
 _P = {}
 def prof(Ma):
     if Ma not in _P:
-        _P[Ma] = make_ozgen_profile(float(Ma))
+        _P[Ma] = make_flatplate_profile(float(Ma))
     return _P[Ma]
 
 
 def eigs_c(Ma, R, alpha, ymf, N):
     p = prof(Ma); d = delta_star_over_lstar(p)
-    ev, _v, _y = solve_temporal_ozgen_2d(p, float(alpha), float(R), float(Ma),
+    ev, _v, _y = solve_temporal_2d(p, float(alpha), float(R), float(Ma),
                                          N=N, y_max=ymf * d, length_scale="L_star")
     return ev
 

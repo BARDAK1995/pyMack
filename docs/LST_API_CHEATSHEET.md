@@ -12,7 +12,7 @@ This document is the short operational guide for the shared flat-plate LST APIs.
   - Mack Table 10.1 exact-shooting diagnostics currently use
     `condition='table_11_1'` with isothermal disturbance wall conditions
 
-- `pymack.make_ozgen_profile(...)`
+- `pymack.make_flatplate_profile(...)`
   - Ozgen flat-plate builder
   - solves the coupled Ozgen Eq. 2.32-2.33 mean-flow BVP
   - exposes Eq. 2.36 viscosity, Eq. 2.37 conductivity, Eq. 2.38 `Cp`, and variable `Pr_local`
@@ -54,7 +54,7 @@ Use these helpers instead of embedding scale factors inside chapter scripts.
   - the Ozgen Mach 6 second-mode diagnostic uses it to avoid jumping from the
     high phase-speed Mack branch to lower phase-speed spectral/acoustic families
 
-- `pymack.solve_temporal_ozgen_2d(...)`
+- `pymack.solve_temporal_2d(...)`
   - paper-specific 2D temporal EVP for Ozgen Fig. 3 style work
   - assembles Ozgen's Eq. 2.15 temperature equation directly, rather than the
     Mack enthalpy/pressure energy row used by `solve_temporal_compressible`
@@ -134,7 +134,7 @@ Use these helpers instead of embedding scale factors inside chapter scripts.
   - backward-compatible wrapper returning `(path, N, sigma)`
   - delegates to `integrate_n_factor` and therefore has the same validation rules
 
-- `pymack.nfactor(...)`
+- `pymack.n_factor_curve(...)`
   - legacy spatial-solve-plus-integration wrapper over `Re_range`
   - useful for diagnostics, but production transition work should call the
     spatial-growth solver first and integrate with the explicit physical path

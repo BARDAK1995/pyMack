@@ -26,22 +26,12 @@ from scipy import linalg
 
 from .spectral import chebyshev_D, physical_derivatives
 from .equations import transport_conductivity_data, transport_temperature_derivatives
-from .scales import delta_star_over_lstar, rescale_baseflow_derivatives
-from .solver import _temperature_wall_operator
+from .scales import sample_baseflow
+from .solver import temperature_wall_operator
 
 
 def _scaled_problem(baseflow, y, D1, D2, length_scale):
-    if length_scale == 'delta_star':
-        return baseflow(y), D1, D2
-    if length_scale != 'L_star':
-        raise ValueError("length_scale must be 'delta_star' or 'L_star'")
-    delta_over_l = delta_star_over_lstar(baseflow)
-    bf = baseflow(y / delta_over_l)
-    return (
-        rescale_baseflow_derivatives(bf, delta_over_l, target_scale='L_star'),
-        D1,
-        D2,
-    )
+    return sample_baseflow(baseflow, y, length_scale), D1, D2
 
 
 def solve_temporal_2d(
@@ -197,7 +187,7 @@ def solve_temporal_2d(
     temp_free_row = 2 * n + free
     A[temp_wall_row, :] = 0.0
     B[temp_wall_row, :] = 0.0
-    A[temp_wall_row, temp_slice] = _temperature_wall_operator(D1, n, wall_bc)
+    A[temp_wall_row, temp_slice] = temperature_wall_operator(D1, n, wall_bc)
     A[temp_free_row, :] = 0.0
     B[temp_free_row, :] = 0.0
     A[temp_free_row, temp_free_row] = 1.0

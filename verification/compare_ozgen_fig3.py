@@ -637,7 +637,7 @@ def main(argv=None):
             },
             "pymack_provenance": (
                 f"c_i grid {_rel(grid_path)} (24x30 mesh, log-spaced Re x linear alpha), "
-                f"from scripts/make_ozgen_fig3_overlay.py (solve_temporal_ozgen_2d, "
+                f"from scripts/make_ozgen_fig3_overlay.py (solve_temporal_2d, "
                 f"L* scale, classified TS/Mack modes); per-Mach slice copied to "
                 f"{_rel(grid_dst)}. Neutral alpha located by bilinear (log-Re) "
                 f"zero-crossing of c_i along alpha at each digitized Re, matched to the "

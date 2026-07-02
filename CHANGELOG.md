@@ -7,7 +7,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-07-01
+
+First design release: the library grew a curated public API, a high-level
+facade, and packaging polish, on top of the verified numerical kernels.
+
+### Added
+- **High-level facade** (`pymack.api`, re-exported at top level):
+  `flat_plate(...)`, `temporal_mode(...)`, `spatial_mode(...)` returning a
+  frozen **`ModeResult`** (eigenvalue, growth rate, phase speed,
+  eigenfunctions, grid, and the full parameter provenance). Mode selection
+  applies the two discrete-mode acceptance tests from the docs — freestream
+  decay always, and domain-height stationarity automatically whenever no
+  user guess anchors the branch (`check_stationarity='auto'`).
+- **`examples/`** — three runnable introductions: first Mack mode,
+  fixed-frequency growth curve + N-factor (seed-then-continue pattern),
+  dimensional-unit conversions.
+- **`docs/ARCHITECTURE.md`** — the layer map, design tenets, conventions,
+  and extension guide.
+- `pymack.scales.sample_baseflow` — the single canonical base-flow
+  resampling helper (replaces four private copies across the solvers).
+- `pymack.plotting.apply_plot_style()` — the house style, applied on demand.
+- `pymack.analysis.n_factor_curve` — renamed from `nfactor`.
+- Root `conftest.py` so a plain checkout is importable by pytest without
+  per-file `sys.path` hacks; `[tool.pytest.ini_options]` with a `slow`
+  marker; ruff configuration; dynamic version via hatch
+  (single-sourced in `pymack/__init__.py`).
+- Facade test suite `validation/test_api_facade.py`, including a regression
+  for domain-artifact rejection in unguided spatial selection.
+
+### Changed
+- `pymack/__init__.py` is now a curated, layer-grouped namespace with
+  `__all__` (~80 names instead of an uncurated ~130) and **no import-time
+  side effects**.
+- Previously private helpers that external code needed are now public API:
+  `solver.assemble_temporal_compressible_3d_evp`, `solver.apply_wall_bc_3d`,
+  `solver.apply_dirichlet_freestream_bc_3d`,
+  `solver.temperature_wall_operator`, `mack_shooting.sample_scaled_baseflow`,
+  `mack_shooting.wall_condition_rows_3d/_6` (old underscore names remain as
+  aliases).
+- `pymack.plotting` no longer mutates global matplotlib state (or forces the
+  Agg backend) at import.
+- All in-repo callers migrated off deprecated names; `validation/` tests
+  import pymack like any user would.
+- Version bumped to 0.1.0.
+
+### Deprecated
+- `pymack.pymack_dense` → `pymack.dense` (module renamed; shim warns).
+- `pymack.make_ozgen_profile` → `make_flatplate_profile`;
+  `OzgenFlatPlateProfile` → `FlatPlateProfile`;
+  `solve_temporal_ozgen_2d` → `solve_temporal_2d`;
+  `nfactor` → `n_factor_curve`. All forwarded lazily with
+  `DeprecationWarning` via `pymack.__getattr__`.
+
+### Removed
+- The import-time citation banner and the `globals()`-level citation-nudge
+  wrappers (they changed function identity); `mark_cited` /
+  `CITED_IN_PAPER`. `pymack.cite()` remains the way to get the reference.
+- (The `ozgen_solver` / `ozgen_shooting` module paths now emit a
+  `DeprecationWarning` and forward to `temporal_solver` /
+  `temporal_shooting`; they will be removed after one minor release.)
+
 ### Fixed
+- **Özgen 2-D shooting matrix** (`pymack.temporal_shooting.
+  ozgen_first_order_matrix_2d`) was a faulty transcription of Özgen & Kırcalı
+  (2008) Eqs. 2.21–2.28: several coefficients dropped 1/μ, T′, or ⅓ factors
+  and mixed X₁/X₂ couplings, so the wall matrix never went singular
+  (σ_min ≈ 0.116, flat, at the true eigenvalue). It now delegates to the
+  validated Appendix-A operator (`mack_first_order_matrix_6` at β=0,
+  λ/μ=0 Stokes), which is algebraically identical to Özgen's printed system —
+  with one deliberate correction to the printed Eq. (2.24) X₁ term
+  (sign and μ-placement, recovered by re-derivation). After the fix,
+  σ_min = 4×10⁻⁶ at the spectral solver's worked-example eigenvalue
+  c = 0.9301 + 0.0200i (M6, R=5500, α_L=0.174) and rises two orders of
+  magnitude within |Δc| ~ 2×10⁻³. New regression test:
+  `validation/test_temporal_shooting_cross_check.py`. The module was not used
+  by any verification case (those use `mack_shooting`), so no published
+  result changes; docs/numerical_methods.tex Part B updated to match.
 - **Momentum thickness θ/L\*** in `CompressibleBlasiusProfile` integrated the
   wrong quantity (`U(T−U)` instead of `U(1−U)`; in Levy–Lees variables the T
   factors cancel in θ's integrand). The bug vanished in the incompressible
@@ -81,21 +157,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial public release of pyMack.
 - Core Chebyshev spectral collocation solver for compressible boundary layer stability (temporal and spatial).
 - Support for Mack and Özgen mean-flow models.
-- `pymack_dense` backend for reliable Mach-6 second-mode spatial growth and N-factor calculations.
-- Exact first-order shooting methods for improved low/mid-Mach oblique mode tracking.
-- Comprehensive validation suite against Orszag (1971), Mack (1984) Table 10.1 / 11.1, and other benchmarks.
-- Digitized reference data from classic papers + numeric comparison machinery.
-- `CITATION.cff` and in-code citation helpers (`pymack.cite()`, `pymack.mark_cited()`).
-- MIT license and `pyproject.toml` for `pip install pymack`.
-
-### Changed
-- Package renamed from `lst` to `pymack`.
-- Major README rewrite with honest status of compressible validation.
-- Many internal reproduction scripts and partial results moved to private to keep the public repo focused on validated content.
-- Improved honesty around limitations in the legacy reduced-EVP paths.
-
-### Fixed
-- Various bugs in spatial neutral curve extraction and branch tracking during the dense backend development.
-
-[Unreleased]: https://github.com/BARDAK1995/pyMack/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/BARDAK1995/pyMack/releases/tag/v0.1.0
+- `pymack_dense

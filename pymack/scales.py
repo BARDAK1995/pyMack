@@ -233,6 +233,40 @@ def delta_star_to_eta(profile, y_delta_star):
     return lstar_to_eta(profile, delta_star_to_lstar(y_delta_star, delta_over_l))
 
 
+def sample_baseflow(baseflow, y, length_scale='delta_star'):
+    """Sample a base-flow profile at ``y`` in the requested length scale.
+
+    This is the single canonical resampling helper used by every solver in
+    pyMack. Profiles natively store fields on a ``y / delta*`` grid; for
+    ``length_scale='L_star'`` the query points are converted with
+    ``delta*/L*`` and the wall-normal derivatives rescaled accordingly.
+
+    Parameters
+    ----------
+    baseflow : callable
+        Profile object; calling it with an array of heights returns the
+        base-flow dictionary (``U``, ``dU``, ``T``, ... ).
+    y : float or array
+        Wall-normal position(s), in units of ``length_scale``.
+    length_scale : {'delta_star', 'L_star'}
+        Length scale of ``y`` (and of the returned derivatives).
+
+    Returns
+    -------
+    dict
+        Base-flow fields sampled at ``y``, with derivatives expressed in
+        ``length_scale`` units.
+    """
+    y = np.asarray(y, dtype=float)
+    if length_scale == 'delta_star':
+        return baseflow(y)
+    if length_scale != 'L_star':
+        raise ValueError("length_scale must be 'delta_star' or 'L_star'")
+    delta_over_l = delta_star_over_lstar(baseflow)
+    sampled = baseflow(y / delta_over_l)
+    return rescale_baseflow_derivatives(sampled, delta_over_l, target_scale='L_star')
+
+
 def rescale_baseflow_derivatives(baseflow_dict, delta_over_l, target_scale):
     """Rescale wall-normal derivatives in a sampled base-flow dictionary.
 

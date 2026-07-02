@@ -8,31 +8,27 @@ from scipy.optimize import minimize
 
 from .asymptotic import mack_freestream_decay_basis
 from .equations import DEFAULT_LAMBDA_MU_RATIO
-from .scales import delta_star_over_lstar, rescale_baseflow_derivatives
+from .scales import delta_star_over_lstar, rescale_baseflow_derivatives, sample_baseflow
 
 
-def _sample_scaled_baseflow(baseflow, y, length_scale):
-    """Sample the mean flow at a scalar/array ``y`` for the requested scale."""
-    y = np.asarray(y, dtype=float)
-    if length_scale == 'delta_star':
-        return baseflow(y)
-    if length_scale != 'L_star':
-        raise ValueError("length_scale must be 'delta_star' or 'L_star'")
+def sample_scaled_baseflow(baseflow, y, length_scale):
+    """Sample the mean flow at ``y`` for the requested scale.
 
-    delta_over_l = delta_star_over_lstar(baseflow)
-    bf = baseflow(y / delta_over_l)
-    return rescale_baseflow_derivatives(bf, delta_over_l, target_scale='L_star')
+    Thin wrapper over :func:`pymack.scales.sample_baseflow`, kept here because
+    every shooting routine in this module funnels through it.
+    """
+    return sample_baseflow(baseflow, y, length_scale)
 
 
 def _freestream_sigma(baseflow, Pr, length_scale):
     """Return the freestream Prandtl number consistent with the mean flow."""
-    bf = _sample_scaled_baseflow(baseflow, np.array([50.0]), length_scale)
+    bf = sample_scaled_baseflow(baseflow, np.array([50.0]), length_scale)
     if 'Pr_local' in bf:
         return complex(bf['Pr_local'][0])
     return complex(Pr)
 
 
-def _wall_condition_rows_3d(wall_bc):
+def wall_condition_rows_3d(wall_bc):
     """Return the first-order wall rows for isothermal/adiabatic walls."""
     if wall_bc == 'isothermal':
         return (0, 2, 4, 6)
@@ -41,7 +37,7 @@ def _wall_condition_rows_3d(wall_bc):
     raise ValueError("wall_bc must be 'isothermal' or 'adiabatic'")
 
 
-def _wall_condition_rows_6(wall_bc):
+def wall_condition_rows_6(wall_bc):
     """Return the primary sixth-order wall rows."""
     if wall_bc == 'isothermal':
         return (0, 2, 4)
@@ -65,7 +61,7 @@ def mack_first_order_matrix_3d(
     spanwise_dissipation_coupling_scale=1.0,
 ):
     """Return Mack Appendix-A first-order matrix for a 2D mean flow."""
-    bf = _sample_scaled_baseflow(baseflow, np.array([y]), length_scale)
+    bf = sample_scaled_baseflow(baseflow, np.array([y]), length_scale)
 
     U = complex(bf['U'][0])
     DU = complex(bf['dU'][0])
@@ -450,7 +446,7 @@ def temporal_shooting_residual_3d(
         method=method,
         n_steps=n_steps,
     )
-    wall_matrix = wall_basis[_wall_condition_rows_3d(wall_bc), :]
+    wall_matrix = wall_basis[wall_condition_rows_3d(wall_bc), :]
     return np.linalg.det(wall_matrix)
 
 
@@ -526,7 +522,7 @@ def temporal_shooting_wall_matrix_3d(
         method=method,
         n_steps=n_steps,
     )
-    return wall_basis[_wall_condition_rows_3d(wall_bc), :]
+    return wall_basis[wall_condition_rows_3d(wall_bc), :]
 
 
 def temporal_shooting_wall_matrix_6(
@@ -561,7 +557,7 @@ def temporal_shooting_wall_matrix_6(
         method=method,
         n_steps=n_steps,
     )
-    return wall_basis[_wall_condition_rows_6(wall_bc), :]
+    return wall_basis[wall_condition_rows_6(wall_bc), :]
 
 
 def temporal_shooting_sigma_min_3d(
@@ -1153,3 +1149,9 @@ def continue_temporal_mode_6_shooting_sigma_min(
         c_seed = c_final
 
     return tracked
+
+
+# --- Backwards-compatible aliases (private names promoted to public API) ---
+_sample_scaled_baseflow = sample_scaled_baseflow
+_wall_condition_rows_3d = wall_condition_rows_3d
+_wall_condition_rows_6 = wall_condition_rows_6

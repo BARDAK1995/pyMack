@@ -1,14 +1,11 @@
 """Regression tests for thermal wall-boundary-condition handling."""
 
-import os
-import sys
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from pymack.mack_shooting import _wall_condition_rows_3d
-from pymack.solver import _apply_wall_bc_3d
+from pymack.mack_shooting import wall_condition_rows_3d
+from pymack.solver import apply_wall_bc_3d
 
 
 def test_apply_wall_bc_3d_adiabatic_uses_temperature_derivative():
@@ -21,7 +18,7 @@ def test_apply_wall_bc_3d_adiabatic_uses_temperature_derivative():
     B = np.ones((nn, nn), dtype=complex)
     D1 = np.arange(n * n, dtype=float).reshape(n, n)
 
-    _apply_wall_bc_3d(A, B, D1, n, wall_bc='adiabatic')
+    apply_wall_bc_3d(A, B, D1, n, wall_bc='adiabatic')
 
     wall = n - 1
     temp_row = 3 * n + wall
@@ -38,8 +35,8 @@ def test_wall_condition_rows_3d_switch_temperature_index():
     """The exact-shooting wall matrix must switch from T to DT for adiabatic walls."""
     print('Test 2: Shooting wall rows switch temperature state for adiabatic walls')
 
-    assert _wall_condition_rows_3d('isothermal') == (0, 2, 4, 6)
-    assert _wall_condition_rows_3d('adiabatic') == (0, 2, 5, 6)
+    assert wall_condition_rows_3d('isothermal') == (0, 2, 4, 6)
+    assert wall_condition_rows_3d('adiabatic') == (0, 2, 5, 6)
     print('  PASSED\n')
 
 

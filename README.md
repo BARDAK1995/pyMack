@@ -121,7 +121,36 @@ cd pymack
 pip install -e .
 ```
 
-Requires Python ≥ 3.9.
+Requires Python ≥ 3.9 (NumPy, SciPy, Matplotlib). Working from a plain
+checkout without installing also works — the test suite and the examples
+bootstrap the import path themselves.
+
+## Quickstart
+
+```python
+import pymack as pm
+
+boundary_layer = pm.flat_plate(Ma=6.0)                      # base flow
+mode = pm.temporal_mode(boundary_layer, alpha=0.174, Re=5500)
+print(mode)
+# ModeResult(temporal, c = 0.9301+0.0200j, omega_i = +3.481e-03,
+#            c_r = 0.930, unstable, Re = 5500, Ma = 6.0)
+
+spatial = pm.spatial_mode(boundary_layer, omega=mode.omega.real, Re=5500)
+spatial.sigma          # spatial growth -Im(alpha), feeds the N-factor
+```
+
+`temporal_mode` / `spatial_mode` return the **discrete boundary-layer mode**:
+candidates must decay toward the freestream and (when no guess anchors the
+branch) persist under a domain-height change, so continuous-spectrum
+artifacts are rejected automatically. Each `ModeResult` carries the
+eigenfunctions, the grid, and every solver parameter that produced it.
+
+Start with [`examples/`](examples/) — three runnable files covering the
+first Mack mode, a growth curve with its N-factor, and dimensional units.
+The layered design (facade → workflows → eigenvalue engines → operators) is
+documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); the complete
+API reference lives in [`docs/LST_API_CHEATSHEET.md`](docs/LST_API_CHEATSHEET.md).
 
 ## Testing
 
@@ -129,11 +158,14 @@ Requires Python ≥ 3.9.
 # Install with development dependencies
 pip install -e ".[dev]"
 
-# Run the validation test suite
-pytest validation/ -q
+# Run the validation test suite (skip long benchmarks)
+pytest -m "not slow"
 ```
 
-The `validation/` directory contains the main benchmark tests (Orr-Sommerfeld, Mack mean flow, Table 10.1 oblique growth, spatial amplification guardrails, etc.).
+The `validation/` directory contains the main benchmark tests
+(Orr–Sommerfeld, Mack mean flow, Table 10.1 oblique growth, spatial
+amplification guardrails, the facade acceptance tests, etc.). Linting:
+`ruff check .`.
 
 ## Usage
 
@@ -185,9 +217,6 @@ is planned.
 
 *(If an AI assistant helped you run pyMack, just double-check that the citation
 actually ends up in the final write-up. :))*
-
-Quick silence: set the environment variable `PYMACK_NO_BANNER=1` if the little
-reminders ever get in your way.
 
 ## References
 

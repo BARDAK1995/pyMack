@@ -63,9 +63,9 @@ from scipy import linalg
 import pymack
 from pymack.scales import delta_star_over_lstar
 from pymack.solver import (
-    _apply_dirichlet_freestream_bc_3d,
-    _apply_wall_bc_3d,
-    _assemble_temporal_compressible_3d_evp,
+    apply_dirichlet_freestream_bc_3d,
+    apply_wall_bc_3d,
+    assemble_temporal_compressible_3d_evp,
     solve_temporal_compressible_3d,  # kept for reference / cross-checks
 )
 
@@ -163,12 +163,12 @@ def first_mode_growth(profile, alpha, beta, R, mach, *, N, y_max,
     the largest c_i. This reproduces the leakage-filtered selection for the
     discrete first mode (verified against the full solver at anchor points).
     """
-    A, B, y, D1, n, al, be, bf = _assemble_temporal_compressible_3d_evp(
+    A, B, y, D1, n, al, be, bf = assemble_temporal_compressible_3d_evp(
         profile, float(alpha), float(beta), float(R), float(mach), PR, GAMMA,
         N=N, y_max=y_max, length_scale="L_star", lambda_mu_ratio=0.0,
     )
-    _apply_wall_bc_3d(A, B, D1, n)
-    _apply_dirichlet_freestream_bc_3d(A, B, n)
+    apply_wall_bc_3d(A, B, D1, n)
+    apply_dirichlet_freestream_bc_3d(A, B, n)
     c = linalg.eig(A, B, right=False, check_finite=False)
     c = c[np.isfinite(c)]
     # basic physical filter (mirror _filter_temporal_modes_3d)

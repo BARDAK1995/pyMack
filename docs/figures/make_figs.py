@@ -134,7 +134,6 @@ def fig_ansatz():
 
 
 def fig_baseflow():
-    from pymack import make_flatplate_profile
     p = make_flatplate_profile(4.5)
     eta_max = 8.0
     eta = np.linspace(0, eta_max, 400)
@@ -520,7 +519,6 @@ def fig_companion():
 
 
 def fig_critlayer():
-    from pymack import make_flatplate_profile
     p = make_flatplate_profile(4.0)
     yy = np.linspace(0, 6, 400); U = np.asarray(p(yy)["U"])
     cr = 0.436
@@ -602,9 +600,6 @@ def fig_acoustic_trapping():
 
 
 def fig_convergence():
-    from pymack import make_flatplate_profile
-    from pymack.temporal_solver import solve_temporal_2d
-    from pymack.scales import delta_star_over_lstar
     p = make_flatplate_profile(WE["Ma"]); d = delta_star_over_lstar(p)
     def c_at(N):
         ev, _, _ = solve_temporal_2d(p, WE["al"], WE["Re"], WE["Ma"],
@@ -656,7 +651,6 @@ def fig_split():
     small-amplitude wave, drawn at ~5% of the mean to make the ordering
     |q'| << |qbar| explicit, as invoked in the Step 2 linearisation text.
     """
-    from pymack import make_flatplate_profile
     p = make_flatplate_profile(4.5)
     y = np.linspace(0, 6, 500)
     Ubar = np.asarray(p(y)["U"])
@@ -788,11 +782,9 @@ def _assemble_temporal_AB_small(Ma, alpha, Re, N, y_max=6.0, wall_bc="isothermal
     pymack/temporal_solver.py (Ozgen & Kircali 2008 arrangement) so the
     resulting A, B are numerically real, code-accurate matrices.
     """
-    from pymack import make_flatplate_profile
-    from pymack.spectral import chebyshev_D, physical_derivatives
     from pymack.equations import transport_conductivity_data, transport_temperature_derivatives
     from pymack.scales import delta_star_over_lstar, rescale_baseflow_derivatives
-    from pymack.solver import _temperature_wall_operator
+    from pymack.solver import temperature_wall_operator
     import numpy as _np
 
     gamma, Pr = 1.4, 0.72
@@ -867,7 +859,7 @@ def _assemble_temporal_AB_small(Ma, alpha, Re, N, y_max=6.0, wall_bc="isothermal
     temp_slice = slice(2 * n, 3 * n)
     temp_wall_row = 2 * n + wall; temp_free_row = 2 * n + free
     A[temp_wall_row, :] = 0.0; B[temp_wall_row, :] = 0.0
-    A[temp_wall_row, temp_slice] = _temperature_wall_operator(D1, n, wall_bc)
+    A[temp_wall_row, temp_slice] = temperature_wall_operator(D1, n, wall_bc)
     A[temp_free_row, :] = 0.0; B[temp_free_row, :] = 0.0
     A[temp_free_row, temp_free_row] = 1.0
     return A, B, n

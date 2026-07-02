@@ -7,12 +7,9 @@ does it remain on the same oversized branch found by direct max-growth picks?
 """
 
 import math
-import os
-import sys
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.mack_conditions import make_mack_profile
 from pymack.solver import (

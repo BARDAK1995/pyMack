@@ -1,11 +1,8 @@
 """Diagnose branch-selection ambiguity for Mack Chapter 10 oblique cases."""
 
-import os
-import sys
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.mack_conditions import make_mack_profile
 from pymack.mack_shooting import temporal_shooting_residual_3d

@@ -1,11 +1,8 @@
 """Bidirectional exact-shooting growth scan and neutral-point extraction."""
 
-import os
-import sys
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.analysis import (
     temporal_growth_scan_3d_shooting_from_anchor,

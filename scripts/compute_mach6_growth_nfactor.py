@@ -30,8 +30,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from pymack import integrate_n_factor, make_ozgen_profile  # noqa: E402
-from pymack.ozgen_solver import solve_temporal_ozgen_2d  # noqa: E402
+from pymack import integrate_n_factor, make_flatplate_profile  # noqa: E402
+from pymack.temporal_solver import solve_temporal_2d  # noqa: E402
 from pymack.scales import delta_star_over_lstar  # noqa: E402
 
 
@@ -52,7 +52,7 @@ def _worker_init(config):
         if config["tw_over_te"] is None
         else config["tw_over_te"] * config["t_edge"]
     )
-    _WORKER_PROFILE = make_ozgen_profile(
+    _WORKER_PROFILE = make_flatplate_profile(
         config["ma"],
         T_edge=config["t_edge"],
         T_wall=t_wall,
@@ -83,7 +83,7 @@ def _solve_point(task):
     Re_delta = float(R_L) * delta_over_l
     alpha_delta = float(alpha_L) * delta_over_l
     try:
-        c_all, _, _ = solve_temporal_ozgen_2d(
+        c_all, _, _ = solve_temporal_2d(
             _WORKER_PROFILE,
             alpha_delta,
             Re_delta,
@@ -100,7 +100,7 @@ def _solve_point(task):
             cfg["c_imag_abs_max"],
         )
         if cfg["convergence_delta"] > 0 and len(candidates) > 0:
-            c_low, _, _ = solve_temporal_ozgen_2d(
+            c_low, _, _ = solve_temporal_2d(
                 _WORKER_PROFILE,
                 alpha_delta,
                 Re_delta,

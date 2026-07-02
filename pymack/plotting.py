@@ -6,13 +6,12 @@ labels >= 14pt, ticks >= 12pt, titles >= 16pt.
 """
 
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib import rcParams
 
-# Global style
-rcParams.update({
+#: pyMack house style. Applied on demand (never at import) -- call
+#: :func:`apply_plot_style` yourself, or let the figure helpers do it.
+PLOT_STYLE = {
     'font.family': 'serif',
     'font.size': 14,
     'axes.labelsize': 16,
@@ -27,7 +26,23 @@ rcParams.update({
     'axes.grid': True,
     'grid.alpha': 0.3,
     'grid.linestyle': '--',
-})
+}
+
+_style_applied = False
+
+
+def apply_plot_style(force=False):
+    """Apply pyMack's publication style to matplotlib's global rcParams.
+
+    Called automatically by the figure helpers in this module; call it
+    directly to style your own figures the same way. Importing
+    :mod:`pymack.plotting` never touches global state by itself.
+    """
+    global _style_applied
+    if _style_applied and not force:
+        return
+    rcParams.update(PLOT_STYLE)
+    _style_applied = True
 
 # Color palette
 COLORS = {
@@ -57,6 +72,7 @@ def plot_eigenspectrum(eigenvalues, title='Eigenspectrum', save_path=None,
     highlight_idx : int or array, optional
         Indices of eigenvalues to highlight.
     """
+    apply_plot_style()
     fig, ax = plt.subplots(figsize=(8, 6))
 
     ax.scatter(eigenvalues.real, eigenvalues.imag,
@@ -96,6 +112,7 @@ def plot_growth_rate(omega, sigma, title='Spatial Growth Rate',
     labels : list of str, optional
         Legend labels for multiple curves.
     """
+    apply_plot_style()
     fig, ax = plt.subplots(figsize=(9, 6))
 
     if not isinstance(omega, list):
@@ -138,6 +155,7 @@ def plot_neutral_curve(Re_arr, omega_arr, sigma_map, title='Neutral Stability Cu
     sigma_map : 2D array
         Growth rate map (Re × ω).
     """
+    apply_plot_style()
     fig, ax = plt.subplots(figsize=(10, 7))
 
     Re_g, Om_g = np.meshgrid(Re_arr, omega_arr, indexing='ij')
@@ -181,6 +199,7 @@ def plot_nfactor(Re_arr, N_vals, title='N-Factor', save_path=None,
     frequencies : list of float
         Corresponding frequencies for labeling.
     """
+    apply_plot_style()
     fig, ax = plt.subplots(figsize=(9, 6))
 
     if not isinstance(Re_arr, list):
@@ -222,6 +241,7 @@ def plot_eigenfunction(y, phi, labels=None, title='Eigenfunction',
     phi : dict or list of arrays
         Eigenfunction components. If dict, keys are labels.
     """
+    apply_plot_style()
     fig, axes = plt.subplots(1, 2, figsize=(12, 6), sharey=True)
 
     if isinstance(phi, dict):
@@ -266,6 +286,7 @@ def plot_baseflow(y, profiles, title='Mean Flow Profiles', save_path=None):
     profiles : dict
         Keys: 'U', 'T', 'rho' etc.
     """
+    apply_plot_style()
     n_plots = sum(1 for k in ['U', 'T', 'rho', 'mu'] if k in profiles)
     fig, axes = plt.subplots(1, n_plots, figsize=(4*n_plots, 6), sharey=True)
     if n_plots == 1:

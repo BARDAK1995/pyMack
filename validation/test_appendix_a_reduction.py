@@ -1,11 +1,8 @@
 """Validate the reduced collocation operator against Mack Appendix A."""
 
-import os
-import sys
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.equations import (
     DEFAULT_LAMBDA_MU_RATIO,
@@ -13,16 +10,16 @@ from pymack.equations import (
     transport_conductivity_data,
     transport_temperature_derivatives,
 )
-from pymack.baseflow import make_ozgen_profile
+from pymack.baseflow import make_flatplate_profile
 from pymack.mack_conditions import make_mack_profile
 from pymack.mack_shooting import (
-    _sample_scaled_baseflow,
+    sample_scaled_baseflow,
     mack_first_order_matrix_3d,
     mack_first_order_matrix_6,
     temporal_shooting_wall_matrix_3d,
     temporal_shooting_wall_matrix_6,
 )
-from pymack.solver import _assemble_temporal_compressible_3d_evp
+from pymack.solver import assemble_temporal_compressible_3d_evp
 
 
 def reduced_first_order_matrix_3d(
@@ -40,7 +37,7 @@ def reduced_first_order_matrix_3d(
     include_spanwise_dissipation_coupling=True,
 ):
     """Recover Mack's first-order form from the reduced 3D collocation equations."""
-    bf = _sample_scaled_baseflow(baseflow, np.array([y]), length_scale)
+    bf = sample_scaled_baseflow(baseflow, np.array([y]), length_scale)
 
     U = complex(bf['U'][0])
     DU = complex(bf['dU'][0])
@@ -236,7 +233,7 @@ def test_temporal_evp_continuity_uses_u_minus_c_phase():
     Ma = 2.2
     gamma = 1.4
 
-    _, B, _, _, n, _, _, bf = _assemble_temporal_compressible_3d_evp(
+    _, B, _, _, n, _, _, bf = assemble_temporal_compressible_3d_evp(
         profile,
         alpha,
         beta,
@@ -256,7 +253,7 @@ def test_temporal_evp_continuity_uses_u_minus_c_phase():
 
 def test_reduced_operator_matches_appendix_a_ozgen_profile():
     """The same local first-order reduction should hold on the shared Ozgen profile."""
-    profile = make_ozgen_profile(
+    profile = make_flatplate_profile(
         4.5,
         T_edge=250.0,
         Re_delta_star=800.0,

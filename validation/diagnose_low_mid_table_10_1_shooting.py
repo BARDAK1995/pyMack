@@ -2,19 +2,15 @@
 
 import argparse
 import json
-import os
-import sys
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.mack_table_10_1 import (
     DEFAULT_TABLE_10_1_CONDITION,
     DEFAULT_TABLE_10_1_WALL_BC,
     choose_initial_root,
     continue_family_order,
-    family_case_sequence,
     json_scalar,
     leading_reduced_growth,
     load_low_mid_table_10_1_families,

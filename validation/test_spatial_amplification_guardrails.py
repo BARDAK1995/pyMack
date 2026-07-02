@@ -2,13 +2,10 @@
 
 import argparse
 import math
-import os
-import sys
 
 import numpy as np
 import pytest
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from scripts import compute_spatial_fixed_frequency_curves as growth_curves
 from scripts import postprocess_spatial_amplification as amplification

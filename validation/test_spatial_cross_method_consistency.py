@@ -3,7 +3,7 @@
 pyMack contains two independently-implemented spatial stability operators plus
 several solution routes through the main operator:
 
-- ``pymack.pymack_dense`` — dense companion QEP, own Lees–Dorodnitsyn base
+- ``pymack.dense`` — dense companion QEP, own Lees–Dorodnitsyn base
   flow, **Stokes** viscous coefficients (lambda/mu = 0) hardcoded;
 - ``pymack.solver`` family — companion QEP (shift-invert and full-spectrum),
   Newton on the temporal EVP, the temporal+Gaster+Newton pipeline, and Muller
@@ -32,7 +32,7 @@ import numpy as np
 import pytest
 
 from pymack import CompressibleBlasiusProfile
-from pymack.pymack_dense import (
+from pymack.dense import (
     DenseBaseFlowConfig,
     DenseGasModel,
     DenseLSTConfig,

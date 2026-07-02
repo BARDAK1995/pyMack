@@ -1,35 +1,64 @@
+"""pyMack: local linear stability of compressible and hypersonic boundary layers.
+
+Quickstart
+----------
+::
+
+    import pymack as pm
+
+    bl   = pm.flat_plate(Ma=6.0)                       # self-similar base flow
+    mode = pm.temporal_mode(bl, alpha=0.174, Re=5500)   # discrete Mack mode
+    print(mode)          # c = 0.9301+0.0200j, omega_i = +3.5e-03, unstable
+
+    mode = pm.spatial_mode(bl, omega=0.162, Re=5500)    # spatial counterpart
+    mode.sigma           # spatial growth rate -Im(alpha)
+
+The package is layered; each layer is fully public:
+
+===================  ==========================================================
+Layer                Modules
+===================  ==========================================================
+Facade               :mod:`pymack.api` (re-exported here)
+Base flows           :mod:`pymack.baseflow`, :mod:`pymack.boundary_layer`
+Operators            :mod:`pymack.spectral`, :mod:`pymack.equations`
+Eigenvalue engines   :mod:`pymack.temporal_solver`, :mod:`pymack.solver`,
+                     :mod:`pymack.mack_shooting`, :mod:`pymack.temporal_shooting`,
+                     :mod:`pymack.dense`
+Workflows            :mod:`pymack.analysis` (sweeps, neutral curves, N-factors)
+Scaling / units      :mod:`pymack.scales`, :mod:`pymack.cone`
+Reference data       :mod:`pymack.reference_data`, :mod:`pymack.mack_conditions`,
+                     :mod:`pymack.mack_table_10_1`, :mod:`pymack.asymptotic`
+===================  ==========================================================
+
+Importing :mod:`pymack` has no side effects. If pyMack contributes to your
+work, ``pymack.cite()`` prints the reference (please do -- it keeps the
+project going).
 """
-Local Linear Stability Solver for Compressible and Hypersonic Boundary Layers (Mack Modes)
-==================================================
 
-Spatial stability analysis for compressible boundary layers using
-Chebyshev spectral collocation.
+from __future__ import annotations
 
-Modules
--------
-spectral        : Chebyshev differentiation matrices and domain mapping
-baseflow        : Mean flow profile engines (Blasius, compressible self-similar)
-boundary_layer  : Standalone compressible boundary-layer profile generator
-cone            : Sharp-cone (Mangler) station mapping and N-factor helpers
-equations       : Compressible stability equation coefficient matrices
-solver          : Eigenvalue solver with mode filtering and tracking
-analysis        : Parameter sweeps, neutral curves, N-factor integration
-plotting        : Publication-quality visualization
-"""
+__version__ = "0.1.0"
 
-from .spectral import chebyshev_points, chebyshev_D, map_domain, physical_derivatives
+__citation__ = (
+    "Mert Senkardesler, pyMack: local linear stability solver for "
+    "compressible and hypersonic boundary layers (2026). "
+    "DOI: 10.5281/zenodo.20588214. https://github.com/BARDAK1995/pyMack"
+)
+
+# --- Facade: the one-obvious-way entry points --------------------------------
+from .api import ModeResult, flat_plate, spatial_mode, temporal_mode
+
+# --- Base flows ---------------------------------------------------------------
 from .baseflow import (
     BlasiusProfile,
     CompressibleBlasiusProfile,
     FlatPlateProfile,
     make_flatplate_profile,
-    OzgenFlatPlateProfile,   # deprecated alias of FlatPlateProfile
-    make_ozgen_profile,      # deprecated alias of make_flatplate_profile
-    ozgen_adiabatic_wall_temperature,
-    ozgen_conductivity_ratio,
-    ozgen_cp_ratio,
-    ozgen_local_prandtl,
-    ozgen_viscosity_ratio,
+)
+from .boundary_layer import (
+    BoundaryLayerResult,
+    DimensionalBoundaryLayer,
+    generate_boundary_layer,
 )
 from .mack_conditions import (
     make_mack_profile,
@@ -37,6 +66,8 @@ from .mack_conditions import (
     mack_table_10_1_edge_temperature,
     mack_table_11_1_edge_temperature,
 )
+
+# --- Scaling and dimensional conversions --------------------------------------
 from .scales import (
     DimensionalEdgeState,
     F_to_frequency_khz,
@@ -55,147 +86,126 @@ from .scales import (
     lstar_to_eta,
     momentum_thickness_over_lstar,
     rescale_baseflow_derivatives,
+    sample_baseflow,
     sigma_L_to_per_m,
     sigma_L_to_per_mm,
     wavelength_L_to_mm,
     x_mm_to_R_L,
 )
-from .asymptotic import (
-    mack_freestream_characteristic_values,
-    mack_freestream_decay_basis,
-    mack_freestream_subspace_residual,
+
+# --- Eigenvalue engines --------------------------------------------------------
+from .temporal_solver import solve_temporal_2d
+from .solver import (
+    solve_spatial,
+    solve_spatial_from_temporal,
+    solve_spatial_full_spectrum,
+    solve_temporal_compressible,
+    solve_temporal_compressible_3d,
+    solve_temporal_os,
 )
 from .mack_shooting import (
-    mack_first_order_matrix_3d,
-    mack_first_order_matrix_6,
-    temporal_shooting_residual_3d,
-    temporal_shooting_residual_6,
-    temporal_shooting_sigma_min_3d,
-    temporal_shooting_sigma_min_6,
-    solve_temporal_mode_3d_shooting,
-    solve_temporal_mode_6_shooting,
-    solve_temporal_mode_3d_shooting_sigma_min,
-    solve_temporal_mode_6_shooting_sigma_min,
     continue_temporal_mode_3d_shooting_sigma_min,
     continue_temporal_mode_6_shooting_sigma_min,
+    mack_first_order_matrix_3d,
+    mack_first_order_matrix_6,
+    solve_temporal_mode_3d_shooting,
+    solve_temporal_mode_3d_shooting_sigma_min,
+    solve_temporal_mode_6_shooting,
+    solve_temporal_mode_6_shooting_sigma_min,
 )
-from .solver import solve_temporal_os, solve_spatial
-from .pymack_dense import (
+from .dense import (
     DenseBaseFlowConfig,
     DenseGasModel,
     DenseLSTConfig,
     prepare_dense_case,
     solve_mack_branch,
 )
-from .temporal_solver import solve_temporal_2d, solve_temporal_ozgen_2d
+
+# --- Workflows -------------------------------------------------------------------
 from .analysis import (
-    critical_reynolds_from_growth_series,
     critical_reynolds_by_max_growth,
     critical_reynolds_curve,
-    find_temporal_mode_anchor_3d_shooting,
+    critical_reynolds_from_growth_series,
     frequency_sweep,
+    integrate_n_factor,
     maximize_growth_over_parameter,
     most_unstable_wave_angle,
+    n_factor_curve,
     neutral_curve,
     neutral_points_from_growth_map,
-    nfactor,
-    integrate_n_factor,
-    search_temporal_roots_3d_shooting,
-    search_temporal_roots_6_shooting,
     spatial_growth_curve,
     spatial_growth_map,
     temporal_growth_curve,
     temporal_growth_map,
-    temporal_growth_scan_3d_shooting,
-    temporal_growth_scan_3d_shooting_from_anchor,
-    temporal_neutral_points_from_scan,
-    track_complex_branch,
     trace_spatial_neutral_curve,
     trace_temporal_neutral_curve,
     trace_temporal_neutral_curve_shooting,
 )
+
+# --- Geometry --------------------------------------------------------------------
+from .cone import ConeGeometry, cone_n_factor, cone_n_factor_multiplier
+
+# --- Reference data ----------------------------------------------------------------
 from .reference_data import (
-    DimensionalNeutralCurvePoint,
-    find_paper_target,
-    load_collaborator_mach5p35_conditions,
-    load_collaborator_mach5p35_neutral_curve,
     load_mack_table_10_1_cases,
     load_paper_target_registry,
     load_reference_csv,
-    mack_table_10_1_case_key,
-    reference_data_root,
     select_mack_table_10_1_cases,
 )
-from .mack_table_10_1 import (
-    DEFAULT_TABLE_10_1_CONDITION,
-    DEFAULT_TABLE_10_1_WALL_BC,
-    evaluate_table_10_1_exact_shooting,
-    load_low_mid_table_10_1_families,
-)
-from .boundary_layer import (
-    BoundaryLayerResult,
-    DimensionalBoundaryLayer,
-    generate_boundary_layer,
-)
-from .cone import (
-    CONE_FREQUENCY_RATIO_AT_SAME_S,
-    MANGLER_FACTOR,
-    ConeGeometry,
-    R_eq_from_R_s,
-    R_s_from_R_eq,
-    cone_F_to_frequency_khz,
-    cone_R_eq_to_s_m,
-    cone_R_eq_to_s_mm,
-    cone_alpha_L_to_per_m,
-    cone_alpha_L_to_per_mm,
-    cone_frequency_khz_to_F,
-    cone_lstar_m_from_R_eq,
-    cone_n_factor,
-    cone_n_factor_multiplier,
-    cone_s_mm_to_R_eq,
-    cone_sigma_L_to_per_m,
-    cone_sigma_L_to_per_mm,
-    cone_wavelength_L_to_mm,
-)
 
-__version__ = "0.0.1"
-
-# --- Citation -----------------------------------------------------------------
-__citation__ = (
-    "Mert Senkardesler, pyMack: local linear stability solver for "
-    "compressible and hypersonic boundary layers (2026). "
-    "DOI: 10.5281/zenodo.20588214. https://github.com/BARDAK1995/pyMack"
-)
-
-#: Set to ``True`` (or call :func:`mark_cited`) to quietly retire the friendly
-#: citation reminders. Only flip this once pyMack has actually been cited in a
-#: paper, report, or write-up that used its results.
-CITED_IN_PAPER = False
-
-
-def mark_cited() -> None:
-    """Retire the citation reminders for this session.
-
-    Call this (or set ``pymack.CITED_IN_PAPER = True``) after you've made sure
-    a proper citation for pyMack appears where it was used. You'll get a small
-    thank-you the first time.
-    """
-    global CITED_IN_PAPER
-    if not CITED_IN_PAPER:
-        CITED_IN_PAPER = True
-        try:
-            import sys
-            sys.stderr.write("[pyMack] Thanks! Citation reminders are off for this session. :)\n")
-        except Exception:
-            pass
+__all__ = [
+    # meta
+    '__version__', '__citation__', 'cite',
+    # facade
+    'ModeResult', 'flat_plate', 'temporal_mode', 'spatial_mode',
+    # base flows
+    'BlasiusProfile', 'CompressibleBlasiusProfile', 'FlatPlateProfile',
+    'make_flatplate_profile', 'make_mack_profile', 'generate_boundary_layer',
+    'BoundaryLayerResult', 'DimensionalBoundaryLayer',
+    'mack_figure_edge_temperature', 'mack_table_10_1_edge_temperature',
+    'mack_table_11_1_edge_temperature',
+    # scaling
+    'DimensionalEdgeState', 'delta_star_over_lstar',
+    'momentum_thickness_over_lstar', 'sample_baseflow',
+    'rescale_baseflow_derivatives',
+    'frequency_khz_to_F', 'F_to_frequency_khz', 'lstar_m_from_R_L',
+    'R_L_to_x_m', 'R_L_to_x_mm', 'x_mm_to_R_L',
+    'alpha_L_to_per_m', 'alpha_L_to_per_mm',
+    'sigma_L_to_per_m', 'sigma_L_to_per_mm', 'wavelength_L_to_mm',
+    'eta_to_lstar', 'lstar_to_eta', 'eta_to_delta_star', 'delta_star_to_eta',
+    'lstar_to_delta_star', 'delta_star_to_lstar',
+    # engines
+    'solve_temporal_2d', 'solve_temporal_os',
+    'solve_temporal_compressible', 'solve_temporal_compressible_3d',
+    'solve_spatial', 'solve_spatial_full_spectrum', 'solve_spatial_from_temporal',
+    'mack_first_order_matrix_3d', 'mack_first_order_matrix_6',
+    'solve_temporal_mode_3d_shooting', 'solve_temporal_mode_6_shooting',
+    'solve_temporal_mode_3d_shooting_sigma_min',
+    'solve_temporal_mode_6_shooting_sigma_min',
+    'continue_temporal_mode_3d_shooting_sigma_min',
+    'continue_temporal_mode_6_shooting_sigma_min',
+    'DenseBaseFlowConfig', 'DenseGasModel', 'DenseLSTConfig',
+    'prepare_dense_case', 'solve_mack_branch',
+    # workflows
+    'neutral_curve', 'n_factor_curve', 'integrate_n_factor',
+    'temporal_growth_curve', 'temporal_growth_map',
+    'spatial_growth_curve', 'spatial_growth_map',
+    'trace_temporal_neutral_curve', 'trace_temporal_neutral_curve_shooting',
+    'trace_spatial_neutral_curve', 'neutral_points_from_growth_map',
+    'frequency_sweep', 'maximize_growth_over_parameter',
+    'most_unstable_wave_angle',
+    'critical_reynolds_from_growth_series', 'critical_reynolds_by_max_growth',
+    'critical_reynolds_curve',
+    # geometry
+    'ConeGeometry', 'cone_n_factor', 'cone_n_factor_multiplier',
+    # reference data
+    'load_reference_csv', 'load_mack_table_10_1_cases',
+    'select_mack_table_10_1_cases', 'load_paper_target_registry',
+]
 
 
 def cite() -> None:
-    """Print the recommended citation for pyMack.
-
-    If pyMack contributes to your work, citing it helps others find the tool
-    (and makes the author happy).
-    """
+    """Print the recommended citation for pyMack (text + BibTeX)."""
     print(
         "\nHow to cite pyMack\n"
         "------------------\n"
@@ -206,83 +216,40 @@ def cite() -> None:
         "    title   = {pyMack: local linear stability solver for compressible\n"
         "               and hypersonic boundary layers},\n"
         "    year    = {2026},\n"
-        "    version = {0.0.1},\n"
+        f"    version = {{{__version__}}},\n"
         "    doi     = {10.5281/zenodo.20588214},\n"
         "    url     = {https://github.com/BARDAK1995/pyMack}\n"
         "  }\n\n"
         "Archived release DOI: 10.5281/zenodo.20588214 (a JOSS paper is planned).\n"
-        "\nThanks for using pyMack — citations really help the project. :)\n"
     )
 
 
-# We keep the reminders deliberately light and non-intrusive:
-# - A tiny friendly note on import (to stderr)
-# - A single gentle nudge only when you call the main "results" functions
-#   that are most likely to end up in a paper (N-factors, neutral curves, etc.)
-# Both are suppressed by CITED_IN_PAPER or PYMACK_NO_BANNER=1.
-# No more periodic chatter during long parameter sweeps.
+# --- Deprecated names (PEP 562 lazy forwarding with warnings) -----------------
+_DEPRECATED = {
+    'solve_temporal_ozgen_2d':
+        ('pymack.solve_temporal_2d', lambda: solve_temporal_2d),
+    'make_ozgen_profile':
+        ('pymack.make_flatplate_profile', lambda: make_flatplate_profile),
+    'OzgenFlatPlateProfile':
+        ('pymack.FlatPlateProfile', lambda: FlatPlateProfile),
+    'nfactor':
+        ('pymack.n_factor_curve', lambda: n_factor_curve),
+}
 
-_nudged_this_session = [False]
 
+def __getattr__(name):
+    if name in _DEPRECATED:
+        import warnings
 
-def _nudge() -> None:
-    """Emit a single, friendly citation reminder per session (stderr)."""
-    import os
-    import sys
-
-    if CITED_IN_PAPER or os.environ.get("PYMACK_NO_BANNER"):
-        return
-    if _nudged_this_session[0]:
-        return
-    _nudged_this_session[0] = True
-    try:
-        sys.stderr.write(
-            "[pyMack] If pyMack contributed to these results, citing it would be lovely :)\n"
-            "         See pymack.cite() or CITATION.cff for the details.\n"
+        replacement, resolve = _DEPRECATED[name]
+        warnings.warn(
+            f'pymack.{name} is deprecated; use {replacement}',
+            DeprecationWarning,
+            stacklevel=2,
         )
-    except Exception:
-        pass
+        return resolve()
+    raise AttributeError(f'module {__name__!r} has no attribute {name!r}')
 
 
-def _with_nudge(_fn):
-    import functools
-
-    @functools.wraps(_fn)
-    def _wrapped(*args, **kwargs):
-        _nudge()
-        return _fn(*args, **kwargs)
-
-    return _wrapped
-
-
-# Only wrap the higher-level analysis functions that typically produce
-# publishable outputs. We deliberately avoid wrapping the low-level solvers
-# (solve_spatial, solve_mack_branch, etc.) so long sweeps stay quiet.
-for _name in (
-    "neutral_curve",
-    "nfactor",
-    "integrate_n_factor",
-    "trace_spatial_neutral_curve",
-    "trace_temporal_neutral_curve",
-):
-    if _name in globals() and callable(globals()[_name]):
-        globals()[_name] = _with_nudge(globals()[_name])
-
-
-def _print_citation_banner() -> None:
-    """Print a small, friendly one-time note on first import (stderr)."""
-    import os
-    import sys
-
-    if CITED_IN_PAPER or os.environ.get("PYMACK_NO_BANNER"):
-        return
-    try:
-        sys.stderr.write(
-            "[pyMack] If this helps your research, citing it would be appreciated :)\n"
-            "         pymack.cite() has the details (or set PYMACK_NO_BANNER=1 to hush).\n"
-        )
-    except Exception:
-        pass
-
-
-_print_citation_banner()
+def __dir__():
+    return sorted(set(__all__) | set(globals()) | set(_DEPRECATED))

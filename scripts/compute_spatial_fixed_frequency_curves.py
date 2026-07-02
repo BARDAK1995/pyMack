@@ -24,8 +24,8 @@ if str(REPO_ROOT) not in sys.path:
 # package imports so parallel sweeps do not print one banner per worker.
 os.environ.setdefault("PYMACK_NO_BANNER", "1")
 
-from pymack import CompressibleBlasiusProfile, make_ozgen_profile  # noqa: E402
-from pymack.pymack_dense import (  # noqa: E402
+from pymack import CompressibleBlasiusProfile, make_flatplate_profile  # noqa: E402
+from pymack.dense import (  # noqa: E402
     DenseBaseFlowConfig,
     DenseGasModel,
     DenseLSTConfig,
@@ -440,7 +440,7 @@ def _make_profile(args):
             "sutherland_s_K": float(sutherland_s),
         }
     else:
-        profile = make_ozgen_profile(
+        profile = make_flatplate_profile(
             args.ma,
             T_edge=args.t_edge,
             T_wall=t_wall,
@@ -1094,7 +1094,7 @@ def main():
                 else float(args.y_max_lstar)
             ),
             "solver": (
-                "pymack.pymack_dense dense full-spectrum QEP"
+                "pymack.dense dense full-spectrum QEP"
                 if args.backend == "pymack_dense"
                 else "pymack.solver.solve_spatial companion QEP"
             ),

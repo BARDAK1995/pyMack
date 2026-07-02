@@ -13,7 +13,7 @@ from .asymptotic import (
     mack_freestream_subspace_residual,
 )
 from .spectral import chebyshev_points, chebyshev_D, physical_derivatives
-from .scales import delta_star_over_lstar, rescale_baseflow_derivatives
+from .scales import delta_star_over_lstar, rescale_baseflow_derivatives, sample_baseflow
 from .equations import (
     DEFAULT_LAMBDA_MU_RATIO,
     assemble_orr_sommerfeld,
@@ -26,18 +26,7 @@ from .equations import (
 
 def _scaled_compressible_problem(baseflow, y, D1, D2, length_scale):
     """Sample the base flow and rescale derivatives for the requested length."""
-    if length_scale not in {'delta_star', 'L_star'}:
-        raise ValueError("length_scale must be 'delta_star' or 'L_star'")
-
-    bf = baseflow(y)
-    if length_scale == 'delta_star':
-        return bf, D1, D2
-
-    delta_over_l = delta_star_over_lstar(baseflow)
-    y_delta = np.asarray(y) / delta_over_l
-    bf = baseflow(y_delta)
-    bf = rescale_baseflow_derivatives(bf, delta_over_l, target_scale='L_star')
-    return bf, D1, D2
+    return sample_baseflow(baseflow, y, length_scale), D1, D2
 
 
 def _top_first_order_state_3d(mode, D1, n, alpha, beta, Ma, gamma, boundary_index=0):
@@ -111,7 +100,7 @@ def temporal_freestream_leakage_3d(
     return scores
 
 
-def _temperature_wall_operator(D1, n, wall_bc):
+def temperature_wall_operator(D1, n, wall_bc):
     """Return the wall operator for the thermal boundary condition."""
     wall = n - 1
     row = np.zeros(n, dtype=complex)
@@ -175,7 +164,7 @@ def _assemble_spatial_qep(
     C0[temp_wall_row, :] = 0
     C1[temp_wall_row, :] = 0
     C2[temp_wall_row, :] = 0
-    C0[temp_wall_row, temp_slice] = _temperature_wall_operator(D1, n, wall_bc)
+    C0[temp_wall_row, temp_slice] = temperature_wall_operator(D1, n, wall_bc)
     C0[temp_free_row, :] = 0
     C1[temp_free_row, :] = 0
     C2[temp_free_row, :] = 0
@@ -597,7 +586,7 @@ def solve_temporal_compressible(baseflow, alpha, Re, Ma, Pr, gamma,
     temp_free_row = 2 * n + free
     A[temp_wall_row, :] = 0
     B[temp_wall_row, :] = 0
-    A[temp_wall_row, temp_slice] = _temperature_wall_operator(D1, n, wall_bc)
+    A[temp_wall_row, temp_slice] = temperature_wall_operator(D1, n, wall_bc)
     A[temp_free_row, :] = 0
     B[temp_free_row, :] = 0
     A[temp_free_row, temp_free_row] = 1.0
@@ -619,7 +608,7 @@ def solve_temporal_compressible(baseflow, alpha, Re, Ma, Pr, gamma,
     return eigenvalues[idx], eigenvectors[:, idx], y
 
 
-def _assemble_temporal_compressible_3d_evp(
+def assemble_temporal_compressible_3d_evp(
     baseflow,
     alpha,
     beta,
@@ -794,7 +783,7 @@ def _assemble_temporal_compressible_3d_evp(
     return A, B, y, D1, n, alpha, beta, bf
 
 
-def _apply_wall_bc_3d(A, B, D1, n, wall_bc='isothermal'):
+def apply_wall_bc_3d(A, B, D1, n, wall_bc='isothermal'):
     """Apply no-slip plus thermal wall conditions to the 3D temporal EVP."""
     wall = n - 1
     for var in range(3):
@@ -807,10 +796,10 @@ def _apply_wall_bc_3d(A, B, D1, n, wall_bc='isothermal'):
     temp_slice = slice(3 * n, 4 * n)
     A[temp_row, :] = 0
     B[temp_row, :] = 0
-    A[temp_row, temp_slice] = _temperature_wall_operator(D1, n, wall_bc)
+    A[temp_row, temp_slice] = temperature_wall_operator(D1, n, wall_bc)
 
 
-def _apply_dirichlet_freestream_bc_3d(A, B, n):
+def apply_dirichlet_freestream_bc_3d(A, B, n):
     """Apply the crude finite-domain freestream truncation used historically."""
     free = 0
     for var in range(4):
@@ -950,7 +939,7 @@ def solve_temporal_compressible_3d(baseflow, alpha, beta, Re, Ma, Pr, gamma,
     the Appendix-B boundedness subspace at the finite upper boundary. The
     leakage score is a relative residual in Mack's first-order variables.
     """
-    A, B, y, D1, n, alpha, beta, bf = _assemble_temporal_compressible_3d_evp(
+    A, B, y, D1, n, alpha, beta, bf = assemble_temporal_compressible_3d_evp(
         baseflow,
         alpha,
         beta,
@@ -969,8 +958,8 @@ def solve_temporal_compressible_3d(baseflow, alpha, beta, Re, Ma, Pr, gamma,
     )
     Pr_freestream = bf['Pr_local'][0] if 'Pr_local' in bf else Pr
 
-    _apply_wall_bc_3d(A, B, D1, n, wall_bc=wall_bc)
-    _apply_dirichlet_freestream_bc_3d(A, B, n)
+    apply_wall_bc_3d(A, B, D1, n, wall_bc=wall_bc)
+    apply_dirichlet_freestream_bc_3d(A, B, n)
 
     eigenvalues, eigenvectors = linalg.eig(A, B)
 
@@ -1370,7 +1359,7 @@ def refine_temporal_compressible_3d_asymptotic(
     converged = False
 
     for _ in range(max_iter):
-        A, B, y, D1, n, alpha_eval, beta_eval, bf = _assemble_temporal_compressible_3d_evp(
+        A, B, y, D1, n, alpha_eval, beta_eval, bf = assemble_temporal_compressible_3d_evp(
             baseflow,
             alpha,
             beta,
@@ -1388,7 +1377,7 @@ def refine_temporal_compressible_3d_asymptotic(
             lambda_mu_ratio=lambda_mu_ratio,
         )
         Pr_freestream = bf['Pr_local'][0] if 'Pr_local' in bf else Pr
-        _apply_wall_bc_3d(A, B, D1, n, wall_bc=wall_bc)
+        apply_wall_bc_3d(A, B, D1, n, wall_bc=wall_bc)
         _apply_asymptotic_freestream_bc_3d(
             A, B, D1, n, alpha_eval, beta_eval, Re, Ma, Pr, gamma, c_ref,
             Pr_freestream=Pr_freestream,
@@ -1851,3 +1840,10 @@ def solve_spatial_from_temporal(baseflow, omega, Re, Ma, Pr, gamma,
         lambda_mu_ratio=lambda_mu_ratio)
 
     return alpha, converged
+
+
+# --- Backwards-compatible aliases (private names promoted to public API) ---
+_temperature_wall_operator = temperature_wall_operator
+_assemble_temporal_compressible_3d_evp = assemble_temporal_compressible_3d_evp
+_apply_wall_bc_3d = apply_wall_bc_3d
+_apply_dirichlet_freestream_bc_3d = apply_dirichlet_freestream_bc_3d

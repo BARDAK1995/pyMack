@@ -28,8 +28,8 @@ REPO = Path(__file__).resolve().parents[3]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from pymack import make_ozgen_profile  # noqa: E402
-from pymack.ozgen_solver import solve_temporal_ozgen_2d  # noqa: E402
+from pymack import make_flatplate_profile  # noqa: E402
+from pymack.temporal_solver import solve_temporal_2d  # noqa: E402
 from pymack.scales import delta_star_over_lstar  # noqa: E402
 
 _PROFILE_CACHE: dict[float, object] = {}
@@ -37,7 +37,7 @@ _PROFILE_CACHE: dict[float, object] = {}
 
 def _profile(Ma: float):
     if Ma not in _PROFILE_CACHE:
-        _PROFILE_CACHE[Ma] = make_ozgen_profile(Ma)
+        _PROFILE_CACHE[Ma] = make_flatplate_profile(Ma)
     return _PROFILE_CACHE[Ma]
 
 
@@ -81,7 +81,7 @@ def discrete_mode(
     d = delta_star_over_lstar(prof)
     cand_by_ymf = []
     for ymf in ymf_pair:
-        ev, vec, y = solve_temporal_ozgen_2d(
+        ev, vec, y = solve_temporal_2d(
             prof, float(alpha), float(Re), float(Ma),
             N=N, y_max=ymf * d, length_scale="L_star",
         )

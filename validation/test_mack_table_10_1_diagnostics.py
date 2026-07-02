@@ -1,11 +1,9 @@
 """Validation: Mack Table 10.1 diagnostic wiring."""
 
 import os
-import sys
 
 import pytest
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.mack_table_10_1 import (
     DEFAULT_TABLE_10_1_CONDITION,

@@ -8,12 +8,9 @@ points so solver regressions and gaps are visible in one place.
 
 import argparse
 import json
-import os
-import sys
 
 import numpy as np
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.mack_conditions import make_mack_profile
 from pymack.reference_data import select_mack_table_10_1_cases

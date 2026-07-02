@@ -26,7 +26,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from pymack import CompressibleBlasiusProfile, make_ozgen_profile  # noqa: E402
+from pymack import CompressibleBlasiusProfile, make_flatplate_profile  # noqa: E402
 from pymack.scales import delta_star_over_lstar  # noqa: E402
 from pymack.solver import solve_spatial  # noqa: E402
 
@@ -124,7 +124,7 @@ def _make_profile_from_config(config):
         return _make_power_law_profile_from_config(config)
     if config["profile_family"] == "sutherland_blasius":
         return _make_sutherland_blasius_profile_from_config(config)
-    return make_ozgen_profile(
+    return make_flatplate_profile(
         config["ma"],
         T_edge=config["t_edge"],
         T_wall=t_wall,

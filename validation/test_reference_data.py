@@ -1,9 +1,6 @@
 """Validation: shared paper-target registry and numeric reference data."""
 
-import os
-import sys
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from pymack.reference_data import (
     iter_registry_reference_paths,

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pymack"
-version = "0.0.1"
+dynamic = ["version"]
 description = "Local linear stability solver for compressible and hypersonic boundary layers — Mack modes, growth rates, neutral curves, N-factors."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -29,7 +29,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7"]
+dev = ["pytest>=7", "ruff>=0.4"]
 
 [project.urls]
 Homepage = "https://github.com/BARDAK1995/pymack"
@@ -38,3 +38,25 @@ Issues = "https://github.com/BARDAK1995/pymack/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["pymack"]
+
+[tool.hatch.version]
+path = "pymack/__init__.py"
+
+[tool.pytest.ini_options]
+testpaths = ["validation"]
+markers = [
+    "slow: long-running benchmark tests (deselect with '-m \"not slow\"')",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Legacy engine modules predate the import-order convention; new code follows it.
+"pymack/{analysis,solver,mack_shooting,baseflow,boundary_layer}.py" = ["I001"]
+# The top-level namespace groups imports by architectural layer on purpose.
+"pymack/__init__.py" = ["I001", "E402"]

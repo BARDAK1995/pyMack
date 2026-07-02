@@ -578,7 +578,7 @@ def main(argv=None):
         "pymack_provenance": (
             f"c_i grid {_rel(grid_path)} (24x30 mesh per Mach, log-spaced Re x "
             f"linear alpha), from the Özgen Fig.3 overlay pipeline "
-            f"(solve_temporal_ozgen_2d, L* scale, TS/Mack-classified). For each "
+            f"(solve_temporal_2d, L* scale, TS/Mack-classified). For each "
             f"digitized constant-c_i lobe point (Re*, alpha*) the c_i field is "
             f"bilinearly interpolated (linear in log-Re between bracketing columns, "
             f"linear in alpha) and pyMack's alpha on the c_i=LEVEL contour nearest "
