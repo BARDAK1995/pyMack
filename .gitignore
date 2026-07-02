@@ -57,3 +57,6 @@ chapters/**/results/
 # Work-in-progress paper reproductions — kept private until validated
 chapters/
 baseline_snapshot/
+
+# Local-only reference paper PDFs (copyrighted; never commit)
+refPapers/
