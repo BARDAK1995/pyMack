@@ -1,11 +1,19 @@
 """2D temporal shoot-search utilities (compressible LST).
 
-A shooting/root-search alternative to the spectral temporal solver. The
-first-order system implemented here (the ``ozgen_*`` helpers below) follows the
-printed equations of Ozgen & Kircali (2008), Eqs. 22-28, for 2-D disturbances
-over a 2-D mean flow -- kept separate from the Mack Appendix-A shooter
-(:mod:`pymack.mack_shooting`) because that uses its own variable set and
-viscous coefficients. Shooting for LST eigenvalues is a standard technique
+A shooting/root-search alternative to the spectral temporal solver, following
+Ozgen & Kircali (2008), Eqs. 2.20-2.28: the four disturbance equations are
+recast as a first-order system in the six-component state
+``(X1..X6) = (alpha*u, alpha*u', v, p, T, T')``, the three freestream-decaying
+solutions are marched to the wall, and the eigenvalue is the ``c`` that makes
+the 3x3 wall matrix singular.
+
+The 6x6 coefficient matrix itself is built by delegating to the validated
+Mack Appendix-A implementation (:func:`pymack.mack_shooting.
+mack_first_order_matrix_6`) at ``beta = 0`` with ``lambda_mu_ratio = 0``
+(Stokes closure) -- at those settings the Appendix-A system is algebraically
+identical to Ozgen's printed 2-D equations, term for term.  Keeping a single
+source of truth for the matrix avoids maintaining two transcriptions of the
+same operator.  Shooting for LST eigenvalues is a standard technique
 (Mack 1984); this is a re-implementation, not a new method.
 
 References: Ozgen & Kircali (2008), Theor. Comput. Fluid Dyn.;
@@ -17,7 +25,7 @@ from __future__ import annotations
 import numpy as np
 from scipy.optimize import minimize
 
-from .mack_shooting import _sample_scaled_baseflow
+from .mack_shooting import mack_first_order_matrix_6
 
 
 def ozgen_first_order_matrix_2d(
@@ -30,96 +38,29 @@ def ozgen_first_order_matrix_2d(
     gamma=1.4,
     length_scale='L_star',
 ):
-    """Return the 6x6 first-order matrix from Ozgen Eqs. 22-28 at beta=0."""
-    bf = _sample_scaled_baseflow(baseflow, np.array([y]), length_scale)
+    """Return the 6x6 first-order matrix of Ozgen Eqs. 2.21-2.28 at beta=0.
 
-    U = complex(bf['U'][0])
-    DU = complex(bf['dU'][0])
-    D2U = complex(bf['d2U'][0])
-    T = complex(bf['T'][0])
-    DT = complex(bf['dT'][0])
-    mu = complex(bf['mu'][0])
-    dmu_dT = complex(bf['dmu_dT'][0])
-    d2mu_dT2 = complex(bf['d2mu_dT2'][0])
-    dkappa = complex(bf['dkappa'][0])
-    dkappa_dT = complex(bf['dkappa_dT'][0])
-    d2kappa_dT2 = complex(bf['d2kappa_dT2'][0])
-
-    alpha = float(alpha)
-    k2 = alpha**2
-    phase = alpha * (U - complex(c))
-    mu_T_over_mu = dmu_dT / mu
-    C = Re / (mu * T) + 1j * (4.0 / 3.0) * gamma * Ma**2 * phase
-
-    A = np.zeros((6, 6), dtype=complex)
-
-    # X1' = X2
-    A[0, 1] = 1.0
-
-    # X2', Eq. 23 at beta=W=0.
-    A[1, 0] = 1j * Re * phase / (mu * T) + k2
-    A[1, 1] = -mu_T_over_mu * DT
-    A[1, 2] = Re * alpha * DU / T - 1j * k2 * (1.0 / T + mu_T_over_mu)
-    A[1, 3] = 1j * k2 * Re * phase / (mu * T)
-    A[1, 4] = (
-        k2 * phase / T
-        - mu_T_over_mu * alpha * DU
-        - (d2mu_dT2 / mu) * DT * alpha * DU
+    Delegates to :func:`pymack.mack_shooting.mack_first_order_matrix_6` with
+    ``beta = 0`` and ``lambda_mu_ratio = 0`` (Stokes), which reproduces
+    Ozgen's printed 2-D system exactly -- with one deliberate correction:
+    the X1 coefficient of the printed Eq. (2.24) reads
+    ``+i(2 mu dmu/dT T' + (4/3) T'/T)``, but re-deriving the pressure row
+    from Eqs. (2.13) and (2.23) gives ``-i(2 (1/mu) dmu/dT T' + (4/3) T'/T)``
+    (sign and mu-placement); the corrected form is used here and is what
+    drives the wall matrix singular at the spectral solver's eigenvalue.
+    """
+    return mack_first_order_matrix_6(
+        baseflow,
+        y,
+        float(alpha),
+        0.0,
+        c,
+        Re,
+        Ma,
+        gamma,
+        lambda_mu_ratio=0.0,
+        length_scale=length_scale,
     )
-    A[1, 5] = -mu_T_over_mu * alpha * DU
-
-    # X3', Eq. 24.
-    A[2, 0] = -1j
-    A[2, 2] = DT / T
-    A[2, 3] = -1j * gamma * Ma**2 * phase
-    A[2, 4] = 1j * phase / T
-
-    # X4', Eq. 25 divided by C.
-    A[3, 0] = 1j * (2.0 * dmu_dT * DT + (4.0 / 3.0) * DT / T) / C
-    A[3, 1] = -1j / C
-    A[3, 2] = (
-        (4.0 / 3.0) * DT / T
-        - k2
-        + 1j * Re * phase / (mu * T)
-        + (4.0 / 3.0) * mu_T_over_mu * DT / T
-    ) / C
-    A[3, 3] = (
-        -1j
-        * (4.0 / 3.0)
-        * gamma
-        * Ma**2
-        * DT
-        * (phase / T + alpha * DU * mu_T_over_mu * phase)
-    ) / C
-    A[3, 4] = (
-        1j
-        * (
-            (4.0 / (3.0 * T)) * alpha * DU
-            + mu_T_over_mu * DT * alpha * DU
-            + mu_T_over_mu * alpha * D2U
-        )
-    ) / C
-    A[3, 5] = 1j * (4.0 / (3.0 * T)) * phase / C
-
-    # X5' = X6
-    A[4, 5] = 1.0
-
-    # X6', Eq. 28 at beta=W=0.
-    A[5, 0] = -(gamma - 1.0) * alpha * Ma**2 * alpha * DU
-    A[5, 2] = (
-        alpha * Re / (mu * T)
-        - 2.0 * (gamma - 1.0) * alpha * Ma**2 * alpha * DU
-    )
-    A[5, 3] = -(gamma - 1.0) * alpha * Re * Ma**2 * phase / (mu * T)
-    A[5, 4] = (
-        k2
-        + 1j * alpha * Re * phase / mu
-        - (dkappa + d2kappa_dT2 * DT**2) / mu
-        - (gamma - 1.0) * alpha * Ma**2 * dmu_dT * DU**2 / mu
-    )
-    A[5, 5] = -2.0 * dkappa_dT * DT / mu
-
-    return A
 
 
 def ozgen_freestream_decay_basis_2d(baseflow, alpha, c, Re, Ma, gamma=1.4, y_max=40.0, length_scale='L_star'):

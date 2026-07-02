@@ -606,11 +606,15 @@ spanwise velocity), the disturbance is described by the six-component complex st
 \end{equation}
 in which $X_1,X_3,X_5$ are the \emph{primary flow amplitudes}, while $X_2,X_6$ are the wall-normal derivatives
 of $X_1,X_5$ and $X_4$ is the pressure amplitude.
-Concretely $X_1$ is the streamwise-velocity amplitude, $X_3$ the wall-normal-velocity amplitude, and $X_5$ the
-temperature amplitude (with $X_2=\D X_1$ and $X_6=\D X_5$ their wall-normal derivatives; $X_4$ is the pressure
-amplitude, coupled through the continuity and $y$-momentum rows rather than as a plain derivative). The state
-thus stacks $(u,\,u',\,v,\,p,\,T,\,T')$ in that order (Ozgen's convention); the two second-order
-momentum/energy equations and the first-order continuity relation together close the system. The whole set is written as one
+Concretely $X_1=\alpha\hatu$ is the (wavenumber-scaled) streamwise-velocity amplitude --- Ozgen's
+$k$-direction combination $\alpha\bar u+\beta\bar w$ evaluated at $\beta=0$; the constant factor $\alpha$ is
+immaterial to a homogeneous eigenvalue problem --- $X_3=\hatv$ the wall-normal-velocity amplitude, and
+$X_5=\hatT$ the temperature amplitude (with $X_2=\D X_1$ and $X_6=\D X_5$ their wall-normal derivatives;
+$X_4=\hatp$ is the same $\rho_eU_e^2$-scaled pressure amplitude as Part~A, coupled through the continuity and
+$y$-momentum rows rather than as a plain derivative). The state thus stacks
+$(\alpha u,\,\alpha u',\,v,\,p,\,T,\,T')$ --- loosely, $(u,\,u',\,v,\,p,\,T,\,T')$ --- in that order
+(Ozgen's convention); the two second-order momentum/energy equations and the first-order continuity relation
+together close the system. The whole set is written as one
 first-order ODE,
 \begin{equation}\label{eq:foode}
   \frac{\mathrm d Y}{\mathrm d y}=A\big(y;\ \alpha,c,\Ree,\Mae\big)\,Y,\qquad A\in\mathbb C^{6\times6},
@@ -632,6 +636,18 @@ $\tfrac{\mathrm d\mu}{\mathrm dT}\bar U'$, and the conduction group in $\bar\kap
 \emph{scalar} entries of a $6\times6$ matrix evaluated at one height rather than as $n\times n$ diagonal blocks.
 The gas defaults ($\gamma=1.4$) and the length scaling (\texttt{L\_star}) match the spectral solver, so both
 routes see the identical mean flow.
+
+\remark{Single source of truth --- and a typo in the printed reference.}{Internally
+\texttt{ozgen\_first\_order\_matrix\_2d} delegates to the Mack Appendix-A matrix
+(\texttt{mack\_shooting.mack\_first\_order\_matrix\_6}) evaluated at $\beta=0$ with $\lambda/\mu=0$ --- the
+same Stokes closure as Part~A's temporal solver --- which at those settings is algebraically identical to
+Ozgen \& Kircali's printed Eqs.~22--28, term for term, with one correction: the $X_1$ coefficient of the
+printed Eq.~(24) reads $+\imag\big(2\mu\tfrac{\mathrm d\mu}{\mathrm dT}T'+\tfrac43\tfrac{T'}{T}\big)$, but
+re-deriving the pressure row from Eqs.~(13) and (23) gives
+$-\imag\big(2\tfrac1\mu\tfrac{\mathrm d\mu}{\mathrm dT}T'+\tfrac43\tfrac{T'}{T}\big)$ (sign and
+$\mu$-placement). With the corrected term the two routes agree in practice: at the worked-example
+parameters of \S\ref{sec:worked}, $\sigma_{\min}(c)$ falls to $4\times10^{-6}$ at the spectral
+$c=0.930+0.0200\imag$ and rises by two orders of magnitude within $|\Delta c|\sim2\times10^{-3}$ of it.}
 
 \section{Boundary conditions at the wall and the decaying freestream basis}\label{sec:shoot-bc}
 \problembox{Supply the six conditions that pin down a non-trivial disturbance: three homogeneous conditions
@@ -790,9 +806,10 @@ artefact.}
 
 \bigskip
 {\sloppy
-\noindent\emph{Code map (Part~B).} first-order matrix, decay basis, integration, wall matrix, singular value,
-and search: all in \texttt{pymack/\allowbreak temporal\_shooting.py}; base-flow sampling shared via
-\texttt{pymack/\allowbreak mack\_shooting.py} (\texttt{\_sample\_\allowbreak scaled\_baseflow}). References:
+\noindent\emph{Code map (Part~B).} decay basis, integration, wall matrix, singular value, and search:
+\texttt{pymack/\allowbreak temporal\_shooting.py}; the $6\times6$ matrix itself is shared with the Mack
+Appendix-A module (\texttt{pymack/\allowbreak mack\_shooting.py},
+\texttt{mack\_first\_order\_matrix\_6} at $\beta=0$, $\lambda/\mu=0$). References:
 Ozgen \& Kircali (2008), \emph{Theor.\ Comput.\ Fluid Dyn.}, Eqs.~22--28; Mack (1984), AGARD-R-709.
 \par}
 
