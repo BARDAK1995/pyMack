@@ -411,7 +411,9 @@ def fig_nfactor():
     save(fig, "fig_nfactor.pdf")
 
 
-def fig_workflow():
+def fig_workflow(single=False):
+    """Workflow chart. single=True labels the stage brackets by the sections of
+    the combined single document instead of by companion-document names."""
     fig, ax = plt.subplots(figsize=(8.4, 7.6))
     ax.set_xlim(0, 10.8); ax.set_ylim(4.9, 19.9); ax.axis("off")
 
@@ -450,9 +452,14 @@ def fig_workflow():
         ax.plot([x - 0.09, x], [y_bot, y_bot], color=color, lw=1.6)
         ax.text(x + 0.18, 0.5 * (y_top + y_bot), label, ha="left", va="center",
                 fontsize=13, color=color, style="italic")
-    doc_tag(17.72, 16.28, "mean-flow\ndocument")
-    doc_tag(15.72, 12.28, "this document", color=PM)
-    doc_tag(11.72, 10.28, "numerical-methods\ndocument")
+    if single:
+        doc_tag(17.72, 16.28, "Section 2:\nmean flow")
+        doc_tag(15.72, 12.28, "Section 3:\ndisturbance\nequations", color=PM)
+        doc_tag(11.72, 10.28, "Section 4:\nnumerical\nmethods")
+    else:
+        doc_tag(17.72, 16.28, "mean-flow\ndocument")
+        doc_tag(15.72, 12.28, "this document", color=PM)
+        doc_tag(11.72, 10.28, "numerical-methods\ndocument")
 
     # --- temporal / spatial fork ------------------------------------------
     TX, PX = 2.35, 7.15
@@ -469,7 +476,7 @@ def fig_workflow():
     arrow(TX, 7.84, TX, 6.86); arrow(PX, 7.84, PX, 6.86)
     box(TX, 6.1, 4.3, H, "Neutral curves", r"locus $c_i=0$ in $(R,\alpha)$", True)
     box(PX, 6.1, 4.6, H, r"$N$-factor", r"$N(R)=\int-\alpha_i\,\mathrm{d}R\ \to\ e^N$", True)
-    save(fig, "fig_workflow.pdf")
+    save(fig, "fig_workflow_single.pdf" if single else "fig_workflow.pdf")
 
 
 def fig_companion():
