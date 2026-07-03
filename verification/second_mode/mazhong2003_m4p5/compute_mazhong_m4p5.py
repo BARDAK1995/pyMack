@@ -18,8 +18,11 @@ http://cfdhost.seas.ucla.edu/papers/2003/Zhong-JFM-2003a.pdf):
     Quote (sec. 6): "The second-mode unstable region for a fixed frequency of
     F = 2.2e-4 predicted by the LST is located in an interval from R = 806
     (branch I neutral stability point) to 999.6 (branch II neutral stability
-    point)."  Fig. 15 neutral curve uses the adiabatic temperature-disturbance
-    boundary condition.
+    point)."  Fig. 15 neutral curve uses the ISOTHERMAL temperature-disturbance
+    boundary condition (T'|_wall = 0): the paper states "the isothermal wall
+    boundary condition is used for temperature perturbations" for the neutral
+    curve (see MaZhong_2003_notes.md). The MEAN base flow is still adiabatic
+    (insulated plate); only the disturbance T' BC is isothermal.
 
 This script: builds the adiabatic CompressibleBlasiusProfile, sweeps R at fixed
 F (omega = R*F), tracks the second mode (-alpha_i vs R), and brackets+refines
@@ -50,7 +53,7 @@ REF_BRANCH_II = 999.6
 N = 130
 Y_MAX = 40.0
 LAMBDA_MU = 1.2             # Mack 2nd-viscosity convention (Malik mapping)
-WALL_BC = "adiabatic"       # disturbance temperature BC for Fig.15 neutral curve
+WALL_BC = "isothermal"      # disturbance temperature BC for Fig.15 (T'|_wall=0, per Ma & Zhong text)
 
 HERE = Path(__file__).resolve().parent
 

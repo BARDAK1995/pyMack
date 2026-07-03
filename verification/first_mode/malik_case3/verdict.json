@@ -1,0 +1,47 @@
+{
+  "case_id": "malik_case3",
+  "category": "eigenvalue_anchor",
+  "source": "Malik (1990) JCP 86:376 Table IV, Case 3 (M=2.5, R=3000, adiabatic, alpha=0.06, beta=0.1). Dimensional conditions (T0=600 degR, adiabatic) from Malik Table I (refPapers/NewPapers/figures/malik1990_table1_test_cases.png).",
+  "conditions": {
+    "Ma": 2.5,
+    "Re_l": 3000.0,
+    "alpha_fixed": 0.06,
+    "beta": 0.1,
+    "Pr": 0.7,
+    "gamma": 1.4,
+    "wall": "adiabatic (insulated)",
+    "T0_K": 333.3333333333333,
+    "T_edge_K": 148.14814814814815,
+    "sutherland_S_K": 110.33333333333333,
+    "malik_case_number": 3,
+    "problem": "temporal (fixed real alpha -> complex omega)",
+    "mode": "oblique first mode",
+    "length_scale": "L_star"
+  },
+  "quantity": "temporal frequency eigenvalue omega = omega_r + i*omega_i at fixed real alpha",
+  "metrics": {
+    "omega_r_rel_err": 1.6117791395309154e-05,
+    "omega_i_rel_err": 0.00023601633745462438,
+    "pymack_omega": [
+      0.03673459207094912,
+      0.0005841378335410735
+    ],
+    "malik_omega": [
+      0.036734,
+      0.000584
+    ],
+    "c_phase": 0.6122432011824853,
+    "N": 200,
+    "topology_ok": true
+  },
+  "verdict": "agrees",
+  "verdict_reason": "Oblique first mode, temporal. pyMack omega=0.0367346+0.0005841i vs Malik 0.0367340+0.0005840i: omega_r rel err 1.61e-05 (0.002%), omega_i rel err 2.36e-04 (0.02%). OBLIQUE (beta=0.10) first mode -- the cleanest-converging case in Malik's paper (all four schemes agree to 5 sig figs). Previously logged non-reproducible for lack of the dimensional conditions; adding the source paper (Table I) unlocked it. Mirror of validation/test_malik1990_case3_anchor.py.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": null,
+    "reference": null,
+    "overlay": "verification/first_mode/malik_case3/overlay.png"
+  },
+  "pymack_provenance": "pymack.solver.solve_temporal_compressible_3d on CompressibleBlasiusProfile (adiabatic MEAN wall, Sutherland S=110.33 K) with ISOTHERMAL disturbance-temperature BC (T'|_wall=0, Malik's paper-wide convention; the mean wall is adiabatic but the perturbation T' vanishes at the wall), N=200, y_max=55, lambda_mu_ratio=1.2, length_scale='L_star'; mirrors validation/test_malik1990_case3_anchor.py.",
+  "mode": "first"
+}

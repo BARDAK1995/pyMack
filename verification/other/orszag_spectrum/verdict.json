@@ -1,0 +1,36 @@
+{
+  "case_id": "orszag_spectrum",
+  "category": "eigenvalue_anchor",
+  "source": "Orszag (1971) JFM 50:689 Table 5: 32 least-stable Orr-Sommerfeld eigenvalues of plane Poiseuille flow, alpha=1, R=10000 (refPapers/NewPapers/figures/orszag1971_table5_least_stable_spectrum.png).",
+  "conditions": {
+    "flow": "plane Poiseuille U=1-y^2",
+    "alpha": 1.0,
+    "Re": 10000.0,
+    "problem": "temporal OS (full spectrum)",
+    "domain": "[-1,1]"
+  },
+  "quantity": "full temporal eigenvalue spectrum c = c_r + i*c_i (32 least-stable modes)",
+  "metrics": {
+    "max_abs_err": 7.20962323561089e-06,
+    "median_abs_err": 5.247665602945219e-08,
+    "n_modes_matched_under_1e5": 32,
+    "n_modes_matched_under_1e4": 32,
+    "n_modes_total": 32,
+    "N": 128,
+    "least_stable_c": [
+      0.23752649,
+      0.00373967
+    ],
+    "topology_ok": true
+  },
+  "verdict": "agrees",
+  "verdict_reason": "Full OS spectrum. pyMack reproduces ALL 32 of Orszag's tabulated eigenvalues to max abs err 7.2e-06 (median 5.2e-08); 32/32 match to < 1e-5. The dense eigensolver resolves the A-branch (c_r~0.96), P-branch (c_r~0.2-0.5) and S-branch, including the near-degenerate symmetric/antisymmetric pairs that differ only in the 5th-6th digit (modes 2&3 at 0.96463 vs 0.96464). This upgrades the Orszag validation from a single eigenvalue (Table 2) to the full branch structure. Mirror of validation/test_orszag_full_spectrum.py.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": null,
+    "reference": null,
+    "overlay": "verification/other/orszag_spectrum/overlay.png"
+  },
+  "pymack_provenance": "Chebyshev-tau OS operator (pymack.spectral chebyshev_D) on plane Poiseuille [-1,1], N=128, dense scipy.linalg.eig; same setup as validation/test_orr_sommerfeld.py.",
+  "mode": "other"
+}

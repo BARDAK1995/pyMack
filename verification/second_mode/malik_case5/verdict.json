@@ -1,0 +1,47 @@
+{
+  "case_id": "malik_case5",
+  "category": "eigenvalue_anchor",
+  "source": "Malik (1990) JCP 86:376 Table VI, Case 5 (M=10, R=1000, adiabatic, alpha=0.12, beta=0). Dimensional conditions (T0=4200 degR, adiabatic) from Malik Table I (refPapers/NewPapers/figures/malik1990_table1_test_cases.png).",
+  "conditions": {
+    "Ma": 10.0,
+    "Re_l": 1000.0,
+    "alpha_fixed": 0.12,
+    "beta": 0.0,
+    "Pr": 0.7,
+    "gamma": 1.4,
+    "wall": "adiabatic (insulated)",
+    "T0_K": 2333.3333333333335,
+    "T_edge_K": 111.11111111111114,
+    "sutherland_S_K": 110.33333333333333,
+    "malik_case_number": 5,
+    "problem": "temporal (fixed real alpha -> complex omega)",
+    "mode": "second mode",
+    "length_scale": "L_star"
+  },
+  "quantity": "temporal frequency eigenvalue omega = omega_r + i*omega_i at fixed real alpha",
+  "metrics": {
+    "omega_r_rel_err": 2.0801671434926273e-05,
+    "omega_i_rel_err": 0.01829985395773674,
+    "pymack_omega": [
+      0.1158622898205797,
+      0.00015569804767013795
+    ],
+    "malik_omega": [
+      0.1158647,
+      0.0001529
+    ],
+    "c_phase": 0.9655190818381642,
+    "N": 280,
+    "topology_ok": true
+  },
+  "verdict": "agrees",
+  "verdict_reason": "Second mode, temporal. pyMack omega=0.1158623+0.0001557i vs Malik 0.1158647+0.0001529i: omega_r rel err 2.08e-05 (0.002%), omega_i rel err 1.83e-02 (1.83%). Malik's deliberately SEVERE near-neutral M=10 test: omega_i ~ 1.5e-4 is strongly scheme-sensitive (his own SDSP even flips its sign at N+1=61). pyMack's independent IVM/RK4 cross-check value is 0.1158627+0.0001557i; pyMack lands on that cluster. Previously logged non-reproducible for lack of the dimensional conditions; adding the source paper (Table I) unlocked it. Mirror of validation/test_malik1990_case5_anchor.py.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": null,
+    "reference": null,
+    "overlay": "verification/second_mode/malik_case5/overlay.png"
+  },
+  "pymack_provenance": "pymack.solver.solve_temporal_compressible on CompressibleBlasiusProfile (adiabatic MEAN wall, Sutherland S=110.33 K) with ISOTHERMAL disturbance-temperature BC (T'|_wall=0, Malik's paper-wide convention; the mean wall is adiabatic but the perturbation T' vanishes at the wall), N=280, y_max=140, lambda_mu_ratio=1.2, length_scale='L_star'; mirrors validation/test_malik1990_case5_anchor.py.",
+  "mode": "second"
+}
