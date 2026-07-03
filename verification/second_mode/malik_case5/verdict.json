@@ -35,7 +35,7 @@
     "topology_ok": true
   },
   "verdict": "agrees",
-  "verdict_reason": "Second mode, temporal. pyMack omega=0.1158623+0.0001557i vs Malik 0.1158647+0.0001529i: omega_r rel err 2.08e-05 (0.002%), omega_i rel err 1.83e-02 (1.83%). Malik's deliberately SEVERE near-neutral M=10 test: omega_i ~ 1.5e-4 is strongly scheme-sensitive (his own SDSP even flips its sign at N+1=61). pyMack's independent IVM/RK4 cross-check value is 0.1158627+0.0001557i; pyMack lands on that cluster. Previously logged non-reproducible for lack of the dimensional conditions; adding the source paper (Table I) unlocked it. Mirror of validation/test_malik1990_case5_anchor.py.",
+  "verdict_reason": "Second mode, temporal. Our LST code omega=0.1158623+0.0001557i vs Malik 0.1158647+0.0001529i: omega_r rel err 2.08e-05 (0.002%), omega_i rel err 1.83e-02 (1.83%). Malik's deliberately SEVERE near-neutral M=10 test: omega_i ~ 1.5e-4 is strongly scheme-sensitive (his own SDSP even flips its sign at N+1=61). Our LST code's independent IVM/RK4 cross-check value is 0.1158627+0.0001557i; Our LST code lands on that cluster. Previously logged non-reproducible for lack of the dimensional conditions; adding the source paper (Table I) unlocked it. Mirror of validation/test_malik1990_case5_anchor.py.",
   "generated": "new",
   "artifacts": {
     "pymack": null,

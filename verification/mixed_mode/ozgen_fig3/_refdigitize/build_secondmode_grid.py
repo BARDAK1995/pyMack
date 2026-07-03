@@ -25,8 +25,11 @@ OUT = HERE / "secondmode_grid.csv"
 GRID = {
     4: {"re": np.logspace(np.log10(1130), np.log10(5500), 13),
         "alpha": np.linspace(0.27, 0.40, 14)},
-    6: {"re": np.logspace(np.log10(600), np.log10(5500), 13),
-        "alpha": np.linspace(0.12, 0.22, 14)},
+    # M6 extended for critical-Reynolds (nose) capture: Re down to 150 (2nd-mode
+    # nose ~200) with dense low-Re log spacing + finer alpha so the marching-squares
+    # c_i=0 contour CLOSES around the nose. (was Re[600,5500]x13, alpha[0.12,0.22]x14)
+    6: {"re": np.unique(np.round(np.logspace(np.log10(150), np.log10(5500), 30))),
+        "alpha": np.round(np.linspace(0.110, 0.215, 24), 5)},
     7: {"re": np.logspace(np.log10(600), np.log10(5500), 13),
         "alpha": np.linspace(0.09, 0.21, 14)},
     8: {"re": np.logspace(np.log10(600), np.log10(5500), 13),

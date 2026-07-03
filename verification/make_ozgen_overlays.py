@@ -7,7 +7,7 @@ neutral-curve case:
     verification/mixed_mode/ozgen_fig3/M{2,3,4,6,7,8,10}/overlay.png
 
 For each Mach it plots:
-  * pyMack's OWN computed neutral locus -- the full c_i = 0 contour extracted (by
+  * Our LST code's OWN computed neutral locus -- the full c_i = 0 contour extracted (by
     marching squares) from the committed first-/second-mode c_i grids
     (`_refdigitize/firstmode_grid.csv`, `secondmode_grid.csv`); where an
     eigenvalue-continuation trace exists (`continuation_M{N}.csv`, M2/M3) that
@@ -63,7 +63,7 @@ FIRST = RD / "firstmode_grid.csv"
 SECOND = RD / "secondmode_grid.csv"
 DIG = REPO / "reference_data" / "digitized"
 
-PYMACK_BLACK = "#000000"
+PYMACK_BLUE = "#000000"      # Our LST code curve: black, dashed, thick
 PUB_RED = "#d62728"          # single-series colour for the simplified writeup figure
 # (mode, lobe) -> (marker, edgecolor, label)  -- mirrors the proof figures.
 # Labels kept short so the (below-axes) legend stays compact and readable.
@@ -78,7 +78,7 @@ ORDER = [("first", "lower"), ("first", "upper"),
 
 
 # ---------------------------------------------------------------------------
-# pyMack neutral locus: full c_i=0 contour of the committed grids (or the
+# Our LST code neutral locus: full c_i=0 contour of the committed grids (or the
 # continuation trace where it exists). This mirrors build_ozgen_final.segs_of /
 # continuation_segs exactly, but only READS committed data (no recompute).
 # ---------------------------------------------------------------------------
@@ -157,14 +157,11 @@ def ozgen_v2(Ma: int):
 # Title from verdict.json (live; numbers untouched)
 # ---------------------------------------------------------------------------
 def title_for(case_dir: Path, Ma: int):
-    """Concise, publication-clean title. The verdict word is read LIVE from
-    verdict.json (never hardcoded); the long per-branch metric headline is NOT
-    put on the plot -- it lives in the LaTeX caption and the success matrix, so
-    the title stays short and every element on the figure renders large."""
+    """Concise, case-identifying title only. No verdict word and no metric
+    headline on the plot -- those live in the LaTeX caption and the success
+    matrix, so the figure carries just the case identity."""
     v = json.loads((case_dir / "verdict.json").read_text(encoding="utf-8"))
-    verdict = v.get("verdict", "?")
-    return (f"Özgen & Kırcalı (2008) Fig. 3:  $M={Ma}$  neutral curve  "
-            f"({verdict})"), v
+    return (f"Özgen & Kırcalı (2008) Fig. 3:  $M={Ma}$  neutral curve"), v
 
 
 def set_overlay_path(case_dir: Path, rel: str):
@@ -190,7 +187,7 @@ def _common_axes(ax, title):
 def _render(Ma: int, segs, ref, title, simple: bool):
     """Build one overlay figure. ``simple=False`` -> the DETAILED development
     figure (per-branch markers: 1st/2nd x lower/upper). ``simple=True`` -> the
-    PUBLICATION figure for the writeup: pyMack's neutral curve (black line) plus
+    PUBLICATION figure for the writeup: Our LST code's neutral curve (black line) plus
     ALL Ozgen reference points collapsed into a SINGLE red series with one label.
     Returns (fig, legend)."""
     fig, ax = plt.subplots(figsize=(8.8, 6.0))
@@ -199,26 +196,26 @@ def _render(Ma: int, segs, ref, title, simple: bool):
         arrs = [ref[k] for k in ORDER if k in ref]
         pts = np.vstack(arrs) if arrs else np.empty((0, 2))
         if len(pts):
-            ax.plot(pts[:, 0], pts[:, 1], "o", color=PUB_RED, ms=5.0, mew=0,
-                    linestyle="none", alpha=0.85, zorder=2,
+            ax.plot(pts[:, 0], pts[:, 1], "o", color=PUB_RED, ms=4.0, mew=0,
+                    linestyle="none", alpha=0.9, zorder=2,
                     label=f"Özgen & Kırcalı (2008),  $M={Ma}$")
-        # pyMack curve on TOP so the black locus reads through the red band.
+        # Our LST code curve on TOP so the blue locus reads through the red band.
         for s in segs:
-            ax.plot(s[:, 0], s[:, 1], "-", color=PYMACK_BLACK, lw=3.4, zorder=4)
-        ax.plot([], [], "-", color=PYMACK_BLACK, lw=3.4,
-                label="pyMack (present LST)")
+            ax.plot(s[:, 0], s[:, 1], "--", color=PYMACK_BLUE, lw=3.8, zorder=4)
+        ax.plot([], [], "--", color=PYMACK_BLUE, lw=3.8,
+                label="Our LST code")
         ncol, anchor = 2, -0.185
     else:
         for s in segs:
-            ax.plot(s[:, 0], s[:, 1], "-", color=PYMACK_BLACK, lw=3.4)
-        ax.plot([], [], "-", color=PYMACK_BLACK, lw=3.4,
-                label="pyMack neutral ($c_i=0$)")
+            ax.plot(s[:, 0], s[:, 1], "--", color=PYMACK_BLUE, lw=3.8)
+        ax.plot([], [], "--", color=PYMACK_BLUE, lw=3.8,
+                label="Our LST code neutral ($c_i=0$)")
         for key in ORDER:
             if key not in ref:
                 continue
             arr = ref[key]
             mk, col, lab = STYLES[key]
-            ax.plot(arr[:, 0], arr[:, 1], mk, mfc="none", mec=col, mew=1.9, ms=8.5,
+            ax.plot(arr[:, 0], arr[:, 1], mk, mfc="none", mec=col, mew=1.4, ms=6.0,
                     linestyle="none", label=lab)
         n_entries = 1 + sum(1 for k in ORDER if k in ref)
         ncol, anchor = min(3, n_entries), -0.26
@@ -258,7 +255,7 @@ def make_overlay(Ma: int):
     rel = f"verification/mixed_mode/ozgen_fig3/M{Ma}/overlay.png"
     set_overlay_path(case_dir, rel)              # matrix/gallery -> detailed one
     n_ref = sum(len(ref[k]) for k in ref)
-    print(f"  M{Ma}: {len(segs)} pyMack contour segs, {n_ref} ref pts "
+    print(f"  M{Ma}: {len(segs)} Our LST code contour segs, {n_ref} ref pts "
           f"({sorted('/'.join(k) for k in ref)}) -> overlay.png + overlay_pub.png")
     return rel
 

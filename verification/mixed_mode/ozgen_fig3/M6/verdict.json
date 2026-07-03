@@ -14,32 +14,42 @@
   "metrics": {
     "per_branch_nearest_rel_err": {
       "second_upper": {
-        "median_rel_err": 0.01716288135466486,
-        "n": 86,
-        "covered": 0.7678571428571429
-      },
-      "first_lower": {
-        "median_rel_err": 0.5035487021749684,
-        "n": 73,
-        "covered": 0.8795180722891566
+        "median_rel_err": 0.011539071498100552,
+        "n": 18,
+        "covered": 0.75
       },
       "second_lower": {
-        "median_rel_err": 0.025662621136828455,
-        "n": 7,
-        "covered": 0.7
+        "median_rel_err": 0.005383739970110039,
+        "n": 18,
+        "covered": 0.75
       },
       "first_upper": {
-        "median_rel_err": 0.08891840275965392,
-        "n": 6,
-        "covered": 0.75
+        "median_rel_err": 0.00588494002759212,
+        "n": 21,
+        "covered": 0.875
+      },
+      "first_lower": {
+        "median_rel_err": 0.3292754511094942,
+        "n": 21,
+        "covered": 0.875
       }
     },
-    "robust_branch_median_rel_err": 0.05304064205715939,
+    "robust_branch_median_rel_err": 0.008712005762846337,
     "topology_ok": true,
-    "method": "full c_i=0 contour (marching squares) incl. Phase-2 onset; nearest-point match",
-    "headline": "full-contour match: robust branches median 5.3%; second_upper 2%(77%cov); first_lower 50%(88%cov); second_lower 3%(70%cov); first_upper 9%(75%cov)"
+    "method": "full c_i=0 contour (marching squares) from nose-resolving grids (Re down to 150/700); nearest-point match to re-digitized v2 reference",
+    "headline": "full-contour match incl. critical Reynolds: robust branches median 0.9%; second_upper 1%(75%cov); second_lower 1%(75%cov); first_upper 1%(88%cov); first_lower 33%(88%cov); nose Re 2nd 206 vs 185, 1st 700 vs 843",
+    "critical_reynolds": {
+      "second_mode": {
+        "pymack": 206,
+        "ozgen": 185
+      },
+      "first_mode": {
+        "pymack": 700,
+        "ozgen": 843
+      }
+    }
   },
-  "verdict": "acceptable",
+  "verdict": "agrees",
   "verdict_reason": "Full-contour comparison, four branches. Second-mode upper 2% and lower 3%, first-mode cutoff 9% all agree; first-mode onset 50% (low-alpha, partially CS-limited). pyMack reproduces both separate lobes; only the deep low-alpha onset is extraction-limited.",
   "generated": "new",
   "artifacts": {

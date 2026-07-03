@@ -18,30 +18,25 @@ disturbance eigenvalue problem solved by \texttt{pyMack}}
 Linear stability theory (LST) determines whether an infinitesimal wavelike disturbance superposed on a
 steady laminar boundary layer amplifies or decays as it propagates \cite{mack1984}. Because the
 disturbance is infinitesimal, products of disturbance quantities are negligible and its governing
-equations are linear; because the coefficients of the linearised equations depend, under the
-parallel-flow assumption, only on the wall-normal coordinate $y$, the normal-mode substitution
-$q'=\hatq(y)\,e^{\imag(\alpha x-\omega t)}$ removes $x$ and $t$ from the problem entirely. The
-requirement that a non-trivial shape $\hatq(y)$ exist then constitutes an eigenvalue problem.
+equations are linear; because their coefficients depend, under the parallel-flow assumption, only on
+the wall-normal coordinate $y$, the normal-mode substitution
+$q'=\hatq(y)\,e^{\imag(\alpha x-\omega t)}$ removes $x$ and $t$ entirely, leaving an eigenvalue problem
+for the shape $\hatq(y)$.
 
-This document derives that eigenvalue problem. Section~\ref{sec:lin} linearises the governing equations
-and introduces the normal-mode ansatz; Section~\ref{sec:eqs} states the four resulting ordinary
-differential equations exactly as assembled in \texttt{pymack/temporal\_solver.py};
-Section~\ref{sec:operator} collects them into a compact operator form, the intermediate step between
-the present derivation and the numerical implementation, and defines the transition from the
-continuous derivative to the discretised derivative operator; Section~\ref{sec:mechanisms} summarises
-the physical character of the instability modes the equations support; Section~\ref{sec:scope} records
-the idealisations underlying the derivation. The mean-flow profiles that enter as coefficients are
-computed in the companion document \emph{The Mean Boundary-Layer Profile} and are treated here as known
-data; the discretisation and eigenvalue algorithms are the subject of the companion \emph{Numerical
-Methods} document. Figure~\ref{fig:workflow} places these stages in the complete computational
-sequence.
+This document derives that eigenvalue problem: the linearisation and normal-mode ansatz
+(Section~\ref{sec:lin}), the four resulting ordinary differential equations (Section~\ref{sec:eqs}),
+their collection into operator form and Chebyshev discretisation into the finite eigenvalue problem the
+solvers receive (Section~\ref{sec:operator}), the physical character of the instability modes
+(Section~\ref{sec:mechanisms}), and the idealisations that bound the derivation
+(Section~\ref{sec:scope}). The mean-flow profiles that enter as coefficients are taken here as known
+data. Figure~\ref{fig:workflow} places these stages in the full computation.
 
 \begin{figure}[H]\centering
-  \includegraphics[width=0.72\linewidth]{fig_workflow.pdf}
-  \caption{The complete LST computation in \texttt{pyMack}. Stages 1--2 are covered by the companion
-  \emph{Mean Boundary-Layer} document, stage~3 by the present document, and stages 4--5 by the
-  companion \emph{Numerical Methods} document; the two solution routes are temporal (fixed real
-  $\alpha$, complex $c$) and spatial (fixed real $\omega$, complex $\alpha$).}\label{fig:workflow}
+  \includegraphics[width=0.88\linewidth]{fig_workflow.pdf}
+  \caption{The complete LST computation: the base flow (stages 1--2), the disturbance equations and
+  their discretisation derived here (stages 3--4), and the eigenvalue solution (stage~5); the two
+  solution routes are temporal (fixed real $\alpha$, complex $c$) and spatial (fixed real $\omega$,
+  complex $\alpha$).}\label{fig:workflow}
 \end{figure}
 
 \paragraph{Notation.} Overbars denote mean (base-flow) quantities; hats denote complex disturbance
@@ -77,9 +72,8 @@ where $\mathbf u=(u,v)$ is the velocity, $\rho$ the density, $T$ the temperature
 $\mu$ the viscosity, $\kappa$ the conductivity, $c_p$ the specific heat, $R$ the gas constant,
 $\D/\D t=\partial_t+\mathbf u\!\cdot\!\nabla$ the material derivative, $\boldsymbol\tau$ the Newtonian
 viscous stress tensor, and $\Phi=\boldsymbol\tau\!:\!\nabla\mathbf u$ the dissipation function (both
-linear in the velocity gradients). These are the same equations solved for the steady mean flow in the
-companion document; they are applied here a second time, in linearised form, for the disturbance. The
-reduction to ordinary differential equations proceeds in five steps.
+linear in the velocity gradients). These are the same compressible Navier--Stokes equations solved
+for the steady mean flow; here they are applied a second time, in linearised form, for the disturbance.
 
 \paragraph{Step 1: decomposition into mean and disturbance.} Each field is split as
 \begin{equation}\label{eq:split}
@@ -95,9 +89,8 @@ coefficients constructed from the known mean profiles.
 
 \paragraph{Step 3: parallel-flow assumption.} The boundary layer grows slowly, so locally
 $\bar q=\bar q(y)$ only and the coefficients depend on $y$ alone. This neglects the $O(1/R)$ streamwise
-growth of the mean flow and of the eigenfunction; the systematic remedy, retaining that slow
-$x$-variation, is the parabolised stability equations \cite{herbert1997} (cf.\
-Section~\ref{sec:scope}).
+growth of the mean flow and of the eigenfunction, which the parabolised stability equations retain
+\cite{herbert1997} (cf.\ Section~\ref{sec:scope}).
 
 \paragraph{Step 4: normal-mode ansatz.} The disturbance is represented as a single travelling wave,
 \begin{equation}\label{eq:ansatz}
@@ -110,7 +103,7 @@ $\partial_y\mapsto\D$, collapsing the linear PDEs to coupled ODEs in $y$
 $\propto e^{\imag(\alpha x+\beta z-\omega t)}$ propagates at angle $\psi=\arctan(\beta/\alpha)$, and
 since Squire's theorem does not carry over to compressible flow, the first mode is most unstable oblique
 ($\psi\sim55^\circ$) while the second mode is most unstable at $\psi=0$ \cite{mack1984}. The
-consequences of the two-dimensional restriction are recorded in Section~\ref{sec:scope}.
+consequences of the two-dimensional restriction are stated in Section~\ref{sec:scope}.
 
 \paragraph{Step 5: elimination of density.} The linearised equation of state gives
 \begin{equation}\label{eq:state-lin}
@@ -120,17 +113,40 @@ which removes $\rho'$ from the system. Four amplitude fields remain, $\hatu,\hat
 $\hatp$ scaled by $\rho_eU_e^2$ (so that $\gamma\Mae^2\hatp=p'/p_e$).
 
 \paragraph{A worked linearisation.} To make the mechanics explicit, consider mass conservation
-\eqref{eq:ns-mass}, $\partial_t\rho+\nabla\!\cdot(\rho\mathbf u)=0$. Inserting \eqref{eq:split}, the
-steady mean satisfies $\partial_x(\bar\rho\bar U)=0$ and cancels; retaining only terms linear in the
-primed quantities,
-\begin{equation}
-  \partial_t\rho'+\bar U\,\partial_x\rho'+\bar\rho\,\partial_x u'+\partial_y(\bar\rho v')=0 .
+\eqref{eq:ns-mass}, written out as $\partial_t\rho+\partial_x(\rho u)+\partial_y(\rho v)=0$.
+Inserting the decomposition \eqref{eq:split} and expanding every product sorts the equation into
+three groups:
+\begin{equation}\label{eq:lin-groups}
+  \underbrace{\vphantom{\partial_y(\bar\rho v')}\partial_t\bar\rho
+      +\partial_x(\bar\rho\,\bar U)}_{\text{mean: vanishes}}
+  \;+\;\underbrace{\partial_t\rho'+\bar U\,\partial_x\rho'
+      +\bar\rho\,\partial_x u'+\partial_y(\bar\rho\,v')}_{\text{linear in }q'\text{: retained}}
+  \;+\;\underbrace{\vphantom{\partial_y(\bar\rho v')}\partial_x(\rho'u')
+      +\partial_y(\rho'v')}_{O(|q'|^2)\text{: dropped}}
+  \;=\;0 .
 \end{equation}
-Applying the ansatz \eqref{eq:ansatz} ($\partial_t\to-\imag\alpha c$, $\partial_x\to\imag\alpha$,
-$\partial_y\to\D$), substituting $\rho'$ from \eqref{eq:state-lin}, collecting terms, and dividing by
-$\bar\rho$ yields exactly Eq.~\eqref{eq:cont} below. The remaining three equations follow by the
-identical procedure applied to \eqref{eq:ns-mom}--\eqref{eq:ns-energy}; the algebra is mechanical but
-lengthy, and only the result is printed.
+The mean group vanishes identically: the base flow is steady, $\partial_t\bar\rho=0$, and parallel,
+so $\bar\rho$ and $\bar U$ depend on $y$ alone and $\partial_x(\bar\rho\,\bar U)=0$; in general the
+mean satisfies its own conservation equations and cancels from the disturbance system. The same
+parallel-flow property has already simplified the linear group, since
+$\partial_x(\bar\rho\,u')=\bar\rho\,\partial_xu'$ and $\partial_x(\rho'\bar U)=\bar U\partial_x\rho'$.
+The quadratic group is negligible by the smallness assumption in \eqref{eq:split}. What survives is
+the linear equation
+\begin{equation}\label{eq:cont-lin}
+  \partial_t\rho'+\bar U\,\partial_x\rho'+\bar\rho\,\partial_x u'+\partial_y(\bar\rho\,v')=0 .
+\end{equation}
+Applying the ansatz \eqref{eq:ansatz} replaces $\partial_t\to-\imag\alpha c$,
+$\partial_x\to\imag\alpha$, $\partial_y\to\D$ and each primed field by its amplitude, so that the
+first two terms combine into the convective factor:
+\begin{equation}\label{eq:cont-ansatz}
+  \imag\alpha(\bar U-c)\,\hat\rho+\imag\alpha\,\bar\rho\,\hatu
+   +\bar\rho\,\D\hatv+\bar\rho'\,\hatv=0 .
+\end{equation}
+Dividing by $\bar\rho$, substituting $\hat\rho/\bar\rho=\gamma\Mae^2\hatp-\hatT/\bar T$ from
+\eqref{eq:state-lin}, and using $\bar\rho'/\bar\rho=-\bar T'/\bar T$ (from $\bar\rho=1/\bar T$)
+yields exactly Eq.~\eqref{eq:cont} below. The remaining three equations follow by the identical
+procedure applied to \eqref{eq:ns-mom}--\eqref{eq:ns-energy}; the algebra is mechanical but lengthy,
+and only the result is printed.
 
 \begin{figure}[H]\centering
   \includegraphics[width=0.92\linewidth]{fig_ansatz.pdf}
@@ -148,8 +164,8 @@ The linearised system consists of four coupled ODEs in $y$ for $\hatu,\hatv,\hat
 momentum, and energy. Fixing one of $\alpha$ or $\omega$ real leaves the other (through $c$ or
 $\alpha$) as the eigenvalue. Every overbarred quantity is a known base-flow coefficient; all transport
 derivatives ($\mathrm d\mu/\mathrm dT$, $\mathrm d\kappa/\mathrm dT$, \dots) are evaluated at the local
-mean temperature $\bar T(y)$ and are therefore known functions of $y$. The form below, assembled in
-\texttt{pymack/temporal\_solver.py}, follows \"Ozgen \& K{\i}rcal{\i} \cite{ozgen2008}; it is
+mean temperature $\bar T(y)$ and are therefore known functions of $y$. The form below follows
+\"Ozgen \& K{\i}rcal{\i} \cite{ozgen2008}; it is
 equivalent to the canonical compressible stability equations of Mack \cite{mack1984} and Malik
 \cite{malik1990} restricted to two dimensions. Momentum and energy are divided by $\bar\rho$, and the
 viscous prefactor is written $\nuR\equiv1/(\Ree\,\bar\rho)$; every $\bar\rho$ is the base-flow density
@@ -206,16 +222,7 @@ $\bar\rho(y)=1/\bar T(y)$, uniformly inside $\nuR$, $\mathcal C_\kappa$, and $\m
   \item $\D,\D^2$ are wall-normal derivatives; the $-\alpha^2$ terms arise from
         $\partial_x^2\mapsto-\alpha^2$.
   \item The $\nuR=1/(\Ree\bar\rho)$ terms are viscous; the factors $\tfrac43,\tfrac13$ correspond to the
-        Stokes hypothesis for the bulk viscosity (the companion \emph{Numerical Methods} document
-        generalises this to a ratio $\lambda/\mu=1.2$ in the spatial closure).
-  \item $(\gamma-1)\bar\rho^{-1}(\imag\alpha\hatu+\D\hatv)$ in \eqref{eq:energy} is pressure
-        (dilatation) work: $\imag\alpha\hatu+\D\hatv$ is the linearised velocity divergence, so
-        compression or expansion of a fluid parcel heats or cools it, coupling the velocity field back
-        into the temperature equation.
-  \item The $\mathrm d\mu/\mathrm dT$, $\mathrm d\kappa/\mathrm dT$ terms represent
-        temperature-dependent transport, essential at hypersonic conditions.
-  \item $\mathcal C_\kappa\mathcal L_c\hatT$ is heat conduction; $\mathcal C_d[\cdots]$ is viscous
-        dissipation.
+        Stokes hypothesis for the bulk viscosity.
 \end{itemize}
 
 %=====================================================================
@@ -259,11 +266,44 @@ The second-order coefficient matrix is therefore sparse:
 \end{equation}
 where the signs follow from moving the right-hand sides of \eqref{eq:xmom}--\eqref{eq:energy} to the
 left. The pressure amplitude $\hatp$ is never differentiated twice, so its column in $\mathsf A_2$ is
-empty, reflecting the absence of a pressure diffusion mechanism. The first- and zeroth-order
-matrices $\mathsf A_1$ and $\mathsf A_0$ are read off from \eqref{eq:cont}--\eqref{eq:energy} in the
-same manner; their entries are the convective, pressure-gradient, mean-shear, and
-transport-derivative coefficients, and they are assembled term by term in
-\texttt{pymack/temporal\_solver.py}.
+empty, reflecting the absence of a pressure diffusion mechanism.
+
+The first- and zeroth-order matrices are read off from \eqref{eq:cont}--\eqref{eq:energy} in the
+same manner. For the energy row it is convenient to split the conduction operator \eqref{eq:groups}
+by derivative order,
+\begin{equation}\label{eq:lcsplit}
+  \mathcal L_c=\D^2+\ell_1\,\D+\ell_0,\qquad
+  \ell_1=\frac{2\bar T'}{\bar\kappa}\frac{\mathrm d\kappa}{\mathrm dT},\qquad
+  \ell_0=-\alpha^2+\frac{\bar T''}{\bar\kappa}\frac{\mathrm d\kappa}{\mathrm dT}
+        +\frac{(\bar T')^2}{\bar\kappa}\frac{\mathrm d^2\kappa}{\mathrm dT^2}.
+\end{equation}
+The first-order matrix collects every term carrying a single $\D$:
+\begin{equation}\label{eq:A1mat}
+  \mathsf A_1(\alpha;y)=
+  \begin{pmatrix}
+    0 & 1 & 0 & 0\\[3pt]
+    -\nuR\bar\mu' & -\tfrac{\imag\alpha}{3}\nuR\bar\mu & -\nuR\tfrac{\mathrm d\mu}{\mathrm dT}\bar U' & 0\\[3pt]
+    -\tfrac{\imag\alpha}{3}\nuR\bar\mu & -\tfrac43\nuR\bar\mu' & 0 & \bar\rho^{-1}\\[3pt]
+    -2\mathcal C_d\bar\mu\bar U' & (\gamma-1)\bar\rho^{-1} & -\mathcal C_\kappa\,\ell_1 & 0
+  \end{pmatrix},
+\end{equation}
+and the zeroth-order matrix collects everything algebraic that does not multiply $c$:
+{\small
+\begin{equation}\label{eq:A0mat}
+  \mathsf A_0(\alpha;y)=
+  \begin{pmatrix}
+    \imag\alpha & -\tfrac{\bar T'}{\bar T} & -\tfrac{\imag\alpha\bar U}{\bar T} &
+      \imag\alpha\gamma\Mae^2\bar U\\[5pt]
+    \imag\alpha\bar U+\tfrac43\alpha^2\nuR\bar\mu & \bar U'-\imag\alpha\nuR\bar\mu' &
+      -\nuR\big(\tfrac{\mathrm d\mu}{\mathrm dT}\bar U''
+        +\tfrac{\mathrm d^2\mu}{\mathrm dT^2}\bar U'\bar T'\big) & \imag\alpha\bar\rho^{-1}\\[5pt]
+    \tfrac{2\imag\alpha}{3}\nuR\bar\mu' & \imag\alpha\bar U+\alpha^2\nuR\bar\mu &
+      -\imag\alpha\nuR\tfrac{\mathrm d\mu}{\mathrm dT}\bar U' & 0\\[5pt]
+    \imag\alpha(\gamma-1)\bar\rho^{-1} & \bar T'-2\imag\alpha\mathcal C_d\bar\mu\bar U' &
+      \imag\alpha\bar U-\mathcal C_\kappa\,\ell_0
+        -\mathcal C_d\tfrac{\mathrm d\mu}{\mathrm dT}(\bar U')^2 & 0
+  \end{pmatrix}.
+\end{equation}}%
 
 \paragraph{Temporal and spatial problems.} Equation \eqref{eq:pencil} supports the two standard
 closures. Fixing $\alpha\in\mathbb R$ leaves $c$ as the eigenvalue of a \emph{linear} operator
@@ -273,76 +313,134 @@ by powers of $\alpha$ gives
   \big(\mathsf C_0(\omega;y,\D)+\alpha\,\mathsf C_1(\omega;y,\D)+\alpha^2\,\mathsf C_2(y)\big)\hatq=0,
 \end{equation}
 a \emph{quadratic} pencil in $\alpha$; this is the spatial problem, reduced to linear form by
-companion linearisation in the companion \emph{Numerical Methods} document.
+companion linearisation at the numerical stage.
 
-\paragraph{The discretised derivative operator.} Up to this point $\D$ has denoted the continuous
-derivative $\mathrm d/\mathrm dy$ acting on smooth functions. Numerical solution replaces it by a
-discrete differentiation operator: the amplitudes are sampled on a collocation grid
-$\{y_j\}_{j=0}^{n}$, and
+\paragraph{Chebyshev collocation.} Up to this point $\D$ has denoted the continuous derivative
+$\mathrm d/\mathrm dy$ acting on smooth functions. To make \eqref{eq:pencil} computable, each
+amplitude is represented by its values at a finite set of grid points and $\D$ by a matrix acting
+on those values. For smooth functions a polynomial interpolant through Chebyshev points converges
+exponentially with the polynomial degree \cite{orszag1971,trefethen2000}, so few points yield many
+digits; this makes spectral collocation the natural discretisation for boundary-layer eigenvalue
+problems \cite{malik1990}. The Chebyshev--Gauss--Lobatto nodes on $[-1,1]$ are
+\begin{equation}\label{eq:gll}
+  \xi_j=\cos\!\Big(\frac{\pi j}{n}\Big),\qquad j=0,1,\dots,n,
+\end{equation}
+clustering near the ends $\xi=\pm1$; the ordering runs from $\xi_0=+1$ down to $\xi_n=-1$.
+
+\paragraph{The differentiation matrix.} Exactly one polynomial of degree $\le n$ passes through
+the sampled values $\{f(\xi_j)\}$; differentiating that interpolant and evaluating the result at
+the nodes is a linear operation on the values, $f'(\xi_j)=\sum_k(D_\xi)_{jk}f(\xi_k)$, with
+entries \cite{dons1995,trefethen2000}
+\begin{equation}\label{eq:Dformula}
+  (D_\xi)_{jk}=\frac{c_j}{c_k}\,\frac{(-1)^{j+k}}{\xi_j-\xi_k}\ \ (j\neq k),\qquad
+  (D_\xi)_{jj}=-\!\!\sum_{k\neq j}(D_\xi)_{jk},\qquad
+  c_0=c_n=2,\ \ c_j=1\ \text{otherwise}.
+\end{equation}
+The diagonal is fixed by requiring each row to sum to zero, since a constant function must have
+zero derivative, and $c_0=c_n=2$ accounts for the doubled weight of the two endpoint nodes. As an
+illustration, the smallest useful case $n=2$ (three nodes $\xi=(1,0,-1)$) gives
+\begin{equation}\label{eq:Dexample}
+  D_\xi=
+  \begin{pmatrix}
+    \tfrac32 & -2 & \tfrac12\\[3pt]
+    \tfrac12 & \phantom{-}0 & -\tfrac12\\[3pt]
+    -\tfrac12 & \phantom{-}2 & -\tfrac32
+  \end{pmatrix},
+  \qquad
+  D_\xi^2=D_\xi D_\xi=
+  \begin{pmatrix}
+    1 & -2 & 1\\
+    1 & -2 & 1\\
+    1 & -2 & 1
+  \end{pmatrix}.
+\end{equation}
+The middle row of $D_\xi$ is the familiar central difference $\tfrac12(f_0-f_2)$, and the rows of
+$D_\xi^2$ are identical because the second derivative of the parabola through three points is
+constant. Both matrices are exact on polynomials of degree $\le n$. Production runs use far more
+nodes, typically $n\sim100$--$200$, so that the eigenfunctions are resolved to several digits. At any
+order the matrices are dense, because every node's derivative uses every node's value, and this
+density is inherited by the assembled stability matrices below.
+
+\paragraph{Mapping to the physical layer.} The flow occupies $y\in[0,y_{\max}]$ with resolution
+needed at the wall, where the eigenfunctions vary fastest. The algebraic map of Malik
+\cite{malik1990},
+\begin{equation}\label{eq:chebmap}
+  y(\xi)=L\,\frac{1+\xi}{1-\xi+2L/y_{\max}},\qquad L=\frac{y_{\max}}{6},
+\end{equation}
+sends $\xi=+1$ (node $j{=}0$) to $y=y_{\max}$, the freestream, and $\xi=-1$ (node $j{=}n$) to
+$y=0$, the wall, placing roughly half the nodes below $y\approx L$. By the
+chain rule, with $\xi_y=1/y_\xi$ and $\xi_{yy}=-y_{\xi\xi}/y_\xi^3$, the differentiation matrices
+on the physical grid $\{y_j\}_{j=0}^{n}$ are
+\begin{equation}\label{eq:Dmats}
+  D_1=\operatorname{diag}(\xi_y)\,D_\xi,\qquad
+  D_2=\operatorname{diag}(\xi_y^2)\,D_\xi^2+\operatorname{diag}(\xi_{yy})\,D_\xi ,
+\end{equation}
+where the chain rule acts on the computational square $D_\xi^2$: the physical $D_2$ is \emph{not}
+$D_1D_1$.
+
+\paragraph{The discrete eigenvalue problem.} Numerical solution now amounts to the substitution
 \begin{equation}\label{eq:Ddiscrete}
   \D\;\longrightarrow\;D_1,\qquad \D^2\;\longrightarrow\;D_2,\qquad
-  D_1,D_2\in\mathbb R^{(n+1)\times(n+1)},
+  D_1,D_2\in\mathbb R^{(n+1)\times(n+1)}.
 \end{equation}
-where $D_1$, $D_2$ are the Chebyshev collocation differentiation matrices mapped to the physical
-domain, the natural discretisation for boundary-layer eigenvalue problems
-\cite{orszag1971,malik1990}. Under \eqref{eq:Ddiscrete} each mean-flow coefficient becomes a diagonal
+Under \eqref{eq:Ddiscrete} each mean-flow coefficient becomes a diagonal
 matrix, each entry of $\mathsf A_2,\mathsf A_1,\mathsf A_0,\mathsf M$ becomes an
 $(n{+}1)\times(n{+}1)$ block, and the four sampled amplitudes are stacked into a single vector
 $\boldsymbol\phi=(\hatu;\hatv;\hatT;\hatp)\in\mathbb C^{4(n+1)}$. The operator statement
 \eqref{eq:pencil} then becomes the finite-dimensional generalised eigenvalue problem
 \begin{equation}\label{eq:gevp}
   \boxed{\;A(\alpha)\,\boldsymbol\phi=c\,B(\alpha)\,\boldsymbol\phi\;}\qquad
-  A,B\in\mathbb C^{4(n+1)\times4(n+1)},
+  A,B\in\mathbb C^{4(n+1)\times4(n+1)}.
 \end{equation}
-which is the object \texttt{pymack/temporal\_solver.py} assembles and solves.
 
-\paragraph{Anatomy of the discrete problem.} Equation \eqref{eq:gevp} deserves to be read carefully:
-it is the computational atom of the entire framework, and each of its symbols has a definite meaning
-inherited from the derivation above.
-
-The matrix $A(\alpha)$ is the discretisation of the left-hand operator $\mathsf L$ of
-\eqref{eq:pencil}: it carries \emph{all of the eigenvalue-independent physics}, namely mean-flow
-convection $\imag\alpha\bar U$, the pressure gradient, mean-shear production, viscous diffusion, heat
-conduction, and the dilatational coupling, evaluated at the chosen wavenumber $\alpha$. The matrix
-$B(\alpha)$ is the discretisation of the algebraic operator $\mathsf M$ of \eqref{eq:Mmat}: it marks
-exactly \emph{where the eigenvalue enters} the equations, which, since $-\imag\omega=-\imag\alpha c$,
-is precisely where the time derivative acted before the ansatz \eqref{eq:ansatz}. Both inherit the
-$4\times4$ block structure of the operator form: with $i,j$ ranging over the rows (C,\,X,\,Y,\,E) and
-the columns $(\hatu,\hatv,\hatT,\hatp)$,
+\paragraph{Anatomy of the discrete problem.} Equation \eqref{eq:gevp} is the computational atom of
+the framework: every stability result comes from assembling and solving it, once per point of
+parameter space. Its three symbols carry definite meanings from the derivation.
+\begin{itemize}[nosep,leftmargin=1.6em]
+  \item $A(\alpha)$ discretises the left-hand operator $\mathsf L$ of \eqref{eq:pencil} and holds
+        \emph{all of the eigenvalue-independent physics}: convection by the mean flow, the pressure
+        gradient, production by the mean shear, viscous diffusion, heat conduction, and the
+        dilatational coupling, each at the chosen $\alpha$.
+  \item $B(\alpha)$ discretises the algebraic operator $\mathsf M$ of \eqref{eq:Mmat} and marks
+        \emph{where the eigenvalue enters}: since $-\imag\omega=-\imag\alpha c$, these are the
+        positions where $\partial_t$ acted before the ansatz \eqref{eq:ansatz}.
+  \item $\boldsymbol\phi=(\hatu;\hatv;\hatT;\hatp)$ \emph{is} the eigenfunction $\hatq(y)$ of
+        \eqref{eq:pencil}, sampled at the collocation points.
+\end{itemize}
+Both matrices inherit the $4\times4$ block structure of the operator form. With $i,j$ over the rows
+(C,\,X,\,Y,\,E) and columns $(\hatu,\hatv,\hatT,\hatp)$, every block follows one assembly rule,
 \begin{equation}\label{eq:blocks}
   A_{ij}(\alpha)=\Lambda\big([\mathsf A_2]_{ij}\big)\,D_2+\Lambda\big([\mathsf A_1]_{ij}\big)\,D_1
   +\Lambda\big([\mathsf A_0]_{ij}\big),
   \qquad
   B_{ij}(\alpha)=\Lambda\big([\mathsf M]_{ij}\big),
 \end{equation}
-where $\Lambda(f)=\mathrm{diag}\big(f(y_0),\dots,f(y_n)\big)$ places a known coefficient function on
-the grid. Every entry of $A$ and $B$ is therefore an $(n{+}1)\times(n{+}1)$ block built from exactly
-three ingredients: the differentiation matrices $D_1,D_2$, diagonal samples of mean-flow profiles, and
-the scalars $\alpha$, $\Mae$, $\Ree$. The eigenvector
-$\boldsymbol\phi=(\hatu;\hatv;\hatT;\hatp)$ stacks the four amplitude profiles sampled on the same
-grid: it \emph{is} the eigenfunction $\hatq(y)$ of \eqref{eq:pencil}, represented by its values at
-the collocation points.
+where $\Lambda(f)=\mathrm{diag}\big(f(y_0),\dots,f(y_n)\big)$ places a coefficient on the grid. Three
+ingredients therefore build the whole problem: the differentiation matrices $D_1,D_2$, diagonal
+samples of the mean-flow profiles, and the scalars $\alpha$, $\Mae$, $\Ree$.
 
-A single solve of \eqref{eq:gevp} returns the full discrete spectrum: of order $4(n{+}1)$ eigenpairs
-$(c,\boldsymbol\phi)$. Each eigenpair is a candidate normal mode of the boundary layer at the given
-$(\Mae,\Ree,\alpha)$: the real part $c_r$ is its phase speed as a fraction of $U_e$; the imaginary
-part sets its temporal growth rate $\omega_i=\alpha c_i$, so $c_i>0$ identifies an amplifying wave,
-$c_i<0$ a damped one, and $c_i=0$ a neutral one; and the four segments of $\boldsymbol\phi$ give the
-wave's internal structure: the velocity, temperature, and pressure amplitude profiles across the
-layer (a wall-peaked $|\hatp|$, for instance, signals a second mode). Only a handful of these
-eigenpairs are physical \emph{discrete} modes; the remainder approximate the continuous spectra or
-are numerical artifacts. In particular, the boundary-condition rows carry no eigenvalue and leave
-zero rows in $B$, so $B$ is singular and the pencil must be solved in generalised (QZ) form,
-producing spurious infinite eigenvalues that are discarded. The identification of the physical modes
-within this spectrum is treated in the companion \emph{Numerical Methods} document.
+\paragraph{One solve: input and output.} A single solve of \eqref{eq:gevp} takes one point of
+parameter space, the mean-flow profiles at $(\Mae,\Ree)$ and one real wavenumber $\alpha$, and
+returns the full discrete spectrum of $4(n{+}1)$ eigenpairs $(c,\boldsymbol\phi)$, each a candidate
+normal mode:
+\begin{itemize}[nosep,leftmargin=1.6em]
+  \item $c_r$ is the phase speed as a fraction of $U_e$;
+  \item $c_i$ sets the temporal growth rate $\omega_i=\alpha c_i$: the wave amplifies for $c_i>0$,
+        decays for $c_i<0$, and is neutral at $c_i=0$;
+  \item the four segments of $\boldsymbol\phi$ are the wave's velocity, temperature, and pressure
+        amplitude profiles across the layer (a wall-peaked $|\hatp|$, for instance, signals a second
+        mode).
+\end{itemize}
+Only a few of these eigenpairs are physical \emph{discrete} modes; the rest approximate the continuous
+spectra or are numerical artifacts. The boundary-condition rows carry no eigenvalue and leave zero
+rows in $B$, so $B$ is singular and the pencil is solved in generalised (QZ) form, which produces
+spurious infinite eigenvalues that are discarded.
 
-Everything the framework ultimately produces is assembled from repeated solves of \eqref{eq:gevp}:
-one solve interrogates one point of the parameter space $(\Mae,\Ree,\alpha)$, a sweep of solves
-traces the growth rate across the $(R,\alpha)$ plane, the zero level set $c_i=0$ of that sweep is the
-neutral curve, and the integral of the growth rate along frequency lines is the $N$-factor. The
-construction of $D_1,D_2$, the wall-clustering domain map, the boundary-condition rows, the solution
-of \eqref{eq:gevp} and of the spatial pencil \eqref{eq:spatial}, and the classification of the
-resulting spectrum are the subject of the companion \emph{Numerical Methods} document.
+Everything the framework produces is built from repeated solves of \eqref{eq:gevp}: one solve
+interrogates one point $(\Mae,\Ree,\alpha)$; a sweep traces the growth rate across the $(R,\alpha)$
+plane; the zero level set $c_i=0$ of that sweep is the neutral curve; and the integral of the growth
+rate along frequency lines is the $N$-factor. Solving the pencil and identifying the physical modes
+within the spectrum is the remaining numerical task.
 
 %=====================================================================
 \section{Physical character of the instability modes}\label{sec:mechanisms}
@@ -396,12 +494,12 @@ region $|M_{\rm rel}|>1$ above.
 \paragraph{The wall-cooling reversal.} Cooling the wall stabilises the first mode (it weakens the
 near-wall viscous mechanism) but destabilises the second (it thickens the relative-supersonic region
 and raises the tuned frequency) \cite{mack1984}. Cold-walled hypersonic vehicles are therefore
-second-mode dominated, which is why the solver carries an isothermal-wall option.
+second-mode dominated.
 
 \paragraph{Phase and group velocity.} $c_r$ is the phase speed; energy propagates at the group
 velocity $c_g=\mathrm d\omega_r/\mathrm d\alpha_r$, and it is $c_g$ that rigorously links temporal to
-spatial growth \cite{gaster1962} (used when the companion \emph{Numerical Methods} document converts
-between the two formulations).
+spatial growth \cite{gaster1962}, the relation invoked whenever results are converted between the two
+formulations.
 
 \medskip
 \noindent The following comparison places any computed eigenvalue at a glance:
@@ -429,9 +527,8 @@ The equations derived above are the two-dimensional, parallel-flow, modal distur
 idealisations bound their interpretation:
 \begin{enumerate}[nosep,leftmargin=1.9em]
   \item \textbf{Parallel flow.} Setting $\bar v=0$ with $y$-only coefficients (Step~3) neglects the
-        $O(1/R)$ streamwise growth of the layer; the systematic remedy is the parabolised stability
-        equations, which march the disturbance downstream retaining the slow $x$-variation
-        \cite{herbert1997}.
+        $O(1/R)$ streamwise growth of the layer, which the parabolised stability equations retain by
+        marching the disturbance downstream \cite{herbert1997}.
   \item \textbf{Two-dimensionality.} The ansatz takes $\beta=0$ (Step~4). The most-unstable first mode
         is oblique ($\psi\sim55^\circ$; Squire's theorem does not hold under compressibility
         \cite{mack1984}), so two-dimensional first-mode growth is a lower bound; the second mode is
@@ -447,9 +544,9 @@ idealisations bound their interpretation:
 None of these affect the equations themselves; they delimit their range of validity. A strong second
 mode is captured faithfully by the two-dimensional modal equations derived here, which is why they are
 the workhorse of hypersonic transition prediction \cite{mack1984,fedorov2011}. With the system
-\eqref{eq:cont}--\eqref{eq:energy} in operator form \eqref{eq:pencil} and its discrete counterpart
-\eqref{eq:gevp} identified, the construction and solution of the matrix problem proceed in the
-companion \emph{Numerical Methods} document.
+\eqref{eq:cont}--\eqref{eq:energy} in operator form \eqref{eq:pencil} and assembled into its
+discrete counterpart \eqref{eq:gevp}, the derivation is complete: what remains is to solve the matrix
+problem and identify its physical modes.
 
 \begin{thebibliography}{99}
 \bibitem{mack1984} L.~M. Mack, ``Boundary-layer linear stability theory,'' AGARD Report No.~709,
@@ -462,6 +559,11 @@ companion \emph{Numerical Methods} document.
   \emph{Journal of Computational Physics}, Vol.~86, No.~2, 1990, pp.~376--413.
 \bibitem{orszag1971} S.~A. Orszag, ``Accurate solution of the Orr--Sommerfeld stability equation,''
   \emph{Journal of Fluid Mechanics}, Vol.~50, No.~4, 1971, pp.~689--703.
+\bibitem{trefethen2000} L.~N. Trefethen, \emph{Spectral Methods in MATLAB}, SIAM, Philadelphia,
+  2000.
+\bibitem{dons1995} W.~S. Don and A.~Solomonoff, ``Accuracy and speed in computing the Chebyshev
+  collocation derivative,'' \emph{SIAM Journal on Scientific Computing}, Vol.~16, No.~6, 1995,
+  pp.~1253--1268.
 \bibitem{leeslin1946} L.~Lees and C.~C. Lin, ``Investigation of the stability of the laminar boundary
   layer in a compressible fluid,'' NACA Technical Note No.~1115, 1946.
 \bibitem{gaster1962} M.~Gaster, ``A note on the relation between temporally-increasing and

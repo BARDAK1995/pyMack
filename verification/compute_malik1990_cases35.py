@@ -57,8 +57,8 @@ CASES = {
         table="Table VI", note_extra=(
             "Malik's deliberately SEVERE near-neutral M=10 test: omega_i ~ 1.5e-4 "
             "is strongly scheme-sensitive (his own SDSP even flips its sign at "
-            "N+1=61). pyMack's independent IVM/RK4 cross-check value is "
-            "0.1158627+0.0001557i; pyMack lands on that cluster."),
+            "N+1=61). Our LST code's independent IVM/RK4 cross-check value is "
+            "0.1158627+0.0001557i; Our LST code lands on that cluster."),
     ),
 }
 
@@ -113,15 +113,14 @@ def make_overlay(cfg, pm, path):
     ax.scatter([mal.real], [mal.imag], s=180, marker="*", color="tab:red",
                edgecolors="k", linewidths=0.6, zorder=5, label="Malik converged")
     ax.scatter([pm.real], [pm.imag], s=130, marker="D", color="tab:blue",
-               edgecolors="k", linewidths=0.6, zorder=5, label=f"pyMack (N={cfg['N']})")
+               edgecolors="k", linewidths=0.6, zorder=5, label=f"Our LST code (N={cfg['N']})")
     dr, di = abs(pm.real - mal.real), abs(pm.imag - mal.imag)
     ax.axhline(0.0, color="0.7", lw=0.8, ls=":")
     wall = "adiabatic" if cfg["beta"] == 0 else "adiabatic, oblique $\\beta$=0.10"
     ax.set_xlabel(r"$\omega_r$", fontsize=15)
     ax.set_ylabel(r"$\omega_i$  (temporal growth rate)", fontsize=15)
     ax.set_title(f"Malik (1990) Case {cfg['num']}: M={cfg['Ma']:g}, {wall}, "
-                 f"$\\alpha$={cfg['alpha']:g}\npyMack vs Malik  "
-                 f"($\\Delta\\omega_r$={dr:.1e}, $\\Delta\\omega_i$={di:.1e})",
+                 f"$\\alpha$={cfg['alpha']:g}",
                  fontsize=14)
     ax.tick_params(labelsize=12)
     ax.legend(fontsize=11, loc="best")
@@ -170,7 +169,7 @@ def main():
             },
             "verdict": verdict,
             "verdict_reason": (
-                f"{mode_kind.capitalize()}, temporal. pyMack omega="
+                f"{mode_kind.capitalize()}, temporal. Our LST code omega="
                 f"{pm.real:.7f}{pm.imag:+.7f}i vs Malik {mal.real:.7f}{mal.imag:+.7f}i: "
                 f"omega_r rel err {er:.2e} ({er*100:.3f}%), omega_i rel err {ei:.2e} "
                 f"({ei*100:.2f}%). {cfg['note_extra']} Previously logged "
@@ -196,7 +195,7 @@ def main():
             "mode": "second" if not cfg["beta"] else "first",
         }
         write_verdict(out, v)
-        print(f"{cid}  {verdict}  pyMack={pm.real:.7f}{pm.imag:+.7f}i  "
+        print(f"{cid}  {verdict}  Our LST code={pm.real:.7f}{pm.imag:+.7f}i  "
               f"Malik={mal.real:.7f}{mal.imag:+.7f}i  (omega_r {er*100:.3f}%, omega_i {ei*100:.2f}%)")
 
 

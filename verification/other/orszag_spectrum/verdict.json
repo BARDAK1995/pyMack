@@ -24,7 +24,7 @@
     "topology_ok": true
   },
   "verdict": "agrees",
-  "verdict_reason": "Full OS spectrum. pyMack reproduces ALL 32 of Orszag's tabulated eigenvalues to max abs err 7.2e-06 (median 5.2e-08); 32/32 match to < 1e-5. The dense eigensolver resolves the A-branch (c_r~0.96), P-branch (c_r~0.2-0.5) and S-branch, including the near-degenerate symmetric/antisymmetric pairs that differ only in the 5th-6th digit (modes 2&3 at 0.96463 vs 0.96464). This upgrades the Orszag validation from a single eigenvalue (Table 2) to the full branch structure. Mirror of validation/test_orszag_full_spectrum.py.",
+  "verdict_reason": "Full OS spectrum. Our LST code reproduces ALL 32 of Orszag's tabulated eigenvalues to max abs err 7.2e-06 (median 5.2e-08); 32/32 match to < 1e-5. The dense eigensolver resolves the A-branch (c_r~0.96), P-branch (c_r~0.2-0.5) and S-branch, including the near-degenerate symmetric/antisymmetric pairs that differ only in the 5th-6th digit (modes 2&3 at 0.96463 vs 0.96464). This upgrades the Orszag validation from a single eigenvalue (Table 2) to the full branch structure. Mirror of validation/test_orszag_full_spectrum.py.",
   "generated": "new",
   "artifacts": {
     "pymack": null,

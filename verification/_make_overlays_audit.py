@@ -1,4 +1,4 @@
-"""Generate publication-quality verification overlay plots for the pyMack audit.
+"""Generate publication-quality verification overlay plots for the Our LST code audit.
 
 Reads only committed per-case data files. Writes overlay.png into each case
 folder and updates that case's verdict.json artifacts.overlay key.
@@ -22,21 +22,22 @@ from matplotlib.lines import Line2D
 
 # --- HARD style rules ---------------------------------------------------------
 plt.rcParams.update({
-    "axes.labelsize": 17,      # >= 14 pt
-    "xtick.labelsize": 14,     # >= 12 pt
-    "ytick.labelsize": 14,
-    "axes.titlesize": 17,      # >= 16 pt
-    "legend.fontsize": 12.5,   # >= 11 pt
+    "axes.labelsize": 19,
+    "xtick.labelsize": 16,
+    "ytick.labelsize": 16,
+    "axes.titlesize": 18,
+    "legend.fontsize": 15,
     "font.family": "DejaVu Sans",
     "axes.linewidth": 1.0,
     "figure.dpi": 110,
 })
 
-# Colorblind-friendly (Okabe-Ito)
-PYMACK_BLUE = "#000000"     # pyMack solid -> thick black
-PYMACK_GREEN = "#000000"    # pyMack second branch -> thick black
-REF_ORANGE = "#D55E00"      # reference dashed/hollow
-REF_VERM = "#CC79A7"
+# Readability convention (workspace): reference/digitized paper data = RED and
+# slightly LARGER markers; Our LST code computed curve = BLUE and slightly THINNER line.
+PYMACK_BLUE = "#000000"     # Our LST code -> black, dashed
+PYMACK_GREEN = "#000000"    # Our LST code second branch -> black (markers distinguish)
+REF_ORANGE = "#d62728"      # reference dashed/hollow -> red
+REF_VERM = "#d62728"        # reference 2nd branch -> red (markers distinguish)
 GREY = "#999999"
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
@@ -123,9 +124,9 @@ def plot_sean():
     fig.get_layout_engine().set(rect=(0.0, 0.16, 1.0, 0.84))
 
     ax.plot(lo_pm, f_pm, "-", color=PYMACK_BLUE, lw=3.4,
-            label="pyMack lower branch (x_left)")
+            label="Our LST code lower branch (x_left)")
     ax.plot(up_pm, f_pm, "-", color=PYMACK_GREEN, lw=3.4,
-            label="pyMack upper branch (x_right)")
+            label="Our LST code upper branch (x_right)")
     ax.plot(lo_rf, f_rf, "--", color=REF_ORANGE, lw=2.0,
             marker="o", mfc="none", mec=REF_ORANGE, ms=4.5, markevery=4,
             label="Sean LST lower branch")
@@ -143,7 +144,7 @@ def plot_sean():
     outside_legend(ax)
 
     bottom_note(fig,
-                "pyMack vs Sean independent LST    "
+                "Our LST code vs Sean independent LST    "
                 "upper branch MAE = 3.2 mm (200-600 kHz, span 220 mm)\n"
                 "lower branch MAE = 1.3 mm (330-600 kHz, span 19.8 mm)    "
                 "topology matches (single closed band)")
@@ -152,7 +153,7 @@ def plot_sean():
     save(fig, out)
     update_verdict(cd, "verification/second_mode/sean_m5p35/overlay.png")
     written.append(("verification/second_mode/sean_m5p35/overlay.png",
-                    "M5.35 dimensional 2nd-mode neutral curve: pyMack lower/upper "
+                    "M5.35 dimensional 2nd-mode neutral curve: Our LST code lower/upper "
                     "branches (solid) vs Sean's independent LST (dashed, hollow) in "
                     "x[mm] vs f[kHz]; verdict acceptable (upper MAE 3.2 mm, lower 1.3 mm)."))
 
@@ -180,15 +181,15 @@ def plot_mazhong():
     fig.get_layout_engine().set(rect=(0.0, 0.15, 1.0, 0.85))
 
     ax.fill_between(R, 0, sigma, where=(sigma > 0), color=PYMACK_BLUE,
-                    alpha=0.12, label="pyMack unstable band ($\\sigma>0$)")
+                    alpha=0.12, label="Our LST code unstable band ($\\sigma>0$)")
     ax.plot(R, sigma, "-o", color=PYMACK_BLUE, lw=3.4, ms=5.5, mfc=PYMACK_BLUE,
-            label="pyMack spatial growth  $\\sigma=-\\alpha_i$")
+            label="Our LST code spatial growth  $\\sigma=-\\alpha_i$")
     ax.axhline(0, color="black", lw=1.0)
 
     ax.axvline(bI_pm, color=PYMACK_GREEN, lw=3.4, ls="-",
-               label=f"pyMack Branch I (R={bI_pm:.0f})")
+               label=f"Our LST code Branch I (R={bI_pm:.0f})")
     ax.axvline(bII_pm, color=PYMACK_GREEN, lw=3.4, ls="-",
-               label=f"pyMack Branch II (R={bII_pm:.0f})")
+               label=f"Our LST code Branch II (R={bII_pm:.0f})")
     ax.axvline(bI_rf, color=REF_ORANGE, lw=2.2, ls="--",
                label=f"Ma & Zhong Branch I (R={bI_rf:.0f})")
     ax.axvline(bII_rf, color=REF_ORANGE, lw=2.2, ls="--",
@@ -205,8 +206,8 @@ def plot_mazhong():
     outside_legend(ax)
 
     bottom_note(fig,
-                f"Branch I:  pyMack {bI_pm:.0f} vs M&Z {bI_rf:.0f}  ($+{eI:.1f}\\%$)    "
-                f"Branch II: pyMack {bII_pm:.0f} vs M&Z {bII_rf:.1f} ($+{eII:.1f}\\%$)    "
+                f"Branch I:  Our LST code {bI_pm:.0f} vs M&Z {bI_rf:.0f}  ($+{eI:.1f}\\%$)    "
+                f"Branch II: Our LST code {bII_pm:.0f} vs M&Z {bII_rf:.1f} ($+{eII:.1f}\\%$)    "
                 "topology: one closed band, two neutral points")
 
     out = os.path.join(cd, "overlay.png")
@@ -214,7 +215,7 @@ def plot_mazhong():
     update_verdict(cd, "verification/second_mode/mazhong2003_m4p5/overlay.png")
     written.append(("verification/second_mode/mazhong2003_m4p5/overlay.png",
                     f"M4.5 2nd-mode spatial growth sigma=-alpha_i vs R at fixed F=2.2e-4 "
-                    f"(isothermal disturbance BC): pyMack lobe (solid) with its two neutral "
+                    f"(isothermal disturbance BC): Our LST code lobe (solid) with its two neutral "
                     f"crossings vs Ma&Zhong Branch I={bI_rf:.0f} / II={bII_rf:.1f} (dashed "
                     f"lines); verdict agrees (max {emax:.1f}%)."))
 
@@ -228,9 +229,6 @@ def plot_mack_fig10_1(mtag, mlabel):
     # (no hardcoded numbers) so the plot can never drift from the recorded judgement.
     with open(os.path.join(cd, "verdict.json"), "r", encoding="utf-8") as _vf:
         _v = json.load(_vf)
-    verdict_word = _v.get("verdict", "?")
-    _loop = _v.get("metrics", {}).get("loop_avg_median_rel_err")
-    headline = f"loop-avg {_loop * 100:.1f}%" if _loop is not None else "loop-avg n/a"
     Mn = "16" if mtag == "1p6" else "22"
     pm = load_csv(os.path.join(cd, f"pymack_mack_fig10_1_M{Mn}_neutral.csv"))
     ce = load_csv(os.path.join(cd, f"reference_mack_fig10_1_M{Mn}_complete_equations.csv"))
@@ -252,53 +250,51 @@ def plot_mack_fig10_1(mtag, mlabel):
 
     fig, ax = plt.subplots(figsize=(10.6, 6.8), constrained_layout=True)
 
-    sd = np.argsort(x_dep)
-    ax.plot(x_dep[sd], y_dep[sd], ":", color=GREY, lw=1.6, alpha=0.8,
-            label="old (Dunn-Lin) ref [deprecated]")
-
     sl = np.argsort(R_ce[lo_mask])
     su = np.argsort(R_ce[up_mask])
-    ax.plot(R_ce[lo_mask][sl], F_ce[lo_mask][sl], "--", color=REF_ORANGE, lw=2.0,
-            marker="o", mfc="none", mec=REF_ORANGE, ms=5,
-            label="Mack Complete-Eqn lower")
-    ax.plot(R_ce[up_mask][su], F_ce[up_mask][su], "--", color=REF_VERM, lw=2.0,
-            marker="s", mfc="none", mec=REF_VERM, ms=5,
-            label="Mack Complete-Eqn upper")
+    # Mack reference neutral curve: both branches drawn, ONE legend entry
+    # (the loop is a single neutral curve -- do not split upper/lower).
+    ax.plot(R_ce[lo_mask][sl], F_ce[lo_mask][sl], "--", color=REF_ORANGE, lw=1.6,
+            marker="o", mfc="none", mec=REF_ORANGE, ms=5.5, mew=1.4,
+            label="Mack (1984) neutral curve (digitized)")
+    ax.plot(R_ce[up_mask][su], F_ce[up_mask][su], "--", color=REF_ORANGE, lw=1.6,
+            marker="o", mfc="none", mec=REF_ORANGE, ms=5.5, mew=1.4)
     if nose_mask.any():
         ax.plot(R_ce[nose_mask], F_ce[nose_mask], "*", color=REF_ORANGE, ms=14,
-                mfc="none", mec=REF_ORANGE, mew=1.6, label="Mack nose (critical R)")
+                mfc="none", mec=REF_ORANGE, mew=1.7, label=r"Mack critical $R$ (nose)")
 
     m_lo = np.isfinite(Flo)
     m_up = np.isfinite(Fup)
-    ax.plot(R_pm[m_lo], Flo[m_lo], "-", color=PYMACK_BLUE, lw=3.4,
-            marker="o", ms=6, label="pyMack lower (onset)")
-    ax.plot(R_pm[m_up], Fup[m_up], "-", color=PYMACK_GREEN, lw=3.4,
-            marker="^", ms=6, label="pyMack upper (cutoff)")
+    # Our LST code neutral curve: both branches drawn, ONE legend entry.
+    ax.plot(R_pm[m_lo], Flo[m_lo], "--", color=PYMACK_BLUE, lw=3.6,
+            marker="o", ms=5.0, label="Our LST code neutral curve")
+    ax.plot(R_pm[m_up], Fup[m_up], "--", color=PYMACK_BLUE, lw=3.6,
+            marker="o", ms=5.0)
 
     ax.set_xlabel("Reynolds number  R = $\\sqrt{Re_x}$")
     ax.set_ylabel("Frequency  $F \\times 10^{4}$")
-    ax.set_title(f"Mack Fig 10.1  first-mode neutral loop  {mlabel}\n"
-                 f"VERDICT: {verdict_word} ({headline})", color="#333333")
+    ax.set_title(f"Mack (1984) Fig. 10.1  -  first-mode neutral curve  {mlabel}",
+                 color="#333333")
     ax.grid(True, alpha=0.3)
     ax.set_xlim(left=0)
     ax.set_ylim(bottom=0)
     ax.margins(y=0.05)
-    outside_legend(ax)
+    # Legend INSIDE (upper-right is empty for this decaying loop) so the axes keep
+    # full width and the title is not clipped.
+    ax.legend(loc="upper right", framealpha=0.95, edgecolor="0.6")
 
     out = os.path.join(cd, "overlay.png")
     save(fig, out)
     rel = f"verification/first_mode/mack_fig10_1_m{mtag}/overlay.png"
     update_verdict(cd, rel)
     written.append((rel,
-                    f"Mack Fig10.1 {mlabel} first-mode neutral loop F*1e4 vs R: pyMack "
-                    f"lower/upper branches (solid) vs Mack's "
-                    f"Complete-Equations loop (dashed, hollow) + faint old Dunn-Lin ref; "
-                    f"verdict {verdict_word} ({headline})."))
+                    f"Mack Fig10.1 {mlabel} first-mode neutral curve F*1e4 vs R: Our LST code "
+                    f"(blue, one label) vs Mack's Complete-Equations loop (red, digitized)."))
 
 
 # NOTE: The Özgen Fig. 3 neutral-curve overlays (M2/M3/M4/M6/M7/M8/M10) are NOT
 # produced here anymore. They are the single canonical Özgen overlay generator
-# `verification/make_ozgen_overlays.py`, which plots pyMack's own full c_i=0
+# `verification/make_ozgen_overlays.py`, which plots Our LST code's own full c_i=0
 # contour (from the committed first/second-mode grids + continuation traces) over
 # the corrected multi-branch v2 digitized reference points, with the title read
 # live from each case's verdict.json. The old routine here hardcoded a stale

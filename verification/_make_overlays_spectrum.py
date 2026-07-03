@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-"""Regenerate the eigenvalue / spectrum verification overlay plots for pyMack.
+"""Regenerate the eigenvalue / spectrum verification overlay plots for Our LST code.
 
 Three figures, all re-plotted ONLY from committed per-case data (no eigenvalue
 or growth sweep is recomputed here):
 
   1. second_mode/malik_case6/overlay.png
-        complex-plane spatial eigenvalue alpha: pyMack vs Malik (1990) vs
+        complex-plane spatial eigenvalue alpha: Our LST code vs Malik (1990) vs
         Tumin (2007).  Points come straight from verdict.json metrics
         (pymack_alpha, malik_alpha) plus the Tumin (2007) recompute documented
         in verdict.json["verdict_reason"]/["source"].
 
   2. second_mode/balakumar_malik1992_via_xirenfu/overlay.png
-        complex-plane spatial eigenvalue alpha: pyMack vs Balakumar & Malik
+        complex-plane spatial eigenvalue alpha: Our LST code vs Balakumar & Malik
         (1992) vs Xi/Ren/Fu.  Points from verdict.json metrics + source note.
 
   3. second_mode/balakumar_malik1992_branches/overlay.png
@@ -41,19 +41,19 @@ from matplotlib.patches import ConnectionPatch
 
 # --- HARD style rules --------------------------------------------------------
 plt.rcParams.update({
-    "axes.labelsize": 17,     # >= 14 pt
-    "xtick.labelsize": 14,    # >= 12 pt
-    "ytick.labelsize": 14,
-    "axes.titlesize": 17,     # >= 16 pt
-    "legend.fontsize": 12.5,  # >= 11 pt
+    "axes.labelsize": 19,
+    "xtick.labelsize": 16,
+    "ytick.labelsize": 16,
+    "axes.titlesize": 18,
+    "legend.fontsize": 14,
     "font.family": "DejaVu Sans",
     "axes.linewidth": 1.0,
 })
 
-# Colorblind-friendly (Okabe-Ito)
-PYMACK_BLUE = "#000000"   # pyMack -> solid / filled (thick black)
-REF_ORANGE = "#D55E00"    # first reference -> dashed / hollow square
-REF_GREEN = "#009E73"     # second reference -> hollow triangle
+# Readability convention: reference/paper data RED, Our LST code BLUE.
+PYMACK_BLUE = "#000000"   # Our LST code -> black, filled
+REF_ORANGE = "#d62728"    # reference -> red, hollow
+REF_GREEN = "#009E73"     # (unused for embedded fig)
 CONT_TEAL = "#009E73"     # continuous-spectrum cluster
 GREY = "#999999"
 
@@ -77,7 +77,7 @@ def set_overlay(case_dir, rel):
 
 
 # =============================================================================
-# 1. malik_case6 -- complex-plane alpha: pyMack vs Malik 1990 vs Tumin 2007
+# 1. malik_case6 -- complex-plane alpha: Our LST code vs Malik 1990 vs Tumin 2007
 # =============================================================================
 def plot_malik_case6():
     cd = os.path.join(SM, "malik_case6")
@@ -98,7 +98,7 @@ def plot_malik_case6():
     fig, ax = plt.subplots(figsize=(8.6, 6.8))
 
     ax.plot(pm.real, pm.imag, "o", color=PYMACK_BLUE, ms=15, mec="k", mew=0.8,
-            zorder=6, label=f"pyMack: {pm.real:.7f}{pm.imag:+.7f}i")
+            zorder=6, label=f"Our LST code: {pm.real:.7f}{pm.imag:+.7f}i")
     ax.plot(malik.real, malik.imag, "s", mfc="none", mec=REF_ORANGE, mew=2.6,
             ms=17, zorder=5, label=f"Malik (1990): {malik.real:.7f}{malik.imag:+.7f}i")
     ax.plot(tumin.real, tumin.imag, "^", mfc="none", mec=REF_GREEN, mew=2.6,
@@ -131,7 +131,7 @@ def plot_malik_case6():
         f"$\\alpha_i$ rel err = {ri:.2e}  ({ri*100:.2f}%)\n"
         f"$c = \\omega/\\alpha_r$ = {cph:.5f},  N={N}\n"
         "Tumin's $\\alpha_i$ is $\\sim$11% from Malik\n"
-        "(literature spread $\\gg$ pyMack deviation)",
+        "(literature spread $\\gg$ Our LST code deviation)",
         xy=(0.97, 0.04), xycoords="axes fraction", ha="right", va="bottom",
         fontsize=12, bbox=BOX, zorder=7)
 
@@ -141,14 +141,14 @@ def plot_malik_case6():
     plt.close(fig)
     set_overlay(cd, "verification/second_mode/malik_case6/overlay.png")
     written.append((out,
-                    "malik_case6: complex-plane alpha -- pyMack (filled blue circle) vs "
+                    "malik_case6: complex-plane alpha -- Our LST code (filled blue circle) vs "
                     "Malik 1990 (hollow orange square) vs Tumin 2007 (hollow green "
                     "triangle); legend upper-left, rel-err box lower-right; AGREES."))
 
 
 # =============================================================================
 # 2. balakumar_malik1992_via_xirenfu -- complex-plane alpha:
-#    pyMack vs B&M (1992) vs Xi/Ren/Fu
+#    Our LST code vs B&M (1992) vs Xi/Ren/Fu
 # =============================================================================
 def plot_via_xirenfu():
     cd = os.path.join(SM, "balakumar_malik1992_via_xirenfu")
@@ -168,7 +168,7 @@ def plot_via_xirenfu():
     fig, ax = plt.subplots(figsize=(8.6, 6.8))
 
     ax.plot(pm.real, pm.imag, "o", color=PYMACK_BLUE, ms=15, mec="k", mew=0.8,
-            zorder=6, label=f"pyMack: {pm.real:.6f}{pm.imag:+.6f}i")
+            zorder=6, label=f"Our LST code: {pm.real:.6f}{pm.imag:+.6f}i")
     ax.plot(bm.real, bm.imag, "s", mfc="none", mec=REF_ORANGE, mew=2.6,
             ms=17, zorder=5, label=f"Balakumar & Malik (1992): {bm.real:.6f}{bm.imag:+.6f}i")
     ax.plot(xrf.real, xrf.imag, "^", mfc="none", mec=REF_GREEN, mew=2.6,
@@ -188,7 +188,7 @@ def plot_via_xirenfu():
     ax.grid(True, alpha=0.3)
     ax.ticklabel_format(useOffset=False, style="plain")
 
-    # B&M + Xi/Ren/Fu sit at lower-left (more damped), pyMack at upper-right
+    # B&M + Xi/Ren/Fu sit at lower-left (more damped), Our LST code at upper-right
     # (less damped). Legend in upper-left is clear of all three.
     ax.legend(loc="upper left", framealpha=0.95)
 
@@ -209,7 +209,7 @@ def plot_via_xirenfu():
     plt.close(fig)
     set_overlay(cd, "verification/second_mode/balakumar_malik1992_via_xirenfu/overlay.png")
     written.append((out,
-                    "via_xirenfu: complex-plane alpha -- pyMack (filled blue circle) vs "
+                    "via_xirenfu: complex-plane alpha -- Our LST code (filled blue circle) vs "
                     "B&M 1992 (hollow orange square) vs Xi/Ren/Fu (hollow green triangle); "
                     "legend upper-left, rel-err box lower-right; ACCEPTABLE."))
 
@@ -258,14 +258,14 @@ def plot_branches():
     # vertical guide at alpha_r = omega (continuum accumulation line)
     ax.axvline(omega, color=CONT_TEAL, ls="--", lw=1.6, alpha=0.6, zorder=1)
 
-    # pyMack discrete second mode -- filled blue star
-    ax.plot(disc.real, disc.imag, "*", color=PYMACK_BLUE, ms=26, mec="k",
+    # Our LST code discrete second mode -- filled blue star
+    ax.plot(disc.real, disc.imag, "*", color=PYMACK_BLUE, ms=28, mec="k",
             mew=0.9, zorder=6,
-            label=f"pyMack discrete 2nd mode: {disc.real:.6f}{disc.imag:+.6f}i")
-    # B&M (1992) published -- large hollow orange square
+            label="Our LST code discrete 2nd mode")
+    # B&M (1992) published -- large hollow red square
     ax.plot(pub.real, pub.imag, "s", mfc="none", mec=REF_ORANGE, mew=2.8,
-            ms=20, zorder=5,
-            label=f"B&M (1992) published: {pub.real:.6f}{pub.imag:+.6f}i")
+            ms=22, zorder=5,
+            label="Balakumar & Malik (1992) published")
 
     # main window: show the discrete mode (low, negative alpha_i) and the
     # continuum ladder rising in alpha_i, without the far companion artifacts.
@@ -283,20 +283,8 @@ def plot_branches():
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.13),
               framealpha=0.95, ncol=2, borderaxespad=0.0,
               columnspacing=1.4, handletextpad=0.5)
-    ax.set_title("Balakumar & Malik (1992) M4.5  discrete second mode vs continuous spectrum\n"
+    ax.set_title("Balakumar & Malik (1992) $M=4.5$:  discrete second mode vs continuous spectrum\n"
                  "full spatial companion spectrum ($\\alpha$-plane)")
-
-    # --- verdict text box: lower-RIGHT of the main axes. The data lives at
-    #     small alpha_r (left third) + the rising teal ladder near alpha_r~0.2,
-    #     so the right half above the axis floor is genuinely empty. ----------
-    ax.annotate(
-        "VERDICT: ACCEPTABLE  (qualitative branch topology)\n"
-        f"discrete 2nd mode: $\\alpha_r$ {rr*100:.2f}%, $\\alpha_i$ {ri*100:.1f}% vs B&M\n"
-        f"$c = \\omega/\\alpha_r$ = {cph:.4f}  (least-damped in 2nd-mode band)\n"
-        f"continuous cluster at $c\\to1$:  {n_cont} roots,  N={N}\n"
-        f"$\\omega$=0.2, Re=1000;  full QEP spectrum, {n_total} roots plotted",
-        xy=(0.975, 0.40), xycoords="axes fraction", ha="right", va="top",
-        fontsize=12, bbox=BOX, zorder=7)
 
     # --- zoom inset: discrete mode region. Place it at the UPPER-RIGHT of the
     #     axes (empty in the main window) so it covers no spectrum points. -----
@@ -328,7 +316,7 @@ def plot_branches():
     plt.close(fig)
     set_overlay(cd, "verification/second_mode/balakumar_malik1992_branches/overlay.png")
     written.append((out,
-                    "branches: full spatial spectrum -- pyMack discrete 2nd mode (blue star) "
+                    "branches: full spatial spectrum -- Our LST code discrete 2nd mode (blue star) "
                     "+ B&M published (hollow orange square) vs continuous cluster (teal "
                     "diamonds, c->1) and other companion roots (grey hollow); legend top-left, "
                     "verdict box mid-right, zoom inset upper-right; ACCEPTABLE."))

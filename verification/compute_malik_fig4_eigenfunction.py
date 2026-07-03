@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Malik (1990) Fig. 4 -- M=10 second-mode EIGENFUNCTION verification.
 
-pyMack's Case-4 second-mode eigenfunction (M=10, cooled wall, alpha=0.105),
+Our LST code's Case-4 second-mode eigenfunction (M=10, cooled wall, alpha=0.105),
 normalized to unit peak |T_hat|, in the same layout as Malik Fig. 4. Writes
 verdict + overlay to verification/second_mode/malik_fig4_eigenfunction/.
 Opens the eigenVECTOR-validation axis. Mirror of
@@ -81,7 +81,7 @@ def _load_ref(name):
 
 
 def make_overlay(y, u, T, p, ypk, path):
-    """SINGLE Temperature panel. Profile orientation (y vertical, 0-30). pyMack's
+    """SINGLE Temperature panel. Profile orientation (y vertical, 0-30). Our LST code's
     T_hat_r (solid) and T_hat_i (dashed) CURVES over Malik's DIGITISED T_hat_r and
     T_hat_i POINTS. T_hat is scaled by ONE shared complex normalisation (the global
     phase makes T_hat real & +1 at its peak, Malik's convention); T_hat_i is NOT
@@ -98,8 +98,8 @@ def make_overlay(y, u, T, p, ypk, path):
     fig, ax = plt.subplots(figsize=(7.8, 8.2))
     ax.axvline(0.0, color="0.85", lw=1.0)
     ax.axhline(MALIK_TPEAK_Y, color="0.7", ls=":", lw=1.4)
-    ax.plot(T.real, y, color=C_R, lw=3.2, label=r"pyMack $\hat{T}_r$")
-    ax.plot(T.imag, y, color=C_I, lw=2.6, ls="--", label=r"pyMack $\hat{T}_i$")
+    ax.plot(T.real, y, color=C_R, lw=3.2, label=r"Our LST code $\hat{T}_r$")
+    ax.plot(T.imag, y, color=C_I, lw=2.6, ls="--", label=r"Our LST code $\hat{T}_i$")
     # Malik digitised points -- plotted at their own values (Malik already normalises
     # T_hat_r to +1); NO separate renormalisation, preserving the shared T_hat scale.
     if ref_Tr is not None:
@@ -108,15 +108,14 @@ def make_overlay(y, u, T, p, ypk, path):
     if ref_Ti is not None:
         ax.scatter(ref_Ti[0], ref_Ti[1], s=68, marker="s", facecolors="none",
                    edgecolors=C_I, lw=2.0, zorder=5, label=r"Malik $\hat{T}_i$ (digitised)")
-    ax.annotate(f"$|\\hat{{T}}|$ peak:\npyMack y={ypk:.1f}\nMalik Fig.4 y$\\approx$13",
+    ax.annotate(f"$|\\hat{{T}}|$ peak:\nOur LST code y={ypk:.1f}\nMalik Fig.4 y$\\approx$13",
                 xy=(1.0, ypk), xytext=(0.98, 24.0), fontsize=15, ha="right",
                 arrowprops=dict(arrowstyle="->", color="0.4", lw=1.8))
     ax.set_ylim(0, 30); ax.set_xlim(-1.1, 1.1)
     ax.set_ylabel("y", fontsize=21)
     ax.set_xlabel(r"normalized temperature eigenfunction ($\hat{T}$ peak $=1$)", fontsize=18)
-    ax.set_title("Malik (1990) Fig. 4: $M{=}10$ 2nd-mode eigenfunction\n"
-                 "pyMack $\\hat{T}$ curves vs Malik digitised points",
-                 fontsize=16)
+    ax.set_title(r"Malik (1990) Fig. 4: $M{=}10$ 2nd-mode eigenfunction",
+                 fontsize=18)
     ax.tick_params(labelsize=16)
     ax.legend(fontsize=17, loc="upper left", framealpha=0.92)
     ax.grid(True, alpha=0.3)
@@ -131,7 +130,7 @@ def main():
     make_overlay(y, u, T, p, ypk, OUT / "overlay.png")
     # Quantitative T_hat_r AND T_hat_i match vs Malik's digitised points (RMS over
     # 0<y<20). Both use the SAME shared T_hat scaling (no separate renormalisation).
-    # NB: pyMack's y grid is DESCENDING (wall-normal from freestream to wall), so
+    # NB: Our LST code's y grid is DESCENDING (wall-normal from freestream to wall), so
     # sort ascending before interpolating (np.interp requires increasing x).
     order = np.argsort(y)
     y_asc = y[order]
@@ -170,17 +169,17 @@ def main():
         },
         "verdict": verdict,
         "verdict_reason": (
-            "Eigenvector (mode-structure) validation. The overlay plots pyMack's "
+            "Eigenvector (mode-structure) validation. The overlay plots Our LST code's "
             "temperature eigenfunction CURVES over Malik's own DIGITISED Fig.4 points "
             "(single Temperature panel, profile orientation, y vertical). BOTH the "
             "real and imaginary temperature eigenfunctions AGREE with Malik under one "
             "shared complex T_hat scaling (global phase fixed so T_hat_r is real and "
             "+1 at its peak -- Malik's convention; T_hat_i is NOT renormalised "
-            "separately). pyMack's T_hat_r lies on Malik's digitised T_hat_r "
+            "separately). Our LST code's T_hat_r lies on Malik's digitised T_hat_r "
             f"(RMS = {(-1 if Tr_rms is None else Tr_rms):.3f} over 0<y<20): shallow "
             "near-wall negative lobe (~-0.5), zero-crossing near y~6, LOWER of the two "
             f"rising curves in y~6-11, and the +1 peak at y~{ypk:.1f} (Malik y~13, a "
-            f"{peak_rel_err*100:.1f}% location match). pyMack's T_hat_i lies on Malik's "
+            f"{peak_rel_err*100:.1f}% location match). Our LST code's T_hat_i lies on Malik's "
             f"digitised T_hat_i (RMS = {(-1 if Ti_rms is None else Ti_rms):.3f}): "
             "deeper near-wall dip (~-0.6), UPPER of the two rising curves in y~6-11, "
             "the rounded +0.45 hump at y~11, and the steep descent to the -0.55 dip at "

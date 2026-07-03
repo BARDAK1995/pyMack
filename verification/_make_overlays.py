@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-"""Generate publication-quality overlay.png plots for the pyMack verification audit.
+"""Generate publication-quality overlay.png plots for the Our LST code verification audit.
 
 Works ONLY from committed per-case data files (no recomputation). For each case it
-re-plots pyMack (solid/filled) against the digitized reference (dashed/hollow) and
+re-plots Our LST code (solid/filled) against the digitized reference (dashed/hollow) and
 writes overlay.png in place, then updates verdict.json artifacts.overlay.
 
 Visual-QA rules enforced here (see verification audit task):
@@ -24,19 +24,19 @@ import matplotlib.pyplot as plt
 
 # ---- HARD style rule ----
 plt.rcParams.update({
-    "axes.labelsize": 17,   # >= 14
-    "xtick.labelsize": 14,  # >= 12
-    "ytick.labelsize": 14,  # >= 12
-    "axes.titlesize": 17,   # >= 16
-    "legend.fontsize": 12.5,  # >= 11
+    "axes.labelsize": 19,
+    "xtick.labelsize": 16,
+    "ytick.labelsize": 16,
+    "axes.titlesize": 18,
+    "legend.fontsize": 15,
     "font.family": "DejaVu Sans",
     "axes.linewidth": 1.0,
-    "lines.linewidth": 3.4,   # thick, very visible pyMack curve
+    "lines.linewidth": 3.6,   # Our LST code curve: blue, thick / pronounced
 })
 
-# Colorblind-friendly (Okabe-Ito)
-PYMACK_BLUE = "#000000"   # pyMack -> thick black
-REF_ORANGE = "#D55E00"    # reference / paper
+# Readability convention: reference/paper data RED, Our LST code BLUE.
+PYMACK_BLUE = "#000000"   # Our LST code -> black, dashed
+REF_ORANGE = "#d62728"    # reference / paper -> red
 REF_VERMIL = "#E69F00"
 BAND_GREEN = "#009E73"
 
@@ -99,21 +99,20 @@ for case, tag, M, verdict, med in mack_cases:
     rx, ry = read_csv_xy(ref_path)
 
     fig, ax = plt.subplots(figsize=(8.0, 6.0), constrained_layout=True)
-    ax.plot(rx, ry, "--", color=REF_ORANGE, linewidth=2.2, zorder=2,
-            label="Mack (1984) Fig 10.6 (digitized)")
-    ax.plot(rx, ry, "s", mfc="none", mec=REF_ORANGE, mew=1.8, ms=8, zorder=3)
-    ax.plot(pm_R, pm_y, "-", color=PYMACK_BLUE, zorder=4, label="pyMack")
-    ax.plot(pm_R, pm_y, "o", color=PYMACK_BLUE, ms=7, zorder=5)
+    ax.plot(rx, ry, "--", color=REF_ORANGE, linewidth=1.6, zorder=2,
+            label="Mack (1984) Fig. 10.6 (digitized)")
+    ax.plot(rx, ry, "s", mfc="none", mec=REF_ORANGE, mew=1.5, ms=6, zorder=3)
+    ax.plot(pm_R, pm_y, "--", color=PYMACK_BLUE, zorder=4, label="Our LST code")
+    ax.plot(pm_R, pm_y, "o", color=PYMACK_BLUE, ms=5.0, zorder=5)
 
-    # top headroom so high-R markers clear the frame and the two-line title
+    # top headroom so high-R markers clear the frame and the title
     ymax = max(max(ry), max(pm_y))
     ax.set_ylim(top=ymax * 1.10)
     ax.margins(x=0.03)
 
     ax.set_xlabel(r"Reynolds number  $R$")
     ax.set_ylabel(r"max second-mode growth  $\omega_i \times 10^{3}$")
-    ax.set_title(f"Mack Fig 10.6  second mode  M={M}\n"
-                 f"verdict: {verdict}  (median rel. err. {med})")
+    ax.set_title(f"Mack (1984) Fig. 10.6  -  second mode,  M={M}")
     # lower-right is the empty quadrant for a monotonic rising curve
     ax.legend(loc="lower right", framealpha=0.95)
     ax.grid(True, alpha=0.3)
@@ -122,7 +121,7 @@ for case, tag, M, verdict, med in mack_cases:
     save(fig, out)
     set_overlay(os.path.join(cdir, "verdict.json"),
                 f"verification/second_mode/{case}/overlay.png")
-    written.append((out, f"M={M}: pyMack omega_i*1e3 vs R (solid blue) over digitized "
+    written.append((out, f"M={M}: Our LST code omega_i*1e3 vs R (solid blue) over digitized "
                          f"Mack Fig 10.6 (dashed orange); {verdict}, median {med}. "
                          f"Legend lower-right (empty)."))
 
@@ -162,10 +161,10 @@ ax.axvspan(220, 280, color=BAND_GREEN, alpha=0.18, zorder=0,
 # benchmark peak-N band N~7-8 (horizontal strip across top)
 ax.axhspan(7, 8, color=REF_VERMIL, alpha=0.16, zorder=0,
            label="benchmark peak N (7-8)")
-ax.plot(freqs, Npk, "-", color=PYMACK_BLUE, zorder=4, label="pyMack peak N-factor")
+ax.plot(freqs, Npk, "-", color=PYMACK_BLUE, zorder=4, label="Our LST code peak N-factor")
 ax.plot(freqs, Npk, "o", color=PYMACK_BLUE, ms=8, zorder=5)
 ax.plot([peak_f], [peak_N], "*", color=REF_ORANGE, ms=22, mec="k", mew=0.8,
-        zorder=6, label=f"pyMack peak: N={peak_N:.2f} @ {peak_f:.0f} kHz")
+        zorder=6, label=f"Our LST code peak: N={peak_N:.2f} @ {peak_f:.0f} kHz")
 
 ax.set_xlabel("frequency  (kHz)")
 ax.set_ylabel("peak N-factor over cone  (s = 120-520 mm)")
@@ -183,7 +182,7 @@ out = os.path.join(cdir, "overlay.png")
 save(fig, out)
 set_overlay(os.path.join(cdir, "verdict.json"),
             "verification/second_mode/cone_sivasubramanian_fasel_2015/overlay.png")
-written.append((out, "Cone: pyMack peak N-factor vs frequency (blue) with benchmark "
+written.append((out, "Cone: Our LST code peak N-factor vs frequency (blue) with benchmark "
                      "N~7-8 band (orange) and 220-280 kHz most-amplified band (green); "
                      "peak N=7.06 @ 210 kHz; acceptable. Legend below axes (clear of "
                      "bands/curve/star)."))
@@ -210,16 +209,16 @@ band = eg["band"]
 fig, ax = plt.subplots(figsize=(8.6, 6.6))
 ax.axhline(0.0, color="0.4", lw=1.0, ls=":", zorder=1)
 ax.axvspan(band[0], band[1], color=BAND_GREEN, alpha=0.15, zorder=0,
-           label=f"pyMack unstable band (omega {band[0]:.0f}-{band[1]:.0f})")
-ax.plot(om, g, "-", color=PYMACK_BLUE, zorder=4, label="pyMack spatial growth")
+           label=f"Our LST code unstable band (omega {band[0]:.0f}-{band[1]:.0f})")
+ax.plot(om, g, "-", color=PYMACK_BLUE, zorder=4, label="Our LST code spatial growth")
 ax.plot(om, g, "o", color=PYMACK_BLUE, ms=6, zorder=5)
 # Egorov forced omega = 200
 ax.axvline(200.0, color=REF_ORANGE, ls="--", lw=2.2, zorder=3,
            label="Egorov (2006) forced  omega=200")
-# pyMack peak
+# Our LST code peak
 ax.plot([peak["omega_E"]], [peak["growth"] * 1e3], "*", color=REF_VERMIL, ms=22,
         mec="k", mew=0.8, zorder=6,
-        label=f"pyMack peak  omega={peak['omega_E']:.0f}")
+        label=f"Our LST code peak  omega={peak['omega_E']:.0f}")
 
 ax.set_xlabel(r"dimensionless frequency  $\omega$  (plate-length units)")
 ax.set_ylabel(r"spatial growth  $-\alpha_i \times 10^{3}$")
@@ -238,7 +237,7 @@ out = os.path.join(cdir, "overlay.png")
 save(fig, out)
 set_overlay(os.path.join(cdir, "verdict.json"),
             "verification/second_mode/egorov2006_m6/overlay.png")
-written.append((out, "Egorov M6: pyMack spatial second-mode growth vs omega (blue) with "
+written.append((out, "Egorov M6: Our LST code spatial second-mode growth vs omega (blue) with "
                      "unstable band (green) and Egorov forced omega=200 (dashed orange); "
                      "peak at omega=215; acceptable (7.5% offset). Legend below axes "
                      "(off the band and peak star)."))
@@ -279,7 +278,7 @@ for ax, (tag, M, pmf, reff) in zip(axes, panels):
     ax.plot(rRe, rAl, "--", color=REF_ORANGE, lw=2.2, zorder=2,
             label="Ozgen Fig 3 (digitized)")
     ax.plot(rRe, rAl, "s", mfc="none", mec=REF_ORANGE, mew=1.8, ms=8, zorder=3)
-    ax.plot(pRe, pAl, "-", color=PYMACK_BLUE, zorder=4, label="pyMack")
+    ax.plot(pRe, pAl, "-", color=PYMACK_BLUE, zorder=4, label="Our LST code")
     ax.plot(pRe, pAl, "o", color=PYMACK_BLUE, ms=6, zorder=5)
     ax.set_xlabel(r"Reynolds number  $Re_L$")
     if tag == "M2":
@@ -308,8 +307,8 @@ out = os.path.join(cdir, "overlay.png")
 save(fig, out)
 set_overlay(os.path.join(cdir, "verdict.json"),
             "verification/mixed_mode/ozgen_fig3/lobes/overlay.png")
-written.append((out, "Ozgen lobes (M2|M4): pyMack c_i=0.004 alpha-vs-Re contour (blue) vs "
-                     "digitized 0.004 lobe (dashed orange); pyMack stays flat / open while "
+written.append((out, "Ozgen lobes (M2|M4): Our LST code c_i=0.004 alpha-vs-Re contour (blue) vs "
+                     "digitized 0.004 lobe (dashed orange); Our LST code stays flat / open while "
                      f"paper arches down; {_lobes_verd} (~{_lobes_pct_s}). Single shared "
                      "legend below both panels."))
 

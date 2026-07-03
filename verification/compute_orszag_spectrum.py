@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """Orszag (1971) Table 5 -- full Orr-Sommerfeld spectrum verification.
 
-pyMack's dense OS spectrum vs Orszag's 32 tabulated least-stable eigenvalues
+Our LST code's dense OS spectrum vs Orszag's 32 tabulated least-stable eigenvalues
 (plane Poiseuille, alpha=1, R=10000). Writes verdict + overlay (the classic OS
 "Y"-shaped spectrum) to verification/other/orszag_spectrum/.
 Mirror of validation/test_orszag_full_spectrum.py.
@@ -57,14 +57,14 @@ def make_overlay(spec, errs, path):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots(figsize=(7.6, 6.2))
     ax.scatter(spec.real, spec.imag, s=95, facecolors="none", edgecolors="tab:blue",
-               linewidths=1.5, label=f"pyMack OS spectrum (N={N_SOLVE})", zorder=2)
+               linewidths=1.5, label=f"Our LST code OS spectrum (N={N_SOLVE})", zorder=2)
     ax.scatter(ORSZAG.real, ORSZAG.imag, s=26, marker="x", color="tab:red",
                linewidths=1.6, label="Orszag (1971) Table 5 (32 modes)", zorder=3)
     ax.axhline(0.0, color="0.7", lw=0.8, ls=":")
     ax.set_xlabel(r"$c_r$", fontsize=15)
     ax.set_ylabel(r"$c_i$", fontsize=15)
     ax.set_title("Orszag (1971) Table 5: plane-Poiseuille OS spectrum\n"
-                 f"$\\alpha$=1, $R$=10000  --  all 32 modes match to < {errs.max():.0e}",
+                 r"$\alpha$=1, $R$=10000",
                  fontsize=14)
     ax.tick_params(labelsize=12)
     ax.legend(fontsize=11, loc="lower center")
@@ -97,7 +97,7 @@ def main():
         },
         "verdict": verdict,
         "verdict_reason": (
-            f"Full OS spectrum. pyMack reproduces ALL 32 of Orszag's tabulated "
+            f"Full OS spectrum. Our LST code reproduces ALL 32 of Orszag's tabulated "
             f"eigenvalues to max abs err {errs.max():.1e} (median {np.median(errs):.1e}); "
             f"{int((errs<1e-5).sum())}/32 match to < 1e-5. The dense eigensolver "
             "resolves the A-branch (c_r~0.96), P-branch (c_r~0.2-0.5) and S-branch, "

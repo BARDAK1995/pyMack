@@ -185,7 +185,7 @@ def fig_cheb_grid():
         ax.plot([xii, xpi], [yc, yp], color="#cfd8d3", lw=0.7, zorder=0)
     ax.scatter(xi, np.full_like(xi, yc), s=42, color=COOL, zorder=3)
     ax.scatter(xp, np.full_like(xp, yp), s=42, color=PM, zorder=3)
-    ax.text(-1.02, yc + 0.16, r"computational  $\xi_j=\cos(\pi j/N)\in[-1,1]$",
+    ax.text(-1.02, yc + 0.16, r"computational  $\xi_j=\cos(\pi j/n)\in[-1,1]$",
             fontsize=12.5, color=COOL)
     ax.text(-1.02, yp - 0.28, r"physical  $y\in[0,y_{\max}]$ (clustered at wall)",
             fontsize=12.5, color=PM)
@@ -194,7 +194,6 @@ def fig_cheb_grid():
     ax.annotate(r"freestream  $y=y_{\max}$", xy=(1, yp), xytext=(0.95, -0.62),
                 fontsize=12, ha="center", arrowprops=dict(arrowstyle="-|>", color=INK))
     ax.set_xlim(-1.25, 1.25); ax.set_ylim(-0.8, 1.5)
-    ax.set_title("Chebyshev–Gauss–Lobatto grid and the wall-clustering map")
     ax.axis("off")
     save(fig, "fig_cheb_grid.pdf")
 
@@ -413,7 +412,7 @@ def fig_nfactor():
 
 
 def fig_workflow():
-    fig, ax = plt.subplots(figsize=(9.0, 8.2))
+    fig, ax = plt.subplots(figsize=(8.4, 7.6))
     ax.set_xlim(0, 10.8); ax.set_ylim(4.9, 19.9); ax.axis("off")
 
     def box(cx, cy, w, h, title, sub, core=False):
@@ -422,19 +421,19 @@ def fig_workflow():
         ax.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h,
                      boxstyle="round,pad=0.08,rounding_size=0.12",
                      fc=fc, ec=ec, lw=2.2 if core else 1.5))
-        ax.text(cx, cy + 0.24, title, ha="center", va="center", fontsize=13, fontweight="bold")
-        ax.text(cx, cy - 0.40, sub, ha="center", va="center", fontsize=10.5, color="#555")
+        ax.text(cx, cy + 0.24, title, ha="center", va="center", fontsize=15, fontweight="bold")
+        ax.text(cx, cy - 0.40, sub, ha="center", va="center", fontsize=13.5, color="#111")
 
     def arrow(x1, y1, x2, y2):
         ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>",
-                     mutation_scale=16, color=GREY, lw=1.8))
+                     mutation_scale=16, color="#555555", lw=2.0))
 
     # --- main spine -------------------------------------------------------
-    SX, W, H = 4.6, 5.6, 1.45
+    SX, W, H = 4.6, 6.3, 1.45
     spine = [
         (19.0, "1 · Flow conditions", r"$M_e,\ Re,\ T_w/T_e$, gas model", False),
         (17.0, "2 · Mean flow", r"self-similar BVP $\to\ \overline{U},\overline{T}$ and $y$-derivatives", False),
-        (15.0, "3 · Disturbance ODEs", r"linearise + normal mode $\to$ Eqs. (C), (X), (Y), (E)", False),
+        (15.0, "3 · Disturbance ODEs", r"linearise + normal mode $\to$ Eqs. (C)–(E)", False),
         (13.0, "4 · Discretisation", r"Chebyshev collocation:  $\mathrm{D}\to D_1,\ \ \mathrm{D}^2\to D_2$", False),
         (11.0, "5 · Eigenvalue problem", r"$4(n{+}1)\times4(n{+}1)$ pencil", True),
     ]
@@ -444,25 +443,25 @@ def fig_workflow():
         arrow(SX, spine[i][0] - 0.76, SX, spine[i + 1][0] + 0.76)
 
     # --- document attribution (right margin) ------------------------------
-    def doc_tag(y_top, y_bot, label, color="#777"):
-        x = 7.75
-        ax.plot([x, x], [y_top, y_bot], color=color, lw=1.1)
-        ax.plot([x - 0.09, x], [y_top, y_top], color=color, lw=1.1)
-        ax.plot([x - 0.09, x], [y_bot, y_bot], color=color, lw=1.1)
+    def doc_tag(y_top, y_bot, label, color="#111"):
+        x = 7.95
+        ax.plot([x, x], [y_top, y_bot], color=color, lw=1.6)
+        ax.plot([x - 0.09, x], [y_top, y_top], color=color, lw=1.6)
+        ax.plot([x - 0.09, x], [y_bot, y_bot], color=color, lw=1.6)
         ax.text(x + 0.18, 0.5 * (y_top + y_bot), label, ha="left", va="center",
-                fontsize=10.5, color=color, style="italic")
-    doc_tag(17.72, 16.28, "Mean Boundary-Layer\ndocument")
-    doc_tag(15.72, 14.28, "this document", color=PM)
-    doc_tag(13.72, 10.28, "Numerical Methods\ndocument")
+                fontsize=13, color=color, style="italic")
+    doc_tag(17.72, 16.28, "mean-flow\ndocument")
+    doc_tag(15.72, 12.28, "this document", color=PM)
+    doc_tag(11.72, 10.28, "numerical-methods\ndocument")
 
     # --- temporal / spatial fork ------------------------------------------
     TX, PX = 2.35, 7.15
     arrow(SX - 0.9, 10.24, TX + 0.4, 9.35)
     arrow(SX + 0.9, 10.24, PX - 0.4, 9.35)
-    ax.text(2.35, 9.62, r"temporal:  $\alpha\in\mathbb{R}$, solve $c$",
-            fontsize=10.5, color="#555", ha="center", style="italic")
-    ax.text(7.45, 9.62, r"spatial:  $\omega\in\mathbb{R}$, solve $\alpha$",
-            fontsize=10.5, color="#555", ha="center", style="italic")
+    ax.text(1.30, 9.9, r"temporal:  $\alpha\in\mathbb{R}$, solve $c$",
+            fontsize=13, color="#111", ha="center", style="italic")
+    ax.text(9.25, 9.9, r"spatial:  $\omega\in\mathbb{R}$, solve $\alpha$",
+            fontsize=13, color="#111", ha="center", style="italic")
     box(TX, 8.6, 4.3, H, r"$A(\alpha)\,\phi=c\,B(\alpha)\,\phi$",
         r"temporal growth $\omega_i=\alpha c_i$")
     box(PX, 8.6, 4.6, H, r"$(C_0+\alpha C_1+\alpha^2C_2)\,\phi=0$",
@@ -756,8 +755,6 @@ def fig_shooting_scheme():
     ax.add_patch(FancyArrowPatch((x_mid, y_march_bot - 0.05), (x_mid, y_wall_box + 0.5),
                  arrowstyle="-|>", mutation_scale=14, color=REF, lw=1.6))
 
-    ax.set_title("Part B shooting scheme: eigen-basis $\\to$ RK4$+$QR march $\\to$\n"
-                 "wall matrix $\\to$ Nelder–Mead search", fontsize=15.5)
     save(fig, "fig_shooting_scheme.pdf")
 
 

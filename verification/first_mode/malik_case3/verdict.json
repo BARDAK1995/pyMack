@@ -35,7 +35,7 @@
     "topology_ok": true
   },
   "verdict": "agrees",
-  "verdict_reason": "Oblique first mode, temporal. pyMack omega=0.0367346+0.0005841i vs Malik 0.0367340+0.0005840i: omega_r rel err 1.61e-05 (0.002%), omega_i rel err 2.36e-04 (0.02%). OBLIQUE (beta=0.10) first mode -- the cleanest-converging case in Malik's paper (all four schemes agree to 5 sig figs). Previously logged non-reproducible for lack of the dimensional conditions; adding the source paper (Table I) unlocked it. Mirror of validation/test_malik1990_case3_anchor.py.",
+  "verdict_reason": "Oblique first mode, temporal. Our LST code omega=0.0367346+0.0005841i vs Malik 0.0367340+0.0005840i: omega_r rel err 1.61e-05 (0.002%), omega_i rel err 2.36e-04 (0.02%). OBLIQUE (beta=0.10) first mode -- the cleanest-converging case in Malik's paper (all four schemes agree to 5 sig figs). Previously logged non-reproducible for lack of the dimensional conditions; adding the source paper (Table I) unlocked it. Mirror of validation/test_malik1990_case3_anchor.py.",
   "generated": "new",
   "artifacts": {
     "pymack": null,
