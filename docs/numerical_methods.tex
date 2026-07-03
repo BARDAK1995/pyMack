@@ -48,11 +48,7 @@ eigenvalues of the resulting matrix pencil at once without prior knowledge of th
 eigenvalue by enforcing the boundary conditions, requiring a good initial guess but very little
 memory. \texttt{pyMack} implements one of each. The present document is the boundary-value route:
 Chebyshev collocation, block assembly, and dense eigensolves, used for spectrum surveys, neutral
-curves, and $N$-factors. The shooting route, the classical procedure of Mack \cite{mack1984} in the
-formulation of \"Ozgen \& K{\i}rcal{\i} \cite{ozgen2008}, is the subject of a separate companion
-document; its role is to refine and independently verify a mode found here, and agreement between
-the two routes on the same eigenvalue is a strong check that a computed mode is physics rather than
-discretisation artifact. Every equation, coefficient, and default below is stated exactly as
+curves, and $N$-factors. Every equation, coefficient, and default below is stated exactly as
 implemented.
 
 \paragraph{Notation.} Overbars denote mean (base-flow) quantities; hats denote complex disturbance
