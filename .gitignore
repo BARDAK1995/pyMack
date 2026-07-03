@@ -60,3 +60,12 @@ baseline_snapshot/
 
 # Local-only reference paper PDFs (copyrighted; never commit)
 refPapers/
+
+# LaTeX build intermediates (PDFs of the notes are committed; junk is not)
+docs/*.aux
+docs/*.fdb_latexmk
+docs/*.fls
+docs/*.out
+docs/*.toc
+docs/*.log
+docs/*.synctex.gz

@@ -1,149 +1,150 @@
 \documentclass[11pt]{article}
 \input{lst_preamble}
 \usepackage{placeins}
+\usepackage{float}
 
-\title{pyMack: Validation \& Verification}
-\author{Personal reference note}
+\title{\textbf{pyMack: Validation and Verification}\\[3pt]
+\large An agreement audit of the solver against published benchmarks\\
+at their exact stated conditions}
+\author{\texttt{pyMack} technical documentation}
 \date{\today}
 
 \begin{document}
 \maketitle
-
-\begin{abstract}
-This note is the honest agreement audit for \textbf{pyMack}, the compressible
-linear-stability solver. Each case runs a published or external reference at its
-\emph{exact} stated conditions, measures agreement against the digitised
-reference, and reports a verdict on a fixed three-tier scale
-(\textbf{agrees}~$\le$\,5\,\%, \textbf{acceptable}~5--15\,\%,
-\textbf{disagrees} otherwise). Nothing here is tuned to pass. The picture is
-deliberately two-sided: pyMack's design target --- the compressible
-\emph{second} (Mack) mode --- agrees or is acceptable in every case, across
-five independent sources, Mach 4.5--10, and a flight-relevant cone; the
-\emph{first} mode agrees with \"Ozgen \& K\i rcal\i\ where the discrete mode is
-cleanly resolvable but remains the documented weak spot at low Mach and on the
-Mack first-mode figures. Every figure embedded here is pyMack's own overlay ---
-pyMack curves plotted over digitised reference \emph{points} --- so no
-copyrighted reference figure is reproduced. All figures, numbers, and verdicts
-are taken verbatim from the committed per-case \texttt{verdict.json} files and
-the repository success matrix.
-\end{abstract}
-
 \tableofcontents
 
-\section{Validation philosophy: a pyramid}
+%=====================================================================
+\section{Scope and methodology}
 \label{sec:philosophy}
+%=====================================================================
+This document is the agreement audit for \texttt{pyMack}, the compressible linear-stability solver
+whose formulation and numerics are developed in the companion documents (\emph{The Mean
+Boundary-Layer Profile}, \emph{Derivation of the Disturbance Equations}, \emph{Numerical Methods}).
+Each case below (i) reruns a published or external reference at its \emph{exact} stated conditions,
+(ii) measures agreement against the digitised or tabulated reference, and (iii) records a verdict on
+a fixed three-tier scale applied uniformly to every case,
+\begin{equation}\label{eq:verdict}
+  e\le5\,\%\ \Rightarrow\ \textbf{agrees},\qquad
+  5\,\%<e\le15\,\%\ \Rightarrow\ \textbf{acceptable},\qquad
+  e>15\,\%\ \Rightarrow\ \textbf{disagrees},
+\end{equation}
+where $e$ is the case's headline relative error; dimensional cases use the mean absolute error as a
+fraction of the curve span. Nothing is tuned to pass, and the disagreements are kept in full view.
 
-\problembox{Before trusting a stability prediction on a real geometry, we must
-know \emph{where} the solver is exact, where it is merely acceptable, and where
-it fails. This note answers that question case by case, keeping the
-disagreements in full view.}
-
-We organise the evidence as a pyramid, from the most rigorously anchored physics
-at the base to the engineering cases at the top. Each tier only earns trust once
-the tier beneath it holds.
-
+\paragraph{Organisation: an evidence pyramid.} The cases are ordered from the most rigorously
+anchored physics to the engineering configurations, each tier earning trust only once the tier
+beneath it holds:
 \begin{enumerate}[leftmargin=1.4em]
-\item \textbf{Incompressible core.} The Orr--Sommerfeld temporal eigenvalue for
-plane Poiseuille flow is a scalar with a textbook-exact answer. Matching it to
-$\sim\!10^{-5}$ confirms the spectral discretisation, the eigenvalue assembly,
-and the boundary-condition enforcement in isolation, before any compressible
-physics is added.
-\item \textbf{Compressible eigenvalue anchors.} Malik's (1990) tabulated
-compressible spatial eigenvalues, and the Balakumar \& Malik (1992) discrete/
-continuous-spectrum topology, pin the compressible operator to published digits
-at a single $(R,\omega)$ station --- the sharpest possible test, free of
-digitisation error.
-\item \textbf{Second-mode and first-mode benchmarks.} Mack's (1984) AGARD-R-709
-neutral curves and growth-rate families, and \"Ozgen \& K\i rcal\i's (2008)
-neutral curves, test full \emph{curves} over Reynolds number and Mach number ---
-topology as well as magnitude.
-\item \textbf{Engineering cases.} A sharp cone (Sivasubramanian 2012), an
-independent collaborator's Mach 5.35 nitrogen code, a Mach-6 flat plate
-(Egorov 2006), and spatial $N$-factor integration exercise the whole pipeline on
-flight-relevant configurations.
+\item \textbf{Incompressible core.} The Orr--Sommerfeld temporal eigenvalue for plane Poiseuille
+flow \cite{orszag1971} is a scalar with a textbook-exact answer. Matching it to $\sim\!10^{-5}$
+confirms the spectral discretisation, the eigenvalue assembly, and the boundary-condition
+enforcement in isolation, before any compressible physics is added.
+\item \textbf{Compressible eigenvalue anchors.} Malik's tabulated compressible eigenvalues
+\cite{malik1990} and the Balakumar--Malik discrete/continuous-spectrum topology
+\cite{balakumar1992} pin the compressible operator to published digits at single
+$(R,\omega)$ stations; these are the sharpest possible tests, free of digitisation error.
+\item \textbf{Curve families.} Mack's neutral curves and growth-rate families \cite{mack1984}, the
+Ma--Zhong $M{=}4.5$ neutral curve \cite{mazhong2003}, and the \"Ozgen--K{\i}rcal{\i} Fig.~3
+neutral-curve family \cite{ozgen2008} test full \emph{curves} over Reynolds number and Mach number
+and test topology as well as magnitude. They are reported by physical mode: second mode
+(Section~\ref{sec:secondmode}), first mode (Section~\ref{sec:firstmode}), and the \"Ozgen family,
+whose panels span \emph{both} modes, separately (Section~\ref{sec:mixedmode}).
+\item \textbf{Engineering and open cases.} A Mach-6 flat plate \cite{egorov2006} anchors the second
+mode on a flight-relevant configuration. The remaining engineering cases (a sharp-cone
+$N$-factor, an independent collaborator's Mach 5.35 code, and the spatial $N$-factor pipeline)
+carry unfinished elements and, together with the $M\approx2.2$ first-mode disagreements, are
+collected in the companion note \texttt{work\_in\_progress.tex}.
 \end{enumerate}
+The base of the pyramid is exact; the middle is a mix of exact (second mode) and partial (first
+mode). The second-mode design target is trustworthy throughout; the first mode is usable with the
+documented caveats.
 
-\plain{The base of the pyramid is exact. The middle is a mix of exact
-(second mode) and partial (first mode). The top inherits both: the second-mode
-engineering predictions are trustworthy; the first mode should be used with the
-documented caveats.}
+\paragraph{Provenance and reproducibility.} All figures embedded here are \texttt{pyMack}'s own
+overlays, \texttt{pyMack} curves plotted over digitised reference \emph{points}, so no
+copyrighted reference figure is reproduced. Every number and verdict is taken verbatim from the
+committed per-case \texttt{verdict.json} files under \texttt{verification/} and the repository
+success matrix, which are regenerated by the scripts recorded in each case directory. This document
+reports only the settled validations; the open items are tracked in
+\texttt{work\_in\_progress.tex}.
 
-\subsection{Summary of all cases shown}
+\subsection{Summary of all cases}
 \label{sec:summary-table}
 
-Table~\ref{tab:summary} lists every case presented in detail below, in pyramid
-order. The one-line headline gives the governing number; the honest caveats live
-in each subsection. Six additional \emph{pending} companion cases (Malik cases
-1/3/4/5 temporal anchors; the Mack Fig.~10.4/10.6 family aggregates) have a
-prepared reference but no generated pyMack run, and are named in prose rather
-than tabulated.
+Table~\ref{tab:summary} lists every case presented below, in pyramid order; the one-line headline
+gives the governing number, and the caveats live in each subsection. The Malik temporal test cases
+3, 4, and 5, previously logged non-reproducible for want of their dimensional conditions, are
+now run and pass, once Malik's own Table~I supplied the missing $T_0$ and wall temperatures; the
+only remaining \emph{pending} companions are Malik case~1 (the effectively-incompressible $M=0.5$
+anchor, scoped to the Orszag tier) and the Mack Fig.~10.4/10.6 family aggregates, named in prose
+rather than tabulated.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{Cases presented in this note, in pyramid order. Verdict scale:
-$\le$\,5\,\% \emph{agrees}, 5--15\,\% \emph{acceptable}, else \emph{disagrees}
-(dimensional cases use MAE as a fraction of curve span).}
+\caption{Cases presented in this document, in pyramid order. Verdict scale: Eq.~\eqref{eq:verdict}
+($\le$\,5\,\% \emph{agrees}, 5--15\,\% \emph{acceptable}, else \emph{disagrees}; dimensional cases
+use MAE as a fraction of curve span).}
 \label{tab:summary}
 \begin{tabular}{@{}p{3.5cm}p{3.3cm}p{4.1cm}l@{}}
 \toprule
 \textbf{Case} & \textbf{Source} & \textbf{Quantity} & \textbf{Verdict} \\
 \midrule
 \multicolumn{4}{@{}l}{\textit{Incompressible core}}\\
-Plane Poiseuille & Orszag (1971) & O--S eigenvalue $c$ & agrees ($\sim\!10^{-5}$)\\[2pt]
+Plane Poiseuille & Orszag \cite{orszag1971} & O--S eigenvalue $c$ & agrees ($\sim\!10^{-5}$)\\
+OS spectrum (32 modes) & Orszag \cite{orszag1971}, Tab.~5 & full temporal spectrum & agrees ($<\!10^{-5}$)\\[2pt]
 \multicolumn{4}{@{}l}{\textit{Compressible eigenvalue anchors}}\\
-Malik case 6 & Malik (1990) Table IX & spatial $\alpha$ (2nd mode) & agrees\\
-B\&M branches & Balakumar \& Malik (1992) & discrete/continuous topology & acceptable\\
-B\&M via Xi/Ren/Fu & Balakumar \& Malik (1992) & spatial $\alpha$ (2nd mode) & acceptable\\[2pt]
-\multicolumn{4}{@{}l}{\textit{Second mode --- curves \& families}}\\
-Mack Fig.~10.6 & Mack (1984) & $\omega_{i,\max}(R)$, M4.5--10 & agrees / acceptable\\
-Egorov M6 & Egorov et al.\ (2006) & most-amplified $\omega$ & acceptable\\
-Ma \& Zhong M4.5 & Ma \& Zhong (2003) JFM & neutral curve, spatial 2nd mode & agrees\\[2pt]
-\multicolumn{4}{@{}l}{\textit{First mode --- curves \& families}}\\
-Mack Fig.~10.1 & Mack (1984) & neutral loop, M1.6/2.2 & disagrees\\
-Mack Fig.~10.3 & Mack (1984) & $\omega_{i,\max}(R)$, M1.3/2.2/3.0 & agrees $\to$ disagrees\\
-Mack Fig.~10.4 & Mack (1984) & oblique 1st mode, M4.5--10 & acceptable $\to$ disagrees\\
-\"Ozgen Fig.~3 & \"Ozgen \& K\i rcal\i\ (2008) & neutral curves, M2--10 & agrees / acceptable\\[2pt]
-\multicolumn{4}{@{}l}{\textit{Engineering benchmarks}}\\
-Sharp cone & Sivasubramanian (2012) & 2nd-mode $N$-factor, $f$ & acceptable\\
-Mach 5.35 (Sean) & collaborator LST code & dimensional neutral branches & acceptable\\
-Mach 6 spatial & pyMack pipeline & spatial neutral \& $N$-factor & (demonstration)\\
+Malik case 6 & Malik \cite{malik1990}, Tab.~IX & spatial $\alpha$ (2nd mode) & agrees\\
+Malik cases 3/4/5 & Malik \cite{malik1990}, Tab.~IV/V/VI & temporal $\omega$ (M2.5/10) & agrees\\
+Malik Table X & Malik \cite{malik1990}, Tab.~X & spatial $\alpha$ (M10 2nd mode) & acceptable\\
+Malik Fig.~4 eigenfn. & Malik \cite{malik1990}, Fig.~4 & M10 2nd-mode $\hat T(y)$ shape & agrees\\
+B\&M branches & Balakumar--Malik \cite{balakumar1992} & discrete/continuous topology & acceptable\\
+B\&M via Xi--Ren--Fu & Balakumar--Malik \cite{balakumar1992} & spatial $\alpha$ (2nd mode) & acceptable\\[2pt]
+\multicolumn{4}{@{}l}{\textit{Second mode: curves \& families}}\\
+Mack Fig.~10.6 & Mack \cite{mack1984} & $\omega_{i,\max}(R)$, M4.5--10 & agrees / acceptable\\
+Egorov M6 & Egorov et al.\ \cite{egorov2006} & most-amplified $\omega$ & acceptable\\
+Ma \& Zhong M4.5 & Ma \& Zhong \cite{mazhong2003} & neutral curve, spatial 2nd mode & agrees\\[2pt]
+\multicolumn{4}{@{}l}{\textit{First mode: curves \& families}}\\
+Mack Fig.~10.1 & Mack \cite{mack1984} & neutral loop, M1.6 & acceptable\\
+Mack Fig.~10.3 & Mack \cite{mack1984} & $\omega_{i,\max}(R)$, M1.3/3.0 & agrees\\
+Mack Fig.~10.4 & Mack \cite{mack1984} & oblique 1st mode, M4.5--10 & agrees / acceptable\\[2pt]
+\multicolumn{4}{@{}l}{\textit{Mixed first $+$ second mode}}\\
+\"Ozgen Fig.~3 & \"Ozgen--K{\i}rcal{\i} \cite{ozgen2008} & neutral-curve family (both modes), M2--10 & agrees / acceptable\\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\bridge{We now walk the pyramid from the base upward, one case per subsection.}
-
 \FloatBarrier
+%=====================================================================
 \section{Incompressible core}
 \label{sec:core}
+%=====================================================================
 
-\subsection{Orszag (1971) plane-Poiseuille Orr--Sommerfeld eigenvalue}
+\subsection{Orszag (1971): plane-Poiseuille Orr--Sommerfeld eigenvalue}
 \label{sec:orszag}
 
-\textbf{Reference source.} S.~A. Orszag, ``Accurate solution of the
-Orr--Sommerfeld stability equation'' (1971) --- the canonical plane-Poiseuille
-temporal eigenvalue.
+\paragraph{Reference.} Orszag \cite{orszag1971}, the canonical plane-Poiseuille temporal
+eigenvalue.
 
-\textbf{Flow conditions.} Plane Poiseuille flow $U=1-y^2$ on $[-1,1]$, Reynolds
-number $Re=10\,000$, streamwise wavenumber $\alpha=1$, temporal formulation.
+\paragraph{Conditions.} Plane Poiseuille flow $U=1-y^2$ on $[-1,1]$, Reynolds number $Re=10\,000$,
+streamwise wavenumber $\alpha=1$, temporal formulation.
 
-\textbf{Quantity compared.} The least-stable eigenvalue (phase speed)
-$c=c_r+\imag c_i$.
+\paragraph{Quantity.} The least-stable eigenvalue (phase speed) $c=c_r+\imag c_i$.
 
-\textbf{Result.} pyMack's Chebyshev Orr--Sommerfeld solver
-(\texttt{validation/test\_orr\_sommerfeld.py}) reproduces Orszag's benchmark
-$c=0.23753+0.00374\,\imag$ to an absolute error below $10^{-4}$ already at
-$N=64$, tightening toward $\sim\!10^{-7}$ under refinement
-(Table~\ref{tab:orszag}). Because this is a scalar comparison against an
-essentially exact reference --- not a hand-digitised curve --- no overlay figure
-is warranted.
+\paragraph{Result: \emph{agrees}.} \texttt{pyMack}'s Chebyshev Orr--Sommerfeld solver
+(\texttt{validation/test\_orr\_sommerfeld.py}) reproduces the benchmark
+$c=0.23753+0.00374\,\imag$ to an absolute error below $10^{-4}$ already at $N=64$, tightening
+toward $\sim\!10^{-7}$ under refinement (Table~\ref{tab:orszag}). Because this is a scalar
+comparison against an essentially exact reference rather than a hand-digitised curve, no overlay
+figure is warranted. The same test module also recovers the Blasius Tollmien--Schlichting mode at
+$Re_{\delta^\ast}=998$, $\alpha=0.179$ ($c_r\approx0.36$, unstable) and finds unstable growth at
+$Re=1000$, confirming the mapped semi-infinite domain and the growth-rate optimisation loop; these
+are sign/range assertions rather than digit-exact anchors and are not tabulated separately.
 
 \begin{table}[htbp]
 \centering
 \small
 \caption{Plane Poiseuille temporal eigenvalue, $Re=10\,000$, $\alpha=1$. Target
-$c=0.23753+0.00374\,\imag$ (Orszag 1971). The CI gate asserts error $<10^{-4}$.}
+$c=0.23753+0.00374\,\imag$ \cite{orszag1971}. The CI gate asserts error $<10^{-4}$.}
 \label{tab:orszag}
 \begin{tabular}{@{}rll@{}}
 \toprule
@@ -156,562 +157,524 @@ $N$ & pyMack $c=c_r+\imag c_i$ & $|c-c_{\text{target}}|$ \\
 \end{tabular}
 \end{table}
 
-\remark{Companion incompressible checks.}{The same test module also recovers the
-Blasius Tollmien--Schlichting mode at $Re_{\delta^\ast}=998$, $\alpha=0.179$
-($c_r\approx0.36$, unstable) and finds unstable growth at $Re=1000$, confirming
-the mapped semi-infinite domain and the growth-rate optimisation loop. These are
-sign/range assertions rather than digit-exact anchors, so they are not tabulated
-separately.}
+\subsection{Orszag (1971) Table~5: the full Orr--Sommerfeld spectrum}
+\label{sec:orszag-spectrum}
 
-\FloatBarrier
-\section{Compressible eigenvalue anchors}
-\label{sec:anchors}
+\paragraph{Reference.} Orszag \cite{orszag1971}, Table~5: the 32 least-stable Orr--Sommerfeld
+eigenvalues of plane Poiseuille flow at $\alpha=1$, $R=10\,000$, each classified symmetric ($S$) or
+antisymmetric ($A$).
 
-\subsection{Malik (1990) case 6 --- compressible spatial eigenvalue}
-\label{sec:malik6}
+\paragraph{Quantity.} The full temporal eigenvalue \emph{spectrum}: not only the single
+least-stable mode of Section~\ref{sec:orszag}, but the whole branch structure.
 
-\textbf{Reference source.} M.~R. Malik, ``Numerical methods for hypersonic
-boundary layer stability'' (1990) \emph{J.\ Comput.\ Phys.} \textbf{86}:376,
-Table~IX, Case~6. The published $\alpha$ is cross-checked digit-for-digit against
-Xi, Ren \& Fu (arXiv:2006.05970, Table~3) and to 4--5 digits against Hildebrand
-et al.\ (arXiv:1712.08239, Table~I).
+\paragraph{Result: \emph{agrees}.} \texttt{pyMack}'s dense eigensolver
+(\texttt{validation/test\_orszag\_full\_spectrum.py}) reproduces \emph{all 32} tabulated
+eigenvalues to a maximum absolute error $7\times10^{-6}$ (median $5\times10^{-8}$); $32/32$ match
+to $<10^{-5}$ at $N=128$. It resolves the A-branch ($c_r\!\sim\!0.96$ downward), the P-branch
+($c_r\!\sim\!0.2$--$0.5$), and the vertical S-branch, including the near-degenerate $S$/$A$ pairs
+that differ only in the fifth--sixth digit (e.g.\ modes 2 and 3 at $0.96463$ vs.\ $0.96464$). This
+upgrades the incompressible-core anchor from a single eigenvalue to the full branch structure and
+exercises the dense full-spectrum path (Figure~\ref{fig:orszag-spectrum}).
 
-\textbf{Flow conditions.} $M_e=4.5$, $R=1500$, $\omega=0.23$, $\beta=0$,
-$Pr=0.7$, $\gamma=1.4$, adiabatic (insulated) wall; $T_0=611.11$~K,
-$T_e\approx121.0$~K, Sutherland $S=110.33$~K; $L^\ast$ length scale.
-
-\textbf{Quantity compared.} The spatial streamwise eigenvalue
-$\alpha=\alpha_r+\imag\alpha_i$ of the discrete second (Mack) mode.
-
-\textbf{Result --- \emph{agrees}.} pyMack gives
-$\alpha=0.2533998-0.0024898\,\imag$ against Malik's $0.2534048-0.0024921\,\imag$:
-$\alpha_r$ relative error $1.95\times10^{-5}$ ($0.002\,\%$, essentially exact),
-$\alpha_i$ relative error $9.16\times10^{-4}$ ($0.09\,\%$), phase speed
-$c=0.9077$ ($N=120$). The $\sim\!0.1\,\%$ $\alpha_i$ deviation is far inside the
-published inter-method spread for this case (Tumin 2007 recomputes
-$\alpha_i=-0.0027738$, $\sim\!11\,\%$ from Malik; Xi/Ren/Fu's own solver gives
-$-0.002780$). This is the repository's Layer-4b CI gate (Figure~\ref{fig:malik6}).
-
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.75\linewidth]{../verification/second_mode/malik_case6/overlay.png}
-\caption{Malik (1990) case~6: pyMack's spatial second-mode eigenvalue overlaid
-on the published value ($M_e=4.5$, adiabatic). $\alpha_r$ matches to
-$0.002\,\%$, $\alpha_i$ to $0.09\,\%$.}
-\label{fig:malik6}
+\includegraphics[width=0.72\linewidth]{../verification/other/orszag_spectrum/overlay.png}
+\caption{Orszag Table~5 \cite{orszag1971}: \texttt{pyMack}'s plane-Poiseuille Orr--Sommerfeld
+spectrum (circles) over the 32 tabulated eigenvalues (crosses), $\alpha=1$, $R=10\,000$. The
+classic ``Y''-shaped spectrum (A-, P-, and S-branches), with every tabulated mode matched to
+$<10^{-5}$.}
+\label{fig:orszag-spectrum}
 \end{figure}
 
-\subsection{Balakumar \& Malik (1992) --- discrete/continuous spectrum topology}
+\FloatBarrier
+%=====================================================================
+\section{Compressible eigenvalue anchors}
+\label{sec:anchors}
+%=====================================================================
+
+\subsection{Malik (1990): compressible eigenvalue anchors}
+\label{sec:malik}
+
+\paragraph{Reference.} Malik \cite{malik1990}, the standard tabulated compressible-LST
+test-case suite. Case~6 (Table~IX, the $M=4.5$ spatial second mode) is the repository's
+long-standing anchor, cross-checked digit-for-digit against Xi, Ren \& Fu \cite{xirenfu2020} and
+Hildebrand et al.\ \cite{hildebrand2018}. Cases 3, 4, 5 (Tables~IV/V/VI) and the grid-refinement
+case of Table~X had been logged non-reproducible for want of their dimensional conditions
+(\cite{hildebrand2018} lists only $M$ and $R$), until Malik's own Table~I supplied the missing
+$T_0$ and wall temperatures (in particular case~4's \emph{cooled} wall $T_w/T_{\rm adb}=0.1$, which
+earlier attempts had assumed adiabatic), unlocking all four.
+
+\paragraph{Conditions.} All cases share $Pr=0.7$, $\gamma=1.4$, Sutherland $S=110.33$~K, $L^\ast$
+length scale. The suite spans $M=2.5$--$10$, temporal (fixed real $\alpha$, complex $\omega$) and
+spatial (fixed real $\omega$, complex $\alpha$) formulations, and adiabatic and cooled walls.
+Case~3 ($M=2.5$, oblique $\beta=0.1$) is a first mode; the rest are second (Mack) modes.
+
+\paragraph{Result: \emph{agrees} (4 of 5), \emph{acceptable} (Table X).}
+Table~\ref{tab:malik}. Every real part ($\alpha_r$ or $\omega_r$) is essentially exact
+($\le0.14\,\%$), fixing each mode and its phase speed; four of the five \emph{agree}. The one
+\emph{acceptable} is Table~X's \emph{spatial} $\alpha_i$ ($11.5\,\%$), which is exactly the documented
+hypersonic-second-mode inter-method spread (Tumin's recomputation of case~6's $\alpha_i$ from
+Malik's printed value differs by $\sim\!11\,\%$ in the same way, and the solver of
+\cite{xirenfu2020} gives $-0.002780$). Notably the \emph{temporal} $M=10$ growth rates (cases 4, 5)
+match to $\sim\!2\,\%$, so the spatial $\alpha_i$ is the more formulation-sensitive quantity.
+Case~5 is Malik's deliberately near-neutral ``severe test'': his own SDSP scheme flips $\omega_i$
+negative at coarse resolution, yet \texttt{pyMack} lands on his converged value
+(Figure~\ref{fig:malik5}).
+
+\begin{table}[htbp]
+\centering\small
+\caption{The Malik \cite{malik1990} compressible eigenvalue anchors. Spatial cases (6, X) compare
+the complex wavenumber $\alpha$; temporal cases (3--5) compare the complex frequency $\omega$. CI
+gates: \texttt{validation/test\_malik1990\_case\{3,4,5,6\}\_anchor.py} and
+\texttt{..\_tableX\_anchor.py}.}
+\label{tab:malik}
+\begin{tabular}{@{}p{1.5cm}p{3.1cm}p{3.2cm}p{3.2cm}l@{}}
+\toprule
+Case & Conditions & pyMack & Malik & Verdict \\
+\midrule
+6 (Tab.~IX) & $M4.5$ adiab., spatial 2nd & $0.253400{-}0.002490\,\imag$ & $0.253405{-}0.002492\,\imag$ & agrees \\
+3 (Tab.~IV) & $M2.5$ oblique, temporal 1st & $0.036735{+}0.000584\,\imag$ & $0.036734{+}0.000584\,\imag$ & agrees \\
+4 (Tab.~V) & $M10$ cooled, temporal 2nd & $0.097457{+}0.001988\,\imag$ & $0.097484{+}0.002030\,\imag$ & agrees \\
+5 (Tab.~VI) & $M10$ adiab., temporal 2nd & $0.115862{+}0.000156\,\imag$ & $0.115865{+}0.000153\,\imag$ & agrees \\
+X (Tab.~X) & $M10$ cooled, spatial 2nd & $0.095803{-}0.002403\,\imag$ & $0.095933{-}0.002156\,\imag$ & acceptable \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\linewidth]{../verification/second_mode/malik_case5/overlay.png}
+\caption{Malik case~5 \cite{malik1990} ($M=10$ adiabatic, the deliberately near-neutral ``severe
+test''): \texttt{pyMack} (diamond) lands on Malik's converged value (star) and his 4CD/MDSP
+cluster, while his own 2FD scheme sits high and SDSP flips $\omega_i$ negative;
+\texttt{pyMack} reproduces the case Malik built to break solvers.}
+\label{fig:malik5}
+\end{figure}
+
+\subsection{Malik (1990) Fig.~4: M10 second-mode eigenfunction}
+\label{sec:malik-fig4}
+
+\paragraph{Reference.} Malik \cite{malik1990}, Fig.~4: the disturbance eigenfunctions of the same
+$M=10$ cooled-wall condition as case~4. The comparison uses the temperature eigenfunction
+$\hat T$ (real and imaginary parts), the dominant, cleanly traceable curves; the small velocity
+and pressure eigenfunctions overlap near the axis and are not reliably digitisable, so they are
+omitted.
+
+\paragraph{Quantity.} The eigen\emph{vector} structure: every other anchor in this document
+checks eigen\emph{values}; this is the eigenfunction (mode-shape) check. The complex temperature
+eigenfunction $\hat T(y)$, normalised so that $\hat T_r$ peaks at $+1$ (Malik's convention, which
+fixes the eigenvector's single global phase).
+
+\paragraph{Result: \emph{agrees}.} Both the real and imaginary temperature eigenfunctions lie
+on the digitised Fig.~4 points (Figure~\ref{fig:malik-fig4}). \texttt{pyMack}'s $\hat T_r$ traces
+the near-wall negative lobe, the zero crossing near $y\!\approx\!6$, and the sharp unit peak at
+$y=13.3$ ($\approx\delta^\ast$) against Malik's $\approx13$ (a $2.3\,\%$ location match, RMS $0.05$
+over $0\!<\!y\!<\!20$). \texttt{pyMack}'s $\hat T_i$ reproduces the same double-lobed shape,
+a positive hump ($\approx0.45$) near $y\!\approx\!11$ and a negative dip ($\approx-0.5$) near
+$y\!\approx\!15$, to RMS $0.08$. Under the \emph{single} global phase that makes $\hat T_r$ real
+at its peak, \emph{both} parts agree, so the temperature eigenvector is validated in full, not
+merely its peak location. The temperature fluctuation dominates the velocity
+($|\hat T|/|\hat u|\approx14$), the hallmark of the hypersonic Mack mode.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\linewidth]{../verification/second_mode/malik_fig4_eigenfunction/overlay.png}
+\caption{Malik Fig.~4 \cite{malik1990}, $M=10$ second-mode temperature eigenfunction
+(\emph{agrees}): \texttt{pyMack}'s $\hat T_r$ (solid) and $\hat T_i$ (dashed) curves over the
+digitised points, profile orientation ($y$ vertical), normalised so $\hat T_r$ peaks at $+1$.
+Both parts match under a single global phase: $\hat T_r$ (near-wall lobe, unit peak at $y=13.3$
+vs.\ $\approx13$, RMS $0.05$) and $\hat T_i$ (the $+0.45$ hump at $y\!\approx\!11$ and $-0.5$ dip
+at $y\!\approx\!15$, RMS $0.08$).}
+\label{fig:malik-fig4}
+\end{figure}
+
+\subsection{Balakumar \& Malik (1992): discrete/continuous spectrum topology}
 \label{sec:bm1992}
 
-\textbf{Reference source.} P.~Balakumar \& M.~R. Malik, ``Discrete modes and
-continuous spectra in supersonic boundary layers'' (1992) \emph{J.\ Fluid Mech.}
-\textbf{239}:631--656. The paper presents its branches graphically; no tabulated
-branch eigenvalues are openly recoverable, so this is a qualitative branch-
-topology check plus a fully-specified spatial second-mode cross-check.
+\paragraph{Reference.} Balakumar \& Malik \cite{balakumar1992}. The paper presents its branches
+graphically; no tabulated branch eigenvalues are openly recoverable, so this is a qualitative
+branch-topology check plus a fully specified spatial second-mode cross-check.
 
-\textbf{Flow conditions.} $M=4.5$, $T_0=311$~K, $Re=1000$, $\omega=0.2$,
-adiabatic (insulated) wall.
+\paragraph{Conditions.} $M=4.5$, $T_0=311$~K, $Re=1000$, $\omega=0.2$, adiabatic (insulated) wall.
 
-\textbf{Quantity compared.} (a) the topology --- separation of the discrete
-second mode from the continuous spectrum in the complex-$\alpha$ plane; (b) the
-discrete spatial eigenvalue $\alpha$.
+\paragraph{Quantity.} (a) The topology, the separation of the discrete second mode from the
+continuous spectrum in the complex-$\alpha$ plane; (b) the discrete spatial eigenvalue $\alpha$.
 
-\textbf{Result --- \emph{acceptable}.} pyMack's full spatial spectrum reproduces
-B\&M's qualitative topology: the discrete second mode sits at
-$\alpha=0.220210-0.002787\,\imag$ ($c=0.9082$) --- matching the published
-$0.220-0.003091\,\imag$ ($\alpha_r$ $0.10\,\%$, $\alpha_i$ $9.8\,\%$) --- and is
-the unique least-damped root in the second-mode phase-speed band, while a cluster
-of 93 roots accumulates at the freestream phase speed $c\!\to\!1$ (the continuous
-spectrum). \textbf{Honest caveat:} the separation is in the phase-speed/growth-
-rate sense, \emph{not} a crisp Euclidean gap --- the discretised continuum is
-dense in $\alpha_r$, so the nearest other eigenvalue is only $0.019$ away
-(separation ratio $0.09$) and 42 roots fall within $10\,\%$ of $|\alpha_{\rm
-disc}|$. That is the expected discretisation signature of the continuous spectrum
-crowding the discrete mode, hence \emph{acceptable} (topology correct) rather
-than \emph{agrees} (which would need a clean Euclidean gap).
+\paragraph{Result: \emph{acceptable}.} \texttt{pyMack}'s full spatial spectrum reproduces the
+published qualitative topology: the discrete second mode sits at
+$\alpha=0.220210-0.002787\,\imag$ ($c=0.9082$), matching the published
+$0.220-0.003091\,\imag$ ($\alpha_r$ $0.10\,\%$, $\alpha_i$ $9.8\,\%$), and is the unique
+least-damped root in the second-mode phase-speed band, while a cluster of 93 roots accumulates at
+the freestream phase speed $c\!\to\!1$ (the continuous spectrum). A caveat: the separation is in
+the phase-speed/growth-rate sense, \emph{not} a crisp Euclidean gap: the discretised continuum
+is dense in $\alpha_r$, so the nearest other eigenvalue is only $0.019$ away (separation ratio
+$0.09$) and 42 roots fall within $10\,\%$ of $|\alpha_{\rm disc}|$. That is the expected
+discretisation signature of the continuous spectrum crowding the discrete mode, hence
+\emph{acceptable} (topology correct) rather than \emph{agrees} (which would require a clean
+Euclidean gap). A companion row, \texttt{balakumar\_malik1992\_via\_xirenfu}, treats the same
+condition purely as a spatial second-mode anchor: \texttt{pyMack}
+$\alpha=0.2202103-0.0027906\,\imag$ gives $\alpha_r$ relative error $0.096\,\%$ (essentially
+exact) and $\alpha_i$ relative error $9.7\,\%$, the same $\sim\!10\,\%$ inter-method
+$\alpha_i$ spread seen on Malik case~6 (Figure~\ref{fig:bm1992}).
 
-A companion row, \texttt{balakumar\_malik1992\_via\_xirenfu}, treats the same
-condition purely as a spatial second-mode anchor: pyMack
-$\alpha=0.2202103-0.0027906\,\imag$ gives $\alpha_r$ relative error $0.096\,\%$
-(essentially exact) and $\alpha_i$ relative error $9.7\,\%$ --- the same
-$\sim\!10\,\%$ inter-method $\alpha_i$ spread seen on Malik case~6
-(Figure~\ref{fig:bm1992}).
-
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.75\linewidth]{../verification/second_mode/balakumar_malik1992_branches/overlay.png}
-\caption{Balakumar \& Malik (1992), $M=4.5$: pyMack's complex-$\alpha$ spectrum
-showing the discrete second mode separated (in phase speed / growth rate) from
-the continuous-spectrum cluster near $c\!\to\!1$. Topology correct; the
-$\alpha_r$-dense continuum precludes a crisp Euclidean gap.}
+\caption{Balakumar \& Malik \cite{balakumar1992}, $M=4.5$: \texttt{pyMack}'s complex-$\alpha$
+spectrum showing the discrete second mode separated (in phase speed / growth rate) from the
+continuous-spectrum cluster near $c\!\to\!1$. Topology correct; the $\alpha_r$-dense continuum
+precludes a crisp Euclidean gap.}
 \label{fig:bm1992}
 \end{figure}
 
 \FloatBarrier
-\section{Second mode --- curves and families}
+%=====================================================================
+\section{Second mode: curves and families}
 \label{sec:secondmode}
+%=====================================================================
+Having pinned the compressible operator at single points, the following cases test full
+growth-rate and neutral curves; the second mode is \texttt{pyMack}'s design target.
 
-\bridge{Having pinned the compressible operator at single points, we test full
-growth-rate curves --- the second mode is pyMack's design target.}
-
-\subsection{Mack (1984) Fig.~10.6 --- second-mode growth vs.\ Reynolds number}
+\subsection{Mack (1984) Fig.~10.6: second-mode growth vs.\ Reynolds number}
 \label{sec:mack106}
 
-\textbf{Reference source.} L.~M. Mack, ``Boundary-layer linear stability
-theory'' (1984), AGARD Report R-709, Fig.~10.6.
+\paragraph{Reference.} Mack \cite{mack1984}, Fig.~10.6.
 
-\textbf{Flow conditions.} Air, adiabatic wall, 2-D wave ($\psi=0^\circ$), at
-$M=4.5$, $5.8$, $7$, and $10$. Two modelling choices make the comparison
-defensible: the cold \texttt{table\_11\_1} edge state (resolving a historical
-$\sim\!6\times$ gap that was an edge-temperature error) and a wall-normal domain
-$y_{\max}\approx4\,\delta^\ast/L^\ast$ that grows with Mach ($y_{\max}=40$ at
-M4.5 up to $140$ at M10; a fixed short box starves the thick high-Mach boundary
-layer).
+\paragraph{Conditions.} Air, adiabatic wall, 2-D wave ($\psi=0^\circ$), at $M=4.5$, $5.8$, $7$, and
+$10$. Two modelling choices make the comparison defensible: the cold \texttt{table\_11\_1} edge
+state (resolving a historical $\sim\!6\times$ gap that was an edge-temperature error) and a
+wall-normal domain $y_{\max}\approx4\,\delta^\ast/L^\ast$ that grows with Mach ($y_{\max}=40$ at
+M4.5 up to $140$ at M10; a fixed short box starves the thick high-Mach boundary layer).
 
-\textbf{Quantity compared.} The maximum second-mode temporal growth rate
-$\omega_{i,\max}$ as a function of $R$ (Mack's $L^\ast$ scale, temporal second
-mode $c_r\approx0.9$).
+\paragraph{Quantity.} The maximum second-mode temporal growth rate $\omega_{i,\max}$ as a function
+of $R$ (Mack's $L^\ast$ scale, temporal second mode $c_r\approx0.9$).
 
-\textbf{Result --- \emph{agrees}/\emph{acceptable}.} Median relative error over
-the overlapping $R$-stations: \textbf{M4.5: 1.0\,\%}, \textbf{M7: 2.8\,\%},
-\textbf{M10: 4.0\,\%} (all at/below the 5\,\% digitisation floor, verdict
-\emph{agrees}); \textbf{M5.8: 6.7\,\%} (a small residual above the floor, verdict
-\emph{acceptable}). The family agrees from M4.5 to M10, so the M5.8 residual is
-local, \emph{not} a monotonic high-Mach under-prediction. Here the M4.5
-and M10 endpoints are shown as representatives (Figures~\ref{fig:mack106_m45}
-and \ref{fig:mack106_m100}; the M5.8 and M7 overlays exist under
-the \texttt{mack\_fig10\_6\_M58} and \texttt{\_M70} directories and are tabulated
-above rather than embedded, to keep the page count in check).
+\paragraph{Result: \emph{agrees}/\emph{acceptable}.} Median relative error over the overlapping
+$R$-stations: \textbf{M7: 2.8\,\%}, \textbf{M10: 4.0\,\%} (at or below the 5\,\% digitisation
+floor, verdict \emph{agrees}); \textbf{M4.5: 6.0\,\%}, \textbf{M5.8: 8.9\,\%} (a residual above
+the floor, verdict \emph{acceptable}). The family agrees at M7 and M10, so the M4.5/M5.8 residuals
+are local, \emph{not} a monotonic high-Mach under-prediction. The M4.5 and M10 endpoints are shown
+as representatives (Figures~\ref{fig:mack106_m45} and \ref{fig:mack106_m100}); the M5.8 and M7
+overlays exist under the \texttt{mack\_fig10\_6\_M58} and \texttt{\_M70} directories and are
+covered by the tabulated verdicts, to keep the page count in check. A roll-up case
+\texttt{mack\_fig10\_6\_family} is reserved for the combined M4.5/5.8/7/10 verdict and is marked
+\emph{pending} in the matrix; the individual panels carry the actual verdicts.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.75\linewidth]{../verification/second_mode/mack_fig10_6_M45/overlay.png}
-\caption{Mack (1984) Fig.~10.6, $M=4.5$: pyMack $\omega_{i,\max}(R)$ (curve)
-over the digitised Mack points. Median relative error $1.0\,\%$ --- at the
+\caption{Mack Fig.~10.6 \cite{mack1984}, $M=4.5$: \texttt{pyMack} $\omega_{i,\max}(R)$ (curve)
+over the digitised points. Median relative error $6.0\,\%$, a small residual above the
 digitisation floor.}
 \label{fig:mack106_m45}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.75\linewidth]{../verification/second_mode/mack_fig10_6_M100/overlay.png}
-\caption{Mack (1984) Fig.~10.6, $M=10$: same comparison at the top of the Mach
-range. Median relative error $4.0\,\%$ with the domain-converged
-($y_{\max}=140$), cold-edge second mode.}
+\caption{Mack Fig.~10.6 \cite{mack1984}, $M=10$: the same comparison at the top of the Mach range.
+Median relative error $4.0\,\%$ with the domain-converged ($y_{\max}=140$), cold-edge second
+mode.}
 \label{fig:mack106_m100}
 \end{figure}
 
-\remark{Pending family aggregate.}{A roll-up case
-\texttt{mack\_fig10\_6\_family} is reserved for the combined M4.5/5.8/7/10
-verdict but is marked \emph{pending} in the matrix; the individual panels above
-carry the actual verdicts.}
-
-\subsection{Egorov et al.\ (2006) --- Mach 6 flat-plate second mode}
+\subsection{Egorov et al.\ (2006): Mach-6 flat-plate second mode}
 \label{sec:egorov}
 
-\textbf{Reference source.} I.~Egorov, A.~Fedorov \& V.~Soudakov (2006)
-\emph{Theor.\ Comput.\ Fluid Dyn.} \textbf{20}:41--54
-(DOI 10.1007/s00162-006-0027-9): 2-D DNS second-mode growth over a Mach-6
-adiabatic flat plate, reported to agree with LST.
+\paragraph{Reference.} Egorov, Fedorov \& Soudakov \cite{egorov2006}: 2-D DNS second-mode growth
+over a Mach-6 adiabatic flat plate, reported to agree with LST.
 
-\textbf{Flow conditions.} Perfect gas $\gamma=1.4$, $Pr=0.72$, power-law
-viscosity $\mu/\mu_e=(T/T_e)^{0.7}$; $M_\infty=6$, $Re_L=2\times10^6$, adiabatic
-wall; mode-S circular frequency $\omega\approx200$ (plate-length units) at the
-synchronisation station $x=1$ ($R=\sqrt{2\times10^6}=1414$).
+\paragraph{Conditions.} Perfect gas $\gamma=1.4$, $Pr=0.72$, power-law viscosity
+$\mu/\mu_e=(T/T_e)^{0.7}$; $M_\infty=6$, $Re_L=2\times10^6$, adiabatic wall; mode-S circular
+frequency $\omega\approx200$ (plate-length units) at the synchronisation station $x=1$
+($R=\sqrt{2\times10^6}=1414$).
 
-\textbf{Quantity compared.} The second-mode instability band and the
-most-amplified dimensionless frequency. \textbf{Honest caveat:} the paper
-presents the DNS-vs-LST comparison as a growth-rate-vs-$x$ curve with no printed
-growth-rate digit, so no $\le$5\,\% numeric anchor exists; the verdict metric is
+\paragraph{Quantity.} The second-mode instability band and the most-amplified dimensionless
+frequency. A caveat: the paper presents the DNS-vs-LST comparison as a growth-rate-vs-$x$ curve
+with no printed growth-rate digit, so no $\le$5\,\% numeric anchor exists; the verdict metric is
 the frequency match.
 
-\textbf{Result --- \emph{acceptable}.} pyMack's discrete second mode
-($c_r\approx0.92$--$0.94$) is unstable across $\omega_E\in[140,260]$ (bracketing
-Egorov's $\omega=200$), most-amplified at $\omega_E\approx215$ ($7.5\,\%$ from
-$200$); at exactly $\omega=200$ the spatial growth is
-$-\alpha_i=2.90\times10^{-3}$ with $c_r=0.934$. pyMack thus places the M6
-second-mode instability squarely in Egorov's stated band with the amplified
-frequency essentially on top of their forcing choice (Figure~\ref{fig:egorov}).
+\paragraph{Result: \emph{acceptable}.} \texttt{pyMack}'s discrete second mode
+($c_r\approx0.92$--$0.94$) is unstable across $\omega_E\in[140,260]$ (bracketing the reference
+forcing $\omega=200$), most-amplified at $\omega_E\approx215$ ($7.5\,\%$ from $200$); at exactly
+$\omega=200$ the spatial growth is $-\alpha_i=2.90\times10^{-3}$ with $c_r=0.934$.
+\texttt{pyMack} thus places the M6 second-mode instability squarely in the stated band with the
+amplified frequency essentially on top of the reference forcing choice (the
+\texttt{egorov2006\_m6} overlay is on disk but not embedded here).
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.75\linewidth]{../verification/second_mode/egorov2006_m6/overlay.png}
-\caption{Egorov et al.\ (2006), Mach 6 adiabatic flat plate: pyMack's
-second-mode growth vs.\ frequency, unstable band $\omega_E\in[140,260]$,
-peak at $\omega_E\approx215$ (Egorov forced $\omega=200$).}
-\label{fig:egorov}
-\end{figure}
-
-\subsection{Ma \& Zhong (2003) Fig.~15 --- M4.5 second-mode neutral curve}
+\subsection{Ma \& Zhong (2003) Fig.~15: M4.5 second-mode neutral curve}
 \label{sec:mazhong}
 
-\textbf{Reference source.} X.~Ma \& X.~Zhong (2003) \emph{J.\ Fluid Mech.}
-\textbf{488}:31--78, \S6 / Fig.~15: full neutral curves $\omega(R)$ for the
-first and second mode at $M=4.5$, with the second-mode branch points quoted
-in text at $R=806$ (branch~I) and $R=999.6$ (branch~II) for $F=2.2\times10^{-4}$.
+\paragraph{Reference.} Ma \& Zhong \cite{mazhong2003}, \S6 / Fig.~15: full neutral curves
+$\omega(R)$ for the first and second mode at $M=4.5$, with the second-mode branch points quoted in
+text at $R=806$ (branch~I) and $R=999.6$ (branch~II) for $F=2.2\times10^{-4}$.
 
-\textbf{Flow conditions.} Air, adiabatic wall, 2-D ($\psi=0^\circ$), $M=4.5$,
-$T_e=65.15$~K, unit $Re=7.2\times10^6$/m, Sutherland $S=110.33$~K, $Pr=0.72$,
-$\gamma=1.4$; spatial formulation at fixed $F=2.2\times10^{-4}$.
+\paragraph{Conditions.} Air, adiabatic \emph{mean} wall, 2-D ($\psi=0^\circ$), $M=4.5$,
+$T_e=65.15$~K, unit $Re=7.2\times10^6$/m, Sutherland $S=110.33$~K, $Pr=0.72$, $\gamma=1.4$;
+spatial formulation at fixed $F=2.2\times10^{-4}$. The \emph{disturbance} temperature wall
+condition is isothermal ($\hat{T}|_{w}=0$), which the authors state they used for the Fig.~15
+neutral curve.
 
-\textbf{Quantity compared.} The full neutral curve $\omega(R)$ traced by
-pyMack's $-\alpha_i=0$ contour, anchored against the two second-mode branch
-points Ma \& Zhong quote in text at $F=2.2\times10^{-4}$.
+\paragraph{Quantity.} The full neutral curve $\omega(R)$ traced by \texttt{pyMack}'s
+$-\alpha_i=0$ contour, anchored against the two second-mode branch points quoted in the text at
+$F=2.2\times10^{-4}$.
 
-\textbf{Result --- \emph{agrees}.} pyMack's second-mode neutral band
-reproduces the closed loop of Fig.~15 (nose near $R\approx280$, upper branch
-$\omega\approx0.225$, lower branch $\omega\approx0.18$) to $\sim\!3$--$5\,\%$
-across the full range. At the quoted $F=2.2\times10^{-4}$ station, pyMack's
-band crosses at $R=831$ (branch~I, vs.\ $806$, $3.1\,\%$) and $R=1033.4$
-(branch~II, vs.\ $999.6$, $3.4\,\%$) --- both inside the \emph{agrees}
-threshold. The first-mode cutoff (upper) branch also tracks Fig.~15 well; the
-low-$\omega$ onset (lower) branch is only partially resolved, the same
-extraction limitation seen on the \"Ozgen cases below (Figure~\ref{fig:mazhong}).
+\paragraph{Result: \emph{agrees}.} \texttt{pyMack}'s second-mode neutral band reproduces the
+closed loop of Fig.~15 (nose near $R\approx280$, upper branch $\omega\approx0.225$, lower branch
+$\omega\approx0.18$) across the full range. At the quoted $F=2.2\times10^{-4}$ station,
+\texttt{pyMack}'s band crosses at $R=786.6$ (branch~I, vs.\ $806$, $2.4\,\%$) and $R=1009.9$
+(branch~II, vs.\ $999.6$, $1.0\,\%$), comfortably inside the \emph{agrees} threshold. (Using
+the adiabatic disturbance condition by mistake gives $831$/$1033$, i.e.\ $3.1\,\%$/$3.4\,\%$;
+switching to the paper's actual isothermal disturbance condition is a correction, not a fit, and
+tightens the match.) The first-mode \emph{cutoff} (upper) branch, re-extracted with the
+discrete-mode selector (freestream decay $+$ $y_{\max}$-stationarity, replacing the earlier
+phase-speed-band classifier), tracks Fig.~15's upper branch to $\sim\!3.5\,\%$ median. The
+low-$\omega$ \emph{onset} (lower) branch is \emph{not} recovered: below $\omega\approx0.03$ the
+2-D first mode ($c_r\!\lesssim\!0.45$) delocalises into the slow-acoustic continuous spectrum
+($c_r\le1-1/M=0.778$), leaving no clean discrete eigenmode. This truncation is consistent across
+\texttt{pyMack}'s spatial and temporal collocation solvers and a QR-shooting variant, and a
+wave-angle sweep confirms the 2-D mode is the \emph{most} unstable here (so this is a 2-D, not an
+oblique, first mode). Recovering the onset branch would need a compound-matrix shooting solver
+robust to the near-continuous-spectrum decay rates; it is filed as an open item in the companion
+note \texttt{work\_in\_progress.tex} (Figure~\ref{fig:mazhong}).
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.75\linewidth]{../verification/second_mode/mazhong2003_m4p5/overlay.png}
-\caption{Ma \& Zhong (2003) Fig.~15, $M=4.5$ (\emph{agrees}): pyMack's traced
-neutral band over the digitised curve. Second-mode branch points at
-$F=2.2\times10^{-4}$ match to $3.1\,\%$ ($R=831$ vs.\ $806$) and $3.4\,\%$
-($R=1033.4$ vs.\ $999.6$).}
+\includegraphics[width=0.85\linewidth]{../verification/second_mode/mazhong2003_m4p5/overlay_fig15_full.png}
+\caption{Ma \& Zhong Fig.~15 \cite{mazhong2003}, $M=4.5$ (\emph{agrees}, on the second mode):
+\texttt{pyMack}'s second-mode neutral loop (orange) over the pixel-digitised Fig.~15 points,
+matching the branch points at $F=2.2\times10^{-4}$ to $2.4\,\%$ ($R=786.6$ vs.\ $806$) and
+$1.0\,\%$ ($R=1009.9$ vs.\ $999.6$) under the isothermal disturbance condition. The first-mode
+\emph{cutoff} branch (blue), re-extracted with the discrete-mode selector, tracks the digitised
+upper branch to $\sim\!3.5\,\%$; the first-mode \emph{onset} (shaded band) is
+continuous-spectrum-limited --- the long-wavelength mode delocalises into the continuous spectrum,
+a limit shared by all of \texttt{pyMack}'s collocation and QR-shooting methods (see text).}
 \label{fig:mazhong}
 \end{figure}
 
 \FloatBarrier
-\section{First mode --- curves and families}
+%=====================================================================
+\section{First mode: curves and families}
 \label{sec:firstmode}
+%=====================================================================
+The first mode was \texttt{pyMack}'s documented weak spot. After a reference-digitisation
+correction, most of the Mack first-mode figures now agree or are acceptable; the remaining
+disagreement is narrow and isolated to the $M\approx2.2$ cases (Fig.~10.1 M2.2 and Fig.~10.3
+M2.2), a genuine under-amplification / too-high critical Reynolds number at that Mach rather than
+a general trend, and is tracked in the companion note \texttt{work\_in\_progress.tex}. This
+section reports the Mack first-mode figures; the \"Ozgen--K{\i}rcal{\i} neutral-curve family,
+whose panels contain first-mode branches alongside second-mode ones, is treated separately in
+Section~\ref{sec:mixedmode}.
 
-\bridge{The first mode is pyMack's documented weak spot. We show both the
-successes (\"Ozgen where the discrete mode is resolvable) and the honest
-failures (the Mack first-mode figures).}
-
-\problembox{The first mode agrees with \"Ozgen at moderate Mach where the
-discrete eigenfunction is cleanly extractable, but at low Mach the onset is
-continuous-spectrum-limited and the Mack Fig.~10.1/10.3/10.4 first modes
-disagree --- a documented under-amplification / too-high critical Reynolds
-number computed through a separate solver path.}
-
-\subsection{\"Ozgen \& K\i rcal\i\ (2008) Fig.~3 --- first-mode neutral curves}
-\label{sec:ozgen}
-
-\textbf{Reference source.} S.~\"Ozgen \& S.~A. K\i rcal\i\ (2008), first-mode
-neutral curves, Fig.~3 (M = 2, 3, 4, 6, 7, 8, 10).
-
-\textbf{Flow conditions.} Air, adiabatic wall, 2-D ($\psi=0^\circ$); temporal
-neutral contour ($c_i=0$) in the $(Re_L,\alpha_L)$ plane.
-
-\textbf{Quantity compared.} The neutral-curve branches $\alpha_L(Re_L)$.
-
-\textbf{Result --- \emph{agrees}/\emph{acceptable}.} After the references were
-re-digitised correctly and a discrete-mode extractor (eigenfunction-decay
-$+$ $y_{\max}$-stationarity) replaced the earlier $c_r$-band classifier that had
-excluded the genuine first mode, the picture is:
-\begin{itemize}[leftmargin=1.4em,itemsep=1pt]
-\item \textbf{M4 --- agrees} (Figure~\ref{fig:ozgen_m4}). Complete two-lobe match:
-both second-mode branches at the digitisation floor ($0\,\%$ upper / $0\,\%$
-lower), first-mode cutoff $2\,\%$ over $\sim\!85\,\%$ coverage; only the deep
-low-$\alpha$ first-mode onset tracks at $32\,\%$.
-\item \textbf{M2, M3, M6 --- acceptable} (Figures~\ref{fig:ozgen_m2},
-\ref{fig:ozgen_m6}). M2 traces both branches over the full
-$R$-range by eigenvalue continuation (lower $7\,\%$, upper $8\,\%$); M3 first-mode
-cutoff $6\,\%$ where resolvable (onset continuous-spectrum-blocked); M6 four
-branches with second-mode upper $2\,\%$, lower $3\,\%$, first cutoff $9\,\%$,
-first onset $50\,\%$.
-\item \textbf{M7, M8, M10 --- acceptable (topology caveat).} The dominant
-second-mode cutoff branch agrees ($2$--$6\,\%$), but pyMack predicts a
-\emph{connected} first--second-mode band where \"Ozgen shows two lobes separated
-by a stable gap. This is a documented connected-vs-separated topology difference
-(inter-mode over-prediction at high Mach), not a second-mode-curve error.
-\end{itemize}
-A separate growth-contour case \texttt{ozgen\_fig3\_lobes} \textbf{disagrees}
-($c_i=0.004$ lobe median $18.8\,\%$, and the interior $c_i=0.012$ M2 lobe is
-absent because pyMack's peak M2 growth $c_{i,\max}=0.0109<0.012$) --- the same
-open-lobe / under-amplification discrepancy. A combined all-Mach overlay exists
-at \texttt{figures/ozgen\_fig3\_overlay.png}. To hold the page count, only M2,
-M4, and M6 are embedded below; the M3/M7/M8/M10 overlays exist under the respective
-\texttt{ozgen\_m3} through \texttt{ozgen\_m10} directories and are covered by the
-tabulated verdicts above.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.75\linewidth]{../verification/first_mode/ozgen_m4/overlay.png}
-\caption{\"Ozgen \& K\i rcal\i\ (2008) Fig.~3, $M=4$ (\emph{agrees}): pyMack
-reproduces the entire two-lobe neutral structure --- both second-mode branches
-at the digitisation floor and the first-mode cutoff to $2\,\%$.}
-\label{fig:ozgen_m4}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.75\linewidth]{../verification/first_mode/ozgen_m2/overlay.png}
-\caption{\"Ozgen $M=2$ (\emph{acceptable}): both first-mode branches over the
-full $R$-range by eigenvalue continuation (lower $7\,\%$, upper $8\,\%$).}
-\label{fig:ozgen_m2}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.75\linewidth]{../verification/first_mode/ozgen_m6/overlay.png}
-\caption{\"Ozgen $M=6$ (\emph{acceptable}): four branches; second-mode upper/lower
-$2$/$3\,\%$ and first cutoff $9\,\%$ agree, only the deep low-$\alpha$ first-mode
-onset ($50\,\%$) is extraction-limited.}
-\label{fig:ozgen_m6}
-\end{figure}
-
-\subsection{Mack (1984) Fig.~10.1 --- first-mode neutral loop}
+\subsection{Mack (1984) Fig.~10.1: first-mode neutral loop}
 \label{sec:mack101}
 
-\textbf{Reference source.} Mack (1984) AGARD-R-709, Fig.~10.1, the innermost
-(Complete-Equations) neutral loop, re-digitised from p.~90 with both branches
-plus nose.
+\paragraph{Reference.} Mack \cite{mack1984}, Fig.~10.1, the innermost (complete-equations) neutral
+loop, re-digitised with both branches plus nose.
 
-\textbf{Flow conditions.} Air, adiabatic wall, 2-D ($\psi=0^\circ$), at
-$M=1.6$ and $M=2.2$; temporal neutral loop ($c_i=0$) in $(R, F\!\times\!10^4)$.
+\paragraph{Conditions.} Air, adiabatic wall, 2-D ($\psi=0^\circ$), at $M=1.6$ and $M=2.2$;
+temporal neutral loop ($c_i=0$) in $(R, F\!\times\!10^4)$.
 
-\textbf{Quantity compared.} The first-mode neutral loop (lower onset $+$ upper
-cutoff branches) and the critical Reynolds number.
+\paragraph{Quantity.} The first-mode neutral loop (lower onset $+$ upper cutoff branches) and the
+critical Reynolds number.
 
-\textbf{Result --- \emph{disagrees}.} At \textbf{M1.6}, loop-average median
-$|\Delta F|/F = 37\,\%$ (lower $34\,\%$, upper $39\,\%$), critical $R$ pyMack
-$\sim\!400$ vs.\ Mack $\sim\!215$ ($86\,\%$). At \textbf{M2.2}, loop-average
-$128\,\%$; here the critical $R$ actually matches (pyMack $300$ vs.\ Mack $300$)
-but the branch frequencies are $\sim\!2\times$ high. pyMack's loop is wider/higher
-than Mack's Complete loop --- its upper branch overlies the Dunn--Lin
-numerical/asymptotic loops rather than the Complete one (Figure~\ref{fig:mack101_m16},
-shown for M1.6). This is the repository's
-documented low-Mach first-mode under-amplification / too-high critical-$R$ defect,
-and it is a genuine physics discrepancy (the corrected reference removed a prior
-reference-curve error; even at the generous end of the $\sim\!5$--$12\,\%$
-digitisation uncertainty the gap is robust).
+\paragraph{Result: \emph{acceptable} (M1.6).} At \textbf{M1.6}, loop-average median
+$|\Delta F|/F = 7.7\,\%$, critical $R$ \texttt{pyMack} $\sim\!300$ vs.\ Mack $\sim\!215$, within
+the acceptable band; the neutral loop closely tracks Mack's complete-equations loop after the
+corrected reference (Figure~\ref{fig:mack101_m16}). The companion $M=2.2$ loop \emph{disagrees}
+(loop-average $54.5\,\%$, critical $R$ \texttt{pyMack} $\sim\!400$ vs.\ Mack $\sim\!300$; a genuine
+first-mode under-amplification, robust even at the generous end of the $\sim\!5$--$12\,\%$
+digitisation uncertainty) and is documented in \texttt{work\_in\_progress.tex}.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.75\linewidth]{../verification/first_mode/mack_fig10_1_m1p6/overlay.png}
-\caption{Mack (1984) Fig.~10.1, $M=1.6$ (\emph{disagrees}): pyMack's first-mode
-neutral loop is wider/higher than Mack's Complete-Equations loop; critical
-$R\approx400$ vs.\ Mack's $\sim\!215$.}
+\caption{Mack Fig.~10.1 \cite{mack1984}, $M=1.6$ (\emph{acceptable}): \texttt{pyMack}'s first-mode
+neutral loop closely tracks Mack's complete-equations loop; loop-average $7.7\,\%$, critical
+$R\approx300$ vs.\ Mack's $\sim\!215$.}
 \label{fig:mack101_m16}
 \end{figure}
 
-\subsection{Mack (1984) Fig.~10.3 --- oblique first-mode growth vs.\ $R$}
+\subsection{Mack (1984) Fig.~10.3: oblique first-mode growth vs.\ $R$}
 \label{sec:mack103}
 
-\textbf{Reference source.} Mack (1984) AGARD-R-709, Fig.~10.3.
+\paragraph{Reference.} Mack \cite{mack1984}, Fig.~10.3.
 
-\textbf{Flow conditions.} Air (ideal, $Pr=0.72$), adiabatic wall; oblique waves
-at $M=1.3$ ($\psi=45^\circ$), $M=2.2$ ($\psi=45^\circ$), $M=3.0$ ($\psi=60^\circ$).
+\paragraph{Conditions.} Air (ideal, $Pr=0.72$), adiabatic wall; oblique waves at $M=1.3$
+($\psi=45^\circ$), $M=2.2$ ($\psi=45^\circ$), $M=3.0$ ($\psi=60^\circ$).
 
-\textbf{Quantity compared.} Maximum temporal growth $\omega_{i,\max}(R)$
-(first mode, optimised over wavenumber $\alpha$).
+\paragraph{Quantity.} Maximum temporal growth $\omega_{i,\max}(R)$ (first mode, optimised over
+wavenumber $\alpha$).
 
-\textbf{Result --- \emph{agrees}\,$\to$\,\emph{disagrees} with Mach.}
-\textbf{M1.3: agrees} --- curve median $3.8\,\%$, and the rigorous Table-10.1
-8th-order anchor matches to $0.91\,\%$. \textbf{M2.2: disagrees} --- curve median
-$32.2\,\%$ (convergence-checked: not a $y_{\max}$ or step-count artifact).
-\textbf{M3.0: disagrees} --- curve median $27.7\,\%$. Topology is correct in all
-three (single rising-then-turning first-mode branch); the growing error with
-Mach is the known first-mode under-amplification. A combined plot exists at
-\texttt{figures/mack\_fig10\_3\_overlay.png}. The three overlays live under the
-\texttt{mack\_fig10\_3\_m1p3} through \texttt{\_m3p0} directories; M1.3 and M2.2
-are embedded as the pass/fail contrast (Figures~\ref{fig:mack103_m13} and
-\ref{fig:mack103_m22}).
+\paragraph{Result: \emph{agrees}, with an isolated \emph{disagrees} at M2.2.}
+\textbf{M1.3: agrees}, with curve median $1.3\,\%$, and the rigorous Table-10.1 eighth-order
+anchor matches to $0.91\,\%$. \textbf{M2.2: disagrees}, with curve median $32.2\,\%$
+(convergence-checked: not a $y_{\max}$ or step-count artifact). \textbf{M3.0: agrees}, with curve
+median $3.4\,\%$.
+Topology is correct in all three (single rising-then-turning first-mode branch); M2.2 is the sole
+outlier rather than part of a growing-with-Mach trend. The three overlays live under the
+\texttt{mack\_fig10\_3\_m1p3} through \texttt{\_m3p0} directories; the $M=1.3$ success is embedded
+below, while the isolated $M=2.2$ \emph{disagrees} case is documented in
+\texttt{work\_in\_progress.tex}.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.75\linewidth]{../verification/first_mode/mack_fig10_3_m1p3/overlay.png}
-\caption{Mack (1984) Fig.~10.3, $M=1.3$, $\psi=45^\circ$ (\emph{agrees}):
-$\omega_{i,\max}(R)$ curve median $3.8\,\%$; Table-10.1 anchor $0.91\,\%$.}
+\caption{Mack Fig.~10.3 \cite{mack1984}, $M=1.3$, $\psi=45^\circ$ (\emph{agrees}):
+$\omega_{i,\max}(R)$ curve median $1.3\,\%$; Table-10.1 anchor $0.91\,\%$.}
 \label{fig:mack103_m13}
 \end{figure}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.75\linewidth]{../verification/first_mode/mack_fig10_3_m2p2/overlay.png}
-\caption{Mack (1984) Fig.~10.3, $M=2.2$, $\psi=45^\circ$ (\emph{disagrees}):
-correct topology but curve median $32.2\,\%$ --- the first-mode
-under-amplification, confirmed convergence-stable.}
-\label{fig:mack103_m22}
-\end{figure}
-
-\subsection{Mack (1984) Fig.~10.4 --- oblique first mode at high Mach}
+\subsection{Mack (1984) Fig.~10.4: oblique first mode at high Mach}
 \label{sec:mack104}
 
-\textbf{Reference source.} Mack (1984) AGARD-R-709, Fig.~10.4.
+\paragraph{Reference.} Mack \cite{mack1984}, Fig.~10.4.
 
-\textbf{Flow conditions.} Air, adiabatic wall; the high-Mach first mode is
-oblique-dominated, so growth is maximised over both $\alpha$ and wave angle
-$\psi$; $M=4.5$, $5.8$, $7$, $10$ with $y_{\max}\approx4\,\delta^\ast/L^\ast$.
+\paragraph{Conditions.} Air, adiabatic wall; the high-Mach first mode is oblique-dominated, so
+growth is maximised over both $\alpha$ and wave angle $\psi$; $M=4.5$, $5.8$, $7$, $10$ with
+$y_{\max}\approx4\,\delta^\ast/L^\ast$.
 
-\textbf{Quantity compared.} Maximum first-mode temporal growth
-$\omega_{i,\max}(R)$ optimised over $(\alpha,\psi)$.
+\paragraph{Quantity.} Maximum first-mode temporal growth $\omega_{i,\max}(R)$ optimised over
+$(\alpha,\psi)$.
 
-\textbf{Result --- \emph{acceptable}\,$\to$\,\emph{disagrees} with Mach.}
-\textbf{M4.5: acceptable} --- curve median $6.9\,\%$ (peak $\psi\approx60^\circ$,
-$c_r\approx0.83$). \textbf{M5.8: disagrees} ($16.7\,\%$), \textbf{M7: disagrees}
-($31.6\,\%$), \textbf{M10: disagrees} ($60.9\,\%$). \textbf{Honest confidence
-note:} these were computed with the reduced dense-EVP path
-(\texttt{solve\_temporal\_compressible\_3d}), not the exact-shooting path used for
-the convergence-checked Fig.~10.3 cases, and no explicit exact-shooting
-cross-check was recorded; the domain used the second-mode-calibrated
-$\sim\!4\,\delta^\ast/L^\ast$ rule (the first mode reaches further from the wall).
-So the disagreement \emph{direction} (first-mode under-amplification, consistent
-with every other first-mode case) is robust, but the \emph{magnitude} and the
-monotonic-with-Mach trend are lower-confidence than the 10.3/10.1 results. A
-\texttt{mack\_fig10\_4\_family} aggregate is \emph{pending}. M4.5 and M10 are
-embedded (Figures~\ref{fig:mack104_m45} and \ref{fig:mack104_m100}); the M5.8
-and M7 overlays exist under the \texttt{mack\_fig10\_4\_M58} and
-\texttt{\_M70} directories.
+\paragraph{Result: \emph{agrees} across M4.5--7, \emph{acceptable} at M10.}
+\textbf{M4.5: agrees}, with curve median $1.4\,\%$ (peak $\psi\approx60^\circ$, $c_r\approx0.83$).
+\textbf{M5.8: agrees} ($2.8\,\%$), \textbf{M7: agrees} ($1.7\,\%$), \textbf{M10: acceptable}
+($6.1\,\%$). A confidence note: these were computed with the reduced dense-EVP path
+(\texttt{solve\_temporal\_compressible\_3d}), not the exact-shooting path used for the
+convergence-checked Fig.~10.3 cases, and no explicit exact-shooting cross-check was recorded; the
+domain used the second-mode-calibrated $\sim\!4\,\delta^\ast/L^\ast$ rule (the first mode reaches
+further from the wall). The entire family now agrees or is acceptable; there is no first-mode
+under-amplification trend at high Mach in this figure; the small M10 residual is the only case
+above the digitisation floor. A \texttt{mack\_fig10\_4\_family} aggregate is \emph{pending}. M4.5
+and M10 are embedded (Figures~\ref{fig:mack104_m45} and \ref{fig:mack104_m100}); the M5.8 and M7
+overlays exist under the \texttt{mack\_fig10\_4\_M58} and \texttt{\_M70} directories.
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.75\linewidth]{../verification/first_mode/mack_fig10_4_M45/overlay.png}
-\caption{Mack (1984) Fig.~10.4, $M=4.5$ (\emph{acceptable}): oblique first mode
-optimised over $(\alpha,\psi)$, curve median $6.9\,\%$.}
+\caption{Mack Fig.~10.4 \cite{mack1984}, $M=4.5$ (\emph{agrees}): oblique first mode optimised
+over $(\alpha,\psi)$, curve median $1.4\,\%$.}
 \label{fig:mack104_m45}
 \end{figure}
 
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
 \includegraphics[width=0.75\linewidth]{../verification/first_mode/mack_fig10_4_M100/overlay.png}
-\caption{Mack (1984) Fig.~10.4, $M=10$ (\emph{disagrees}): curve median
-$60.9\,\%$ --- the first-mode under-amplification is largest at the top of the
-Mach range (lower-confidence magnitude, see text).}
+\caption{Mack Fig.~10.4 \cite{mack1984}, $M=10$ (\emph{acceptable}): curve median $6.1\,\%$, a
+small residual above the digitisation floor at the top of the Mach range (lower-confidence
+magnitude, see text).}
 \label{fig:mack104_m100}
 \end{figure}
 
 \FloatBarrier
-\section{Engineering benchmarks}
-\label{sec:engineering}
+%=====================================================================
+\section{Mixed first and second mode: the \"Ozgen--K{\i}rcal{\i} neutral-curve family}
+\label{sec:mixedmode}
+%=====================================================================
+Fig.~3 of \"Ozgen \& K{\i}rcal{\i} \cite{ozgen2008} presents, for each Mach number from 2 to 10, a
+single neutral-curve figure in the $(Re_L,\alpha_L)$ plane. At $M=2$ and $3$ the figure contains
+the first-mode lobe alone; from $M\approx4$ the second (Mack) mode enters, and each panel then
+spans \emph{both} instability families; at $M=6$, for example, four branches: second-mode upper
+and lower, first-mode cutoff, and first-mode onset. Because a single reproduced figure tests both
+modes at once, these cases are classified neither under the first nor the second mode but as a
+mixed family (\texttt{verification/mixed\_mode/ozgen\_fig3/}), and they are reported last, drawing
+on both preceding sections. The per-panel \texttt{verdict.json} records
+\texttt{mode:\,first} for M2/M3 and \texttt{mode:\,first+second} for M4--M10.
 
-\bridge{The apex of the pyramid: flight-relevant configurations that exercise the
-whole pipeline. These inherit the second-mode trust established above.}
+\paragraph{Reference.} \"Ozgen \& K{\i}rcal{\i} \cite{ozgen2008}, Fig.~3 (M = 2, 3, 4, 6, 7, 8,
+10).
 
-\subsection{Sharp cone --- Sivasubramanian (2012), Mach 6 second-mode $N$-factor}
-\label{sec:cone}
+\paragraph{Conditions.} Air, adiabatic wall, 2-D ($\psi=0^\circ$); temporal neutral contour
+($c_i=0$) in the $(Re_L,\alpha_L)$ plane.
 
-\textbf{Reference source.} P.~Sivasubramanian (2012) PhD thesis, Univ.\ of
-Arizona (hdl:10150/228514), Fig.~5.1 --- $N$-factor curves for axisymmetric
-waves from a low-amplitude DNS wave-packet simulation on a sharp $7^\circ$ cone
-at Mach 6 (BAM6QT); the linear parent of Sivasubramanian \& Fasel (2015)
-\emph{J.\ Fluid Mech.} \textbf{768}:175--218. The thesis states verbatim that the
-most-amplified axisymmetric wave reaches $N\approx9.5$ at $F=1.071\times10^{-5}$
-($f^\ast\approx210$~kHz).
+\paragraph{Quantity.} The neutral-curve branches $\alpha_L(Re_L)$: all branches present in each
+panel, first \emph{and} second mode.
 
-\textbf{Flow conditions.} Sharp $7^\circ$ half-angle cone, $M_\infty=6$,
-isothermal $T_w=300$~K ($T_w/T_e=4.70$), axisymmetric ($\psi=0^\circ$).
-Taylor--Maccoll edge state $M_e=5.356$, $T_e=63.78$~K, $U_e=857.5$~m/s;
-Mangler path (transverse curvature omitted). $N$ integrated over the same
-physical extent as thesis Fig.~5.1 (axial $x^\ast=0.30\to0.59$~m, from the lower
-neutral point).
+\paragraph{Result: \emph{agrees}/\emph{acceptable}.} After the references were re-digitised
+correctly and a discrete-mode extractor (eigenfunction decay $+$ $y_{\max}$-stationarity, the two
+acceptance tests of the companion \emph{Numerical Methods} document) replaced the earlier
+$c_r$-band classifier that had excluded the genuine first mode, the picture is:
+\begin{itemize}[leftmargin=1.4em,itemsep=1pt]
+\item \textbf{M4: agrees} (Figure~\ref{fig:ozgen_m4}). Complete two-lobe match: both
+second-mode branches at the digitisation floor ($0\,\%$ upper / $0\,\%$ lower), first-mode cutoff
+$2\,\%$ over $\sim\!85\,\%$ coverage; only the deep low-$\alpha$ first-mode onset tracks at
+$32\,\%$.
+\item \textbf{M2, M3, M6: acceptable} (Figures~\ref{fig:ozgen_m2} and \ref{fig:ozgen_m6}). M2
+traces both first-mode branches over the full $R$-range by eigenvalue continuation (lower
+$7\,\%$, upper $8\,\%$); M3 first-mode cutoff $6\,\%$ where resolvable (onset
+continuous-spectrum-blocked); M6 four branches with second-mode upper $2\,\%$, lower $3\,\%$,
+first-mode cutoff $9\,\%$, first-mode onset $50\,\%$.
+\item \textbf{M7, M8, M10: acceptable (topology caveat).} The dominant second-mode cutoff
+branch agrees ($2$--$6\,\%$), but \texttt{pyMack} predicts a \emph{connected}
+first--second-mode band where the reference shows two lobes separated by a stable gap. This is a
+documented connected-vs-separated topology difference (inter-mode over-prediction at high Mach),
+not a second-mode-curve error.
+\end{itemize}
+A separate growth-contour case \texttt{ozgen\_fig3\_lobes} \textbf{disagrees} ($c_i=0.004$ lobe
+median $18.8\,\%$, and the interior $c_i=0.012$ M2 lobe is absent because \texttt{pyMack}'s peak
+M2 growth $c_{i,\max}=0.0109<0.012$), which is the same open-lobe / under-amplification
+discrepancy. A
+combined all-Mach overlay exists at \texttt{figures/ozgen\_fig3\_overlay.png}. To hold the page
+count, only M2, M4, and M6 are embedded below; the M3/M7/M8/M10 overlays exist under
+\texttt{verification/\allowbreak mixed\_mode/\allowbreak ozgen\_fig3/\allowbreak M*} and are
+covered by the tabulated verdicts.
 
-\textbf{Quantity compared.} The second-mode peak-$N$ frequency and the peak
-linear $N$-factor.
-
-\textbf{Result --- \emph{acceptable}.} \textbf{Frequency: exact.} pyMack's
-peak-$N$ frequency is $205$~kHz ($N=8.11$), i.e.\ $2.4\,\%$ from the thesis
-$210$~kHz; evaluated \emph{at} $210$~kHz pyMack gives $N=8.05$ --- pyMack
-independently reproduces $F=1.071\times10^{-5}$ as the most-amplified frequency.
-\textbf{$N$-factor: $\sim\!15\,\%$ short.} pyMack $8.0$--$8.1$ vs.\ thesis $9.5$.
-The shape tracks the thesis well through $x^\ast\approx0.50$~m (pyMack $6.5$ vs.\
-$\sim\!6.6$), but the self-similar Blasius/Mangler local growth rate decays
-faster than the cone DNS in the back half, so the last $\sim\!1.4$ of $N$ is not
-accumulated --- the expected signature of omitting transverse curvature and the
-real non-similar cone mean flow. The domain-matched $N=8.05$ is bracketed by the
-BAM6QT design review (arXiv:2509.10411: $N\!\sim\!8$ at end of cone, $\sim\!9$ at
-end of flare, $>\!10$ low-noise). Verdict \emph{acceptable}: frequency agrees
-exactly, $N$ sits right at the $15\,\%$ boundary with a bounded, physically
-understood deficit, and there is no topology/mode mismatch (Figure~\ref{fig:cone}).
-
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.75\linewidth]{../verification/second_mode/cone_sivasubramanian_fasel_2015/overlay.png}
-\caption{Sharp $7^\circ$ Mach-6 cone, Sivasubramanian (2012) Fig.~5.1
-(\emph{acceptable}): pyMack second-mode $N$-factor vs.\ the thesis. Frequency
-$210$~kHz matches exactly; peak $N\approx8.05$ vs.\ thesis $9.5$ ($\sim\!15\,\%$
-short) from the omitted transverse curvature / non-similar mean flow.}
-\label{fig:cone}
+\includegraphics[width=0.95\linewidth]{../verification/mixed_mode/ozgen_fig3/M4/overlay_pub.png}
+\caption{\"Ozgen \& K{\i}rcal{\i} Fig.~3 \cite{ozgen2008}, $M=4$ (\emph{agrees}): \texttt{pyMack}
+reproduces the entire two-lobe neutral structure: both second-mode branches at the digitisation
+floor and the first-mode cutoff to $2\,\%$.}
+\label{fig:ozgen_m4}
 \end{figure}
 
-\subsection{Collaborator Mach 5.35 nitrogen benchmark}
-\label{sec:sean}
-
-\textbf{Reference source.} An independent collaborator (``Sean'') LST code,
-Mach 5.35 nitrogen neutral curve.
-
-\textbf{Flow conditions.} $M=5.35$, $\psi=0^\circ$, nitrogen, adiabatic
-($\sim\!370$~K wall); unit Reynolds number $1.176\times10^{7}$/m, edge velocity
-$857$~m/s.
-
-\textbf{Quantity compared.} The dimensional neutral-branch locations vs.\
-frequency in mm (lower $=x_{\rm left}$, upper $=x_{\rm right}$). Dimensional
-curves use MAE as a fraction of the curve span.
-
-\textbf{Result --- \emph{acceptable}.} Upper branch MAE $3.21$~mm over
-$200$--$600$~kHz (reference span $220.3$~mm $\Rightarrow$ \emph{agrees}); lower
-branch MAE $1.29$~mm over $330$--$600$~kHz (span $19.8$~mm $\Rightarrow$
-\emph{acceptable}); full $200^+$~kHz lower-branch MAE $6.68$~mm
-(\emph{acceptable}). The two independent codes agree on the second-mode neutral
-band to a few millimetres (Figure~\ref{fig:sean}).
-
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.75\linewidth]{mach5p35_collaborator_benchmark.png}
-\caption{Mach 5.35 nitrogen: pyMack's neutral branches over the collaborator's
-independent LST code. Upper-branch MAE $3.21$~mm, lower-branch MAE $1.29$~mm
-(gated bands).}
-\label{fig:sean}
+\includegraphics[width=0.95\linewidth]{../verification/mixed_mode/ozgen_fig3/M2/overlay_pub.png}
+\caption{\"Ozgen \& K{\i}rcal{\i} Fig.~3 \cite{ozgen2008}, $M=2$ (\emph{acceptable}; first mode
+only at this Mach): both branches over the full $R$-range by eigenvalue continuation (lower
+$7\,\%$, upper $8\,\%$).}
+\label{fig:ozgen_m2}
 \end{figure}
 
-\subsection{Mach 6 spatial neutral curve and $N$-factor (pipeline demonstration)}
-\label{sec:mach6pipeline}
-
-\textbf{Purpose.} These two committed pyMack figures
-(Figures~\ref{fig:mach6neutral} and \ref{fig:mach6nfactor}) demonstrate the full
-spatial pipeline --- neutral-curve tracing and $N$-factor integration --- at a
-representative Mach 6 flat-plate condition. They are pyMack self-consistency /
-capability plots (no external reference overlay), included to show the
-engineering deliverables the validated second mode feeds into.
-
-\begin{figure}[htbp]
+\begin{figure}[H]
 \centering
-\includegraphics[width=0.75\linewidth]{mach6_spatial_neutral_curve.png}
-\caption{Mach 6 spatial neutral curve produced by pyMack --- the second-mode
-instability boundary in the frequency/streamwise plane, at a representative
-Mach 6 flat-plate condition ($T_w/T_e=5.88$).}
-\label{fig:mach6neutral}
-\end{figure}
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=0.75\linewidth]{mach6_growth_nfactor.png}
-\caption{Mach 6 spatial growth rate and integrated $N$-factor from pyMack ---
-the envelope quantity used for transition estimation.}
-\label{fig:mach6nfactor}
+\includegraphics[width=0.95\linewidth]{../verification/mixed_mode/ozgen_fig3/M6/overlay_pub.png}
+\caption{\"Ozgen \& K{\i}rcal{\i} Fig.~3 \cite{ozgen2008}, $M=6$ (\emph{acceptable}; both modes in
+one panel): four branches, with second-mode upper/lower $2$/$3\,\%$ and first-mode cutoff $9\,\%$
+agree; only the deep low-$\alpha$ first-mode onset ($50\,\%$) is extraction-limited.}
+\label{fig:ozgen_m6}
 \end{figure}
 
 \FloatBarrier
-\section{Summary}
-\label{sec:conclusion}
 
-Across 34 audited cases the repository records
-\textbf{7 agrees, 13 acceptable, 8 disagrees, 6 pending}. The headline is clean:
-\emph{every second-mode case agrees or is acceptable} --- across Malik (1990),
-Balakumar \& Malik (1992), Ma \& Zhong (2003), Mack (1984) Fig.~10.6, Egorov et
-al.\ (2006), the Sivasubramanian (2012) cone, and the collaborator's Mach 5.35
-code. The base of the pyramid (Orszag, Malik) is essentially exact; the
-second-mode design target is validated from Mach 4.5 to 10 and on a flight cone.
+\bigskip
+\noindent\textit{Cases that are not settled validations (the isolated $M\approx2.2$ first-mode
+disagreements, the sharp-cone $N$-factor with its bounded magnitude deficit, the private Mach 5.35
+code-to-code benchmark, and the Mach 6 pipeline demonstration) are collected in the companion
+note \texttt{work\_in\_progress.tex}.}
 
-First-mode results are split by extraction path: \"Ozgen's cleanly-resolvable
-discrete mode \emph{agrees}/is \emph{acceptable} across M2--M6 (M4 to the
-digitisation floor), with the low-Mach onset continuous-spectrum-limited
-rather than physically wrong; the Mack Fig.~10.1/10.3/10.4 path
-\emph{disagrees} at increasing Mach --- a documented under-amplification /
-too-high critical Reynolds number, computed through a separate solver path
-whose Fig.~10.4 magnitudes are explicitly lower-confidence pending the same
-discrete-mode scrutiny already applied to the \"Ozgen cases. Used within
-these bounds --- trust the second mode; treat the first mode as qualitative
-at high Mach --- pyMack is a well-characterised tool.
+\begin{thebibliography}{9}
+\bibitem{orszag1971} S.~A. Orszag, ``Accurate solution of the Orr--Sommerfeld stability
+  equation,'' \emph{Journal of Fluid Mechanics}, Vol.~50, No.~4, 1971, pp.~689--703.
+\bibitem{malik1990} M.~R. Malik, ``Numerical methods for hypersonic boundary layer stability,''
+  \emph{Journal of Computational Physics}, Vol.~86, No.~2, 1990, pp.~376--413.
+\bibitem{balakumar1992} P.~Balakumar and M.~R. Malik, ``Discrete modes and continuous spectra in
+  supersonic boundary layers,'' \emph{Journal of Fluid Mechanics}, Vol.~239, 1992, pp.~631--656.
+\bibitem{mack1984} L.~M. Mack, ``Boundary-layer linear stability theory,'' AGARD Report No.~709,
+  \emph{Special Course on Stability and Transition of Laminar Flow}, 1984.
+\bibitem{ozgen2008} S.~\"Ozgen and S.~A. K{\i}rcal{\i}, ``Linear stability analysis in
+  compressible, flat-plate boundary layers,'' \emph{Theoretical and Computational Fluid Dynamics},
+  Vol.~22, 2008, pp.~1--20.
+\bibitem{egorov2006} I.~V. Egorov, A.~V. Fedorov, and V.~G. Soudakov, ``Direct numerical
+  simulation of disturbances generated by periodic suction-blowing in a hypersonic boundary
+  layer,'' \emph{Theoretical and Computational Fluid Dynamics}, Vol.~20, No.~1, 2006, pp.~41--54.
+\bibitem{mazhong2003} X.~Ma and X.~Zhong, ``Receptivity of a supersonic boundary layer over a flat
+  plate. Part 1. Wave structures and interactions,'' \emph{Journal of Fluid Mechanics}, Vol.~488,
+  2003, pp.~31--78.
+\bibitem{xirenfu2020} Xi, Ren, and Fu, arXiv preprint arXiv:2006.05970, 2020.
+\bibitem{hildebrand2018} N.~Hildebrand et al., arXiv preprint arXiv:1712.08239, 2017.
+\end{thebibliography}
 
 \end{document}
