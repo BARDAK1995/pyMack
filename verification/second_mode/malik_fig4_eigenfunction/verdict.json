@@ -1,0 +1,42 @@
+{
+  "case_id": "malik_fig4_eigenfunction",
+  "category": "eigenfunction",
+  "source": "Malik (1990) JCP 86:376 Fig. 4: M=10, R=2000, cooled wall T_w/T_adb=0.1, alpha=0.105 second-mode eigenfunctions (refPapers/NewPapers/figures/malik1990_fig4_eigenfunctions_M10.png).",
+  "conditions": {
+    "Ma": 10.0,
+    "Re_l": 2000.0,
+    "alpha_fixed": 0.105,
+    "beta": 0.0,
+    "Pr": 0.7,
+    "gamma": 1.4,
+    "wall": "isothermal cooled T_w/T_adb=0.1",
+    "mode": "second mode",
+    "length_scale": "L_star",
+    "same_case_as": "malik_case4"
+  },
+  "quantity": "second-mode temperature eigenFUNCTION (T_hat_r, T_hat_i vs y)",
+  "metrics": {
+    "pymack_c": [
+      0.9281635132385754,
+      0.018930556897418682
+    ],
+    "T_peak_y_pymack": 13.29874298517038,
+    "T_peak_y_malik": 13.0,
+    "T_peak_y_rel_err": 0.022980229628490754,
+    "T_over_u_dominance": 14.391781926839487,
+    "N": 200,
+    "topology_ok": true,
+    "Tr_rms_vs_malik_digitized": 0.05166680446419051,
+    "Ti_rms_vs_malik_digitized": 0.08204245538501023
+  },
+  "verdict": "agrees",
+  "verdict_reason": "Eigenvector (mode-structure) validation. The overlay plots pyMack's temperature eigenfunction CURVES over Malik's own DIGITISED Fig.4 points (single Temperature panel, profile orientation, y vertical). BOTH the real and imaginary temperature eigenfunctions AGREE with Malik under one shared complex T_hat scaling (global phase fixed so T_hat_r is real and +1 at its peak -- Malik's convention; T_hat_i is NOT renormalised separately). pyMack's T_hat_r lies on Malik's digitised T_hat_r (RMS = 0.052 over 0<y<20): shallow near-wall negative lobe (~-0.5), zero-crossing near y~6, LOWER of the two rising curves in y~6-11, and the +1 peak at y~13.3 (Malik y~13, a 2.3% location match). pyMack's T_hat_i lies on Malik's digitised T_hat_i (RMS = 0.082): deeper near-wall dip (~-0.6), UPPER of the two rising curves in y~6-11, the rounded +0.45 hump at y~11, and the steep descent to the -0.55 dip at y~15.5 (the 'T_l' curve). The temperature fluctuation dominates ( |T_hat|/|u_hat| = 14.4 ), the hallmark of the hypersonic Mack mode. Velocity and pressure eigenfunctions are omitted (too hard to digitise reliably: overlapping near-axis curves). This opens the eigenvector-validation axis (all other anchors check eigenvalues only). Mirror of validation/test_malik_fig4_eigenfunction.py.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": null,
+    "reference": "verification/second_mode/malik_fig4_eigenfunction/reference_malik_fig4_Tr.csv, reference_malik_fig4_Ti.csv (digitised temperature eigenfunctions from Fig. 4)",
+    "overlay": "verification/second_mode/malik_fig4_eigenfunction/overlay.png"
+  },
+  "pymack_provenance": "pymack.solver.solve_temporal_compressible eigenvector (same case as malik_case4), block [u,v,T,p], normalized to unit peak |T|; N=200, y_max=75, length_scale='L_star'.",
+  "mode": "second"
+}

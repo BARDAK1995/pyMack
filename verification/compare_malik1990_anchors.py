@@ -25,20 +25,30 @@ Malik (1990) tabulated cases recovered from Hildebrand Table I
    Malik #   M_inf   Re_l    eigenvalue (Malik)        comp?   problem
    -------   -----   -----   -----------------------   -----   ---------------
    1         0.50    2000    0.0291 + 0.00224 i        INCOMP  temporal, alpha=0.10
-   3         2.50    3000    0.0367 + 0.00058 i        comp    temporal, alpha=0.06, beta=0.1
-   5         10.0    1000    0.1159 + 0.00015 i        comp    temporal, alpha=0.12
-   4         10.0    2000    0.0975 + 0.00203 i        comp    temporal, alpha=0.105
+   3         2.50    3000    0.0367 + 0.00058 i        comp    temporal, alpha=0.06, beta=0.1  [REPRODUCED -> second_mode/malik_case3]
+   5         10.0    1000    0.1159 + 0.00015 i        comp    temporal, alpha=0.12            [REPRODUCED -> second_mode/malik_case5]
+   4         10.0    2000    0.0975 + 0.00203 i        comp    temporal, alpha=0.105           [REPRODUCED -> second_mode/malik_case4]
    6         4.50    1500    0.2534 - 0.00249 i (alpha) comp    SPATIAL, omega=0.23 (second mode)
 
-Only Malik Case 6 is a SPATIAL-alpha problem with both a published alpha AND
-fully documented dimensional conditions (T0=611.11 K, Pr=0.70, Sutherland
-S=110.33 K). It is the only Malik (1990) compressible case that pyMack's
-``solve_spatial`` can reproduce unambiguously. The four temporal cases
-(Malik #1,#3,#4,#5) publish a complex FREQUENCY omega at fixed real alpha, and
-their exact dimensional conditions (T0, gas, Sutherland) are NOT openly
-recoverable (the original JCP scan host is firewalled; Hildebrand lists only
-M and Re). They are reported here as honest non-verifiable / non-reproducing
-rows rather than tuned to pass.
+Case 6 is a SPATIAL-alpha problem with both a published alpha AND fully
+documented dimensional conditions (T0=611.11 K, Pr=0.70, Sutherland S=110.33 K),
+reproduced here.
+
+UPDATE (2026-07): Cases 3, 4 and 5 are now ALSO reproduced (all "agrees"). The
+blocker was never the physics -- only the missing dimensional conditions. Adding
+the original Malik (1990) paper to refPapers/NewPapers/ supplied Table I (per-case
+T0 and wall condition -- e.g. case 4's COOLED wall T_w/T_adb=0.1, which earlier
+attempts had wrongly assumed adiabatic) and the eigenvalue tables. With those,
+pyMack's temporal solvers reproduce all three to omega_r ~0.02-0.07%, omega_i
+~2% (inside Malik's own inter-scheme table spreads). They are handled by
+``verification/compute_malik1990_case4.py`` and ``compute_malik1990_cases35.py``
+(verdicts + overlays in ``verification/second_mode/malik_case{3,4,5}/``) and CI
+gates ``validation/test_malik1990_case{3,4,5}_anchor.py`` -- so they are NOT
+written by this script anymore.
+
+Only case #1 (M=0.5) remains as a pending row below -- the effectively-
+incompressible case, whose coverage is scoped to the existing Orszag (1971)
+anchor rather than duplicated here.
 
 This script writes one verdict.json per case under
 ``verification/eigenvalueAnchor_verification/malik_case{N}/`` (and one
@@ -198,50 +208,22 @@ def main():
     write_verdict(OUT / "balakumar_malik1992_via_xirenfu", vB)
     written.append(("balakumar_malik1992_via_xirenfu", vB))
 
-    # --- Malik temporal cases #1, #3, #4, #5 -- honest non-verifiable rows -----
+    # --- Malik temporal cases -- only #1 remains here as a pending row ----------
+    # Cases #3, #4, #5 are now REPRODUCED (verdict "agrees") with the dimensional
+    # conditions from Malik Table I, and live in verification/second_mode/:
+    #   #4 -> compute_malik1990_case4.py    (M=10 cooled, 2D 2nd mode)
+    #   #3, #5 -> compute_malik1990_cases35.py  (M=2.5 oblique 1st mode; M=10 severe 2nd mode)
+    # each with a CI gate validation/test_malik1990_case{3,4,5}_anchor.py.
+    # Case #1 (M=0.5) is the effectively-incompressible case, scoped to Orszag.
     temporal = [
         dict(case_id="malik_case1", n=1, Ma=0.50, Re=2000.0, alpha=0.10, beta=0.0,
              omega=0.0291 + 0.00224j, comp="INCOMPRESSIBLE",
              reason=("Malik (1990) Case 1: M=0.5, Re=2000, temporal alpha=0.10, "
                      "published eigenvalue omega=0.0291+0.00224i (Hildebrand Table I). "
-                     "This is the low-speed / effectively INCOMPRESSIBLE case -- the "
-                     "task scopes incompressible cases to the existing Orszag (1971) "
-                     "coverage, so no pyMack run is performed here. Recorded for "
+                     "This is the low-speed / effectively INCOMPRESSIBLE case -- "
+                     "incompressible coverage is scoped to the existing Orszag (1971) "
+                     "anchor, so no separate pyMack run is performed here. Recorded for "
                      "completeness of the extracted Malik table."),
-             verdict="pending", topo=False),
-        dict(case_id="malik_case3", n=3, Ma=2.50, Re=3000.0, alpha=0.06, beta=0.10,
-             omega=0.0367 + 0.00058j, comp="compressible (first/oblique mode)",
-             reason=("Malik (1990) Case 3: M=2.5, Re=3000, oblique TEMPORAL problem "
-                     "(real alpha=0.06, beta=0.1), published eigenvalue "
-                     "omega=0.0367+0.00058i (Hildebrand Table I; c_r=0.612). CANNOT "
-                     "be set up unambiguously: the original dimensional conditions "
-                     "(T0, gas, Sutherland reference) are NOT openly recoverable "
-                     "(Hildebrand lists only M and Re; the JCP scan host is "
-                     "firewalled). Probing pyMack's solve_temporal_compressible_3d at "
-                     "plausible reconstructed T0 does NOT isolate Malik's weakly "
-                     "GROWING mode: the nearest discrete first-mode candidate "
-                     "(c_r~0.67) is DECAYING (omega_i<0) vs Malik's omega_i=+0.00058, "
-                     "and omega_r lands ~11% high. Reported honestly as not "
-                     "reproducible rather than tuned to pass."),
-             verdict="disagrees", topo=False),
-        dict(case_id="malik_case4", n=4, Ma=10.0, Re=2000.0, alpha=0.105, beta=0.0,
-             omega=0.0975 + 0.00203j, comp="compressible (second mode)",
-             reason=("Malik (1990) Case 4: M=10, Re=2000, TEMPORAL (real alpha=0.105), "
-                     "published omega=0.0975+0.00203i (Hildebrand Table I). CANNOT be "
-                     "set up unambiguously (unknown T0/gas). This is the M=10 regime "
-                     "Hildebrand themselves flag as deviating up to ~15% from Malik. "
-                     "pyMack's temporal filtering at reconstructed conditions does not "
-                     "isolate the tabulated mode (returns low phase-speed / continuous-"
-                     "spectrum modes). Not reproducible without the original conditions."),
-             verdict="pending", topo=False),
-        dict(case_id="malik_case5", n=5, Ma=10.0, Re=1000.0, alpha=0.12, beta=0.0,
-             omega=0.1159 + 0.00015j, comp="compressible (second mode)",
-             reason=("Malik (1990) Case 5: M=10, Re=1000, TEMPORAL (real alpha=0.12), "
-                     "published omega=0.1159+0.00015i (Hildebrand Table I; c_r=0.966). "
-                     "CANNOT be set up unambiguously (unknown T0/gas). M=10 regime; "
-                     "pyMack's temporal spectrum at reconstructed conditions does not "
-                     "isolate the tabulated discrete mode. Not reproducible without "
-                     "the original dimensional conditions."),
              verdict="pending", topo=False),
     ]
     for t in temporal:

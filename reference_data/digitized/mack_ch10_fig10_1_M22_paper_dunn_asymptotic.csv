@@ -1,23 +1,95 @@
+# Mack (1984) Fig 10.1(b), M1=2.2, DUNN-LIN ASYMPTOTIC THEORY (MACK 1960) neutral loop (outermost of 3 curves).
+# Re-digitized 2026-07-02 from AGARD-R-709 embedded figure (refPapers/latex_papers/figures/fig10_1.png,
+#   400 DPI crop, 1300x1950 px covering both panels). Pixel calibration:
+#   R: px = 0.8577198*R + 146.4835 (shared x-axis, both panels).
+#   F (panel a): px = -216.6477*F + 877.6136. F (panel b): px = -215.5000*F + 1814.9545.
+# Conventions: x = R = sqrt(Re_x); y = F*1e4, F = omega/R = alpha*c_r/R.
+# Method: programmatic pixel-curve tracing (threshold + connected-component text
+#   removal + column/row continuity tracing with column-monotonicity and
+#   direction-cosine guards to avoid hopping onto neighboring loops or leader-line
+#   arrow stubs). Supersedes the prior digitization, which did not track either
+#   the upper (cutoff) or lower (onset) branch of this loop faithfully (a single
+#   ambiguous line cutting across the loop). This file lists BOTH branches
+#   sequentially: first the branch with the LOWER F at a given R (onset), then
+#   the branch with the HIGHER F (cutoff) -- both blocks share the same x,y
+#   column convention as before, just now genuinely tracking the loop ink.
+# NOTE (M2.2 only): this loop's nose sits ABOVE F=4.0, off the top of the
+#   plotted frame, so the true critical-R apex is not visible in the source
+#   scan. Its two branches are also visually indistinguishable (same ink)
+#   from the top of the frame down to R~215-258 -- a genuine source-image
+#   resolution limit, not a tracing shortcut. The first block below (labeled
+#   as if it were the onset branch, R~216-242) is that single shared/ambiguous
+#   segment; treat it as representing BOTH branches over that narrow range.
+# Digitization uncertainty: dR ~ +/-10-15, dF ~ +/-0.03-0.06 in F*1e4 typical;
+#   larger (~10-15%) where the 3 loops visually bundle together at high R.
 x,y
-50.000000,3.050000
-80.000000,2.420000
-110.000000,2.050000
-140.000000,1.780000
-170.000000,1.580000
-200.000000,1.420000
-250.000000,1.220000
-300.000000,1.080000
-350.000000,0.970000
-400.000000,0.880000
-500.000000,0.740000
-600.000000,0.640000
-700.000000,0.560000
-800.000000,0.500000
-900.000000,0.455000
-1000.000000,0.420000
-1100.000000,0.390000
-1200.000000,0.365000
-1300.000000,0.345000
-1400.000000,0.328000
-1500.000000,0.312000
-1600.000000,0.300000
+215.707376,3.995149
+217.635143,3.906632
+218.798350,3.846047
+224.268339,3.632243
+224.626039,3.618254
+229.056647,3.535315
+230.255749,3.380256
+233.788862,3.337604
+236.113211,3.286520
+242.107986,3.167160
+266.993424,1.962412
+286.326416,1.810252
+309.433156,1.629896
+335.161679,1.487619
+359.486994,1.372690
+379.177296,1.272897
+402.389811,1.185186
+427.200253,1.102795
+454.147602,1.019754
+481.377958,0.937696
+506.139857,0.877803
+668.652510,0.658722
+707.346470,0.612707
+736.028063,0.573358
+764.625676,0.543079
+791.619421,0.509784
+820.583085,0.486643
+851.119474,0.473531
+879.406672,0.449253
+907.327028,0.426911
+935.516512,0.403503
+964.419772,0.393066
+994.309499,0.371150
+1022.553452,0.356447
+1050.846094,0.347023
+1079.478071,0.334920
+1108.234910,0.324718
+1138.804756,0.302203
+1167.687664,0.294470
+1195.848359,0.287653
+258.113306,2.715907
+283.628363,2.265702
+308.806244,1.989826
+331.151463,1.795822
+359.362567,1.595185
+381.228255,1.453369
+411.914212,1.321878
+444.856881,1.202573
+472.173997,1.099557
+504.602634,0.997712
+543.619108,0.898329
+574.529575,0.821574
+605.811731,0.751360
+638.166466,0.699873
+672.806094,0.658348
+706.429920,0.611764
+739.937423,0.566676
+773.735077,0.533484
+808.803910,0.495866
+845.410119,0.472833
+880.718176,0.449220
+915.656707,0.426116
+949.313420,0.398844
+984.498334,0.380041
+1019.906846,0.357308
+1055.418720,0.348864
+1091.794045,0.329601
+1126.042237,0.309622
+1161.359278,0.302152
+1196.968863,0.283779

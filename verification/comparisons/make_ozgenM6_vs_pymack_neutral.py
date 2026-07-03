@@ -43,7 +43,7 @@ def read_cols(path):
 def ozgen_m6_RF():
     """Ozgen M6 first-mode neutral as (Re_L, F*1e4), c_r from the c_i grid."""
     neu = []
-    with open(VER / "first_mode/ozgen_m6/reference_ozgen_M6_neutral.csv") as f:
+    with open(VER / "mixed_mode/ozgen_fig3/M6/reference_ozgen_M6_neutral.csv") as f:
         r = csv.reader(f); next(r)
         for row in r:
             try:
@@ -52,7 +52,7 @@ def ozgen_m6_RF():
                 pass
     neu = np.array(neu)            # (Re, alpha)
     g = []
-    with open(VER / "first_mode/_ozgen_compute/ozgen_M6_ci_grid.csv") as f:
+    with open(VER / "mixed_mode/ozgen_fig3/_compute/ozgen_M6_ci_grid.csv") as f:
         r = csv.DictReader(f)
         for row in r:
             try:

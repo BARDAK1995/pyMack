@@ -134,65 +134,37 @@ def fig_ansatz():
 
 
 def fig_baseflow():
-    p = make_flatplate_profile(4.5)
-    eta_max = 8.0
+    from pymack import make_flatplate_profile
+    # Representative hypersonic cooled-wall case: M=6, T_e=54 K, isothermal wall
+    # at T_w=300 K (T_w/T_e=5.56, below the adiabatic recovery ~7.1 T_e).
+    p = make_flatplate_profile(6.0, T_edge=54.0, T_wall=300.0)
+    eta_max = 2.5                      # edge is at eta ~ 1.5; leave a freestream margin
     eta = np.linspace(0, eta_max, 400)
     bf = p(eta)
     U = np.asarray(bf["U"]); T = np.asarray(bf["T"]); dU = np.asarray(bf["dU"])
-    rho = 1.0 / T
-    g = rho * dU                       # rho-bar * dU/dy
+    g = dU / T                         # rho-bar * dU/deta  (rho-bar = 1/T-bar)
     dg = np.gradient(g, eta)
-    yc = None                          # generalised inflection point: d/dy(rho dU/dy)=0
-    for i in range(4, len(eta) - 1):
-        if dg[i - 1] * dg[i] < 0:
-            yc = eta[i]; break
+    etas = None                        # OUTERMOST generalised inflection point below the
+    for i in range(4, len(eta) - 1):   # edge (cooled walls add a near-wall crossing at the
+        if dg[i - 1] * dg[i] < 0 and 0.3 < U[i] < 0.999:   # interior T max; skip it, and
+            etas = eta[i]              # skip freestream noise where U=1 and dU~0)
 
-    fig, (ax, axy) = plt.subplots(1, 2, figsize=(11.4, 4.9))
-
-    # --- panel (a): profiles, as before, with a legible inflection callout ---
-    ax.plot(U, eta, color=COOL, lw=2.6)
-    ax.set_xlabel(r"$\overline{U}/U_e$", color=COOL); ax.tick_params(axis="x", labelcolor=COOL)
-    ax.set_ylabel(r"wall-normal  $y/\delta^*$")
-    ax.set_xlim(0, 1.05)
-    axT = ax.twiny()
-    axT.plot(T, eta, color=HOT, lw=2.6)
-    axT.set_xlabel(r"$\overline{T}/T_e$  (wall $\approx$4$\times$ edge)", color=HOT)
-    axT.tick_params(axis="x", labelcolor=HOT)
-    axT.annotate("hot near-wall layer\n(viscous heating)", xy=(T[0], 0.05),
-                 xytext=(T.max() * 0.40, 2.55), color=HOT, fontsize=10.5,
-                 arrowprops=dict(arrowstyle="-|>", color=HOT, lw=1.2))
-    if yc is not None:
-        ax.axhline(yc, color="#444", ls=":", lw=1.5, zorder=1)
-        ax.scatter([np.interp(yc, eta, U)], [yc], s=55, color="#222", zorder=6)
-        ax.annotate(
-            "gen. inflection point:\n"
-            r"$(\overline{\rho}\,\overline{U}\,\!\!^\prime)^\prime=0$"
-            "\n(inviscid-instability site)",
-            xy=(np.interp(yc, eta, U), yc), xytext=(0.30, 4.6),
-            fontsize=12.5, color="#222", ha="center", va="center",
-            bbox=dict(fc="white", ec="#444", alpha=0.92, pad=3.0),
-            arrowprops=dict(arrowstyle="-|>", color="#444", lw=1.3), zorder=6)
-    ax.text(0.55, 7.4, r"$M_e=4.5$, adiabatic", fontsize=12)
-    ax.set_title("(a) mean profiles", fontsize=15)
+    # Single panel: mean profiles in the similarity (generalised) coordinate.
+    # Conversion to physical y is Eq. (ytransform)/(ydim) in mean_boundary_layer.tex.
+    fig, ax = plt.subplots(figsize=(6.6, 5.4))
+    ax.plot(U, eta, color=COOL, lw=2.6, label=r"$\overline{U}/U_e$")
+    ax.plot(T, eta, color=HOT, lw=2.6, label=r"$\overline{T}/T_e$")
+    if etas is not None:
+        ax.axhline(etas, color="#555", ls=":", lw=1.4, zorder=1)
+        ax.scatter([np.interp(etas, eta, U)], [etas], s=45, color="#222", zorder=6)
+        ax.text(T.max() * 0.50, etas + 0.20,
+                r"$(\overline{\rho}\,\overline{U}\,\!\!^\prime)^\prime=0$",
+                fontsize=13, color="#222")
+    ax.set_xlabel(r"$\overline{U}/U_e,\ \ \overline{T}/T_e$")
+    ax.set_ylabel(r"similarity coordinate  $\eta$")
+    ax.set_xlim(0, max(1.05, T.max() * 1.06)); ax.set_ylim(0, eta_max)
+    ax.legend(loc="upper right", frameon=False, fontsize=14)
     ax.grid(alpha=0.25)
-
-    # --- panel (b): the eta -> y/L* similarity transform, Eq. (13):
-    # y/L* = sqrt(2) * int_0^eta (Tbar/Te) d eta'  (pymack/baseflow.py L527)
-    from scipy.integrate import cumulative_trapezoid
-    y_L = np.sqrt(2.0) * cumulative_trapezoid(T, eta, initial=0.0)
-    lin_ref = y_L[-1] / eta_max * eta          # straight-line reference for comparison
-    axy.plot(eta, lin_ref, color=GREY, lw=1.8, ls="--", label="uniform (linear) reference")
-    axy.plot(eta, y_L, color=COOL, lw=2.6, label=r"$y/L^*=\sqrt{2}\!\int_0^\eta \overline{T}/T_e\,d\eta'$")
-    axy.fill_between(eta, lin_ref, y_L, color=FILL, alpha=0.7, zorder=0)
-    axy.annotate("hot wall stretches\nphysical spacing", xy=(0.9, y_L[np.argmin(np.abs(eta - 0.9))]),
-                 xytext=(2.4, 0.9), fontsize=11.5, color=COOL,
-                 arrowprops=dict(arrowstyle="-|>", color=COOL, lw=1.2))
-    axy.set_xlabel(r"similarity coordinate  $\eta$")
-    axy.set_ylabel(r"physical coordinate  $y/L^*$")
-    axy.set_title("(b) similarity-to-physical transform", fontsize=15)
-    axy.legend(loc="upper left", fontsize=11)
-    axy.grid(alpha=0.25)
-
     fig.tight_layout()
     save(fig, "fig_baseflow.pdf")
 
@@ -441,8 +413,8 @@ def fig_nfactor():
 
 
 def fig_workflow():
-    fig, ax = plt.subplots(figsize=(8.6, 9.2))
-    ax.set_xlim(0, 10); ax.set_ylim(0, 20); ax.axis("off")
+    fig, ax = plt.subplots(figsize=(9.0, 8.2))
+    ax.set_xlim(0, 10.8); ax.set_ylim(4.9, 19.9); ax.axis("off")
 
     def box(cx, cy, w, h, title, sub, core=False):
         fc = "#eaf4ef" if core else "white"
@@ -450,39 +422,54 @@ def fig_workflow():
         ax.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h,
                      boxstyle="round,pad=0.08,rounding_size=0.12",
                      fc=fc, ec=ec, lw=2.2 if core else 1.5))
-        ax.text(cx, cy + 0.18, title, ha="center", va="center", fontsize=13, fontweight="bold")
-        ax.text(cx, cy - 0.52, sub, ha="center", va="center", fontsize=10.5, color="#555")
-
-    def ar() :
-        pass
+        ax.text(cx, cy + 0.24, title, ha="center", va="center", fontsize=13, fontweight="bold")
+        ax.text(cx, cy - 0.40, sub, ha="center", va="center", fontsize=10.5, color="#555")
 
     def arrow(x1, y1, x2, y2):
         ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2), arrowstyle="-|>",
                      mutation_scale=16, color=GREY, lw=1.8))
 
+    # --- main spine -------------------------------------------------------
+    SX, W, H = 4.6, 5.6, 1.45
     spine = [
-        (5, 18.6, "1 · Flow conditions", r"$M,\ Re,\ T_w$, gas", False),
-        (5, 16.6, "2 · Base (mean) flow", r"compressible Blasius BVP $\to \overline{U},\overline{T}$", False),
-        (5, 14.6, "3 · Linearise + normal mode", r"ODEs in $y$ for $\hat u,\hat v,\hat T,\hat p$", False),
-        (5, 12.6, "4 · Chebyshev collocation", r"$D_1,D_2$ on the wall-clustered grid", False),
-        (5, 10.6, "5 · Eigenvalue solve", r"the heart of LST", True),
+        (19.0, "1 · Flow conditions", r"$M_e,\ Re,\ T_w/T_e$, gas model", False),
+        (17.0, "2 · Mean flow", r"self-similar BVP $\to\ \overline{U},\overline{T}$ and $y$-derivatives", False),
+        (15.0, "3 · Disturbance ODEs", r"linearise + normal mode $\to$ Eqs. (C), (X), (Y), (E)", False),
+        (13.0, "4 · Discretisation", r"Chebyshev collocation:  $\mathrm{D}\to D_1,\ \ \mathrm{D}^2\to D_2$", False),
+        (11.0, "5 · Eigenvalue problem", r"$4(n{+}1)\times4(n{+}1)$ pencil", True),
     ]
-    for cx, cy, t, s, c in spine:
-        box(cx, cy, 5.2, 1.4, t, s, c)
+    for cy, t, s, c in spine:
+        box(SX, cy, W, H, t, s, c)
     for i in range(len(spine) - 1):
-        arrow(5, spine[i][1] - 0.72, 5, spine[i + 1][1] + 0.72)
-    # split
-    arrow(4.4, 9.9, 2.6, 9.0); arrow(5.6, 9.9, 7.4, 9.0)
-    ax.text(2.5, 9.2, "TEMPORAL", color=PM, fontsize=11.5, fontweight="bold", ha="center")
-    ax.text(7.5, 9.2, "SPATIAL", color=PM, fontsize=11.5, fontweight="bold", ha="center")
-    box(2.5, 8.2, 4.0, 1.35, r"$A\phi=cB\phi$", r"growth $=\alpha c_i$")
-    box(7.5, 8.2, 4.0, 1.35, r"$(C_0+\alpha C_1+\alpha^2C_2)\phi=0$", r"growth $=-\alpha_i$")
-    arrow(2.5, 7.52, 2.5, 6.55); arrow(7.5, 7.52, 7.5, 6.55)
-    box(2.5, 5.85, 4.0, 1.35, "Sweep $(R,\\alpha)$", r"build $c_i$ field")
-    box(7.5, 5.85, 4.0, 1.35, r"$N=\int-\alpha_i\,dR$", r"$e^N\to$ transition", True)
-    arrow(2.5, 5.18, 2.5, 4.25)
-    box(2.5, 3.55, 4.2, 1.35, "Neutral curve", r"$\{c_i{=}0\}$ + continuation", True)
-    ax.set_title("End-to-end LST workflow in pyMack", fontsize=16)
+        arrow(SX, spine[i][0] - 0.76, SX, spine[i + 1][0] + 0.76)
+
+    # --- document attribution (right margin) ------------------------------
+    def doc_tag(y_top, y_bot, label, color="#777"):
+        x = 7.75
+        ax.plot([x, x], [y_top, y_bot], color=color, lw=1.1)
+        ax.plot([x - 0.09, x], [y_top, y_top], color=color, lw=1.1)
+        ax.plot([x - 0.09, x], [y_bot, y_bot], color=color, lw=1.1)
+        ax.text(x + 0.18, 0.5 * (y_top + y_bot), label, ha="left", va="center",
+                fontsize=10.5, color=color, style="italic")
+    doc_tag(17.72, 16.28, "Mean Boundary-Layer\ndocument")
+    doc_tag(15.72, 14.28, "this document", color=PM)
+    doc_tag(13.72, 10.28, "Numerical Methods\ndocument")
+
+    # --- temporal / spatial fork ------------------------------------------
+    TX, PX = 2.35, 7.15
+    arrow(SX - 0.9, 10.24, TX + 0.4, 9.35)
+    arrow(SX + 0.9, 10.24, PX - 0.4, 9.35)
+    ax.text(2.35, 9.62, r"temporal:  $\alpha\in\mathbb{R}$, solve $c$",
+            fontsize=10.5, color="#555", ha="center", style="italic")
+    ax.text(7.45, 9.62, r"spatial:  $\omega\in\mathbb{R}$, solve $\alpha$",
+            fontsize=10.5, color="#555", ha="center", style="italic")
+    box(TX, 8.6, 4.3, H, r"$A(\alpha)\,\phi=c\,B(\alpha)\,\phi$",
+        r"temporal growth $\omega_i=\alpha c_i$")
+    box(PX, 8.6, 4.6, H, r"$(C_0+\alpha C_1+\alpha^2C_2)\,\phi=0$",
+        r"spatial growth $-\alpha_i$")
+    arrow(TX, 7.84, TX, 6.86); arrow(PX, 7.84, PX, 6.86)
+    box(TX, 6.1, 4.3, H, "Neutral curves", r"locus $c_i=0$ in $(R,\alpha)$", True)
+    box(PX, 6.1, 4.6, H, r"$N$-factor", r"$N(R)=\int-\alpha_i\,\mathrm{d}R\ \to\ e^N$", True)
     save(fig, "fig_workflow.pdf")
 
 

@@ -1,46 +1,78 @@
 # Mack (1984) Fig 10.1(a), M1=1.6, COMPLETE-EQUATIONS neutral loop (innermost of 3 curves).
-# Re-digitized 2026-06-18 from AGARD-R-709 p.90 (PDF index 90) embedded figure (522x794 px scan,
-#   rendered at 4x => 2448x3168). Pixel calibration (panel a):
-#   R: col 897 = R0, col 1638 = R1200  (62 px / 100 R)
-#   F: row 1445 = F0, row 823 = F4.0   (155.5 px / unit F*1e4)
+# Re-digitized 2026-07-02 from AGARD-R-709 embedded figure (refPapers/latex_papers/figures/fig10_1.png,
+#   400 DPI crop). Pixel calibration (panel a):
+#   R: px = 0.8577198*R + 146.4835 (shared x-axis, both panels).
+#   F: px = -216.6477*F + 877.6136.
 # Conventions: x = R = sqrt(Re_x); y = F*1e4, F = omega/R = alpha*c_r/R.
-# Geometry: 3 nested loops; Complete Equations = INNERMOST (lowest upper/cutoff branch,
-#   highest lower/onset branch, smallest critical R is the LARGEST of the three: ~215).
+# Geometry: 3 nested loops; Complete Equations = INNERMOST. Critical R (nose) ~304,
+#   F~1.84 -- this SUPERSEDES the prior digitization's nose estimate of R~215, which
+#   was found (on pixel re-verification) to actually belong to the general crowded
+#   region near where all 3 loops nearly overlap, not this loop's true apex. The true
+#   apex at R~304 is confirmed against pyMack's own neutral-curve solve (pyMack shows
+#   the c_i=0 crossing first appearing between R=300 and R=400).
 # branch: nose (critical-R apex) | upper (cutoff) | lower (onset).
-# Digitization uncertainty: dR ~ +/-15 (one minor-tick ~ R25), dF ~ +/-0.05-0.08 in F*1e4
-#   on branches (~5-10% of local F at mid/high R; up to ~12% where the 3 loops bundle at high R).
-#   Nose R uncertain to ~+/-20 (R195-235), nose F ~ +/-0.08.
+# Digitization uncertainty: dR ~ +/-10-15, dF ~ +/-0.03-0.06 in F*1e4 on branches;
+#   larger where the loop nearly touches dunn_numerical just past the nose (R~350-450).
+#   Nose R uncertain to ~+/-15, nose F ~ +/-0.05.
 R,F_x1e4,branch
-215,1.75,nose
-225,1.52,lower
-240,1.20,lower
-260,0.90,lower
-280,0.72,lower
-300,0.58,lower
-350,0.43,lower
-400,0.355,lower
-450,0.31,lower
-500,0.275,lower
-600,0.215,lower
-700,0.175,lower
-800,0.145,lower
-900,0.12,lower
-1000,0.10,lower
-1100,0.085,lower
-1200,0.075,lower
-225,1.60,upper
-240,1.42,upper
-260,1.25,upper
-280,1.13,upper
-300,1.04,upper
-350,0.86,upper
-400,0.73,upper
-450,0.64,upper
-500,0.56,upper
-600,0.46,upper
-700,0.39,upper
-800,0.33,upper
-900,0.29,upper
-1000,0.26,upper
-1100,0.235,upper
-1200,0.215,upper
+304,1.84,nose
+267,1.6983,lower
+296,1.1706,lower
+325,0.9421,lower
+351,0.7816,lower
+382,0.6475,lower
+412,0.5533,lower
+444,0.4817,lower
+474,0.4231,lower
+506,0.3332,lower
+538,0.3064,lower
+571,0.28,lower
+603,0.243,lower
+637,0.227,lower
+671,0.2105,lower
+704,0.1877,lower
+736,0.1627,lower
+768,0.1431,lower
+800,0.1351,lower
+833,0.1226,lower
+866,0.123,lower
+899,0.1189,lower
+932,0.1037,lower
+965,0.0954,lower
+998,0.0815,lower
+1030,0.0773,lower
+1063,0.0761,lower
+1097,0.0697,lower
+1130,0.0628,lower
+1164,0.0632,lower
+1196,0.0589,lower
+296,1.7665,upper
+327,1.6198,upper
+362,1.4437,upper
+393,1.3114,upper
+423,1.2015,upper
+452,1.1141,upper
+480,1.0241,upper
+509,0.941,upper
+538,0.8795,upper
+566,0.8152,upper
+596,0.7668,upper
+633,0.7414,upper
+663,0.6578,upper
+694,0.6274,upper
+724,0.5848,upper
+755,0.5526,upper
+786,0.5147,upper
+817,0.4879,upper
+848,0.4646,upper
+879,0.4409,upper
+911,0.4183,upper
+942,0.3997,upper
+974,0.3808,upper
+1006,0.3535,upper
+1039,0.3418,upper
+1070,0.3264,upper
+1102,0.3122,upper
+1134,0.3035,upper
+1165,0.2851,upper
+1197,0.2655,upper

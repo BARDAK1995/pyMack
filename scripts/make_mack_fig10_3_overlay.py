@@ -83,10 +83,15 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from pymack import (  # noqa: E402
-    find_temporal_mode_anchor_3d_shooting,
     load_reference_csv,
     make_mack_profile,
     select_mack_table_10_1_cases,
+)
+# NOTE: find_temporal_mode_anchor_3d_shooting / temporal_growth_scan_3d_shooting_from_anchor
+# were dropped from the curated pymack/__init__.py facade in the 0.1.0 API refactor
+# (commit d0ddcd3) but still live in pymack.analysis; import directly from there.
+from pymack.analysis import (  # noqa: E402
+    find_temporal_mode_anchor_3d_shooting,
     temporal_growth_scan_3d_shooting_from_anchor,
 )
 from pymack.mack_table_10_1 import TABLE_10_1_FAMILY_SETTINGS  # noqa: E402

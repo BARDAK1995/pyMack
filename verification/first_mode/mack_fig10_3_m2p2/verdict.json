@@ -123,6 +123,5 @@
     "reference": "verification/first_mode/mack_fig10_3_m2p2/reference_mack_ch10_fig10_3_M22_paper_psi45.csv",
     "overlay": "verification/first_mode/mack_fig10_3_m2p2/overlay.png"
   },
-  "pymack_provenance": "verification/compute_mack_fig10_3_selfseed.py --mach 2.2 --psi 45 --ymax-factor 4.0 --n-steps 800; self-seeded exact 8x8 Appendix-A first-order shooting (find_temporal_mode_anchor_3d_shooting + temporal_growth_scan_3d_shooting_from_anchor), condition=table_11_1, T_edge=155.0 K, y_max=14.9 (=4.01x delta*/L*), length_scale=L_star, wall_bc=isothermal, method=qr. Convergence-checked at y_max 4.5x and n_steps 1500.",
-  "mode": "first"
+  "pymack_provenance": "verification/compute_mack_fig10_3_selfseed.py --mach 2.2 --psi 45 --ymax-factor 4.0 --n-steps 800; self-seeded exact 8x8 Appendix-A first-order shooting (find_temporal_mode_anchor_3d_shooting + temporal_growth_scan_3d_shooting_from_anchor), condition=table_11_1, T_edge=155.0 K, y_max=14.9 (=4.01x delta*/L*), length_scale=L_star, wall_bc=isothermal, method=qr. Convergence-checked at y_max 4.5x and n_steps 1500."
 }

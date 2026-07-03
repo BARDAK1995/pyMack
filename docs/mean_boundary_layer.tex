@@ -6,39 +6,36 @@
 \providecommand{\Dmat}{\mathrm{D}}
 
 \title{\textbf{The Mean Boundary-Layer Profile}\\[3pt]
-\large How \texttt{pyMack} computes the steady laminar compressible base flow\\
-whose profiles become the coefficients of the stability equations}
-\author{Personal reference note}
+\large Computation of the steady laminar compressible base flow in \texttt{pyMack}}
+\author{\texttt{pyMack} technical documentation}
 \date{\today}
 
 \begin{document}
 \maketitle
-
-\begin{abstract}
-\noindent Before any stability question can be asked, the disturbance must have something to ride on: a
-steady, laminar, compressible boundary layer. This note explains --- assuming no prior exposure --- how
-\texttt{pyMack} obtains that base flow. It states the governing compressible Navier--Stokes equations and
-their non-dimensionalisation, defines the dimensionless groups and the local Mack length that fix the
-solver's units, and then reduces the flat-plate mean flow to a small self-similar boundary-value problem
-for the profiles $\bar U(y),\bar T(y),\bar\rho(y),\bar\mu(y)$ and their wall-normal derivatives. Every
-equation, boundary condition, coefficient, and default is transcribed from the actual code in
-\texttt{pymack/}, cited by file. These profiles --- and, crucially, their $y$-derivatives --- are precisely
-the \emph{known coefficients} that enter the linearised disturbance equations, which are derived in the
-companion note.
-\end{abstract}
-
 \tableofcontents
 \bigskip
 
-\noindent\textbf{How to read this.} Boxes marked {\color{kicol}\textbf{``What problem is solved here''}}
-state, at each stage, exactly which equation and which boundary conditions are involved. \emph{In plain
-words} notes give the intuition; grey \textsf{Remark} asides hold secondary or fallback detail you can skip
-on a first read.
+%=====================================================================
+\section{Scope}\label{sec:scope}
+%=====================================================================
+Linear stability theory studies the evolution of small disturbances superposed on a steady laminar base
+flow; that base flow, together with its wall-normal derivatives, must therefore be available before
+any stability problem can be posed. This document specifies how \texttt{pyMack} computes the steady,
+laminar, compressible flat-plate boundary layer that serves this role. Section~\ref{sec:gov} states the
+governing equations and the non-dimensionalisation that fixes the solver's units;
+Section~\ref{sec:base} reduces the mean flow to a self-similar boundary-value problem for the profiles
+$\bar U$, $\bar T$, $\bar\rho$, $\bar\mu$ and describes its numerical solution;
+Section~\ref{sec:transform} gives the transformation from the similarity coordinate to physical,
+case-specific coordinates. Every equation, boundary condition, coefficient, and default value is
+transcribed from the implementation in \texttt{pymack/}, cited by file. The linearisation of the
+governing equations about these profiles is derived in the companion document \emph{Derivation of the
+Disturbance Equations}; the discretisation and eigenvalue algorithms are described in \emph{Numerical
+Methods}.
 
-\paragraph{Notation.} Overbars are mean (base-flow) quantities. A prime on a mean quantity is
-$\D\equiv\mathrm d/\mathrm dy$ (or $\mathrm d/\mathrm d\eta$ in the similarity coordinate, as noted in
-context). The rows below cover only the base-flow, transport, and scale symbols this note uses; the
-disturbance/eigenvalue symbols live in the companion notes.
+\paragraph{Notation.} Overbars denote mean (base-flow) quantities. A prime on a mean quantity denotes
+$\D\equiv\mathrm d/\mathrm dy$, or $\mathrm d/\mathrm d\eta$ in the similarity coordinate, as stated in
+context. The table below collects the base-flow, transport, and scale symbols used in this document;
+disturbance and eigenvalue symbols are defined in the companion documents.
 \begin{center}\footnotesize
 \renewcommand{\arraystretch}{1.18}
 \begin{tabular}{@{}ll@{}}
@@ -46,164 +43,216 @@ disturbance/eigenvalue symbols live in the companion notes.
 \multicolumn{2}{@{}l}{\textbf{Base flow \& transport}}\\
 $\bar U,\bar T,\bar\rho{=}1/\bar T$ & mean velocity, temperature, density\\
 $\bar\mu,\bar\kappa$ & viscosity, conductivity\\
-$C{=}\bar\mu/\bar T,\ K,\ B$ & transport groups, \S\ref{sec:base}\\
+$C{=}\bar\mu/\bar T,\ K,\ B$ & transport groups, Eq.~\eqref{eq:transport}\\
 \midrule
 \multicolumn{2}{@{}l}{\textbf{Scales \& parameters}}\\
 $\Mae,\ \Ree,\ \mathit{Pr},\ \gamma$ & Mach, Reynolds, Prandtl, $c_p/c_v$\\
 $R_g,\ a_e$ & specific gas constant, edge sound speed ($a_e^2{=}\gamma R_g T_e$)\\
 $L^*{=}\sqrt{\nu_e x/U_e}$ & Mack length, Eq.~\eqref{eq:Lstar}\\
-$R{=}\sqrt{Re_x},\ F$ & Mack Reynolds, reduced frequency, Eq.~\eqref{eq:RF}\\
+$R{=}\sqrt{Re_x},\ F$ & Mack Reynolds number, reduced frequency, Eq.~\eqref{eq:RF}\\
 $\alpha,\ \alpha_L{=}\alpha L^*,\ \delta^*,\theta$ & streamwise wavenumber, scaled wavenumber, displacement/momentum thickness\\
+$\eta$ & similarity (generalised) wall-normal coordinate, Eq.~\eqref{eq:ytransform}\\
 \bottomrule
 \end{tabular}
 \end{center}
 
-\bridge{The disturbance rides on a steady laminar flow, so we need that flow --- and its $y$-derivatives ---
-before anything else. This note computes it.}
-
 %=====================================================================
 \section{Governing equations and non-dimensionalisation}\label{sec:gov}
 %=====================================================================
-The flow obeys the compressible Navier--Stokes equations --- conservation of mass, momentum, and energy for
-a viscous, heat-conducting perfect gas:
+The flow is governed by the compressible Navier--Stokes equations, expressing conservation of mass,
+momentum, and energy for a viscous, heat-conducting perfect gas \cite{white2006}:
 \begin{align}
   \frac{\Dmat\rho}{\Dmat t}+\rho\,\nabla\!\cdot\!\mathbf u &= 0, &&\text{(mass)}\label{eq:ns-mass}\\
   \rho\frac{\Dmat\mathbf u}{\Dmat t} &= -\nabla p+\nabla\!\cdot\!\boldsymbol\tau, &&\text{(momentum)}\label{eq:ns-mom}\\
   \rho\,c_p\frac{\Dmat T}{\Dmat t} &= \frac{\Dmat p}{\Dmat t}+\nabla\!\cdot(\kappa\nabla T)+\Phi, &&\text{(energy)}\label{eq:ns-energy}\\
   p &= \rho\,R_g\,T, &&\text{(state)}\label{eq:ns-state}
 \end{align}
-where $\mathbf u=(u,v)$ is velocity, $\rho$ density, $T$ temperature, $p$ pressure, $\mu$ viscosity,
-$\kappa$ conductivity, $c_p$ specific heat, $R_g$ the specific gas constant (plain $R$ is reserved for the
-Mack Reynolds number, Eq.~\eqref{eq:RF}), and $\Dmat/\Dmat t=\partial_t+\mathbf u\!\cdot\!\nabla$
-the material derivative. The two remaining symbols are the Newtonian \textbf{viscous stress tensor} and the
-\textbf{dissipation function},
+where $\mathbf u=(u,v)$ is the velocity, $\rho$ the density, $T$ the temperature, $p$ the pressure, $\mu$
+the viscosity, $\kappa$ the conductivity, $c_p$ the specific heat, $R_g$ the specific gas constant (plain
+$R$ is reserved for the Mack Reynolds number, Eq.~\eqref{eq:RF}), and
+$\Dmat/\Dmat t=\partial_t+\mathbf u\!\cdot\!\nabla$ the material derivative. The remaining terms are the
+Newtonian viscous stress tensor and the dissipation function,
 \begin{equation}\label{eq:tauphi}
   \boldsymbol\tau=\mu\Big(\nabla\mathbf u+\nabla\mathbf u^{\mathsf T}-\tfrac23(\nabla\!\cdot\!\mathbf u)\,\mathbf I\Big),
   \qquad \Phi=\boldsymbol\tau\!:\!\nabla\mathbf u .
 \end{equation}
-We will not need their closed form again: all that matters downstream is that they are linear in velocity
-gradients. These four equations are applied \emph{twice} --- once to obtain the steady mean flow (this
-note), once linearised for the disturbance (the companion note).
-
-\begin{figure}[h]\centering
-  \includegraphics[width=0.86\linewidth]{fig_setup.pdf}
-  \caption{The physical setup. A steady compressible boundary layer grows along a wall; its mean velocity
-  $\bar U(y)$ and temperature $\bar T(y)$ vary across the layer of thickness $\delta(x)$. Stability theory
-  tracks one small disturbance $q'(x,y,t)$ riding in this layer and asks whether it amplifies downstream ---
-  but first the mean profiles $\bar U,\bar T$ must be computed, which is the subject of this note.}\label{fig:setup}
-\end{figure}
+Their closed forms are not required in what follows; it suffices that both are linear in the velocity
+gradients. Equations \eqref{eq:ns-mass}--\eqref{eq:ns-state} are applied twice: once to obtain the steady
+mean flow (the subject of this document), and once in linearised form for the disturbance (the companion
+document).
 
 \paragraph{Non-dimensionalisation and default gas constants.} Velocities are scaled by the edge speed
-$U_e$, temperature by $T_e$, density by $\rho_e$, viscosity by $\mu_e$, pressure by $\rho_e U_e^2$. Because
-the gas is perfect and pressure is nearly uniform across the layer, $\bar\rho=1/\bar T$ in these units.
-Three dimensionless groups control everything,
-\begin{equation}
+$U_e$, temperature by $T_e$, density by $\rho_e$, viscosity by $\mu_e$, and pressure by $\rho_e U_e^2$.
+Because the gas is perfect and the pressure is nearly uniform across the layer, $\bar\rho=1/\bar T$ in
+these units. Three dimensionless groups govern the problem,
+\begin{equation}\label{eq:groups}
   \Mae=\frac{U_e}{a_e},\quad a_e=\sqrt{\gamma R_g T_e},\qquad
   \Ree=\frac{\rho_e U_e L_{\mathrm{ref}}}{\mu_e},\qquad
   \mathit{Pr}=\frac{\mu_e c_p}{\kappa_e},
 \end{equation}
-where $a_e$ is the edge speed of sound and $R_g$ the specific gas constant, with default air values
-$\gamma=1.4$, $\mathit{Pr}=0.72$, Sutherland constant $S=110.4~\mathrm K$, and power-law exponent
-$\omega_\mu\approx0.7$ when the power-law viscosity is used.
+where $a_e$ is the edge speed of sound. The default gas constants are the standard air values
+$\gamma=1.4$, $\mathit{Pr}=0.72$, Sutherland constant $S=110.4~\mathrm K$ \cite{sutherland1893}, and
+power-law exponent $\omega_\mu\approx0.7$ when the power-law viscosity model is selected.
 
-\paragraph{The Mack length and Reynolds scales.}\label{sec:Lstar} Boundary layers grow like $\sqrt x$, so
-the natural local scale at station $x$ is
+\paragraph{The Mack length and Reynolds scales.}\label{sec:Lstar} A flat-plate boundary layer grows as
+$\sqrt x$, so the natural local length scale at station $x$, following Mack \cite{mack1984}, is
 \begin{equation}\label{eq:Lstar}
   L^*=\sqrt{\frac{\nu_e\,x}{U_e}},\qquad \nu_e=\frac{\mu_e}{\rho_e}.
 \end{equation}
-With $L_{\mathrm{ref}}=L^*$ the Reynolds number becomes the square root of the usual one, and a fixed
-physical frequency $f$ maps to a reduced frequency $F$ (both consumed later, by the neutral-curve and
-$N$-factor computations in the companion notes):
+With $L_{\mathrm{ref}}=L^*$ the Reynolds number becomes the square root of the conventional one, and a
+fixed physical frequency $f$ maps to a reduced frequency $F$; both enter the neutral-curve and $N$-factor
+computations of the companion documents:
 \begin{equation}\label{eq:RF}
   R=\frac{U_eL^*}{\nu_e}=\sqrt{Re_x},\quad Re_x=\frac{U_ex}{\nu_e};\qquad
   F=\frac{2\pi f\,\nu_e}{U_e^2};\qquad \alpha_L=\alpha L^* ,
 \end{equation}
-where $\alpha$ is the streamwise wavenumber. $R$ is the horizontal axis of every neutral curve and
-$\alpha_L$ the vertical axis. Conversions live in
-\texttt{pymack/scales.py}; the solver itself is dimensionless. A profile may be stored on a $y/\delta^*$ or
-a $y/L^*$ grid; the constant $\delta^*/L^*$ converts between them, with $\D\!\mapsto\!(\delta^*/L^*)^{-1}\D$.
+where $\alpha$ is the streamwise wavenumber. $R$ is the abscissa of every neutral curve and $\alpha_L$
+the ordinate. The scale conversions are implemented in \texttt{pymack/scales.py}; the solver itself is
+dimensionless.
 
 %=====================================================================
-\section{The base flow}\label{sec:base}
+\section{The self-similar base flow}\label{sec:base}
 %=====================================================================
-\problembox{Solve a \emph{boundary-value problem} (BVP) --- not an eigenvalue problem --- for the steady
-laminar profiles $\bar U(y),\bar T(y),\bar\rho(y),\bar\mu(y)$ and their $y$-derivatives. A BVP fixes the
-data at both ends ($y=0$ and $y\to\infty$) and has a single solution; an eigenvalue problem instead leaves
-a parameter free and asks for the special values that admit a non-zero solution. These profiles become the
-known coefficients of the disturbance equations.}
+The mean flow is obtained from a boundary-value problem, not an eigenvalue problem: the data are
+prescribed at both ends of the domain ($y=0$ and $y\to\infty$) and the solution is unique. Its unknowns
+are the steady laminar profiles $\bar U$, $\bar T$, $\bar\rho$, $\bar\mu$ and their wall-normal
+derivatives, which subsequently enter the linearised disturbance equations as known coefficients.
 
-For a flat plate the mean flow is \emph{self-similar}: profiles at different $x$ collapse onto one curve in
-a stretched coordinate $\eta$. With the dimensionless stream function $f(\eta)$, $f'=\bar U=u/U_e$ (a prime
-is $\mathrm d/\mathrm d\eta$), momentum and energy reduce to two coupled ODEs,
+For a flat plate the mean flow is \emph{self-similar}: profiles at different streamwise stations collapse
+onto a single curve in the stretched coordinate $\eta$. Introducing the dimensionless stream function
+$f(\eta)$ with $f'=\bar U=u/U_e$ (in this section a prime denotes $\mathrm d/\mathrm d\eta$), the momentum
+and energy equations \eqref{eq:ns-mom}--\eqref{eq:ns-energy} reduce under the boundary-layer approximation
+to the classical pair of coupled ordinary differential equations
+\cite{white2006,ozgen2008},
 \begin{align}
   \big(C\,f''\big)' + f\,f'' &= 0, \label{eq:bl-mom}\\
   \big(B\,\bar T{}'\big)' + f\,\bar T{}' + (\gamma-1)\,\Mae^2\,C\,\big(f''\big)^2 &= 0, \label{eq:bl-energy}
 \end{align}
-with transport groups
+with the transport groups
 \begin{equation}\label{eq:transport}
-  C=\frac{\mu/\mu_e}{T/T_e}\ \text{(Chapman--Rubesin)},\qquad K=\frac{\kappa}{c_p\mu_e},\qquad
-  B=\frac{K}{\bar T}\Big(=\tfrac{C}{\mathit{Pr}}\ \text{at constant }\mathit{Pr}\Big).
+  C=\frac{\mu/\mu_e}{T/T_e},\qquad K=\frac{\kappa}{c_p\mu_e},\qquad
+  B=\frac{K}{\bar T}\Big(=\tfrac{C}{\mathit{Pr}}\ \text{at constant }\mathit{Pr}\Big),
 \end{equation}
-The last term in \eqref{eq:bl-energy} is aerodynamic heating --- it makes a hypersonic layer hot near the
-wall and couples energy to velocity. The conductivity model is $\kappa=\mu c_p/\mathit{Pr}$ (so
-$\bar\kappa=\bar\mu/\mathit{Pr}$ at constant $\mathit{Pr}$); the transport derivatives
-$\mathrm d\mu/\mathrm dT$ etc.\ are taken analytically from the chosen viscosity law.
+where $C$ is the Chapman--Rubesin parameter \cite{chapman1949}. The final term of \eqref{eq:bl-energy}
+represents aerodynamic heating: it elevates the near-wall temperature at high Mach number and couples the
+energy equation to the velocity field. The conductivity model is $\kappa=\mu c_p/\mathit{Pr}$, so that
+$\bar\kappa=\bar\mu/\mathit{Pr}$ at constant $\mathit{Pr}$; the transport derivatives
+$\mathrm d\mu/\mathrm dT$, $\mathrm d\kappa/\mathrm dT$ are evaluated analytically from the selected
+viscosity law.
 
-\paragraph{Wall and edge conditions.}
+\paragraph{Boundary conditions.} Equations \eqref{eq:bl-mom}--\eqref{eq:bl-energy} are closed by
 \begin{equation}\label{eq:blbc}
   \underbrace{f(0)=0,\ f'(0)=0}_{\text{no slip}},\quad
   \underbrace{f'(\infty)=1,\ \bar T(\infty)=1}_{\text{match the edge}},\qquad
   \begin{cases}\bar T{}'(0)=0 &\text{(adiabatic wall)}\\ \bar T(0)=T_w/T_e &\text{(isothermal wall)}\end{cases}
 \end{equation}
-For an adiabatic wall the recovered temperature is the standard result (stated, not derived)
-$T_{aw}/T_e=1+\tfrac12(\gamma-1)\sqrt{\mathit{Pr}}\,\Mae^2$. (For a cone, the edge state itself comes
-first, from the Taylor--Maccoll equation behind the conical shock --- a separate calculation, outside
-\texttt{pymack/}, in the Sivasubramanian--Fasel cone verification case; not detailed further here. See
-\texttt{taylor\_\allowbreak maccoll\_\allowbreak edge\_\allowbreak state.py}.)
+For an adiabatic wall the recovery temperature is the standard result
+$T_{aw}/T_e=1+\tfrac12(\gamma-1)\sqrt{\mathit{Pr}}\,\Mae^2$ \cite{white2006}. For a cone the edge state itself is computed
+first, from the Taylor--Maccoll equation behind the conical shock; this is a separate calculation outside
+\texttt{pymack/} (see \texttt{taylor\_\allowbreak maccoll\_\allowbreak edge\_\allowbreak state.py} in the
+Sivasubramanian--Fasel cone verification case) and is not detailed further here.
 
-\paragraph{Solution and the coordinate transform.} Equations \eqref{eq:bl-mom}--\eqref{eq:bl-energy} are
-solved as a 5-state first-order system $[\,f,\bar U,\bar U',\bar T,\bar T'\,]$ by collocation and Newton
-iteration (\texttt{scipy.integrate.solve\_bvp}), integrated to $\eta_{\max}\!\approx\!40$ (well beyond the
-edge). The implementation is \texttt{pymack/baseflow.py}. The similarity coordinate maps to the physical one
-by
-\begin{equation}\label{eq:ytransform}
-  \frac{y}{L^*}=\sqrt2\!\int_0^\eta\frac{\bar T}{T_e}\,\mathrm d\eta',\quad
-  \frac{\delta^*}{L^*}=\sqrt2\!\int_0^\infty(\bar T-\bar U)\,\mathrm d\eta,\quad
-  \frac{\theta}{L^*}=\sqrt2\!\int_0^\infty\bar U(1-\bar U)\,\mathrm d\eta,
-\end{equation}
-where the displacement thickness $\delta^*$ measures how far the wall effectively pushes the outer flow
-outward and the momentum thickness $\theta$ the momentum deficit. Figure~\ref{fig:baseflow} (right panel)
-plots this transform directly: because $\bar T$ is elevated near the wall, the map from a uniform $\eta$
-mesh to physical $y$ is nonlinear, stretching resolution into the hot near-wall region. The solver returns,
-on any grid,
+\paragraph{Numerical solution.} Equations \eqref{eq:bl-mom}--\eqref{eq:bl-energy} with conditions
+\eqref{eq:blbc} are solved as a five-state first-order system $[\,f,\bar U,\bar U',\bar T,\bar T'\,]$ by
+fourth-order collocation with residual control and Newton iteration \cite{kierzenka2001}, as implemented
+in \texttt{scipy.integrate.solve\_bvp} \cite{virtanen2020}, integrated to $\eta_{\max}\approx40$, well
+beyond the boundary-layer edge. The driver is \texttt{pymack/baseflow.py}. On any requested grid the solver returns
 $\bar U,\bar U',\bar U'',\ \bar T,\bar T',\bar T'',\ \bar\rho,\ \bar\mu,\ \mathrm d\mu/\mathrm dT,\
 \mathrm d^2\mu/\mathrm dT^2,\ \bar\kappa,\ \mathrm d\kappa/\mathrm dT,\ \mathrm d^2\kappa/\mathrm dT^2$.
 
-\remark{Two base-flow implementations.}{\texttt{baseflow.py} contains two equivalent self-similar
-formulations sharing the 5-ODE structure above. Equations \eqref{eq:bl-mom}--\eqref{eq:bl-energy} and the
-$\sqrt2$ transform \eqref{eq:ytransform} are the \texttt{CompressibleBlasiusProfile} form. The temporal
-solver and the worked example (in the companion Numerical Methods note) use \texttt{make\_flatplate\_profile}
-(\texttt{FlatPlateProfile}; Ozgen \& Kircali transport laws), an alternative normalisation ($f'=\bar U/\bar T$, $\tfrac12$ factors,
-$y/L^*=\eta$, no $\sqrt2$). The two give the same physical profiles; only the similarity bookkeeping
-differs.}
+Figure~\ref{fig:baseflow} shows the computed profiles for a representative hypersonic case: $\Mae=6$,
+edge temperature $T_e=54~\mathrm K$, and an isothermal wall at $T_w=300~\mathrm K$, i.e.\
+$T_w/T_e=5.56$. Since the adiabatic recovery temperature at these conditions is
+$T_{aw}\approx7.1\,T_e$, the wall is cooled. The velocity rises monotonically to its edge value, while
+viscous heating produces an interior temperature maximum, $\bar T\approx5.7\,T_e$, just above the cooled
+wall. The dotted line marks the outermost generalised inflection point, $(\bar\rho\,\bar U')'=0$, the
+seat of the inviscid instability identified by Lees \& Lin \cite{leeslin1946} and discussed in the
+companion documents.
 
-\begin{figure}[h]\centering
-  \includegraphics[width=0.86\linewidth]{fig_baseflow.pdf}
-  \caption{\emph{Left:} a computed compressible base flow ($\Mae=4.5$, adiabatic). $\bar U(y)/U_e$ rises
-  monotonically to the edge; $\bar T(y)$ bulges near the wall from viscous heating. These curves and their
-  $y$-derivatives are the known coefficients $\bar U,\bar T,\dots$ in the disturbance equations. The boxed
-  callout marks the generalised inflection point, the seat of the inviscid instability (discussed in the
-  companion notes on the instability mechanisms). \emph{Right:} the $\eta\to y/L^*$ transform of
-  Eq.~\eqref{eq:ytransform}, evaluated for the same case. The solid curve is $y/L^*$ computed by cumulative
-  integration of $\bar T$; the dashed grey line is the linear reference $y/L^*=\eta$. Because $\bar T>1$
-  near the wall (viscous heating), the transform outpaces the linear reference there: a uniform $\eta$ mesh
-  maps to a \emph{stretched} physical mesh close to the wall, which is why $\eta$ rather than $y$ is the
-  natural computational coordinate.}\label{fig:baseflow}
+\begin{figure}[H]\centering
+  \includegraphics[width=0.62\linewidth]{fig_baseflow.pdf}
+  \caption{Computed compressible mean flow in the similarity coordinate $\eta$: $\Mae=6$,
+  $T_e=54~\mathrm K$, isothermal wall at $T_w=300~\mathrm K$ ($T_w/T_e=5.56$, cooled relative to
+  $T_{aw}\approx7.1\,T_e$). Viscous heating produces an interior temperature maximum
+  ${\approx}5.7\,T_e$ just above the wall. The dotted line marks the outermost generalised inflection
+  point $(\bar\rho\,\bar U')'=0$ \cite{leeslin1946}. These profiles and their wall-normal derivatives
+  are the known coefficients of the linearised disturbance equations; the transformation to physical
+  coordinates is given by Eqs.~\eqref{eq:ytransform} and \eqref{eq:ydim}.}\label{fig:baseflow}
 \end{figure}
 
-\bridge{These profiles $\bar U(y),\bar T(y),\bar\rho(y),\bar\mu(y)$ and their $y$-derivatives are exactly
-the coefficients that appear in the linearised disturbance equations; that linearisation and the resulting
-ordinary differential equations are derived in the companion ``Derivation of the Disturbance Equations''
-note.}
+\paragraph{Remark: two equivalent formulations.} \texttt{baseflow.py} contains two equivalent
+self-similar formulations sharing the five-equation structure above. Equations
+\eqref{eq:bl-mom}--\eqref{eq:bl-energy} and the $\sqrt2$ transform of Section~\ref{sec:transform}
+correspond to the \texttt{CompressibleBlasiusProfile} form. The temporal solver and the worked example of
+the companion \emph{Numerical Methods} document use \texttt{make\_flatplate\_profile}, which follows the
+transport laws and normalisation of \"Ozgen \& K{\i}rcal{\i} \cite{ozgen2008}
+($f'=\bar U/\bar T$, factors of $\tfrac12$, $y/L^*=\eta$, no $\sqrt2$). The two yield the same physical
+profiles; only the similarity bookkeeping differs.
+
+%=====================================================================
+\section{Transformation to physical coordinates}\label{sec:transform}
+%=====================================================================
+The similarity solution is computed once, in $\eta$; all case-specific dimensional information enters
+only through the transformation back to the physical wall-normal coordinate. Because the near-wall gas is
+hot ($\bar T>1$) and correspondingly rarefied ($\bar\rho=1/\bar T$), equal increments of $\eta$ span
+unequal increments of physical distance. The map follows directly from the temperature field. In the
+units of Section~\ref{sec:gov} the differential relation is
+\begin{equation}\label{eq:dydeta}
+  \frac{\mathrm dy}{\mathrm d\eta}=\sqrt2\,\bar T(\eta)\qquad(y\ \text{in units of}\ L^*),
+\end{equation}
+whose integral gives the physical coordinate at station $x$,
+\begin{equation}\label{eq:ytransform}
+  \frac{y}{L^*}=\sqrt2\int_0^\eta \bar T(\eta')\,\mathrm d\eta' .
+\end{equation}
+Substituting the Mack length \eqref{eq:Lstar} yields the fully dimensional, case-specific form
+\begin{equation}\label{eq:ydim}
+  \boxed{\;y^*(\eta;x^*)=\sqrt{\frac{2\,\nu_e\,x^*}{U_e}}\,\int_0^\eta \bar T(\eta')\,\mathrm d\eta'\;}
+\end{equation}
+so that a single similarity solution generates the entire family of dimensional profiles, parameterised
+by the streamwise station $x^*$ and the edge state $(U_e,\nu_e)$. The map \eqref{eq:ytransform} is
+strictly monotone, and its inverse assigns a unique $\eta$ to any physical height $y^*$. Since
+$\bar T>1$ near the wall, the transform outpaces the linear reference $y/L^*=\sqrt2\,\eta$ there: a
+uniform $\eta$ mesh maps to a physical mesh stretched into the hot near-wall region, which is why $\eta$,
+rather than $y$, is the natural computational coordinate. Wall-normal derivatives convert by the chain
+rule implied by \eqref{eq:dydeta},
+\begin{equation}\label{eq:chain}
+  \frac{\mathrm d}{\mathrm dy}=\frac{1}{\sqrt2\,\bar T(\eta)}\,\frac{\mathrm d}{\mathrm d\eta}
+  \qquad(y\ \text{in units of}\ L^*).
+\end{equation}
+
+The integral thicknesses follow from the same transform,
+\begin{equation}\label{eq:thicknesses}
+  \frac{\delta^*}{L^*}=\sqrt2\int_0^\infty(\bar T-\bar U)\,\mathrm d\eta,\qquad
+  \frac{\theta}{L^*}=\sqrt2\int_0^\infty\bar U\,(1-\bar U)\,\mathrm d\eta,
+\end{equation}
+where the displacement thickness $\delta^*$ measures the outward displacement of the outer flow by the
+layer and the momentum thickness $\theta$ its momentum deficit. A profile may be stored on a $y/\delta^*$
+or a $y/L^*$ grid; the constant $\delta^*/L^*$ converts between them, with
+$\D\mapsto(\delta^*/L^*)^{-1}\D$. These conversions are implemented in \texttt{pymack/scales.py}.
+
+The profiles $\bar U,\bar T,\bar\rho,\bar\mu$ and their wall-normal derivatives assembled here are
+precisely the coefficients of the linearised disturbance equations derived in the companion document
+\emph{Derivation of the Disturbance Equations}.
+
+\begin{thebibliography}{9}
+\bibitem{white2006} F.~M. White, \emph{Viscous Fluid Flow}, 3rd ed., McGraw--Hill, New York, 2006.
+\bibitem{sutherland1893} W.~Sutherland, ``The viscosity of gases and molecular force,''
+  \emph{Philosophical Magazine}, Series~5, Vol.~36, No.~223, 1893, pp.~507--531.
+\bibitem{mack1984} L.~M. Mack, ``Boundary-layer linear stability theory,'' AGARD Report No.~709,
+  \emph{Special Course on Stability and Transition of Laminar Flow}, 1984.
+\bibitem{ozgen2008} S.~\"Ozgen and S.~A. K{\i}rcal{\i}, ``Linear stability analysis in compressible,
+  flat-plate boundary layers,'' \emph{Theoretical and Computational Fluid Dynamics}, Vol.~22, 2008,
+  pp.~1--20.
+\bibitem{chapman1949} D.~R. Chapman and M.~W. Rubesin, ``Temperature and velocity profiles in the
+  compressible laminar boundary layer with arbitrary distribution of surface temperature,''
+  \emph{Journal of the Aeronautical Sciences}, Vol.~16, No.~9, 1949, pp.~547--565.
+\bibitem{leeslin1946} L.~Lees and C.~C. Lin, ``Investigation of the stability of the laminar boundary
+  layer in a compressible fluid,'' NACA Technical Note No.~1115, 1946.
+\bibitem{kierzenka2001} J.~Kierzenka and L.~F. Shampine, ``A BVP solver based on residual control and
+  the MATLAB PSE,'' \emph{ACM Transactions on Mathematical Software}, Vol.~27, No.~3, 2001,
+  pp.~299--316.
+\bibitem{virtanen2020} P.~Virtanen et al., ``SciPy 1.0: fundamental algorithms for scientific computing
+  in Python,'' \emph{Nature Methods}, Vol.~17, 2020, pp.~261--272.
+\end{thebibliography}
 
 \end{document}

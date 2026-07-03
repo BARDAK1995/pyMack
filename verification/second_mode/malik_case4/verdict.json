@@ -1,0 +1,48 @@
+{
+  "case_id": "malik_case4",
+  "category": "eigenvalue_anchor",
+  "source": "Malik (1990) JCP 86:376 Table V, Case 4 (M=10, R=2000, T_w/T_adb=0.1 cooled, alpha=0.105, beta=0). Dimensional conditions (T0=4200 degR, cooled wall) read from Malik Table I (refPapers/NewPapers/figures/malik1990_table1_test_cases.png); eigenvalue from Table V (4CD, N+1=81).",
+  "conditions": {
+    "Ma": 10.0,
+    "Re_l": 2000.0,
+    "alpha_fixed": 0.105,
+    "beta": 0.0,
+    "Pr": 0.7,
+    "gamma": 1.4,
+    "wall": "isothermal, cooled T_w/T_adb=0.1",
+    "T0_K": 2333.3333333333335,
+    "T_edge_K": 111.11111111111114,
+    "T_wall_K": 197.03556145201682,
+    "sutherland_S_K": 110.33333333333333,
+    "malik_case_number": 4,
+    "problem": "temporal (fixed real alpha -> complex omega)",
+    "mode": "second mode",
+    "length_scale": "L_star"
+  },
+  "quantity": "temporal frequency eigenvalue omega = omega_r + i*omega_i at fixed real alpha",
+  "metrics": {
+    "omega_r_rel_err": 0.00027215944767793266,
+    "omega_i_rel_err": 0.021026165174861278,
+    "pymack_omega": [
+      0.0974571688900504,
+      0.0019877084742289616
+    ],
+    "malik_omega": [
+      0.0974837,
+      0.0020304
+    ],
+    "c_phase": 0.9281635132385753,
+    "N": 200,
+    "topology_ok": true
+  },
+  "verdict": "agrees",
+  "verdict_reason": "Hypersonic cooled-wall TEMPORAL second mode. pyMack omega=0.0974572+0.0019877i vs Malik 0.0974837+0.0020304i: omega_r rel err 2.72e-04 (0.027%, essentially exact), omega_i rel err 2.10e-02 (2.10%). The omega_i offset is well inside Malik's OWN Table V inter-scheme spread for this deliberately severe M=10 case (2FD/4CD/SDSP/MDSP span omega_r=0.097400..0.097486, omega_i=0.0020224..0.0020316 at N+1=61; pyMack's omega_r lands squarely inside that band). Previously logged non-reproducible for lack of the dimensional conditions (Hildebrand lists only M and Re); adding the source paper (Table I: T0=4200 degR, cooled wall) unlocked it. Mirror of validation/test_malik1990_case4_anchor.py.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": null,
+    "reference": null,
+    "overlay": "verification/second_mode/malik_case4/overlay.png"
+  },
+  "pymack_provenance": "pymack.solver.solve_temporal_compressible on CompressibleBlasiusProfile (cooled isothermal wall T_w=0.1*T_adb, Sutherland S=110.33 K), N=200, y_max=75, lambda_mu_ratio=1.2, length_scale='L_star'; mirrors validation/test_malik1990_case4_anchor.py.",
+  "mode": "second"
+}

@@ -101,12 +101,26 @@ R_SWEEP = [200.0, 300.0, 400.0, 500.0, 600.0, 800.0, 1000.0,
 # Per-family wavenumber scan grid (L* scale). The first-mode peak alpha sits low
 # and drifts slightly with R; verified peak at M2.2/R600 is alpha~0.05. The grid
 # brackets the peak on BOTH sides (down to 0.02) at every R.
+# NOTE (2026-07-02): (1.6, 45.0) added here for the Fig 10.3 M1.6 cross-check
+# task, following the exact same pattern as the two existing families. As of
+# this date the module-level import of find_temporal_mode_anchor_3d_shooting /
+# temporal_growth_scan_3d_shooting_from_anchor at the top of this file FAILS:
+# pymack 0.1.0's "curated public API" repackaging (commit d0ddcd3) removed or
+# renamed these internal shooting helpers (scripts/make_mack_fig10_3_overlay.py
+# has the identical broken import). This is a pymack-side API break unrelated
+# to the (1.6, 45.0) parameters added here -- fixing it means adapting this
+# whole self-seed/continuation pipeline to pymack's new public solver API
+# (solve_temporal_mode_3d_shooting_sigma_min / continue_temporal_mode_3d_shooting_sigma_min
+# have different signatures and return shapes), which is real restructuring,
+# not a param tweak. Left unresolved per task scope; the M1.6 Fig 10.3 curves
+# were finalized on tracing/visual confidence alone, no pyMack cross-check.
 ALPHA_GRID = {
+    (1.6, 45.0): [0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.085, 0.10, 0.12],
     (2.2, 45.0): [0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.085, 0.10, 0.12],
     (3.0, 60.0): [0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.085, 0.10, 0.12],
 }
 # Anchor wavenumber per family (interior of the grid, near the expected peak).
-ANCHOR_ALPHA = {(2.2, 45.0): 0.05, (3.0, 60.0): 0.05}
+ANCHOR_ALPHA = {(1.6, 45.0): 0.05, (2.2, 45.0): 0.05, (3.0, 60.0): 0.05}
 
 N_STEPS_DEFAULT = 800  # verified identical root to n=1500 at 6x lower cost
 
@@ -318,7 +332,7 @@ def main(argv=None):
     args = p.parse_args(argv)
 
     if args.probe:
-        for mach, psi in [(2.2, 45.0), (3.0, 60.0)]:
+        for mach, psi in [(1.6, 45.0), (2.2, 45.0), (3.0, 60.0)]:
             prof = make_profile(mach)
             d = delta_star_over_lstar(prof)
             ym = round(4 * d, 1)

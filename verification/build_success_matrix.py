@@ -24,9 +24,13 @@ MODES = [
     ("second_mode", "Second (Mack) mode",
      "pyMack's design target — validated across independent sources, Mach 4.5–10, and a cone"),
     ("first_mode", "First mode",
-     "agrees with Özgen where the discrete mode is cleanly resolvable (a discrete-mode "
-     "eigenfunction-decay extractor recovers it); the remaining Mack-figure disagreements "
-     "use a separate solver and await the same scrutiny"),
+     "the Mack-figure first-mode cases (Figs 10.1/10.3/10.4); after the reference "
+     "re-digitisation most now agree or are acceptable, with the residual disagreement "
+     "isolated to the M≈2.2 cases"),
+    ("mixed_mode", "Mixed first + second mode",
+     "Özgen & Kırcalı Fig. 3 neutral curves — a single figure per Mach number that spans "
+     "BOTH the first mode and (for M≥4) the second/Mack mode; the second-mode branch is the "
+     "cleanest match, the low-α first-mode onset is the weak spot"),
     ("other", "Other",
      "incompressible / unrecoverable-condition cases (unmeasured)"),
 ]
@@ -78,6 +82,17 @@ def _headline(v: dict) -> str:
     if "alpha_r_rel_err" in m:
         return (f"α_r {_pct(m['alpha_r_rel_err'])}, "
                 f"α_i {_pct(m['alpha_i_rel_err'])} (N={m.get('N', '?')})")
+    if "omega_r_rel_err" in m:
+        return (f"ω_r {_pct(m['omega_r_rel_err'])}, "
+                f"ω_i {_pct(m['omega_i_rel_err'])} (N={m.get('N', '?')})")
+    if "n_modes_matched_under_1e5" in m:
+        return (f"all {m.get('n_modes_total', '?')} modes matched; "
+                f"{m['n_modes_matched_under_1e5']}/{m.get('n_modes_total', '?')} "
+                f"to <1e-5 (max {m.get('max_abs_err', 0):.0e})")
+    if "T_peak_y_rel_err" in m:
+        return (f"T̂ peak y={m.get('T_peak_y_pymack', 0):.1f} vs "
+                f"{m.get('T_peak_y_malik', 0):.0f} ({_pct(m['T_peak_y_rel_err'])}); "
+                f"|T̂|/|û|={m.get('T_over_u_dominance', 0):.1f}")
     if "malik_omega" in m:
         o = m["malik_omega"]
         return f"Malik ω={o[0]:.4f}{o[1]:+.5f}i (temporal; no pyMack run)"
@@ -114,7 +129,15 @@ def main() -> int:
         cases = []
         d = HERE / mode_dir
         if d.is_dir():
-            for vf in sorted(d.glob("*/verdict.json")):
+            # Discover cases at mode/<case>/verdict.json AND one level deeper at
+            # mode/<group>/<case>/verdict.json (e.g. mixed_mode/ozgen_fig3/M6/),
+            # de-duplicated so a case is never counted twice.
+            seen = set()
+            for vf in sorted(list(d.glob("*/verdict.json"))
+                             + list(d.glob("*/*/verdict.json"))):
+                if vf in seen:
+                    continue
+                seen.add(vf)
                 cases.append(read_verdict(vf))
         cases_by_mode[mode_dir] = cases
 

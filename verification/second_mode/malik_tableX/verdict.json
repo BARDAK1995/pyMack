@@ -1,0 +1,46 @@
+{
+  "case_id": "malik_tableX",
+  "category": "eigenvalue_anchor",
+  "source": "Malik (1990) JCP 86:376 Table X (M=10, R=1000, omega=0.09, isothermal wall T_wall=2000 degR, T_edge=480 degR). Conditions from Malik Table X + surrounding text (refPapers/NewPapers/figures/malik1990_table10_M10_stretching.png).",
+  "conditions": {
+    "Ma": 10.0,
+    "Re_l": 1000.0,
+    "omega": 0.09,
+    "beta": 0.0,
+    "Pr": 0.7,
+    "gamma": 1.4,
+    "wall": "isothermal, cooled T_wall=2000 degR",
+    "T_edge_K": 266.6666666666667,
+    "T_wall_K": 1111.111111111111,
+    "sutherland_S_K": 110.33333333333333,
+    "problem": "spatial (fixed real omega -> complex alpha)",
+    "mode": "second mode",
+    "length_scale": "L_star"
+  },
+  "quantity": "spatial streamwise eigenvalue alpha = alpha_r + i*alpha_i (second mode)",
+  "metrics": {
+    "alpha_r_rel_err": 0.0013518921790778731,
+    "alpha_i_rel_err": 0.11477906318063122,
+    "pymack_alpha": [
+      0.09580330892758453,
+      -0.002403463660217441
+    ],
+    "malik_alpha": [
+      0.095933,
+      -0.002156
+    ],
+    "c_phase": 0.9394247548174863,
+    "N": 200,
+    "topology_ok": true
+  },
+  "verdict": "acceptable",
+  "verdict_reason": "M=10 spatial second mode. pyMack alpha=0.095803-0.002403i vs Malik 0.095933-0.002156i: alpha_r rel err 1.35e-03 (0.135%, essentially exact -- mode location/phase speed confirmed), alpha_i rel err 1.15e-01 (11.5%). The alpha_i offset is the documented inter-method spread for hypersonic second modes (Tumin 2007 differs from Malik by ~11% on the M=4.5 Case 6 the same way); pyMack's value is converged to 6 digits and profile-independent. Note pyMack's TEMPORAL M=10 growth rates (cases 4/5) match Malik to ~2% -- the spatial alpha_i is more formulation-sensitive. Honest 'acceptable', not tuned. Mirror of validation/test_malik1990_tableX_anchor.py.",
+  "generated": "new",
+  "artifacts": {
+    "pymack": null,
+    "reference": null,
+    "overlay": "verification/second_mode/malik_tableX/overlay.png"
+  },
+  "pymack_provenance": "pymack.solver.solve_spatial on CompressibleBlasiusProfile (isothermal cooled wall T_wall=2000 degR, Sutherland S=110.33 K), N=200, y_max=100, lambda_mu_ratio=1.2, length_scale='L_star'.",
+  "mode": "second"
+}

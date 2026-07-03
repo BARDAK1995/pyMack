@@ -172,6 +172,9 @@ def plot_mazhong():
     bI_rf = d["ref_branch_I"]
     bII_rf = d["ref_branch_II"]
     F = d["F"]
+    eI = abs(bI_pm - bI_rf) / bI_rf * 100.0
+    eII = abs(bII_pm - bII_rf) / bII_rf * 100.0
+    emax = max(eI, eII)
 
     fig, ax = plt.subplots(figsize=(10.8, 6.8), constrained_layout=True)
     fig.get_layout_engine().set(rect=(0.0, 0.15, 1.0, 0.85))
@@ -193,7 +196,8 @@ def plot_mazhong():
 
     ax.set_xlabel("Reynolds number  R = $\\sqrt{Re_x}$")
     ax.set_ylabel("Spatial growth rate  $\\sigma = -\\alpha_i$")
-    ax.set_title(f"M4.5 2nd-mode growth at fixed F={F:.1e}\nVERDICT: agrees ($\\leq$3.4%)",
+    ax.set_title(f"M4.5 2nd-mode growth at fixed F={F:.1e} (isothermal disturbance BC)"
+                 f"\nVERDICT: agrees ($\\leq${emax:.1f}%)",
                  color="#333333")
     ax.grid(True, alpha=0.3)
     ax.set_xlim(R.min(), R.max())
@@ -201,24 +205,32 @@ def plot_mazhong():
     outside_legend(ax)
 
     bottom_note(fig,
-                "Branch I:  pyMack 831 vs M&Z 806  ($+3.1\\%$)    "
-                "Branch II: pyMack 1033 vs M&Z 999.6 ($+3.4\\%$)    "
+                f"Branch I:  pyMack {bI_pm:.0f} vs M&Z {bI_rf:.0f}  ($+{eI:.1f}\\%$)    "
+                f"Branch II: pyMack {bII_pm:.0f} vs M&Z {bII_rf:.1f} ($+{eII:.1f}\\%$)    "
                 "topology: one closed band, two neutral points")
 
     out = os.path.join(cd, "overlay.png")
     save(fig, out)
     update_verdict(cd, "verification/second_mode/mazhong2003_m4p5/overlay.png")
     written.append(("verification/second_mode/mazhong2003_m4p5/overlay.png",
-                    "M4.5 2nd-mode spatial growth sigma=-alpha_i vs R at fixed F=2.2e-4: "
-                    "pyMack lobe (solid) with its two neutral crossings vs Ma&Zhong Branch "
-                    "I=806 / II=999.6 (dashed lines); verdict agrees (~3%)."))
+                    f"M4.5 2nd-mode spatial growth sigma=-alpha_i vs R at fixed F=2.2e-4 "
+                    f"(isothermal disturbance BC): pyMack lobe (solid) with its two neutral "
+                    f"crossings vs Ma&Zhong Branch I={bI_rf:.0f} / II={bII_rf:.1f} (dashed "
+                    f"lines); verdict agrees (max {emax:.1f}%)."))
 
 
 # =============================================================================
 # 3. first_mode/mack_fig10_1_m{16,22}  -- first-mode neutral loop F*1e4 vs R
 # =============================================================================
-def plot_mack_fig10_1(mtag, mlabel, headline):
+def plot_mack_fig10_1(mtag, mlabel):
     cd = os.path.join(ROOT, "first_mode", f"mack_fig10_1_m{mtag}")
+    # Title reads the LIVE verdict word + loop-average error from verdict.json
+    # (no hardcoded numbers) so the plot can never drift from the recorded judgement.
+    with open(os.path.join(cd, "verdict.json"), "r", encoding="utf-8") as _vf:
+        _v = json.load(_vf)
+    verdict_word = _v.get("verdict", "?")
+    _loop = _v.get("metrics", {}).get("loop_avg_median_rel_err")
+    headline = f"loop-avg {_loop * 100:.1f}%" if _loop is not None else "loop-avg n/a"
     Mn = "16" if mtag == "1p6" else "22"
     pm = load_csv(os.path.join(cd, f"pymack_mack_fig10_1_M{Mn}_neutral.csv"))
     ce = load_csv(os.path.join(cd, f"reference_mack_fig10_1_M{Mn}_complete_equations.csv"))
@@ -266,7 +278,7 @@ def plot_mack_fig10_1(mtag, mlabel, headline):
     ax.set_xlabel("Reynolds number  R = $\\sqrt{Re_x}$")
     ax.set_ylabel("Frequency  $F \\times 10^{4}$")
     ax.set_title(f"Mack Fig 10.1  first-mode neutral loop  {mlabel}\n"
-                 f"VERDICT: disagrees ({headline})", color="#333333")
+                 f"VERDICT: {verdict_word} ({headline})", color="#333333")
     ax.grid(True, alpha=0.3)
     ax.set_xlim(left=0)
     ax.set_ylim(bottom=0)
@@ -279,102 +291,26 @@ def plot_mack_fig10_1(mtag, mlabel, headline):
     update_verdict(cd, rel)
     written.append((rel,
                     f"Mack Fig10.1 {mlabel} first-mode neutral loop F*1e4 vs R: pyMack "
-                    f"lower/upper branches (solid) sit wider/higher than Mack's "
+                    f"lower/upper branches (solid) vs Mack's "
                     f"Complete-Equations loop (dashed, hollow) + faint old Dunn-Lin ref; "
-                    f"verdict disagrees ({headline})."))
+                    f"verdict {verdict_word} ({headline})."))
 
 
-# =============================================================================
-# 4. first_mode/ozgen_m{2,3,4,6}  -- alpha vs Re neutral locus + c_i>0 lobe
-# =============================================================================
-def plot_ozgen(m, headline):
-    cd = os.path.join(ROOT, "first_mode", f"ozgen_m{m}")
-    pm = load_csv(os.path.join(cd, f"pymack_ozgen_M{m}_neutral.csv"))
-    rf = load_csv(os.path.join(cd, f"reference_ozgen_M{m}_neutral.csv"))
-    grid = load_csv(os.path.join(cd, f"pymack_ozgen_M{m}_ci_grid.csv"))
-
-    Re_pm = fcol(pm, "Re_L")
-    al_pm = fcol(pm, "alpha_neutral_pymack")
-    br = [r["branch"].strip() for r in pm]
-    lo = np.array([b == "lower" for b in br])
-    up = np.array([b == "upper" for b in br])
-
-    x_rf = fcol(rf, "x")   # Re
-    y_rf = fcol(rf, "y")   # alpha
-
-    gRe = fcol(grid, "Re_L")
-    gAl = fcol(grid, "alpha_L")
-    gCi = fcol(grid, "c_i")
-    uRe = np.unique(gRe)
-    uAl = np.unique(gAl)
-    Z = np.full((len(uAl), len(uRe)), np.nan)
-    ri = {v: i for i, v in enumerate(uRe)}
-    ai = {v: i for i, v in enumerate(uAl)}
-    for re_, al_, ci_ in zip(gRe, gAl, gCi):
-        Z[ai[al_], ri[re_]] = ci_
-    RR, AA = np.meshgrid(uRe, uAl)
-
-    fig, ax = plt.subplots(figsize=(10.8, 6.9), constrained_layout=True)
-    fig.get_layout_engine().set(rect=(0.0, 0.13, 1.0, 0.87))
-
-    Zm = np.ma.masked_invalid(Z)
-    try:
-        ax.contourf(RR, AA, Zm, levels=[0, Zm.max()],
-                    colors=[PYMACK_BLUE], alpha=0.13)
-        ax.contour(RR, AA, Zm, levels=[0.0], colors=[PYMACK_BLUE],
-                   linewidths=1.2, alpha=0.5)
-    except Exception:
-        pass
-
-    sl = np.argsort(Re_pm[lo])
-    su = np.argsort(Re_pm[up])
-    ax.plot(Re_pm[lo][sl], al_pm[lo][sl], "-", color=PYMACK_BLUE, lw=3.4,
-            marker="o", ms=5, label="pyMack lower (onset)")
-    ax.plot(Re_pm[up][su], al_pm[up][su], "-", color=PYMACK_GREEN, lw=3.4,
-            marker="^", ms=5, label="pyMack upper (cutoff)")
-
-    sr = np.argsort(x_rf)
-    ax.plot(x_rf[sr], y_rf[sr], "--", color=REF_ORANGE, lw=2.2,
-            marker="o", mfc="none", mec=REF_ORANGE, ms=6,
-            label="Ozgen & Kircali digitized arch")
-
-    handles, labels = ax.get_legend_handles_labels()
-    handles.append(plt.Rectangle((0, 0), 1, 1, fc=PYMACK_BLUE, alpha=0.13))
-    labels.append("pyMack unstable region ($c_i>0$)")
-
-    ax.set_xlabel("Reynolds number  $Re_L$")
-    ax.set_ylabel("Wavenumber  $\\alpha_L$")
-    ax.set_title(f"Ozgen & Kircali Fig 3  first-mode neutral curve  M{m}\n"
-                 f"VERDICT: disagrees (median |$\\Delta\\alpha$|/$\\alpha$ = {headline})",
-                 color="#333333")
-    ax.grid(True, alpha=0.3)
-    ax.set_xlim(left=0)
-    ax.set_ylim(bottom=0)
-    ax.margins(y=0.05)
-    outside_legend(ax, handles, labels)
-
-    bottom_note(fig, "open-lobe (pyMack) vs closed-arch (paper) topology")
-
-    out = os.path.join(cd, "overlay.png")
-    save(fig, out)
-    rel = f"verification/first_mode/ozgen_m{m}/overlay.png"
-    update_verdict(cd, rel)
-    written.append((rel,
-                    f"Ozgen M{m} first-mode neutral alpha vs Re_L: pyMack lower/upper "
-                    f"locus (solid) + faint c_i>0 unstable lobe vs the digitized closed "
-                    f"arch (dashed, hollow); open-lobe vs closed-arch; disagrees "
-                    f"(median {headline})."))
+# NOTE: The Özgen Fig. 3 neutral-curve overlays (M2/M3/M4/M6/M7/M8/M10) are NOT
+# produced here anymore. They are the single canonical Özgen overlay generator
+# `verification/make_ozgen_overlays.py`, which plots pyMack's own full c_i=0
+# contour (from the committed first/second-mode grids + continuation traces) over
+# the corrected multi-branch v2 digitized reference points, with the title read
+# live from each case's verdict.json. The old routine here hardcoded a stale
+# "disagrees" verdict and plotted the superseded single-arch reference, so it was
+# removed.
 
 
 if __name__ == "__main__":
     plot_sean()
     plot_mazhong()
-    plot_mack_fig10_1("1p6", "M=1.6", "loop median ~37%")
-    plot_mack_fig10_1("2p2", "M=2.2", "loop median ~2x / 128%")
-    plot_ozgen(2, "15.8%")
-    plot_ozgen(3, "15.8%")
-    plot_ozgen(4, "16.6%")
-    plot_ozgen(6, "23.9%")
+    plot_mack_fig10_1("1p6", "M=1.6")
+    plot_mack_fig10_1("2p2", "M=2.2")
     print("WROTE:")
     for rel, desc in written:
         print(f"  {rel}\n     {desc}")

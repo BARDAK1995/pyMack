@@ -103,7 +103,7 @@ F_EGOROV = OMEGA_EGOROV / RE_L     # 1.0e-4 (Mack F)
 T_EDGE_COSMETIC = 65.0   # power_law is scale-free; T_edge only sets wall guess
 N = 140
 
-OUT = HERE / "growthRate_verification" / "egorov2006_m6"
+OUT = HERE / "second_mode" / "egorov2006_m6"
 
 
 def make_profile():
@@ -248,7 +248,7 @@ def main():
         "verdict_reason": verdict_reason,
         "generated": "new",
         "artifacts": {
-            "pymack": "verification/growthRate_verification/egorov2006_m6/pymack_band.json",
+            "pymack": "verification/second_mode/egorov2006_m6/pymack_band.json",
             "reference": None,
             "overlay": None,
         },
