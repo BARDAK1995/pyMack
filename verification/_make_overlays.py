@@ -83,8 +83,8 @@ written = []
 #    high-R markers off the frame and clear of the two-line title.
 # =====================================================================
 mack_cases = [
-    ("mack_fig10_6_M45",  "M45",  4.5,  "agrees",     "1.0%"),
-    ("mack_fig10_6_M58",  "M58",  5.8,  "acceptable", "6.7%"),
+    ("mack_fig10_6_M45",  "M45",  4.5,  "acceptable", "6.0%"),
+    ("mack_fig10_6_M58",  "M58",  5.8,  "acceptable", "8.9%"),
     ("mack_fig10_6_M70",  "M70",  7.0,  "agrees",     "2.8%"),
     ("mack_fig10_6_M100", "M100", 10.0, "agrees",     "4.0%"),
 ]
@@ -251,7 +251,7 @@ written.append((out, "Egorov M6: pyMack spatial second-mode growth vs omega (blu
 #    two series, so a SINGLE shared legend below both panels removes all
 #    overlap and frees the panel interiors.
 # =====================================================================
-cdir = os.path.join(VER, "first_mode", "ozgen_fig3_lobes")
+cdir = os.path.join(VER, "mixed_mode", "ozgen_fig3", "lobes")
 
 
 def read_ozgen_pymack(path):
@@ -293,19 +293,25 @@ for ax, (tag, M, pmf, reff) in zip(axes, panels):
 # single shared legend below both panels (series are identical per panel)
 fig.legend(handles, labels, loc="lower center", ncol=2, framealpha=0.95,
            bbox_to_anchor=(0.5, 0.0))
+# Title reads the live verdict word + overall metric from verdict.json (no
+# hardcoded numbers) so it can never drift from the recorded judgement.
+_lobes_v = json.load(open(os.path.join(cdir, "verdict.json"), encoding="utf-8"))
+_lobes_verd = _lobes_v.get("verdict", "?")
+_lobes_pct = _lobes_v.get("metrics", {}).get("overall_median_rel_err_alpha")
+_lobes_pct_s = f"{100 * _lobes_pct:.1f}%" if _lobes_pct is not None else "n/a"
 fig.suptitle("Ozgen & Kircali (2008) Fig 3  first-mode growth lobes\n"
-             "verdict: disagrees  (overall median rel. err. ~18.8%, open lobe)",
+             f"verdict: {_lobes_verd}  (overall median rel. err. ~{_lobes_pct_s}, open lobe)",
              fontsize=17)
 # leave room: top for two-line suptitle, bottom for shared legend
 fig.tight_layout(rect=[0, 0.09, 1, 0.90])
 out = os.path.join(cdir, "overlay.png")
 save(fig, out)
 set_overlay(os.path.join(cdir, "verdict.json"),
-            "verification/first_mode/ozgen_fig3_lobes/overlay.png")
+            "verification/mixed_mode/ozgen_fig3/lobes/overlay.png")
 written.append((out, "Ozgen lobes (M2|M4): pyMack c_i=0.004 alpha-vs-Re contour (blue) vs "
                      "digitized 0.004 lobe (dashed orange); pyMack stays flat / open while "
-                     "paper arches down; disagrees (~18.8%). Single shared legend below "
-                     "both panels."))
+                     f"paper arches down; {_lobes_verd} (~{_lobes_pct_s}). Single shared "
+                     "legend below both panels."))
 
 # ---- report ----
 print("WROTE_OVERLAYS")

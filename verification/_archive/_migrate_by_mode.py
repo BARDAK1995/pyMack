@@ -51,9 +51,9 @@ MAP = {
     "balakumar_malik1992_branches": ("eigenvalueAnchor_verification", "second_mode"),
     "balakumar_malik1992_via_xirenfu": ("eigenvalueAnchor_verification", "second_mode"),
     "malik_case1": ("eigenvalueAnchor_verification", "other"),
-    "malik_case3": ("eigenvalueAnchor_verification", "other"),
-    "malik_case4": ("eigenvalueAnchor_verification", "other"),
-    "malik_case5": ("eigenvalueAnchor_verification", "other"),
+    "malik_case3": ("eigenvalueAnchor_verification", "second_mode"),
+    "malik_case4": ("eigenvalueAnchor_verification", "second_mode"),
+    "malik_case5": ("eigenvalueAnchor_verification", "second_mode"),
     "malik_case6": ("eigenvalueAnchor_verification", "second_mode"),
 }
 

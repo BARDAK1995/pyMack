@@ -58,7 +58,7 @@ PYMACK_CSV = REPO / "validation" / "data" / "collaborator_mach5p35" / \
     "pymack_neutral_envelope_dimensional.csv"
 REF_CSV = REPO / "reference_data" / "collaborator_mach5p35" / \
     "LST_neutral_curve_M5p35.csv"
-CASE_DIR = REPO / "verification" / "neutralCurve_verification" / "sean_m5p35"
+CASE_DIR = REPO / "verification" / "second_mode" / "sean_m5p35"
 
 # --- Frequency bands (kHz) ------------------------------------------------
 UPPER_BAND = (200.0, 600.0)        # upper / x_right branch gate
@@ -200,9 +200,9 @@ def main():
         "verdict_reason": reason,
         "generated": "reuse",
         "artifacts": {
-            "pymack": "verification/neutralCurve_verification/sean_m5p35/"
+            "pymack": "verification/second_mode/sean_m5p35/"
                       "pymack_neutral_envelope_dimensional.csv",
-            "reference": "verification/neutralCurve_verification/sean_m5p35/"
+            "reference": "verification/second_mode/sean_m5p35/"
                          "LST_neutral_curve_M5p35.csv",
             "overlay": None,
         },

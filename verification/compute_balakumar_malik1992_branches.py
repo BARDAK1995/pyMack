@@ -3,7 +3,7 @@
 verified Balakumar & Malik (1992) M=4.5 spatial second-mode condition.
 
 The eigenvalue itself (alpha = 0.220 - 0.003091 i) is already verified in
-``verification/eigenvalueAnchor_verification/balakumar_malik1992_via_xirenfu``
+``verification/second_mode/balakumar_malik1992_via_xirenfu``
 (acceptable). This script adds the qualitative *branch information* that B&M's
 1992 paper ("Discrete modes and continuous spectra in supersonic boundary
 layers", JFM 239:631) is actually about: the harmonic-point-source disturbance
@@ -52,7 +52,7 @@ from _compare_lib import write_verdict  # noqa: E402
 from pymack import CompressibleBlasiusProfile  # noqa: E402
 from pymack.solver import solve_spatial_full_spectrum  # noqa: E402
 
-OUT = HERE / "eigenvalueAnchor_verification" / "balakumar_malik1992_branches"
+OUT = HERE / "second_mode" / "balakumar_malik1992_branches"
 
 # --- Verified B&M (1992) M4.5 condition (Xi/Ren/Fu Table B, "Case 1") -------
 MA = 4.5

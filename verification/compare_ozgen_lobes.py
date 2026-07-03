@@ -62,12 +62,12 @@ from _compare_lib import (  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 DEFAULT_GRID = (
-    REPO / "verification" / "neutralCurve_verification" / "_ozgen_compute"
+    REPO / "verification" / "mixed_mode" / "ozgen_fig3" / "_compute"
     / "ozgen_combined_ci_grid.csv"
 )
 FALLBACK_GRID = REPO / "docs" / "figures" / "ozgen_fig3_overlay_ci_grid.csv"
 DIGITIZED_DIR = REPO / "reference_data" / "digitized"
-OUT_DIR = REPO / "verification" / "growthRate_verification" / "ozgen_fig3_lobes"
+OUT_DIR = REPO / "verification" / "mixed_mode" / "ozgen_fig3" / "lobes"
 
 SOURCE = "Özgen & Kırcalı (2008) Fig 3"
 

@@ -44,8 +44,8 @@
   "generated": "new",
   "artifacts": {
     "reference": "reference_data/digitized/ozgen_fig3_M10_neutral_v2.csv",
-    "overlay": "verification/first_mode/ozgen_m10/overlay.png"
+    "overlay": "verification/mixed_mode/ozgen_fig3/M10/overlay.png"
   },
   "pymack_provenance": "Discrete-mode re-judge (eigenfunction-decay + y_max-stationarity): pyMack first-mode field firstmode_grid.csv (tall, Mach-scaled domain) + second-mode field secondmode_grid.csv (short domain). References reference_data/digitized/ozgen_fig3_M{N}_neutral_v2.csv digitized from Fig-3 panels f/g/h and verified on the panels. Conventions/conditions verified-matched to \u00d6zgen (L*, R_L=sqrt(Re_x), alpha_L, c_i=Im(c) temporal, adiabatic, Te=288 K).",
-  "mode": "first"
+  "mode": "first+second"
 }

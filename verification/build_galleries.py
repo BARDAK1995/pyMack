@@ -24,11 +24,18 @@ VCOLOR = {"agrees": "#2ca02c", "acceptable": "#d9920a",
 
 def main() -> int:
     for mode, title in [("second_mode", "Second (Mack) mode — pyMack's design target"),
-                        ("first_mode", "First mode — documented weak spot")]:
+                        ("first_mode", "First mode — Mack Ch.10 figures"),
+                        ("mixed_mode", "Mixed first + second mode — Özgen Fig. 3")]:
         cases = []
-        for cd in sorted((HERE / mode).glob("*")):
-            ov, vf = cd / "overlay.png", cd / "verdict.json"
-            if ov.exists() and vf.exists():
+        # Case dirs live at mode/<case>/ AND (for grouped modes such as
+        # mixed_mode/ozgen_fig3/) at mode/<group>/<case>/. Collect verdict.json
+        # at both depths, de-duplicated.
+        vfiles = sorted(set(list((HERE / mode).glob("*/verdict.json"))
+                            + list((HERE / mode).glob("*/*/verdict.json"))))
+        for vf in vfiles:
+            cd = vf.parent
+            ov = cd / "overlay.png"
+            if ov.exists():
                 v = json.loads(vf.read_text(encoding="utf-8"))
                 cases.append((cd.name, ov, v.get("verdict", "?")))
         if not cases:

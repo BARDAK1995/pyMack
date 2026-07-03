@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
-GROWTH = HERE / "growthRate_verification"
+GROWTH = HERE / "first_mode"
 PANELS = {4.5: "45", 5.8: "58", 7.0: "70", 10.0: "100"}
 
 plt.rcParams.update({"axes.labelsize": 15, "xtick.labelsize": 13,
