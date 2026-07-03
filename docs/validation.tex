@@ -167,6 +167,9 @@ case~4's \emph{cooled} wall $T_w/T_{\rm adb}=0.1$ that earlier attempts had assu
 length scale. The suite spans $M=2.5$--$10$, temporal (fixed real $\alpha$, complex $\omega$) and
 spatial (fixed real $\omega$, complex $\alpha$) formulations, and adiabatic and cooled walls.
 Case~3 ($M=2.5$, oblique $\beta=0.1$) is a first mode; the rest are second (Mack) modes.
+Each anchor is Chebyshev-collocated at $N=120$--$280$ points (larger $N$ for the thick $M=10$
+layers), domain height $y_{\max}=40$--$140\,\delta^\ast/L^\ast$, $L^\ast$ scaling, with an isothermal
+disturbance-temperature condition and bulk-viscosity ratio $\lambda/\mu=1.2$.
 
 Both formulations of the collocation route appear, matched case by case to what Malik tabulates:
 the temporal cases 3--5 use the temporal GEVP (its 3-D variant for the oblique case 3), returning
@@ -218,9 +221,10 @@ $\hat T$ (real and imaginary parts), the dominant, cleanly traceable curves; the
 and pressure eigenfunctions overlap near the axis and are not reliably digitisable, so they are
 omitted.
 
-At the case-4 conditions the temporal GEVP is read for its eigen\emph{vector} rather than its
-eigenvalue: from a real wavenumber $\alpha$ it returns the discrete eigenpair, of which the
-temperature component $\hat T(y)$ is compared. This is therefore a mode-shape check, not an
+At the case-4 conditions ($N=200$ Chebyshev points, $y_{\max}=75\,\delta^\ast/L^\ast$, $L^\ast$
+scaling, isothermal disturbance-temperature condition) the temporal GEVP is read for its
+eigen\emph{vector} rather than its eigenvalue: from a real wavenumber $\alpha$ it returns the
+discrete eigenpair, of which the temperature component $\hat T(y)$ is compared. This is therefore a mode-shape check, not an
 eigenvalue one, and the complex temperature eigenfunction $\hat T(y)$ is normalised so that
 $\hat T_r$ peaks at $+1$ (Malik's convention, which fixes the eigenvector's single global phase).
 Both the real and imaginary temperature eigenfunctions lie on the digitised Fig.~4 points
@@ -251,6 +255,9 @@ graphically; no tabulated branch eigenvalues are openly recoverable, so this is 
 branch-topology check plus a fully specified spatial second-mode cross-check.
 
 \paragraph{Conditions.} $M=4.5$, $T_0=311$~K, $Re=1000$, $\omega=0.2$, adiabatic (insulated) wall.
+The full companion spectrum is computed by Chebyshev collocation at $N=120$ ($121$ nodes),
+$y_{\max}=40\,\delta^\ast/L^\ast$, $L^\ast$ scaling, with an isothermal disturbance-temperature
+condition and $\lambda/\mu=1.2$.
 
 The spatial quadratic eigenvalue problem is solved for its \emph{entire} companion spectrum, not
 merely the shift--invert neighbourhood: from a real frequency $\omega$ it returns all complex
@@ -296,7 +303,9 @@ $10$. Two modelling choices make the comparison defensible: the cold edge state 
 Table~11.1 \cite{mack1984} (resolving a historical $\sim\!6\times$ gap that was an
 edge-temperature error) and a
 wall-normal domain $y_{\max}\approx4\,\delta^\ast/L^\ast$ that grows with Mach ($y_{\max}=40$ at
-M4.5 up to $140$ at M10; a fixed short box starves the thick high-Mach boundary layer).
+M4.5 up to $140$ at M10; a fixed short box starves the thick high-Mach boundary layer). The
+eigenvalue solves use Chebyshev collocation at $N=110$, $L^\ast$ scaling, and the 2-D Stokes
+closure $\lambda/\mu=0$.
 
 Sweeping the temporal GEVP in wavenumber at each Reynolds number (a real $\alpha$ scan at fixed $R$,
 from which the second-mode $\omega_i=\alpha c_i$ is maximised over $\alpha$, then repeated over $R$)
@@ -333,7 +342,9 @@ over a Mach-6 adiabatic flat plate, reported to agree with LST.
 \paragraph{Conditions.} Perfect gas $\gamma=1.4$, $Pr=0.72$, power-law viscosity
 $\mu/\mu_e=(T/T_e)^{0.7}$; $M_\infty=6$, $Re_L=2\times10^6$, adiabatic wall; mode-S circular
 frequency $\omega\approx200$ (plate-length units) at the synchronisation location $x=1$
-($R=\sqrt{2\times10^6}=1414$).
+($R=\sqrt{2\times10^6}=1414$). The spatial solve uses Chebyshev collocation at $N=140$,
+$y_{\max}=40\,\delta^\ast/L^\ast$, $L^\ast$ scaling, an isothermal disturbance-temperature
+condition, and $\lambda/\mu=1.2$.
 
 The spatial QEP is swept in frequency at the synchronisation location $R=1414$ (real $\omega$ across
 the candidate band, returning the complex wavenumber $\alpha$ and hence the spatial growth
@@ -357,7 +368,8 @@ text at $R=806$ (branch~I) and $R=999.6$ (branch~II) for $F=2.2\times10^{-4}$.
 $T_e=65.15$~K, unit $Re=7.2\times10^6$/m, Sutherland $S=110.33$~K, $Pr=0.72$, $\gamma=1.4$;
 spatial formulation at fixed $F=2.2\times10^{-4}$. The \emph{disturbance} temperature wall
 condition is isothermal ($\hat{T}|_{w}=0$), which the authors state they used for the Fig.~15
-neutral curve.
+neutral curve. The spatial sweeps use Chebyshev collocation at $N=130$ ($131$ nodes),
+$y_{\max}=40\,\delta^\ast/L^\ast$, $L^\ast$ scaling, and $\lambda/\mu=1.2$.
 
 The spatial QEP is run in fixed-frequency sweeps: real $\omega$ along each $F=\mathrm{const}$ path
 in $R$ returns the complex wavenumber, and the neutral curve is the $\sigma=-\alpha_i=0$ crossing
@@ -413,7 +425,8 @@ second-mode ones, is treated separately in Section~\ref{sec:mixedmode}.
 loop, re-digitised with both branches plus nose.
 
 \paragraph{Conditions.} Air, adiabatic wall, 2-D ($\psi=0^\circ$), at $M=1.6$ and $M=2.2$;
-temporal neutral loop ($c_i=0$) in $(R, F\!\times\!10^4)$.
+temporal neutral loop ($c_i=0$) in $(R, F\!\times\!10^4)$. The $(R,\alpha)$-grid solves use Chebyshev
+collocation at $N=140$, $y_{\max}=45\,\delta^\ast/L^\ast$, $L^\ast$ scaling, and $\lambda/\mu=0$.
 
 Solving the temporal GEVP over an $(R,\alpha)$ grid (real $\alpha$ at each $R$, returning the
 complex phase speed) gives the neutral loop as the $c_i=0$ contour, with the critical Reynolds
@@ -439,7 +452,9 @@ $\approx215$.}
 \paragraph{Reference.} Mack \cite{mack1984}, Fig.~10.3.
 
 \paragraph{Conditions.} Air (ideal, $Pr=0.72$), adiabatic wall; oblique waves at $M=1.3$
-($\psi=45^\circ$), $M=2.2$ ($\psi=45^\circ$), $M=3.0$ ($\psi=60^\circ$).
+($\psi=45^\circ$), $M=2.2$ ($\psi=45^\circ$), $M=3.0$ ($\psi=60^\circ$). These oblique cases use the
+exact $8\times8$ shooting march rather than a Chebyshev grid, with $y_{\max}\approx4\,\delta^\ast/L^\ast$
+and $L^\ast$ scaling.
 
 These curves use the exact oblique first-order \emph{shooting} route rather than the collocation
 GEVP: at these Mach numbers the reduced temporal EVP's branch selection is not trusted, so an anchor
@@ -468,7 +483,8 @@ anchor.}
 
 \paragraph{Conditions.} Air, adiabatic wall; the high-Mach first mode is oblique-dominated, so
 growth is maximised over both $\alpha$ and wave angle $\psi$; $M=4.5$, $5.8$, $7$, $10$ with
-$y_{\max}\approx4\,\delta^\ast/L^\ast$.
+$y_{\max}\approx4\,\delta^\ast/L^\ast$. The 3-D temporal solves use Chebyshev collocation at $N=200$
+($y_{\max}$ reaching $150\,\delta^\ast/L^\ast$ at $M=10$), $L^\ast$ scaling, and $\lambda/\mu=0$.
 
 The reduced 3-D temporal GEVP takes the real oblique pair $\alpha$ and wave angle $\psi$
 (equivalently $\beta$) and returns the complex frequency, with $\omega_i$ maximised over
@@ -517,7 +533,10 @@ only the first mode is present, while $M=4$--$10$ span both modes.
 10).
 
 \paragraph{Conditions.} Air, adiabatic wall, 2-D ($\psi=0^\circ$); temporal neutral contour
-($c_i=0$) in the $(Re_L,\alpha_L)$ plane.
+($c_i=0$) in the $(Re_L,\alpha_L)$ plane, with the \"Ozgen temperature-dependent transport laws. The
+neutral loci are traced on two Chebyshev grids: the wall-trapped second mode at $N=180$ with
+$y_{\max}=8$--$12\,\delta^\ast/L^\ast$, and the more diffuse first mode at $N=200$ with
+$y_{\max}=35$--$45\,\delta^\ast/L^\ast$; $L^\ast$ scaling throughout.
 
 The temperature-form 2-D temporal GEVP (the \"Ozgen equation arrangement) is solved over a
 $(Re_L,\alpha_L)$ grid, real $\alpha_L$ at each $Re_L$ returning the complex phase speeds. A
