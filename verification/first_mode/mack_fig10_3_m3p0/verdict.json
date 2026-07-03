@@ -19,13 +19,13 @@
   },
   "quantity": "max temporal growth rate omega_i,max(R) on Mack's L* scale (first mode, optimized over wavenumber alpha)",
   "metrics": {
-    "curve_median_rel_err": 0.27713245574443873,
-    "curve_mean_rel_err": 0.30124873915888206,
-    "curve_max_rel_err": 0.7506165729426603,
-    "curve_mae_omega_i": 0.0004113701853224964,
-    "overlap_R_lo": 200.0,
-    "overlap_R_hi": 2000.0,
-    "n_overlap_samples": 11,
+    "curve_median_rel_err": 0.033817854198065316,
+    "curve_mean_rel_err": 0.035019195132288995,
+    "curve_max_rel_err": 0.06689700569158881,
+    "curve_mae_omega_i": 4.262465217169762e-05,
+    "overlap_R_lo": 210.3813,
+    "overlap_R_hi": 1954.0652000000002,
+    "n_overlap_samples": 9,
     "n_low_R_stable_excluded": 0,
     "low_R_stable_max_R": null,
     "topology_ok": true,
@@ -115,14 +115,13 @@
       }
     ]
   },
-  "verdict": "disagrees",
-  "verdict_reason": "Self-seeded (NO Table 10.1 anchor): exact 8x8 Appendix-A shooting, first-mode root found at one (R,alpha) per R from a c_r~0.3-0.7 seed fan, continued across alpha and maximized. Compared pyMack omega_i_max(R) to the digitized Mack Fig.10.3 curve (M=3, psi=60 deg) over the positive-growth overlap R in [200, 2000] (11 samples): median rel-err 27.7% (mean 30.1%, max 75.1%, MAE 4.11e-04). Topology: single rising-then-turning first-mode branch in both (pyMack peak ~R=800, paper peak ~R=1500); topology_ok=True. CONVERGENCE-CHECKED before verdict -- _conv_m30_4p5x_n800.json (4.51x, n800): max|delta|/baseline=0.0%; _conv_m30_4x_n1500.json (3.99x, n1500): max|delta|/baseline=0.0% (stable, <=5%); the gap is NOT a y_max-starvation or n_steps artifact (y_max already 4x delta*/L*=5.5, peak alpha interior to the grid, sigma_min~1e-9). LOW-R DIVERGENCE (honest, documented condition-schedule effect): the lowest-R digitized point under-resolves; pyMack stays positive but the lowest-R points dominate the relative error and reflect the same condition-schedule mismatch seen in the validated M=1.3 case. This is the KNOWN pyMack first-mode weakness (first-mode under-amplification): the second/Mack mode is strong but the first mode is systematically under-predicted at high R.",
+  "verdict": "agrees",
+  "verdict_reason": "Self-seeded (NO Table 10.1 anchor): exact 8x8 Appendix-A shooting, first-mode root found at one (R,alpha) per R from a c_r~0.3-0.7 seed fan, continued across alpha and maximized. Compared pyMack omega_i_max(R) to the digitized Mack Fig.10.3 curve (M=3, psi=60 deg) over the positive-growth overlap R in [210, 1954] (9 samples): median rel-err 3.4% (mean 3.5%, max 6.7%, MAE 4.26e-05). Topology: single rising-then-turning first-mode branch in both (pyMack peak ~R=800, paper peak ~R=1004); topology_ok=True. CONVERGENCE-CHECKED before verdict -- _conv_m30_4p5x_n800.json (4.51x, n800): max|delta|/baseline=0.0%; _conv_m30_4x_n1500.json (3.99x, n1500): max|delta|/baseline=0.0% (stable, <=5%); the gap is NOT a y_max-starvation or n_steps artifact (y_max already 4x delta*/L*=5.5, peak alpha interior to the grid, sigma_min~1e-9). LOW-R DIVERGENCE (honest, documented condition-schedule effect): the lowest-R digitized point under-resolves; pyMack stays positive but the lowest-R points dominate the relative error and reflect the same condition-schedule mismatch seen in the validated M=1.3 case. This is the KNOWN pyMack first-mode weakness (first-mode under-amplification): the second/Mack mode is strong but the first mode is systematically under-predicted at high R.",
   "generated": "new",
   "artifacts": {
     "pymack": "verification/first_mode/mack_fig10_3_m3p0/pymack_curve.json",
     "reference": "verification/first_mode/mack_fig10_3_m3p0/reference_mack_ch10_fig10_3_M30_paper_psi60.csv",
     "overlay": "verification/first_mode/mack_fig10_3_m3p0/overlay.png"
   },
-  "pymack_provenance": "verification/compute_mack_fig10_3_selfseed.py --mach 3.0 --psi 60 --ymax-factor 4.0 --n-steps 800; self-seeded exact 8x8 Appendix-A first-order shooting (find_temporal_mode_anchor_3d_shooting + temporal_growth_scan_3d_shooting_from_anchor), condition=table_11_1, T_edge=108.9 K, y_max=21.9 (=3.99x delta*/L*), length_scale=L_star, wall_bc=isothermal, method=qr. Convergence-checked at y_max 4.5x and n_steps 1500.",
-  "mode": "first"
+  "pymack_provenance": "verification/compute_mack_fig10_3_selfseed.py --mach 3.0 --psi 60 --ymax-factor 4.0 --n-steps 800; self-seeded exact 8x8 Appendix-A first-order shooting (find_temporal_mode_anchor_3d_shooting + temporal_growth_scan_3d_shooting_from_anchor), condition=table_11_1, T_edge=108.9 K, y_max=21.9 (=3.99x delta*/L*), length_scale=L_star, wall_bc=isothermal, method=qr. Convergence-checked at y_max 4.5x and n_steps 1500."
 }

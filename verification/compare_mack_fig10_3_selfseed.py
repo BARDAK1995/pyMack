@@ -148,7 +148,7 @@ def main():
     ap.add_argument("--case", required=True, choices=sorted(CASES))
     args = ap.parse_args()
     cfg = CASES[args.case]
-    case_dir = REPO / "verification" / "growthRate_verification" / cfg["case_id"]
+    case_dir = REPO / "verification" / "first_mode" / cfg["case_id"]
     case_dir.mkdir(parents=True, exist_ok=True)
 
     baseline_json = case_dir / cfg["baseline"]
@@ -269,9 +269,9 @@ def main():
         "verdict_reason": verdict_reason,
         "generated": "new",
         "artifacts": {
-            "pymack": f"verification/growthRate_verification/{cfg['case_id']}/pymack_curve.json",
-            "reference": f"verification/growthRate_verification/{cfg['case_id']}/reference_{cfg['ref_csv']}",
-            "overlay": f"verification/growthRate_verification/{cfg['case_id']}/overlay.png",
+            "pymack": f"verification/first_mode/{cfg['case_id']}/pymack_curve.json",
+            "reference": f"verification/first_mode/{cfg['case_id']}/reference_{cfg['ref_csv']}",
+            "overlay": f"verification/first_mode/{cfg['case_id']}/overlay.png",
         },
         "pymack_provenance": (
             f"verification/compute_mack_fig10_3_selfseed.py --mach {cfg['Ma']} "

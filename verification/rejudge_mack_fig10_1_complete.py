@@ -10,7 +10,7 @@ re-judges against the re-digitized full loop
 lower/upper/nose).
 
 It does NOT recompute physics: it consumes the already-written pyMack neutral CSVs
-in verification/neutralCurve_verification/mack_fig10_1_m{1p6,2p2}/ and the corrected
+in verification/first_mode/mack_fig10_1_m{1p6,2p2}/ and the corrected
 reference, then writes the corrected verdict.json via _compare_lib.classify_relative
 (thresholds 5%/15%).
 """
@@ -27,7 +27,7 @@ from _compare_lib import classify_relative, write_verdict  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 DIG = REPO / "reference_data" / "digitized"
-OUT_ROOT = REPO / "verification" / "neutralCurve_verification"
+OUT_ROOT = REPO / "verification" / "first_mode"
 SOURCE = "Mack (1984) Fig 10.1 (AGARD R-709)"
 
 CASES = {

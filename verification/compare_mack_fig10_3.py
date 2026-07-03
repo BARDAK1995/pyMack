@@ -50,7 +50,7 @@ PYMACK_CSV = REPO / "docs" / "figures" / "mack_fig10_3_overlay.csv"
 PYMACK_PNG = REPO / "docs" / "figures" / "mack_fig10_3_overlay.png"
 REF_CSV = REPO / "reference_data" / "digitized" / "mack_ch10_fig10_3_M13_paper_psi45.csv"
 
-CASE_DIR = REPO / "verification" / "growthRate_verification" / "mack_fig10_3_m1p3"
+CASE_DIR = REPO / "verification" / "first_mode" / "mack_fig10_3_m1p3"
 
 
 def load_pymack(json_path: Path):
@@ -242,10 +242,10 @@ def main():
         "verdict_reason": verdict_reason,
         "generated": "reuse",
         "artifacts": {
-            "pymack": "verification/growthRate_verification/mack_fig10_3_m1p3/pymack_mack_fig10_3_overlay.csv",
-            "reference": "verification/growthRate_verification/mack_fig10_3_m1p3/reference_mack_fig10_3_M13_paper_psi45.csv",
+            "pymack": "verification/first_mode/mack_fig10_3_m1p3/pymack_mack_fig10_3_overlay.csv",
+            "reference": "verification/first_mode/mack_fig10_3_m1p3/reference_mack_fig10_3_M13_paper_psi45.csv",
             "overlay": (
-                "verification/growthRate_verification/mack_fig10_3_m1p3/overlay.png"
+                "verification/first_mode/mack_fig10_3_m1p3/overlay.png"
                 if overlay_local.exists()
                 else None
             ),

@@ -30,7 +30,7 @@ This engine measures pyMack's agreement HONESTLY:
     coverage caveat and folded into the verdict honestly.
 
 Classification uses the shared 3-tier thresholds in _compare_lib. The verdict is
-written into verification/neutralCurve_verification/mack_fig10_1_m{tok}/verdict.json.
+written into verification/first_mode/mack_fig10_1_m{tok}/verdict.json.
 
 The grid itself is produced by compute_mack_fig10_1.compute_grid_parallel (single
 -thread BLAS, parallel across cores). This script can recompute it or load a
@@ -54,7 +54,7 @@ from compute_mack_fig10_1 import (  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 DIG = REPO / "reference_data" / "digitized"
-OUT_ROOT = REPO / "verification" / "neutralCurve_verification"
+OUT_ROOT = REPO / "verification" / "first_mode"
 SOURCE = "Mack (1984) Fig 10.1 (AGARD R-709)"
 
 # R sweep for the first-mode neutral extraction.

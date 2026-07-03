@@ -24,7 +24,7 @@
     "pymack_peak_N_frequency_khz": 205.0,
     "pymack_peak_N_domain_matched": 8.109,
     "pymack_N_at_210khz_domain_matched": 8.047,
-    "pymack_lower_neutral_point_x_star_m": 0.30,
+    "pymack_lower_neutral_point_x_star_m": 0.3,
     "pymack_domain_end_x_star_m": 0.59,
     "pymack_second_mode_c_r": 0.912,
     "benchmark_most_amplified_frequency_khz": 210.0,

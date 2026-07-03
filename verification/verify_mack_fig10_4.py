@@ -34,7 +34,7 @@ from _compare_lib import classify_relative, write_verdict  # noqa: E402
 import compute_mack_fig10_4 as engine  # noqa: E402
 
 PANELS = {4.5: "45", 5.8: "58", 7.0: "70", 10.0: "100"}
-GROWTH_DIR = HERE / "growthRate_verification"
+GROWTH_DIR = HERE / "first_mode"
 
 
 def load_digitized(suffix):
@@ -182,7 +182,7 @@ def verify_mach(mach, *, force=False, rows=None):
         "verdict": verdict,
         "verdict_reason": reason,
         "generated": "new",
-        "artifacts": {"pymack": f"verification/growthRate_verification/{case_id}/pymack_curve.json",
+        "artifacts": {"pymack": f"verification/first_mode/{case_id}/pymack_curve.json",
                       "reference": ref_rel, "overlay": None},
         "pymack_provenance": (f"verification/compute_mack_fig10_4.py (M={mach}); "
                               f"solve_temporal_compressible_3d N={e_N}, y_max={e_Y:g} "

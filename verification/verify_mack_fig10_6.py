@@ -30,7 +30,7 @@ import compute_mack_fig10_6 as engine  # noqa: E402
 
 # Mach -> (digitized stem suffix, case folder suffix)
 PANELS = {4.5: "45", 5.8: "58", 7.0: "70", 10.0: "100"}
-GROWTH_DIR = HERE / "growthRate_verification"
+GROWTH_DIR = HERE / "second_mode"
 
 
 def load_digitized(suffix):
@@ -145,7 +145,7 @@ def verify_mach(mach, *, force=False, rows=None):
         "verdict": verdict,
         "verdict_reason": reason,
         "generated": "new",
-        "artifacts": {"pymack": f"verification/growthRate_verification/{case_id}/pymack_curve.json",
+        "artifacts": {"pymack": f"verification/second_mode/{case_id}/pymack_curve.json",
                       "reference": ref_rel, "overlay": None},
         "pymack_provenance": (f"verification/compute_mack_fig10_6.py (M={mach}); "
                               f"solve_temporal_compressible N={engine._N_for(mach)}, "
