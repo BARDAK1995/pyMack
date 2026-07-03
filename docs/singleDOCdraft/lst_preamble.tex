@@ -1,0 +1,44 @@
+% Shared preamble for the pyMack LST documentation set.
+% Used by: mean_boundary_layer.tex, disturbance_equations.tex,
+%          numerical_methods.tex, validation.tex
+% Each document begins with:  \documentclass[11pt]{article}\input{lst_preamble}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{../figures/}}
+\captionsetup{font=small,labelfont=bf}
+
+\definecolor{kicol}{RGB}{31,143,107}
+\definecolor{boxbg}{RGB}{238,246,242}
+\definecolor{rmkbg}{RGB}{244,244,244}
+
+\newcommand{\plain}[1]{\par\smallskip\noindent{\color{kicol}\textbf{In plain words.}}\ \textit{#1}\par\smallskip}
+\newcommand{\problembox}[1]{%
+  \par\smallskip\noindent\fcolorbox{kicol}{boxbg}{%
+  \parbox{0.965\linewidth}{\smallskip\textbf{\color{kicol}What problem is solved here.}\ \ #1\smallskip}}\par\smallskip}
+\newcommand{\remark}[2]{%
+  \par\smallskip\noindent\colorbox{rmkbg}{%
+  \parbox{0.965\linewidth}{\smallskip\footnotesize\textbf{#1}\ \ #2\smallskip}}\par\smallskip}
+\newcommand{\bridge}[1]{\par\noindent\textit{#1}\par\medskip}
+
+\newcommand{\D}{\mathrm{D}}
+\newcommand{\imag}{\mathrm{i}}
+\newcommand{\Real}{\operatorname{Re}}
+\newcommand{\Imag}{\operatorname{Im}}
+\newcommand{\Mae}{M_e}
+\newcommand{\Ree}{\mathit{Re}}
+\renewcommand{\bar}[1]{\overline{#1}}
+\newcommand{\hatu}{\hat{u}}
+\newcommand{\hatv}{\hat{v}}
+\newcommand{\hatT}{\hat{T}}
+\newcommand{\hatp}{\hat{p}}
+\newcommand{\hatq}{\hat{q}}
+\newcommand{\nuR}{\nu_{\!R}}

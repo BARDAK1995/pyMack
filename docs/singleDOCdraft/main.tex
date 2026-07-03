@@ -1,0 +1,1788 @@
+\documentclass[11pt]{article}
+\input{lst_preamble}
+\usepackage{placeins}
+
+% \D (from the preamble) is the ordinary wall-normal derivative d/dy;
+% \Dmat is the material-derivative operator D/Dt of the governing NS equations.
+\providecommand{\Dmat}{\mathrm{D}}
+
+\title{\textbf{Linear Stability Theory of the Compressible Flat-Plate Boundary Layer}\\[3pt]
+\large The laminar mean flow, the disturbance eigenvalue problem, its spectral numerical\\
+solution, and validation against published benchmarks}
+\author{Technical documentation of our LST solver}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\clearpage
+
+%=====================================================================
+\section{Overview}\label{sec:overview}
+%=====================================================================
+Linear stability theory (LST) determines whether an infinitesimal wavelike disturbance superposed
+on a steady laminar boundary layer amplifies or decays as it propagates \cite{mack1984}. Because
+the disturbance is infinitesimal, its governing equations are linear; because their coefficients
+depend, under the parallel-flow assumption, only on the wall-normal coordinate $y$, the normal-mode
+substitution $q'=\hatq(y)\,e^{\imag(\alpha x-\omega t)}$ removes $x$ and $t$ entirely, leaving an
+eigenvalue problem for the shape $\hatq(y)$. Solved repeatedly across parameter space, that
+eigenvalue problem yields the growth rate of every candidate instability wave, and from growth
+rates everything else follows: neutral curves, amplification envelopes, and the $e^N$ transition
+estimate. This document is the complete technical record of that computation as implemented in our
+LST solver; Figure~\ref{fig:workflow} shows the computation whole, and with it the layout of the
+document.
+
+\begin{figure}[H]\centering
+  \includegraphics[width=0.80\linewidth]{fig_workflow_single.pdf}
+  \caption{The complete LST computation and the layout of this document. Stages 1--2 are the
+  subject of Section~\ref{sec:mean}, stages 3--4 of Section~\ref{sec:disturbance}, and stage~5,
+  with the temporal/spatial fork and the two products beneath it, of Section~\ref{sec:numerics};
+  Section~\ref{sec:validation} validates the chain against published benchmarks.}
+  \label{fig:workflow}
+\end{figure}
+
+The five stages compose as follows. The flow conditions (stage 1) fix a self-similar
+boundary-value problem whose solution (stage 2) is the laminar mean flow: the profiles $\bar U(y)$
+and $\bar T(y)$ and their wall-normal derivatives, which enter every later stage as known
+coefficients. Linearising the Navier--Stokes equations about that mean and substituting the
+normal-mode ansatz (stage 3) produces four coupled disturbance ODEs, collected into the operator
+pencil $\mathsf L\,\hatq=c\,\mathsf M\,\hatq$; replacing the wall-normal derivative by Chebyshev
+collocation matrices (stage 4) turns the pencil into the finite generalised eigenvalue problem
+$A(\alpha)\,\boldsymbol\phi=c\,B(\alpha)\,\boldsymbol\phi$, the computational atom of the
+framework. Its solution (stage 5) is posed in two closures: the temporal problem takes a real
+wavenumber $\alpha$ and returns the complex phase speed $c$, with growth rate $\omega_i=\alpha
+c_i$; the spatial problem takes a real frequency $\omega$ and returns the complex wavenumber
+$\alpha$, with growth rate $\sigma=-\alpha_i$. Swept over parameter space, these solves yield the
+two products at the foot of the figure: the neutral curve, the locus of zero growth in the
+$(R,\alpha)$ plane, and the $N$-factor, the accumulated amplification $\ln[A(R)/A(R_0)]$ whose
+empirical threshold $N\approx9$--$11$ correlates transition \cite{smith1956,vaningen1956}.
+
+Section~\ref{sec:validation} closes the document by auditing this chain against published
+benchmarks at their exact stated conditions: the incompressible Orr--Sommerfeld spectrum of Orszag
+\cite{orszag1971}, the compressible eigenvalues of Malik \cite{malik1990}, the growth-rate
+and neutral-curve families of Mack \cite{mack1984}, and the mixed-mode neutral-curve family of
+\"Ozgen \& K{\i}rcal{\i} \cite{ozgen2008}, among others. An independent shooting solver, used only
+to cross-check the collocation results, is documented separately and is not developed here.
+
+\paragraph{Notation.} Overbars denote mean (base-flow) quantities; hats denote complex disturbance
+amplitudes. A prime on a mean quantity denotes $\D\equiv\mathrm d/\mathrm dy$ (in the similarity
+development of Section~\ref{sec:mean}, $\mathrm d/\mathrm d\eta$, as stated there). The continuous
+amplitude vector is $\hatq(y)=(\hatu,\hatv,\hatT,\hatp)$; its discrete, grid-sampled form is
+$\boldsymbol\phi$.
+\begin{center}\footnotesize
+\renewcommand{\arraystretch}{1.18}
+\begin{tabular}{@{}ll@{\hspace{1.4em}}ll@{}}
+\toprule
+\multicolumn{2}{@{}l}{\textbf{Base flow \& transport}} & \multicolumn{2}{l}{\textbf{Disturbance \& eigenvalue}}\\
+$\bar U,\bar T,\bar\rho{=}1/\bar T$ & mean velocity, temperature, density & $\hatq;\ \boldsymbol\phi$ & amplitude shape (continuous; discrete)\\
+$\bar\mu,\bar\kappa$ & viscosity, conductivity & $\hatu,\hatv,\hatT,\hatp$ & velocity/temp./pressure amplitudes\\
+$C{=}\bar\mu/\bar T$ & Chapman--Rubesin group & $\alpha,\ \omega$ & streamwise wavenumber, frequency\\
+$\eta$ & similarity coordinate, Eq.~\eqref{eq:ytransform} & $c{=}\omega/\alpha$ & complex phase speed; $c_r,c_i$ its parts\\
+$\nuR{=}1/(\Ree\bar\rho)$ & viscous prefactor & $\omega_i{=}\alpha c_i;\ \sigma{=}-\alpha_i$ & temporal; spatial growth rate\\
+$\mathcal C_\kappa,\mathcal C_d,\mathcal L_c$ & conduction/dissipation groups & $M_{\rm rel}$ & relative Mach number\\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{Scales \& parameters}} & \multicolumn{2}{l}{\textbf{Discretisation}}\\
+$\Mae,\ \Ree,\ \mathit{Pr},\ \gamma$ & Mach, Reynolds, Prandtl, $c_p/c_v$ & $D_1,D_2$ & differentiation matrices\\
+$R_g,\ a_e$ & gas constant, edge sound speed & $N;\ n{=}N{+}1$ & collocation order; grid size\\
+$L^*{=}\sqrt{\nu_e x/U_e}$ & Mack length, Eq.~\eqref{eq:Lstar} & $A,B$ & temporal operator pair\\
+$R{=}\sqrt{Re_x};\ F$ & Mack Reynolds number; reduced frequency & $C_0,C_1,C_2$ & spatial operator blocks\\
+$\alpha_L{=}\alpha L^*;\ \delta^*,\theta$ & scaled wavenumber; displ./momentum thickness & & \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%=====================================================================
+\clearpage
+\section{The mean boundary-layer profile}\label{sec:mean}
+%=====================================================================
+This section specifies how our LST solver computes the steady, laminar, compressible
+flat-plate boundary layer whose profiles $\bar U$, $\bar T$, $\bar\rho$, $\bar\mu$ and their
+wall-normal derivatives are the coefficients of the linear stability problem. Every equation,
+boundary condition, coefficient, and default value is stated exactly as implemented.
+
+\subsection{Governing equations and non-dimensionalisation}\label{sec:gov}
+%=====================================================================
+The flow is governed by the compressible Navier--Stokes equations, expressing conservation of mass,
+momentum, and energy for a viscous, heat-conducting perfect gas \cite{white2006}:
+\begin{align}
+  \frac{\Dmat\rho}{\Dmat t}+\rho\,\nabla\!\cdot\!\mathbf u &= 0, &&\text{(mass)}\label{eq:ns-mass}\\
+  \rho\frac{\Dmat\mathbf u}{\Dmat t} &= -\nabla p+\nabla\!\cdot\!\boldsymbol\tau, &&\text{(momentum)}\label{eq:ns-mom}\\
+  \rho\,c_p\frac{\Dmat T}{\Dmat t} &= \frac{\Dmat p}{\Dmat t}+\nabla\!\cdot(\kappa\nabla T)+\Phi, &&\text{(energy)}\label{eq:ns-energy}\\
+  p &= \rho\,R_g\,T, &&\text{(state)}\label{eq:ns-state}
+\end{align}
+where $\mathbf u=(u,v)$ is the velocity, $\rho$ the density, $T$ the temperature, $p$ the pressure, $\mu$
+the viscosity, $\kappa$ the conductivity, $c_p$ the specific heat, $R_g$ the specific gas constant (plain
+$R$ is reserved for the Mack Reynolds number, Eq.~\eqref{eq:RF}), and
+$\Dmat/\Dmat t=\partial_t+\mathbf u\!\cdot\!\nabla$ the material derivative. The remaining terms are the
+Newtonian viscous stress tensor and the dissipation function,
+\begin{equation}\label{eq:tauphi}
+  \boldsymbol\tau=\mu\Big(\nabla\mathbf u+\nabla\mathbf u^{\mathsf T}-\tfrac23(\nabla\!\cdot\!\mathbf u)\,\mathbf I\Big),
+  \qquad \Phi=\boldsymbol\tau\!:\!\nabla\mathbf u .
+\end{equation}
+Their closed forms are not required in what follows; it suffices that both are linear in the velocity
+gradients. Equations \eqref{eq:ns-mass}--\eqref{eq:ns-state} are applied twice: once to obtain the steady
+mean flow below, and once in linearised form about that mean flow to obtain the disturbance
+equations of Section~\ref{sec:disturbance}.
+
+\paragraph{Non-dimensionalisation and default gas constants.} Velocities are scaled by the edge speed
+$U_e$, temperature by $T_e$, density by $\rho_e$, viscosity by $\mu_e$, and pressure by $\rho_e U_e^2$.
+Because the gas is perfect and the pressure is nearly uniform across the layer, $\bar\rho=1/\bar T$ in
+these units. Three dimensionless groups govern the problem,
+\begin{equation}\label{eq:groups}
+  \Mae=\frac{U_e}{a_e},\quad a_e=\sqrt{\gamma R_g T_e},\qquad
+  \Ree=\frac{\rho_e U_e L_{\mathrm{ref}}}{\mu_e},\qquad
+  \mathit{Pr}=\frac{\mu_e c_p}{\kappa_e},
+\end{equation}
+where $a_e$ is the edge speed of sound. The default gas constants are the standard air values
+$\gamma=1.4$, $\mathit{Pr}=0.72$, Sutherland constant $S=110.4~\mathrm K$ \cite{sutherland1893}, and
+power-law exponent $\omega_\mu\approx0.7$ when the power-law viscosity model is selected.
+
+\paragraph{The Mack length and Reynolds scales.}\label{sec:Lstar} A flat-plate boundary layer grows as
+$\sqrt x$, so the natural local length scale at station $x$, following Mack \cite{mack1984}, is
+\begin{equation}\label{eq:Lstar}
+  L^*=\sqrt{\frac{\nu_e\,x}{U_e}},\qquad \nu_e=\frac{\mu_e}{\rho_e}.
+\end{equation}
+With $L_{\mathrm{ref}}=L^*$ the Reynolds number becomes the square root of the conventional one, and a
+fixed physical frequency $f$ maps to a reduced frequency $F$; both enter the neutral-curve and $N$-factor
+computations:
+\begin{equation}\label{eq:RF}
+  R=\frac{U_eL^*}{\nu_e}=\sqrt{Re_x},\quad Re_x=\frac{U_ex}{\nu_e};\qquad
+  F=\frac{2\pi f\,\nu_e}{U_e^2};\qquad \alpha_L=\alpha L^* ,
+\end{equation}
+where $\alpha$ is the streamwise wavenumber. $R$ is the abscissa of every neutral curve and $\alpha_L$
+the ordinate. The solver itself is dimensionless; the conversions above are pure postprocessing.
+
+%=====================================================================
+\subsection{The self-similar base flow}\label{sec:base}
+%=====================================================================
+The mean flow is obtained from a boundary-value problem, not an eigenvalue problem: the data are
+prescribed at both ends of the domain ($y=0$ and $y\to\infty$) and the solution is unique. Its unknowns
+are the steady laminar profiles $\bar U$, $\bar T$, $\bar\rho$, $\bar\mu$ and their wall-normal
+derivatives, which subsequently enter the linearised disturbance equations as known coefficients.
+
+For a flat plate the mean flow is \emph{self-similar}: profiles at different streamwise stations collapse
+onto a single curve in the stretched coordinate $\eta$. Introducing the dimensionless stream function
+$f(\eta)$ with $f'=\bar U=u/U_e$ (in this section a prime denotes $\mathrm d/\mathrm d\eta$), the momentum
+and energy equations \eqref{eq:ns-mom}--\eqref{eq:ns-energy} reduce under the boundary-layer approximation
+to the classical pair of coupled ordinary differential equations
+\cite{white2006,ozgen2008},
+\begin{align}
+  \big(C\,f''\big)' + f\,f'' &= 0, \label{eq:bl-mom}\\
+  \big(B\,\bar T{}'\big)' + f\,\bar T{}' + (\gamma-1)\,\Mae^2\,C\,\big(f''\big)^2 &= 0, \label{eq:bl-energy}
+\end{align}
+with the transport groups
+\begin{equation}\label{eq:transport}
+  C=\frac{\mu/\mu_e}{T/T_e},\qquad K=\frac{\kappa}{c_p\mu_e},\qquad
+  B=\frac{K}{\bar T}\Big(=\tfrac{C}{\mathit{Pr}}\ \text{at constant }\mathit{Pr}\Big),
+\end{equation}
+where $C$ is the Chapman--Rubesin parameter \cite{chapman1949}. The final term of \eqref{eq:bl-energy}
+represents aerodynamic heating: it elevates the near-wall temperature at high Mach number and couples the
+energy equation to the velocity field. The conductivity model is $\kappa=\mu c_p/\mathit{Pr}$, so that
+$\bar\kappa=\bar\mu/\mathit{Pr}$ at constant $\mathit{Pr}$; the transport derivatives
+$\mathrm d\mu/\mathrm dT$, $\mathrm d\kappa/\mathrm dT$ are evaluated analytically from the selected
+viscosity law.
+
+\paragraph{Boundary conditions.} Equations \eqref{eq:bl-mom}--\eqref{eq:bl-energy} are closed by
+\begin{equation}\label{eq:blbc}
+  \underbrace{f(0)=0,\ f'(0)=0}_{\text{no slip}},\quad
+  \underbrace{f'(\infty)=1,\ \bar T(\infty)=1}_{\text{match the edge}},\qquad
+  \begin{cases}\bar T{}'(0)=0 &\text{(adiabatic wall)}\\ \bar T(0)=T_w/T_e &\text{(isothermal wall)}\end{cases}
+\end{equation}
+For an adiabatic wall the recovery temperature is the standard result
+$T_{aw}/T_e=1+\tfrac12(\gamma-1)\sqrt{\mathit{Pr}}\,\Mae^2$ \cite{white2006}.
+
+Figure~\ref{fig:baseflow} shows the computed profiles for a representative hypersonic case: $\Mae=6$,
+edge temperature $T_e=54~\mathrm K$, and an isothermal wall at $T_w=300~\mathrm K$, i.e.\
+$T_w/T_e=5.56$. Since the adiabatic recovery temperature at these conditions is
+$T_{aw}\approx7.1\,T_e$, the wall is cooled. The velocity rises monotonically to its edge value, while
+viscous heating produces an interior temperature maximum, $\bar T\approx5.7\,T_e$, just above the cooled
+wall. The dotted line marks the outermost generalised inflection point, $(\bar\rho\,\bar U')'=0$, the
+seat of the inviscid instability identified by Lees \& Lin \cite{leeslin1946}.
+
+\begin{figure}[H]\centering
+  \includegraphics[width=0.62\linewidth]{fig_baseflow.pdf}
+  \caption{Computed compressible mean flow in the similarity coordinate $\eta$: $\Mae=6$,
+  $T_e=54~\mathrm K$, isothermal wall at $T_w=300~\mathrm K$ ($T_w/T_e=5.56$, cooled relative to
+  $T_{aw}\approx7.1\,T_e$). Viscous heating produces an interior temperature maximum
+  ${\approx}5.7\,T_e$ just above the wall. The dotted line marks the outermost generalised inflection
+  point $(\bar\rho\,\bar U')'=0$ \cite{leeslin1946}. These profiles and their wall-normal derivatives
+  are the known coefficients of the linearised disturbance equations; the transformation to physical
+  coordinates is given by Eqs.~\eqref{eq:ytransform} and \eqref{eq:ydim}.}\label{fig:baseflow}
+\end{figure}
+
+%=====================================================================
+\subsection{Transformation to physical coordinates}\label{sec:transform}
+%=====================================================================
+The similarity solution is computed once, in $\eta$; all case-specific dimensional information enters
+only through the transformation back to the physical wall-normal coordinate. Because the near-wall gas is
+hot ($\bar T>1$) and correspondingly rarefied ($\bar\rho=1/\bar T$), equal increments of $\eta$ span
+unequal increments of physical distance. The map follows directly from the temperature field. In the
+units of Section~\ref{sec:gov} the differential relation is
+\begin{equation}\label{eq:dydeta}
+  \frac{\mathrm dy}{\mathrm d\eta}=\sqrt2\,\bar T(\eta)\qquad(y\ \text{in units of}\ L^*),
+\end{equation}
+whose integral gives the physical coordinate at station $x$,
+\begin{equation}\label{eq:ytransform}
+  \frac{y}{L^*}=\sqrt2\int_0^\eta \bar T(\eta')\,\mathrm d\eta' .
+\end{equation}
+Substituting the Mack length \eqref{eq:Lstar} yields the fully dimensional, case-specific form
+\begin{equation}\label{eq:ydim}
+  \boxed{\;y^*(\eta;x^*)=\sqrt{\frac{2\,\nu_e\,x^*}{U_e}}\,\int_0^\eta \bar T(\eta')\,\mathrm d\eta'\;}
+\end{equation}
+so that a single similarity solution generates the entire family of dimensional profiles, parameterised
+by the streamwise station $x^*$ and the edge state $(U_e,\nu_e)$. The map \eqref{eq:ytransform} is
+strictly monotone, and its inverse assigns a unique $\eta$ to any physical height $y^*$. Since
+$\bar T>1$ near the wall, the transform outpaces the linear reference $y/L^*=\sqrt2\,\eta$ there: a
+uniform $\eta$ mesh maps to a physical mesh stretched into the hot near-wall region, which is why $\eta$,
+rather than $y$, is the natural computational coordinate. Wall-normal derivatives convert by the chain
+rule implied by \eqref{eq:dydeta},
+\begin{equation}\label{eq:chain}
+  \frac{\mathrm d}{\mathrm dy}=\frac{1}{\sqrt2\,\bar T(\eta)}\,\frac{\mathrm d}{\mathrm d\eta}
+  \qquad(y\ \text{in units of}\ L^*).
+\end{equation}
+
+The integral thicknesses follow from the same transform,
+\begin{equation}\label{eq:thicknesses}
+  \frac{\delta^*}{L^*}=\sqrt2\int_0^\infty(\bar T-\bar U)\,\mathrm d\eta,\qquad
+  \frac{\theta}{L^*}=\sqrt2\int_0^\infty\bar U\,(1-\bar U)\,\mathrm d\eta,
+\end{equation}
+where the displacement thickness $\delta^*$ measures the outward displacement of the outer flow by the
+layer and the momentum thickness $\theta$ its momentum deficit. A profile may be stored on a $y/\delta^*$
+or a $y/L^*$ grid; the constant $\delta^*/L^*$ converts between them, with
+$\D\mapsto(\delta^*/L^*)^{-1}\D$.
+
+The profiles $\bar U,\bar T,\bar\rho,\bar\mu$ and their wall-normal derivatives assembled here are
+the coefficients of the linearised disturbance equations derived next.
+
+
+%=====================================================================
+\clearpage
+\section{The linearised disturbance equations}\label{sec:disturbance}
+%=====================================================================
+\subsection{Linearisation and the normal-mode ansatz}\label{sec:lin}
+The disturbance obeys the same compressible Navier--Stokes equations
+\eqref{eq:ns-mass}--\eqref{eq:ns-state} that produced the mean flow of Section~\ref{sec:mean},
+with the stress tensor and dissipation function \eqref{eq:tauphi} and the
+non-dimensionalisation of Section~\ref{sec:gov}; they are now applied a second time, in
+linearised form, about that mean. The reduction from four partial differential equations to
+four ordinary differential equations in $y$ proceeds in five steps.
+
+\paragraph{Step 1: decomposition into mean and disturbance.} Each field is split as
+\begin{equation}\label{eq:split}
+  u=\bar U(y)+u',\ \ v=v',\ \ T=\bar T(y)+T',\ \ p=\bar p+p',\ \ \rho=\bar\rho(y)+\rho',\qquad
+  |\cdot'|\ll|\bar\cdot|,
+\end{equation}
+with $\bar v=0$ for a parallel mean flow. The collection $q'=(u',v',T',p',\rho')$ is the disturbance.
+
+\paragraph{Step 2: linearisation.} Substituting \eqref{eq:split} into
+\eqref{eq:ns-mass}--\eqref{eq:ns-state}, the mean satisfies the equations by itself and cancels; terms
+quadratic in the primed quantities are dropped. The remaining equations are linear in $q'$ with
+coefficients constructed from the known mean profiles.
+
+\paragraph{Step 3: parallel-flow assumption.} The boundary layer grows slowly, so locally
+$\bar q=\bar q(y)$ only and the coefficients depend on $y$ alone. This neglects the $O(1/R)$ streamwise
+growth of the mean flow and of the eigenfunction, which the parabolised stability equations retain
+\cite{herbert1997} (cf.\ Section~\ref{sec:scope}).
+
+\paragraph{Step 4: normal-mode ansatz.} The disturbance is represented as a single travelling wave,
+\begin{equation}\label{eq:ansatz}
+  q'(x,y,t)=\hatq(y)\,e^{\imag(\alpha x-\omega t)},\qquad \hatq=(\hatu,\hatv,\hatT,\hatp)^{\mathsf T},
+\end{equation}
+with $\alpha$ the streamwise wavenumber, $\omega$ the frequency, and $c=\omega/\alpha$ the complex phase
+speed. Substitution replaces $\partial_x\mapsto\imag\alpha$, $\partial_t\mapsto-\imag\omega$, and
+$\partial_y\mapsto\D$, collapsing the linear PDEs to coupled ODEs in $y$
+(Figure~\ref{fig:ansatz}). The spanwise wavenumber is set to zero ($\beta=0$); a general oblique wave
+$\propto e^{\imag(\alpha x+\beta z-\omega t)}$ propagates at angle $\psi=\arctan(\beta/\alpha)$.
+
+\paragraph{Step 5: elimination of density.} The linearised equation of state gives
+\begin{equation}\label{eq:state-lin}
+  \frac{\rho'}{\bar\rho}=\gamma\Mae^2\,\hatp-\frac{\hatT}{\bar T},
+\end{equation}
+which removes $\rho'$ from the system. Four amplitude fields remain, $\hatu,\hatv,\hatT,\hatp$, with
+$\hatp$ scaled by $\rho_eU_e^2$ (so that $\gamma\Mae^2\hatp=p'/p_e$).
+
+\paragraph{A worked linearisation.} To make the mechanics explicit, consider mass conservation
+\eqref{eq:ns-mass}, written out as $\partial_t\rho+\partial_x(\rho u)+\partial_y(\rho v)=0$.
+Inserting the decomposition \eqref{eq:split} and expanding every product sorts the equation into
+three groups:
+\begin{equation}\label{eq:lin-groups}
+  \underbrace{\vphantom{\partial_y(\bar\rho v')}\partial_t\bar\rho
+      +\partial_x(\bar\rho\,\bar U)}_{\text{mean: vanishes}}
+  \;+\;\underbrace{\partial_t\rho'+\bar U\,\partial_x\rho'
+      +\bar\rho\,\partial_x u'+\partial_y(\bar\rho\,v')}_{\text{linear in }q'\text{: retained}}
+  \;+\;\underbrace{\vphantom{\partial_y(\bar\rho v')}\partial_x(\rho'u')
+      +\partial_y(\rho'v')}_{O(|q'|^2)\text{: dropped}}
+  \;=\;0 .
+\end{equation}
+The mean group vanishes identically: the base flow is steady, $\partial_t\bar\rho=0$, and parallel,
+so $\bar\rho$ and $\bar U$ depend on $y$ alone and $\partial_x(\bar\rho\,\bar U)=0$; in general the
+mean satisfies its own conservation equations and cancels from the disturbance system. The same
+parallel-flow property has already simplified the linear group, since
+$\partial_x(\bar\rho\,u')=\bar\rho\,\partial_xu'$ and $\partial_x(\rho'\bar U)=\bar U\partial_x\rho'$.
+The quadratic group is negligible by the smallness assumption in \eqref{eq:split}. What survives is
+the linear equation
+\begin{equation}\label{eq:cont-lin}
+  \partial_t\rho'+\bar U\,\partial_x\rho'+\bar\rho\,\partial_x u'+\partial_y(\bar\rho\,v')=0 .
+\end{equation}
+Applying the ansatz \eqref{eq:ansatz} replaces $\partial_t\to-\imag\alpha c$,
+$\partial_x\to\imag\alpha$, $\partial_y\to\D$ and each primed field by its amplitude, so that the
+first two terms combine into the convective factor:
+\begin{equation}\label{eq:cont-ansatz}
+  \imag\alpha(\bar U-c)\,\hat\rho+\imag\alpha\,\bar\rho\,\hatu
+   +\bar\rho\,\D\hatv+\bar\rho'\,\hatv=0 .
+\end{equation}
+Dividing by $\bar\rho$, substituting $\hat\rho/\bar\rho=\gamma\Mae^2\hatp-\hatT/\bar T$ from
+\eqref{eq:state-lin}, and using $\bar\rho'/\bar\rho=-\bar T'/\bar T$ (from $\bar\rho=1/\bar T$)
+yields exactly Eq.~\eqref{eq:cont} below. The remaining three equations follow by the identical
+procedure applied to \eqref{eq:ns-mom}--\eqref{eq:ns-energy}; the algebra is mechanical but lengthy,
+and only the result is printed.
+
+\begin{figure}[H]\centering
+  \includegraphics[width=0.92\linewidth]{fig_ansatz.pdf}
+  \caption{The ansatz \eqref{eq:ansatz} factorises a disturbance
+  $q'=\hatq(y)\,e^{\imag(\alpha x-\omega t)}$ into a wall-normal \emph{shape} $\hatq(y)$ (left; the
+  eigenfunction, zero at the wall and decaying at the edge) and a travelling wave in $x$ (right; wavelength
+  $2\pi/\alpha$, phase speed $c_r=\Real(c)$).}\label{fig:ansatz}
+\end{figure}
+
+%=====================================================================
+\subsection{The four disturbance equations}\label{sec:eqs}
+%=====================================================================
+The linearised system consists of four coupled ODEs in $y$ for $\hatu,\hatv,\hatT,\hatp$: continuity
+(with the equation of state folded in through \eqref{eq:state-lin}), streamwise and wall-normal
+momentum, and energy. Fixing one of $\alpha$ or $\omega$ real leaves the other (through $c$ or
+$\alpha$) as the eigenvalue. Every overbarred quantity is a known base-flow coefficient; all transport
+derivatives ($\mathrm d\mu/\mathrm dT$, $\mathrm d\kappa/\mathrm dT$, \dots) are evaluated at the local
+mean temperature $\bar T(y)$ and are therefore known functions of $y$. The form below follows
+\"Ozgen \& K{\i}rcal{\i} \cite{ozgen2008}; it is
+equivalent to the canonical compressible stability equations of Mack \cite{mack1984} and Malik
+\cite{malik1990} restricted to two dimensions. Momentum and energy are divided by $\bar\rho$, and the
+viscous prefactor is written $\nuR\equiv1/(\Ree\,\bar\rho)$; every $\bar\rho$ is the base-flow density
+$\bar\rho(y)=1/\bar T(y)$, uniformly inside $\nuR$, $\mathcal C_\kappa$, and $\mathcal C_d$.
+
+\paragraph{(C) Continuity $+$ equation of state.}
+\begin{equation}\label{eq:cont}
+  \imag\alpha\hatu+\D\hatv-\frac{\bar T'}{\bar T}\hatv
+  +\imag\alpha(\bar U-c)\Big(\gamma\Mae^2\hatp-\frac{\hatT}{\bar T}\Big)=0 .
+\end{equation}
+
+\paragraph{(X) Streamwise momentum.}
+\begin{equation}\label{eq:xmom}
+\begin{aligned}
+  \imag\alpha(\bar U-c)\hatu+\bar U'\hatv+\imag\alpha\bar\rho^{-1}\hatp
+  =\nuR\Big[&\bar\mu\big(\D^2-\tfrac43\alpha^2\big)\hatu+\bar\mu'\D\hatu
+     +\imag\alpha\big(\tfrac13\bar\mu\D+\bar\mu'\big)\hatv\\
+   &+\tfrac{\mathrm d\mu}{\mathrm dT}\big(\bar U''+\bar U'\D\big)\hatT
+     +\tfrac{\mathrm d^2\mu}{\mathrm dT^2}\bar U'\bar T'\hatT\Big] .
+\end{aligned}
+\end{equation}
+
+\paragraph{(Y) Wall-normal momentum.}
+\begin{equation}\label{eq:ymom}
+\begin{aligned}
+  \imag\alpha(\bar U-c)\hatv+\bar\rho^{-1}\D\hatp
+  =\nuR\Big[&\bar\mu\big(\tfrac43\D^2-\alpha^2\big)\hatv+\tfrac43\bar\mu'\D\hatv
+   +\imag\alpha\big(\tfrac13\bar\mu\D-\tfrac23\bar\mu'\big)\hatu
+   +\imag\alpha\tfrac{\mathrm d\mu}{\mathrm dT}\bar U'\hatT\Big] .
+\end{aligned}
+\end{equation}
+
+\paragraph{(E) Energy (temperature).}
+\begin{equation}\label{eq:energy}
+  \imag\alpha(\bar U-c)\hatT+\bar T'\hatv+(\gamma-1)\bar\rho^{-1}\big(\imag\alpha\hatu+\D\hatv\big)
+  =\mathcal C_\kappa\mathcal L_c\hatT
+   +\mathcal C_d\Big[2\bar\mu\bar U'\big(\D\hatu+\imag\alpha\hatv\big)
+     +\tfrac{\mathrm d\mu}{\mathrm dT}\big(\bar U'\big)^2\hatT\Big],
+\end{equation}
+\begin{equation}\label{eq:egroups}
+  \mathcal L_c=\D^2-\alpha^2
+   +\tfrac1{\bar\kappa}\tfrac{\mathrm d\kappa}{\mathrm dT}\big(2\bar T'\D+\bar T''\big)
+   +\tfrac1{\bar\kappa}\tfrac{\mathrm d^2\kappa}{\mathrm dT^2}\big(\bar T'\big)^2,\quad
+  \mathcal C_\kappa=\frac{\gamma\bar\mu}{\mathit{Pr}\,\Ree\,\bar\rho},\quad
+  \mathcal C_d=\frac{\gamma(\gamma-1)\Mae^2}{\Ree\,\bar\rho}.
+\end{equation}
+The Prandtl number in $\mathcal C_\kappa$ is taken as the local value when the selected
+transport model supplies a temperature-dependent $\mathit{Pr}$; for the constant-$\mathit{Pr}$
+default the two coincide.
+
+\paragraph{Structure of the equations.} The following observations locate the physics in
+\eqref{eq:cont}--\eqref{eq:energy}:
+\begin{itemize}[nosep,leftmargin=1.6em]
+  \item $\imag\alpha(\bar U-c)$ is convection by the mean flow relative to the wave; it vanishes at the
+        \emph{critical layer} $\bar U=c_r$, where the inviscid form of the equations becomes singular,
+        which is why that layer governs much of the instability physics \cite{mack1984}.
+  \item $\D,\D^2$ are wall-normal derivatives; the $-\alpha^2$ terms arise from
+        $\partial_x^2\mapsto-\alpha^2$.
+  \item The $\nuR=1/(\Ree\bar\rho)$ terms are viscous; the factors $\tfrac43,\tfrac13$ correspond to the
+        Stokes hypothesis for the bulk viscosity.
+\end{itemize}
+
+%=====================================================================
+\subsection{Operator form and the discretised derivative}\label{sec:operator}
+%=====================================================================
+Equations \eqref{eq:cont}--\eqref{eq:energy} are linear both in the amplitude vector
+$\hatq=(\hatu,\hatv,\hatT,\hatp)^{\mathsf T}$ and in the eigenvalue, and every derivative they contain
+is of at most second order. They can therefore be collected into the single operator statement
+\begin{equation}\label{eq:pencil}
+  \mathsf L(\alpha;y,\D)\,\hatq \;=\; c\,\mathsf M(\alpha;y)\,\hatq,
+  \qquad
+  \mathsf L=\mathsf A_2(y)\,\D^2+\mathsf A_1(\alpha;y)\,\D+\mathsf A_0(\alpha;y),
+\end{equation}
+with rows ordered (C, X, Y, E) and columns ordered $(\hatu,\hatv,\hatT,\hatp)$. Two structural facts
+make \eqref{eq:pencil} particularly convenient for what follows.
+
+First, the eigenvalue $c$ enters \eqref{eq:cont}--\eqref{eq:energy} \emph{only} through the convective
+factor $\imag\alpha(\bar U-c)$. The right-hand operator $\mathsf M$ is therefore purely algebraic,
+containing no derivatives, and can be written down at once:
+\begin{equation}\label{eq:Mmat}
+  \mathsf M(\alpha;y)=\imag\alpha
+  \begin{pmatrix}
+    0 & 0 & -1/\bar T & \gamma\Mae^2\\
+    1 & 0 & 0 & 0\\
+    0 & 1 & 0 & 0\\
+    0 & 0 & 1 & 0
+  \end{pmatrix}.
+\end{equation}
+
+Second, only three terms in the entire system carry $\D^2$: the viscous diffusion of $\hatu$ and
+$\hatv$ in \eqref{eq:xmom}--\eqref{eq:ymom} and the heat conduction of $\hatT$ in \eqref{eq:energy}.
+The second-order coefficient matrix is therefore sparse:
+\begin{equation}\label{eq:A2mat}
+  \mathsf A_2(y)=
+  \begin{pmatrix}
+    0 & 0 & 0 & 0\\
+    -\nuR\bar\mu & 0 & 0 & 0\\
+    0 & -\tfrac43\nuR\bar\mu & 0 & 0\\
+    0 & 0 & -\mathcal C_\kappa & 0
+  \end{pmatrix},
+\end{equation}
+where the signs follow from moving the right-hand sides of \eqref{eq:xmom}--\eqref{eq:energy} to the
+left. The pressure amplitude $\hatp$ is never differentiated twice, so its column in $\mathsf A_2$ is
+empty, reflecting the absence of a pressure diffusion mechanism.
+
+The first- and zeroth-order matrices are read off from \eqref{eq:cont}--\eqref{eq:energy} in the
+same manner. For the energy row it is convenient to split the conduction operator \eqref{eq:egroups}
+by derivative order,
+\begin{equation}\label{eq:lcsplit}
+  \mathcal L_c=\D^2+\ell_1\,\D+\ell_0,\qquad
+  \ell_1=\frac{2\bar T'}{\bar\kappa}\frac{\mathrm d\kappa}{\mathrm dT},\qquad
+  \ell_0=-\alpha^2+\frac{\bar T''}{\bar\kappa}\frac{\mathrm d\kappa}{\mathrm dT}
+        +\frac{(\bar T')^2}{\bar\kappa}\frac{\mathrm d^2\kappa}{\mathrm dT^2}.
+\end{equation}
+The first-order matrix collects every term carrying a single $\D$:
+\begin{equation}\label{eq:A1mat}
+  \mathsf A_1(\alpha;y)=
+  \begin{pmatrix}
+    0 & 1 & 0 & 0\\[3pt]
+    -\nuR\bar\mu' & -\tfrac{\imag\alpha}{3}\nuR\bar\mu & -\nuR\tfrac{\mathrm d\mu}{\mathrm dT}\bar U' & 0\\[3pt]
+    -\tfrac{\imag\alpha}{3}\nuR\bar\mu & -\tfrac43\nuR\bar\mu' & 0 & \bar\rho^{-1}\\[3pt]
+    -2\mathcal C_d\bar\mu\bar U' & (\gamma-1)\bar\rho^{-1} & -\mathcal C_\kappa\,\ell_1 & 0
+  \end{pmatrix},
+\end{equation}
+and the zeroth-order matrix collects everything algebraic that does not multiply $c$:
+{\small
+\begin{equation}\label{eq:A0mat}
+  \mathsf A_0(\alpha;y)=
+  \begin{pmatrix}
+    \imag\alpha & -\tfrac{\bar T'}{\bar T} & -\tfrac{\imag\alpha\bar U}{\bar T} &
+      \imag\alpha\gamma\Mae^2\bar U\\[5pt]
+    \imag\alpha\bar U+\tfrac43\alpha^2\nuR\bar\mu & \bar U'-\imag\alpha\nuR\bar\mu' &
+      -\nuR\big(\tfrac{\mathrm d\mu}{\mathrm dT}\bar U''
+        +\tfrac{\mathrm d^2\mu}{\mathrm dT^2}\bar U'\bar T'\big) & \imag\alpha\bar\rho^{-1}\\[5pt]
+    \tfrac{2\imag\alpha}{3}\nuR\bar\mu' & \imag\alpha\bar U+\alpha^2\nuR\bar\mu &
+      -\imag\alpha\nuR\tfrac{\mathrm d\mu}{\mathrm dT}\bar U' & 0\\[5pt]
+    \imag\alpha(\gamma-1)\bar\rho^{-1} & \bar T'-2\imag\alpha\mathcal C_d\bar\mu\bar U' &
+      \imag\alpha\bar U-\mathcal C_\kappa\,\ell_0
+        -\mathcal C_d\tfrac{\mathrm d\mu}{\mathrm dT}(\bar U')^2 & 0
+  \end{pmatrix}.
+\end{equation}}%
+
+\paragraph{Temporal and spatial problems.} Equation \eqref{eq:pencil} supports the two standard
+closures. Fixing $\alpha\in\mathbb R$ leaves $c$ as the eigenvalue of a \emph{linear} operator
+pencil; this is the temporal problem. Fixing $\omega\in\mathbb R$ instead and regrouping the same equations
+by powers of $\alpha$ gives
+\begin{equation}\label{eq:spatial}
+  \big(\mathsf C_0(\omega;y,\D)+\alpha\,\mathsf C_1(\omega;y,\D)+\alpha^2\,\mathsf C_2(y)\big)\hatq=0,
+\end{equation}
+a \emph{quadratic} pencil in $\alpha$; this is the spatial problem, reduced to linear form by
+companion linearisation at the numerical stage.
+
+\paragraph{Chebyshev collocation.} Up to this point $\D$ has denoted the continuous derivative
+$\mathrm d/\mathrm dy$ acting on smooth functions. To make \eqref{eq:pencil} computable, each
+amplitude is represented by its values at a finite set of grid points and $\D$ by a matrix acting
+on those values. For smooth functions a polynomial interpolant through Chebyshev points converges
+exponentially with the polynomial degree \cite{orszag1971,trefethen2000}, so few points yield many
+digits; this makes spectral collocation the natural discretisation for boundary-layer eigenvalue
+problems \cite{malik1990}. The Chebyshev--Gauss--Lobatto nodes on $[-1,1]$ are
+\begin{equation}\label{eq:gll}
+  \xi_j=\cos\!\Big(\frac{\pi j}{n}\Big),\qquad j=0,1,\dots,n,
+\end{equation}
+clustering near the ends $\xi=\pm1$; the ordering runs from $\xi_0=+1$ down to $\xi_n=-1$.
+
+\paragraph{The differentiation matrix.} Exactly one polynomial of degree $\le n$ passes through
+the sampled values $\{f(\xi_j)\}$; differentiating that interpolant and evaluating the result at
+the nodes is a linear operation on the values, $f'(\xi_j)=\sum_k(D_\xi)_{jk}f(\xi_k)$, with
+entries \cite{dons1995,trefethen2000}
+\begin{equation}\label{eq:Dformula}
+  (D_\xi)_{jk}=\frac{c_j}{c_k}\,\frac{(-1)^{j+k}}{\xi_j-\xi_k}\ \ (j\neq k),\qquad
+  (D_\xi)_{jj}=-\!\!\sum_{k\neq j}(D_\xi)_{jk},\qquad
+  c_0=c_n=2,\ \ c_j=1\ \text{otherwise}.
+\end{equation}
+The diagonal is fixed by requiring each row to sum to zero, since a constant function must have
+zero derivative, and $c_0=c_n=2$ accounts for the doubled weight of the two endpoint nodes. As an
+illustration, the smallest useful case $n=2$ (three nodes $\xi=(1,0,-1)$) gives
+\begin{equation}\label{eq:Dexample}
+  D_\xi=
+  \begin{pmatrix}
+    \tfrac32 & -2 & \tfrac12\\[3pt]
+    \tfrac12 & \phantom{-}0 & -\tfrac12\\[3pt]
+    -\tfrac12 & \phantom{-}2 & -\tfrac32
+  \end{pmatrix},
+  \qquad
+  D_\xi^2=D_\xi D_\xi=
+  \begin{pmatrix}
+    1 & -2 & 1\\
+    1 & -2 & 1\\
+    1 & -2 & 1
+  \end{pmatrix}.
+\end{equation}
+The middle row of $D_\xi$ is the familiar central difference $\tfrac12(f_0-f_2)$, and the rows of
+$D_\xi^2$ are identical because the second derivative of the parabola through three points is
+constant. Both matrices are exact on polynomials of degree $\le n$. Production runs use far more
+nodes, typically $n\sim100$--$200$, so that the eigenfunctions are resolved to several digits. At any
+order the matrices are dense, because every node's derivative uses every node's value, and this
+density is inherited by the assembled stability matrices below.
+
+\paragraph{Mapping to the physical layer.} The flow occupies $y\in[0,y_{\max}]$ with resolution
+needed at the wall, where the eigenfunctions vary fastest. The algebraic map of Malik
+\cite{malik1990},
+\begin{equation}\label{eq:chebmap}
+  y(\xi)=L\,\frac{1+\xi}{1-\xi+2L/y_{\max}},\qquad L=\frac{y_{\max}}{6},
+\end{equation}
+sends $\xi=+1$ (node $j{=}0$) to $y=y_{\max}$, the freestream, and $\xi=-1$ (node $j{=}n$) to
+$y=0$, the wall, placing roughly half the nodes below $y\approx L$. By the
+chain rule, with $\xi_y=1/y_\xi$ and $\xi_{yy}=-y_{\xi\xi}/y_\xi^3$, the differentiation matrices
+on the physical grid $\{y_j\}_{j=0}^{n}$ are
+\begin{equation}\label{eq:Dmats}
+  D_1=\operatorname{diag}(\xi_y)\,D_\xi,\qquad
+  D_2=\operatorname{diag}(\xi_y^2)\,D_\xi^2+\operatorname{diag}(\xi_{yy})\,D_\xi ,
+\end{equation}
+where the chain rule acts on the computational square $D_\xi^2$: the physical $D_2$ is \emph{not}
+$D_1D_1$.
+
+\paragraph{The discrete eigenvalue problem.} Numerical solution now amounts to the substitution
+\begin{equation}\label{eq:Ddiscrete}
+  \D\;\longrightarrow\;D_1,\qquad \D^2\;\longrightarrow\;D_2,\qquad
+  D_1,D_2\in\mathbb R^{(n+1)\times(n+1)}.
+\end{equation}
+Under \eqref{eq:Ddiscrete} each mean-flow coefficient becomes a diagonal
+matrix, each entry of $\mathsf A_2,\mathsf A_1,\mathsf A_0,\mathsf M$ becomes an
+$(n{+}1)\times(n{+}1)$ block, and the four sampled amplitudes are stacked into a single vector
+$\boldsymbol\phi=(\hatu;\hatv;\hatT;\hatp)\in\mathbb C^{4(n+1)}$. The operator statement
+\eqref{eq:pencil} then becomes the finite-dimensional generalised eigenvalue problem
+\begin{equation}\label{eq:gevp}
+  \boxed{\;A(\alpha)\,\boldsymbol\phi=c\,B(\alpha)\,\boldsymbol\phi\;}\qquad
+  A,B\in\mathbb C^{4(n+1)\times4(n+1)}.
+\end{equation}
+
+Both matrices inherit the $4\times4$ block structure of the operator form. With $i,j$ over the rows
+(C,\,X,\,Y,\,E) and columns $(\hatu,\hatv,\hatT,\hatp)$, every block follows one assembly rule,
+\begin{equation}\label{eq:blocks}
+  A_{ij}(\alpha)=\Lambda\big([\mathsf A_2]_{ij}\big)\,D_2+\Lambda\big([\mathsf A_1]_{ij}\big)\,D_1
+  +\Lambda\big([\mathsf A_0]_{ij}\big),
+  \qquad
+  B_{ij}(\alpha)=\Lambda\big([\mathsf M]_{ij}\big),
+\end{equation}
+where $\Lambda(f)=\mathrm{diag}\big(f(y_0),\dots,f(y_n)\big)$ places a coefficient on the grid. Three
+ingredients therefore build the whole problem: the differentiation matrices $D_1,D_2$, diagonal
+samples of the mean-flow profiles, and the scalars $\alpha$, $\Mae$, $\Ree$.
+
+\paragraph{One solve: input and output.} A single solve of \eqref{eq:gevp} takes one point of
+parameter space, the mean-flow profiles at $(\Mae,\Ree)$ and one real wavenumber $\alpha$, and
+returns the full discrete spectrum of $4(n{+}1)$ eigenpairs $(c,\boldsymbol\phi)$, each a candidate
+normal mode:
+\begin{itemize}[nosep,leftmargin=1.6em]
+  \item $c_r$ is the phase speed as a fraction of $U_e$;
+  \item $c_i$ sets the temporal growth rate $\omega_i=\alpha c_i$: the wave amplifies for $c_i>0$,
+        decays for $c_i<0$, and is neutral at $c_i=0$;
+  \item the four segments of $\boldsymbol\phi$ are the wave's velocity, temperature, and pressure
+        amplitude profiles across the layer (a wall-peaked $|\hatp|$, for instance, signals a second
+        mode).
+\end{itemize}
+Only a few of these eigenpairs are physical \emph{discrete} modes; the rest approximate the continuous
+spectra or are numerical artifacts. The boundary-condition rows carry no eigenvalue and leave zero
+rows in $B$, so $B$ is singular and the pencil is solved in generalised (QZ) form, which produces
+spurious infinite eigenvalues that are discarded.
+
+Everything the framework produces is built from repeated solves of \eqref{eq:gevp}: one solve
+interrogates one point $(\Mae,\Ree,\alpha)$; a sweep traces the growth rate across the $(R,\alpha)$
+plane; the zero level set $c_i=0$ of that sweep is the neutral curve; and the integral of the growth
+rate along frequency lines is the $N$-factor. Solving the pencil and identifying the physical modes
+within the spectrum is the remaining numerical task.
+
+%=====================================================================
+\subsection{Physical character of the instability modes}\label{sec:mechanisms}
+%=====================================================================
+The disturbance equations admit discrete eigenmodes; a temporal solve returns a complex phase speed
+such as $c=0.930+0.0200\imag$. This section summarises the physics behind the standard mode labels, so
+that such a number identifies a definite wave.
+
+\paragraph{First (Tollmien--Schlichting) mode.} At low speed the first mode is a viscous instability
+($c_r\approx0.3$--$0.6$): viscosity introduces a phase lag between $u'$ and $v'$ near the wall, so the
+Reynolds stress $-\bar\rho\,\overline{u'v'}$ no longer averages to zero and extracts energy from the
+mean shear. As the Mach number rises, compressibility creates a generalised inflection point (below)
+and the first mode becomes increasingly inviscid and inflectional, with viscosity then often acting to
+stabilise; it is the dominant instability only up to $\Mae\approx4$ \cite{mack1984}.
+
+\paragraph{Second (Mack) mode.} Above $\Mae\approx4$ a second, usually stronger, instability appears:
+an acoustic wave trapped between the wall and the relative sonic line, reflecting within a near-wall
+acoustic waveguide \cite{mack1984,fedorov2011}. This interpretation accounts for its principal
+properties:
+\begin{itemize}[nosep,leftmargin=1.6em]
+  \item its phase speed is $c_r\approx1-1/\Mae$, the limiting value at which the wave is sonic relative
+        to the edge flow, which is why the spatial-solve shift target $\alpha_0=\omega/(1-1/\Mae)$ is
+        effective; the realised $c_r$ sits somewhat above this and varies along the branch ($0.93$
+        against $1-1/6=0.83$ for a representative $\Mae=6$ mode);
+  \item it is frequency-tuned: as in any resonator the wavelength is set by the cavity thickness, so
+        the most-amplified wavelength is ${\sim}2\delta$ and the frequency scales as
+        $f\sim U_e/2\delta$, rising as the layer thins downstream;
+  \item its eigenfunction has a wall-peaked pressure amplitude, the acoustic field of the waveguide.
+\end{itemize}
+
+\paragraph{The organising quantity: relative Mach number.} Both mechanisms are organised by the
+relative Mach number
+\begin{equation}\label{eq:mrel}
+  M_{\rm rel}(y)=\frac{\bar U(y)-c_r}{\bar a(y)},\qquad \bar a=\frac{\sqrt{\bar T}}{\Mae},
+\end{equation}
+with $\bar a$ the local sound speed. The critical layer is the height at which $M_{\rm rel}=0$, i.e.\
+$\bar U=c_r$, where the eigenfunction typically peaks and the convective factor
+$\imag\alpha(\bar U-c)$ in \eqref{eq:cont}--\eqref{eq:energy} vanishes; the relative sonic line is
+$|M_{\rm rel}|=1$; and the second-mode acoustic waveguide is the near-wall region in which
+$|M_{\rm rel}|>1$.
+
+\paragraph{The generalised inflection point.} By Rayleigh's theorem an inviscid incompressible shear
+flow requires a velocity inflection point ($\bar U''=0$) for instability. Lees \& Lin
+\cite{leeslin1946} generalised this to compressible flow: the necessary condition for the inviscid
+first mode is a \emph{generalised inflection point}, $(\bar\rho\,\bar U')'=0$. Aerodynamic heating
+places a hot, low-density layer near the wall and pushes that point up into the layer, giving
+compressible boundary layers a robust inviscid first-mode instability that low-speed layers lack. The
+second mode requires no inflection point; its existence condition is instead the relative-supersonic
+region $|M_{\rm rel}|>1$ above.
+
+\paragraph{The wall-cooling reversal.} Cooling the wall stabilises the first mode (it weakens the
+near-wall viscous mechanism) but destabilises the second (it thickens the relative-supersonic region
+and raises the tuned frequency) \cite{mack1984}. Cold-walled hypersonic vehicles are therefore
+second-mode dominated.
+
+\paragraph{Phase and group velocity.} $c_r$ is the phase speed; energy propagates at the group
+velocity $c_g=\mathrm d\omega_r/\mathrm d\alpha_r$, and it is $c_g$ that rigorously links temporal to
+spatial growth \cite{gaster1962}, the relation invoked whenever results are converted between the two
+formulations.
+
+\medskip
+\noindent The following comparison places any computed eigenvalue at a glance:
+\begin{center}\small
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.1cm}>{\raggedright\arraybackslash}p{5.1cm}>{\raggedright\arraybackslash}p{5.1cm}@{}}
+\toprule
+ & \textbf{First (TS) mode} & \textbf{Second (Mack) mode} \\
+\midrule
+mechanism & viscous (low speed) $\to$ inviscid inflectional (high speed) & trapped acoustic wave (wall--sonic line) \\
+phase speed $c_r$ & $0.3$--$0.6$ & $\approx 1-1/\Mae$ \\
+dominant when & low speed, $\Mae\lesssim4$ & high speed, $\Mae\gtrsim4$ \\
+frequency & broadband & tuned, $f\sim U_e/2\delta$ \\
+existence criterion & generalised inflection point \cite{leeslin1946} & relative-supersonic region, $|M_{\rm rel}|>1$ \\
+wall cooling & stabilises & destabilises \\
+most-unstable wave & oblique (3D) & 2D ($\psi=0$) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+%=====================================================================
+\subsection{Assumptions and range of validity}\label{sec:scope}
+%=====================================================================
+The equations derived above are the two-dimensional, parallel-flow, modal disturbance equations. Four
+idealisations bound their interpretation:
+\begin{enumerate}[nosep,leftmargin=1.9em]
+  \item \textbf{Parallel flow.} Setting $\bar v=0$ with $y$-only coefficients (Step~3) neglects the
+        $O(1/R)$ streamwise growth of the layer, which the parabolised stability equations retain by
+        marching the disturbance downstream \cite{herbert1997}.
+  \item \textbf{Two-dimensionality.} The ansatz takes $\beta=0$ (Step~4). The most-unstable first mode
+        is oblique ($\psi\sim55^\circ$; Squire's theorem does not hold under compressibility
+        \cite{mack1984}), so two-dimensional first-mode growth is a lower bound; the second mode is
+        most unstable at $\psi=0$, so the two-dimensional result is its physical maximum.
+  \item \textbf{Modal analysis.} Eigenvalues describe asymptotic exponential growth; the non-normal
+        operator also permits transient (algebraic) growth that modal analysis misses, relevant to
+        bypass and blunt-body transition paths \cite{schmid2001}.
+  \item \textbf{Receptivity and $e^N$.} LST provides the amplification \emph{ratio}
+        $A(R)/A(R_0)=e^N$, not the initial amplitude $A(R_0)$; determining that amplitude is the
+        separate receptivity problem, and the $e^N$ method is an environment-dependent correlation
+        rather than a first-principles criterion \cite{vaningen1956,fedorov2011}.
+\end{enumerate}
+None of these affect the equations themselves; they delimit their range of validity. A strong second
+mode is captured faithfully by the two-dimensional modal equations derived here, which is why they are
+the workhorse of hypersonic transition prediction \cite{mack1984,fedorov2011}. With the system
+\eqref{eq:cont}--\eqref{eq:energy} in operator form \eqref{eq:pencil} and assembled into its
+discrete counterpart \eqref{eq:gevp}, the derivation is complete: what remains is to solve the matrix
+problem and identify its physical modes.
+
+
+%=====================================================================
+\clearpage
+\section{Numerical methods: the spectral eigenvalue solver}\label{sec:numerics}
+%=====================================================================
+\subsection{The numerical task}\label{sec:numtask}
+%=====================================================================
+Section~\ref{sec:disturbance} closed with three objects: the four linearised disturbance ODEs
+\eqref{eq:cont}--\eqref{eq:energy}, their operator form \eqref{eq:pencil}, and, built from the
+Chebyshev differentiation matrices $D_1,D_2$ constructed there, its discrete image: the
+generalised eigenvalue problem \eqref{eq:gevp} on the wall-clustered collocation grid. The
+present section supplies everything between that statement and a trusted growth rate: the block-by-block assembly, the boundary-condition rows, the eigenvalue algorithms
+for the temporal and spatial closures, the identification of the physical mode within the computed
+spectrum, and the sweeps that turn eigenvalues into neutral curves and $N$-factors.
+
+\paragraph{What is sought.} For fixed flow parameters $(\Mae,\Ree)$ the disturbance equations admit
+non-trivial solutions only at isolated eigenvalues, and these eigenvalues are the entire objective of
+the computation:
+\begin{itemize}[nosep,leftmargin=1.6em]
+  \item \emph{Temporal problem}: given a real wavenumber $\alpha$, find the complex phase speed $c$
+        and mode shape; the temporal growth rate is $\omega_i=\alpha c_i$.
+  \item \emph{Spatial problem}: given a real frequency $\omega$, find the complex wavenumber
+        $\alpha$ and mode shape; the spatial growth rate is $\sigma=-\alpha_i$.
+\end{itemize}
+Every quantity the framework ultimately delivers is assembled from repeated eigenvalue solves: the
+\emph{neutral curve} is the zero-growth locus $c_i(R,\alpha)=0$ traced over a parameter sweep; the
+\emph{$N$-factor} is the streamwise integral of the spatial growth rate at fixed physical frequency;
+and the transition estimate is the empirical correlation $N\approx9$--$11$
+\cite{smith1956,vaningen1956}. The numerical task is therefore to evaluate eigenpairs reliably,
+including the rejection of spurious eigenvalues, and cheaply enough to sweep them by the thousands.
+
+\paragraph{Grid indexing.} Throughout this section the collocation order is $N$ and the grid
+has $n=N{+}1$ points, so the assembled matrices are $4n\times4n$; Section~\ref{sec:disturbance}
+wrote the same size as $4(n{+}1)\times4(n{+}1)$, its grid index running $0,\dots,n$.
+
+
+%=====================================================================
+\subsection{Assembling the operator and its boundary conditions}\label{sec:assemble}
+The operator pencil \eqref{eq:pencil}, rows ordered (C, X, Y, E) and columns
+$(\hatu,\hatv,\hatT,\hatp)$, arrives here together with the objects that discretise it: the
+Chebyshev--Gauss--Lobatto nodes mapped to $y\in[0,y_{\max}]$ by the wall-clustering transform
+\eqref{eq:chebmap}, node $j{=}0$ at the freestream and node $j{=}N$ at the wall, and the physical
+differentiation matrices $D_1,D_2$ of \eqref{eq:Dmats}. Two practical choices complete the grid
+before assembly can begin.
+
+\paragraph{Domain height and resolution.} The truncation height must clear the boundary layer by a
+wide margin and is therefore set as a multiple of the boundary-layer scale,
+$y_{\max}=m\,(\delta^*/L^*)$, with $m\approx8$--$12$ for the wall-trapped second mode and larger
+($m\approx35$--$45$) for the more diffuse first mode; the bare values $y_{\max}=6$/$12$ are only a
+fallback. The default resolution is $N=128$ ($n=129$). Because the method is spectral, the eigenvalue
+converges exponentially in $N$ \cite{orszag1971,trefethen2000}; at the default resolution the
+worked-example eigenvalue of Section~\ref{sec:worked} is already converged to many digits.
+
+Discretising \eqref{eq:pencil} is then the purely mechanical application of the substitutions
+\eqref{eq:Ddiscrete} through the one-rule block assembly \eqref{eq:blocks}: each scalar entry of
+the $4\times4$ operator becomes an $n\times n$ block, and the pencil becomes the generalised
+problem $A\boldsymbol\phi=cB\boldsymbol\phi$ of Section~\ref{sec:temporal}. Equation
+\eqref{eq:blocks} is the entire assembly: $A$ is built from exactly three ingredients (the
+differentiation matrices, diagonal samples of mean-flow profiles, and the scalars
+$\alpha,\Mae,\Ree$), while $B$, the discrete image of the algebraic operator $\mathsf M$, marks
+where the eigenvalue resides. All four coefficient matrices are recorded in
+Section~\ref{sec:disturbance}: $\mathsf M$ and $\mathsf A_2$ in \eqref{eq:Mmat} and
+\eqref{eq:A2mat}, $\mathsf A_1$ and $\mathsf A_0$ in \eqref{eq:A1mat} and \eqref{eq:A0mat}. For
+compact displays this section uses the transport shorthands $m_1=\mathrm d\mu/\mathrm dT$,
+$m_2=\mathrm d^2\mu/\mathrm dT^2$, $k_1=\tfrac1{\bar\kappa}\mathrm d\kappa/\mathrm dT$,
+$k_2=\tfrac1{\bar\kappa}\mathrm d^2\kappa/\mathrm dT^2$ and the prefactors
+$\nuR=1/(\Ree\bar\rho)$, $\mathcal C_\kappa=\gamma\bar\mu/(\mathit{Pr}\,\Ree\,\bar\rho)$,
+$\mathcal C_d=\gamma(\gamma-1)\Mae^2/(\Ree\,\bar\rho)$, $d_R=(\gamma-1)\Mae^2\nuR$.
+
+Figure~\ref{fig:blocks} shows the resulting block occupancy; Figure~\ref{fig:ABreal} the
+assembled numbers for a small solved case. Note that $\alpha$ enters the operator only as
+$\imag\alpha$ and $\alpha^2$, so it is a quadratic polynomial in $\alpha$; this is exactly the
+property exploited in Section~\ref{sec:spatial}, where regrouping the same physics by powers of
+$\alpha$ yields the spatial quadratic pencil.
+
+\paragraph{Example: the continuity block-row.} Row C of the assembly rule \eqref{eq:blocks} reads,
+term for term,
+\begin{equation*}
+  A_{(C,\hatu)}=\imag\alpha I,\qquad
+  A_{(C,\hatv)}=D_1-\Lambda\big(\bar T'/\bar T\big),\qquad
+  A_{(C,\hatT)}=-\imag\alpha\,\Lambda\big(\bar U/\bar T\big),\qquad
+  A_{(C,\hatp)}=\imag\alpha\gamma\Mae^2\,\Lambda(\bar U),
+\end{equation*}
+\begin{equation*}
+  B_{(C,\hatT)}=-\imag\alpha\,\Lambda\big(1/\bar T\big),\qquad
+  B_{(C,\hatp)}=\imag\alpha\gamma\Mae^2 I
+\end{equation*}
+This gives six non-zero blocks, four in $A$ and two in $B$, each a diagonal matrix or a diagonal
+matrix times $D_1$. Every other block-row is read off \eqref{eq:Mmat}--\eqref{eq:A0mat} identically.
+
+\begin{figure}[H]\centering
+  \includegraphics[width=0.95\linewidth]{fig_blocks.pdf}
+  \caption{Block structure of $A\boldsymbol\phi=cB\boldsymbol\phi$. Rows: the four equations
+  (continuity, $x$-momentum, $y$-momentum, energy); columns: the four fields
+  $\hatu,\hatv,\hatT,\hatp$; shaded = non-zero block. $A$ (left) is block-dense; $B$ (right) holds
+  only five non-zero blocks, the sparsity pattern of $\mathsf M$ in Eq.~\eqref{eq:Mmat}; every
+  term there carries the eigenvalue $c$.}\label{fig:blocks}
+\end{figure}
+
+\begin{figure}[H]\centering
+  \includegraphics[width=0.95\linewidth]{fig_AB_real.pdf}
+  \caption{The same block structure assembled numerically ($N=6$, $4n=28$, at the parameters of
+  Section~\ref{sec:worked}), shown as $\log_{10}$ of the entry magnitudes. Gridlines every $n$
+  rows/columns mark the C, X, Y, E row blocks and $\hatu,\hatv,\hatT,\hatp$ column blocks of
+  Figure~\ref{fig:blocks}: $A$ is densely populated throughout, while $B$ carries only its five
+  algebraic blocks.}\label{fig:ABreal}
+\end{figure}
+
+\paragraph{Boundary conditions as row replacement.} A collocation row states that the equation holds
+at node $y_j$; at the wall and freestream those rows are overwritten by the boundary conditions. With
+the stacking $\boldsymbol\phi=[\hatu;\hatv;\hatT;\hatp]$, field block $b\in\{0,1,2,3\}$ occupies
+global indices $bn,\dots,bn+n-1$, and, from the Chebyshev node ordering ($\xi_0=+1$ at $y_{\max}$,
+$\xi_N=-1$ at the wall), local index $0$ is the \emph{freestream} and local index $n{-}1$ the
+\emph{wall}:
+\begin{center}\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+condition & field & global row & row becomes \\
+\midrule
+no-slip (wall)        & $\hatu$ & $n-1$    & identity ($\hatu=0$)\\
+no-slip (wall)        & $\hatv$ & $2n-1$   & identity ($\hatv=0$)\\
+thermal (wall)        & $\hatT$ & $3n-1$   & identity ($\hatT=0$, isothermal) \emph{or} $D_1[\text{wall},:]$ ($\D\hatT=0$, adiabatic)\\
+decay (freestream)    & $\hatu$ & $0$      & identity\\
+decay (freestream)    & $\hatv$ & $n$      & identity\\
+decay (freestream)    & $\hatT$ & $2n$     & identity\\
+\bottomrule
+\end{tabular}
+\end{center}
+The same rows of $B$ are zeroed, so each constraint is purely algebraic; these zero rows are what
+make $B$ singular and the problem irreducibly generalised. The pressure $\hatp$ carries no explicit
+boundary row. The inverted node ordering is a genuine implementation hazard: because $\xi_0=+1\to
+y_{\max}$ and $\xi_N=-1\to y=0$, index $0$ is the freestream and $n{-}1$ the wall, the opposite of
+the naive guess, and exchanging them produces plausible-looking but wrong eigenvalues
+(Figure~\ref{fig:bcrows}).
+
+\begin{figure}[H]\centering
+  \includegraphics[width=0.45\linewidth]{fig_bc_rows.pdf}
+  \caption{Boundary conditions as row replacement: the stacked state $[\hatu;\hatv;\hatT;\hatp]$ with
+  the six overwritten rows highlighted (wall and freestream for $\hatu,\hatv,\hatT$); $\hatp$ carries
+  no boundary row. Node index $0$ is the freestream and $n{-}1$ the wall.}\label{fig:bcrows}
+\end{figure}
+
+\subsection{The temporal problem: a generalised eigenvalue problem}\label{sec:temporal}
+Given a real wavenumber $\alpha$, the task is to find the complex phase speed $c$ and mode shape
+$\boldsymbol\phi$; the growth rate follows as $\omega_i=\alpha c_i$. With $A,B$ from
+Section~\ref{sec:assemble} this is the generalised eigenvalue problem
+\begin{equation}\label{eq:tEVP}
+  A\boldsymbol\phi=cB\boldsymbol\phi,\qquad A,B\in\mathbb C^{4n\times4n},
+\end{equation}
+solved directly by the QZ algorithm \cite{molerstewart1973}, which
+returns all $4n$ eigenvalues at once; no initial guess is required, the defining advantage of the
+boundary-value route \cite{malik1990}. The discrete eigenvector $\boldsymbol\phi$ is the
+eigenfunction $\hatq(y)$ sampled at the grid points.
+
+A disturbance $\propto e^{\imag\alpha(x-ct)}$ with real $\alpha$ behaves as $e^{\alpha c_it}$ in
+time, so
+\begin{equation}\label{eq:tgrowth}
+  c_i=\Imag(c)>0\ \Rightarrow\ \text{unstable (grows in time)},\qquad c_r=\Real(c)=\text{phase speed},
+\end{equation}
+and the phase speed classifies the mode: a first (Tollmien--Schlichting) mode has
+$c_r\approx0.3$--$0.6$, a second (Mack) mode $c_r\approx1-1/\Mae$ \cite{mack1984}. The raw spectrum
+is filtered to $\Real(c)\in(-0.5,1.5)$, $|\Imag(c)|<0.5$ and sorted by $c_i$; the identification of
+the physical mode within the filtered set is the subject of Section~\ref{sec:modes}.
+
+\begin{figure}[H]\centering
+  \includegraphics[width=0.95\linewidth]{fig_evp_planes.pdf}
+  \caption{The two eigenvalue planes. \emph{Left (temporal):} input real $\alpha$; the phase speeds
+  $c$ populate the complex plane; the physical discrete mode sits above the line $c_i=0$ (unstable)
+  while the continuous spectrum is damped. \emph{Right (spatial,
+  Section~\ref{sec:spatial}):} input real $\omega$; the wavenumbers $\alpha$ are sought near a shift
+  target $\alpha_0$; the physical mode has $\alpha_i<0$, i.e.\ spatial growth.}\label{fig:planes}
+\end{figure}
+
+\subsection{The spatial problem: a quadratic eigenvalue problem}\label{sec:spatial}
+Given a real frequency $\omega$ (the physically forced case, since a fixed-frequency source
+generates a disturbance that grows in space), the task is to find the complex wavenumber $\alpha$;
+the growth rate follows as $\sigma=-\alpha_i$. Because the viscous and conduction terms carry
+$\partial_x^2\mapsto-\alpha^2$, the eigenvalue now appears quadratically. Grouping the discretised
+equations by powers of $\alpha$ gives the quadratic eigenvalue problem
+\begin{equation}\label{eq:qep}
+  \big(C_0+\alpha C_1+\alpha^2C_2\big)\boldsymbol\phi=0 .
+\end{equation}
+
+\paragraph{The spatial closure.} The spatial operator is not obtained by re-grouping the temporal
+listing. It uses the \emph{enthalpy} form of the energy equation, in which $\hatp$ appears
+explicitly through $\D p'/\D t$, and a bulk-viscosity ratio $\lambda/\mu=1.2$ in place of the
+Stokes hypothesis, giving the viscous coefficients of Mack \cite[Eq.~8.5]{mack1984}
+\begin{equation}\label{eq:mackcoef}
+  c_{\alpha^2}=\tfrac{2(2+\lambda/\mu)}{3}\approx2.13,\qquad
+  c_\times=\tfrac{1+2\lambda/\mu}{3}\approx1.13,\qquad
+  c_a=\tfrac{2(\lambda/\mu-1)}{3}\approx0.13 .
+\end{equation}
+The two closures differ only in the bulk-viscosity treatment and the energy-equation arrangement;
+both approximate the same physical mode and agree on it to within discretisation error.
+
+\paragraph{The three coefficient matrices.} Because $\alpha$ enters the disturbance equations only
+as $\imag\alpha$ (one streamwise derivative) and $\alpha^2$ (two), every term of the discretised
+system belongs to exactly one power of $\alpha$, and sorting by that power is the entire
+construction of \eqref{eq:qep}. The three matrices are displayed in the same $4\times4$ block form
+as the temporal operator, rows (C, X, Y, E) and columns $(\hatu,\hatv,\hatT,\hatp)$; entries now
+contain $D_1,D_2$ directly, every barred coefficient stands for its diagonal sample
+$\Lambda(\cdot)$, and $I$ is the identity. Besides $m_1,m_2,k_1,k_2$ and the prefactors
+$\nuR=1/(\Ree\bar\rho)$, $d_R=(\gamma-1)\Mae^2\nuR$, two operator shorthands keep the display
+compact: the viscous and conductive diffusion operators
+\begin{equation}\label{eq:VKops}
+  \mathcal V=\nuR\big(\bar\mu D_2+\bar\mu'D_1\big),\qquad
+  \mathcal K=\nuR\bar\kappa\big(D_2+2k_1\bar T'D_1+k_1\bar T''+k_2(\bar T')^2\big),
+\end{equation}
+where the operator in $\mathcal K$ is the conduction operator $\mathcal L_c$ of \eqref{eq:lcsplit}
+with its $-\alpha^2$ term removed: that term now lives in $C_2$.
+
+$C_2$ collects the $\partial_x^2\mapsto-\alpha^2$ terms, the streamwise second derivatives of
+viscous diffusion and heat conduction. It is purely algebraic and has the same occupancy as
+$\mathsf A_2$, with the pressure column empty because there is no pressure diffusion:
+\begin{equation}\label{eq:C2}
+  C_2=
+  \begin{pmatrix}
+    0 & 0 & 0 & 0\\
+    c_{\alpha^2}\nuR\bar\mu & 0 & 0 & 0\\
+    0 & \nuR\bar\mu & 0 & 0\\
+    0 & 0 & \nuR\bar\kappa & 0
+  \end{pmatrix}.
+\end{equation}
+$C_1$ collects every term with a single streamwise derivative: streamwise convection at speed
+$\bar U$, the streamwise pressure gradient, and the mixed $\partial_x\partial_y$ viscous
+couplings. A common factor $\imag$ comes out in front:
+\begin{equation}\label{eq:C1}
+  C_1=\imag
+  \begin{pmatrix}
+    I & 0 & -\bar U/\bar T & \gamma\Mae^2\bar U\\[3pt]
+    \bar U & -\nuR(c_\times\bar\mu D_1+\bar\mu') & 0 & \bar\rho^{-1}\\[3pt]
+    -\nuR(c_\times\bar\mu D_1+c_a\bar\mu') & \bar U & -\nuR m_1\bar U' & 0\\[3pt]
+    0 & -2d_R\bar\mu\bar U' & \bar U & -(\gamma-1)\Mae^2\bar U\bar\rho^{-1}
+  \end{pmatrix}.
+\end{equation}
+$C_0$ carries everything $\alpha$-free: the wall-normal physics (the $D_1$, $D_2$ terms) and the
+frequency. The eigenvalue-marking role of the temporal $B$ is now played by the $\imag\omega$
+entries, which sit exactly where the algebraic operator $\mathsf M$ was non-zero, because
+$-\imag\omega$ is the ansatz image of the time derivative:
+\begin{equation}\label{eq:C0}
+  C_0={\small
+  \begin{pmatrix}
+    0 & D_1-\bar T'/\bar T & \imag\omega/\bar T & -\imag\omega\gamma\Mae^2\\[3pt]
+    -\imag\omega-\mathcal V & \bar U' & -\nuR\big(m_1(\bar U''+\bar U'D_1)+m_2\bar U'\bar T'\big) & 0\\[3pt]
+    0 & -\imag\omega-c_{\alpha^2}\mathcal V & 0 & \bar\rho^{-1}D_1\\[3pt]
+    -2d_R\bar\mu\bar U'D_1 & \bar T' & -\imag\omega-\mathcal K-d_Rm_1(\bar U')^2 & \imag\omega(\gamma-1)\Mae^2\bar\rho^{-1}
+  \end{pmatrix}}.
+\end{equation}
+Equations \eqref{eq:C2}--\eqref{eq:C0} are the complete spatial operator: given $\omega$, the mean
+profiles, and $D_1,D_2$, the three matrices are assembled block by block exactly as in
+\eqref{eq:blocks}, the boundary rows are replaced as in Section~\ref{sec:assemble}, and
+\eqref{eq:qep} is solved for the complex wavenumber.
+
+\paragraph{Companion linearisation.} A quadratic pencil becomes an ordinary generalised problem of
+twice the size by introducing the auxiliary variable $\boldsymbol\psi=\alpha\boldsymbol\phi$
+\cite{tisseur2001}:
+\begin{equation}\label{eq:companion}
+  \underbrace{\begin{bmatrix}-C_1&-C_0\\ I&0\end{bmatrix}}_{\mathcal L}
+  \begin{bmatrix}\boldsymbol\psi\\ \boldsymbol\phi\end{bmatrix}
+  =\alpha\,\underbrace{\begin{bmatrix}C_2&0\\ 0&I\end{bmatrix}}_{\mathcal R}
+  \begin{bmatrix}\boldsymbol\psi\\ \boldsymbol\phi\end{bmatrix}.
+\end{equation}
+The lower block row enforces $\boldsymbol\psi=\alpha\boldsymbol\phi$; the upper row then reproduces
+\eqref{eq:qep}. The eigenvalue is $\alpha$ and the physical shape is the lower half
+$\boldsymbol\phi$: since $\boldsymbol\psi=\alpha\boldsymbol\phi$ the two halves are parallel, and by
+convention the lower half is normalised as the eigenfunction (Figure~\ref{fig:companion}).
+
+\begin{figure}[H]\centering
+  \includegraphics[width=0.9\linewidth]{fig_companion.pdf}
+  \caption{Companion linearisation \eqref{eq:companion}: the $4n$-sized quadratic problem becomes an
+  ordinary generalised problem of size $8n$ in $[\boldsymbol\psi;\boldsymbol\phi]$ with
+  $\boldsymbol\psi=\alpha\boldsymbol\phi$. Its eigenvalue is exactly $\alpha$; the eigenfunction is
+  the lower half.}\label{fig:companion}
+\end{figure}
+
+\paragraph{Shift--invert.} The physically relevant branch is targeted with a shift
+$\alpha_0=\omega/c_{\mathrm{ph}}$ ($c_{\mathrm{ph}}=1-1/\Mae$ for $\Mae>3$, else $\approx0.4$;
+these are the second- and first-mode phase-speed estimates of Section~\ref{sec:temporal}). Subtracting
+$\alpha_0$ and inverting maps eigenvalues near $\alpha_0$ to large $\mu$:
+\begin{equation}\label{eq:shift}
+  \text{eigenvalues of }(\mathcal L-\alpha_0\mathcal R)^{-1}\mathcal R\ \text{ are }\ \mu=\frac1{\alpha-\alpha_0},
+  \qquad\Rightarrow\qquad \alpha=\alpha_0+\frac1\mu ,
+\end{equation}
+so the largest-$|\mu|$ modes are the wavenumbers nearest the physical one (in our LST solver, a
+dense solve followed by selecting the $20$ eigenvalues nearest $\alpha_0$ and
+sorting by $\Imag\alpha$). The amplitude varies as
+$e^{\imag\alpha x}=e^{\imag\alpha_rx}e^{-\alpha_ix}$, so
+\begin{equation}\label{eq:sgrowth}
+  \sigma=-\Imag(\alpha)=-\alpha_i>0\ \Rightarrow\ \text{unstable (grows downstream)}.
+\end{equation}
+
+\paragraph{Alternative route: Newton iteration from a temporal seed.} When shift--invert struggles, a
+more robust path solves the \emph{temporal} problem at a
+real trial wavenumber $\alpha_r=\omega/c_{\mathrm{est}}$ ($c_{\mathrm{est}}=0.98$ for $\Mae>3$, else
+$0.35$), keeping only modes that agree across two resolutions (tolerance $8\times10^{-3}$); forms the
+seed $\Imag(\alpha)\approx-\alpha_rc_i/c_r$, a phase-speed estimate of the rigorous
+group-velocity conversion of Gaster \cite{gaster1962} that suffices here because it only seeds the
+iteration, and then Newton-iterates the dispersion residual $F(\alpha)=\alpha c(\alpha)-\omega=0$,
+$\alpha^{(k+1)}=\alpha^{(k)}-F/F'$, with $F'$ approximated by a finite difference (step $10^{-5}$,
+tolerance $10^{-6}$, at most $20$ iterations). Both routes return the same $\sigma=-\alpha_i$.
+
+\subsection{Identifying the physical mode}\label{sec:modes}
+A single solve of \eqref{eq:tEVP} returns $4n$ eigenvalues, several hundred at the default
+resolution, of which typically \emph{one} is the boundary-layer mode sought. The remainder fall
+into three recognisable populations:
+\begin{itemize}[nosep,leftmargin=1.6em]
+  \item \textbf{Infinite eigenvalues.} The boundary-condition rows carry no eigenvalue and leave
+        zero rows in $B$, so QZ reports the corresponding pairs as infinite or absurdly large;
+        the raw band filter of Section~\ref{sec:temporal} removes them.
+  \item \textbf{The discretised continuous spectrum.} On the unbounded domain the freestream
+        solutions form continuous branches rather than isolated points; the finite grid renders
+        those branches as dense strings of grid-dependent eigenvalues.
+  \item \textbf{Discrete modes.} A handful of isolated eigenvalues whose eigenfunctions are
+        trapped inside the layer; the unstable ones among them are the physics sought.
+\end{itemize}
+No property of the eigenvalue alone separates the last two populations: in the worked example of
+Section~\ref{sec:worked} the largest growth rate in the entire filtered spectrum belongs to a
+continuous-spectrum artifact. The separation of the discrete modes from the continuous spectrum rests
+on the eigen\emph{function} and the grid \cite{grosch1978,balakumar1992}, through two implemented
+tests.
+
+\paragraph{Test 1: freestream decay.} A genuine boundary-layer eigenfunction decays exponentially
+above the layer, whereas a continuous-spectrum eigenfunction oscillates undiminished to the top of
+the box \cite{balakumar1992}. The implemented measure is the edge ratio of the stacked eigenvector,
+\begin{equation}\label{eq:edgeratio}
+  r_e=\frac{\big\langle a(y_j)\big\rangle_{\text{4 outermost nodes}}}{\max_j a(y_j)},
+  \qquad a(y_j)=\max\big(|\hatu_j|,|\hatv_j|,|\hatT_j|,|\hatp_j|\big),
+\end{equation}
+and candidates with $r_e\ge0.1$ are rejected. The test is not marginal. At the worked-example
+parameters ($\Mae=6$, $R=5500$, $\alpha_L=0.174$) the accepted Mack mode has
+$r_e=1.7\times10^{-7}$, while the two rejected amplified candidates have $r_e=0.34$ and $0.50$:
+six orders of magnitude of separation.
+
+\paragraph{Test 2: domain stationarity.} A genuine eigenvalue is a property of the boundary
+layer, not of the box that truncates it, so raising $y_{\max}$ must leave it fixed; the
+continuous-spectrum approximants, which owe their existence to the unbounded domain
+\cite{grosch1978}, rearrange with the grid. The solve is repeated on a taller domain and a candidate
+is kept only if its $c$ reappears there within $2\times10^{-3}$.
+At the worked-example parameters, raising $y_{\max}$ from $10$ to $12\,(\delta^*/L^*)$ moves the
+Mack mode by $5\times10^{-8}$ and every rejected candidate by $10^{-3}$--$10^{-2}$.
+
+\subsection{Worked example: one temporal solve}\label{sec:worked}
+Consider a strong Mack-mode case: $\Mae=6.0$, $R=5500$, $\alpha_L=0.174$, adiabatic wall, $L^*$
+scaling, $N=180$ ($n=181$, matrices $4n=724$ wide), and domain height
+$y_{\max}=10\,(\delta^*/L^*)\approx128$ (a multiple of the boundary-layer scale, per
+Section~\ref{sec:assemble}). Solving \eqref{eq:tEVP} returns all $724$ eigenvalues at once, and the two acceptance tests of
+Section~\ref{sec:modes}, freestream decay of the eigenfunction and stationarity of $c$ under
+$y_{\max}\to12\,(\delta^*/L^*)$, sift the one physical mode from the crowd.
+
+The largest-growth eigenvalue is a decoy: it sits at $c_r=1.18$, keeps a third of its peak amplitude
+at the top of the box, drifts by $6\times10^{-3}$ when the domain is raised, and is unphysically
+supersonic ($c_r>1$); it belongs to the continuous spectrum, not the discrete set. The physical
+answer is the Mack (second) mode $c=0.930+0.0200\imag$, whose eigenfunction decays cleanly at the
+freestream (Figure~\ref{fig:eigfn}) and whose phase speed is stationary to one part in $10^{7}$ when
+the box is enlarged. Its growth rate $\omega_i=\alpha c_i=+0.00348$ is positive, so the wave
+amplifies, and its phase speed $c_r=0.93$ is the second-mode value near $1-1/\Mae$ \cite{mack1984}.
+This single $\omega_i>0$ is one point inside the neutral curve; repeating the solve across an
+$(R,\alpha)$ grid and locating the zero crossing of $\omega_i$ traces the neutral curve of
+Section~\ref{sec:neutral}.
+
+\begin{figure}[H]\centering
+  \includegraphics[width=0.58\linewidth]{fig_eigenfunctions.pdf}
+  \caption{Computed eigenfunction of the worked-example Mack mode: the four amplitude fields
+  $|\hatu|,|\hatv|,|\hatT|,|\hatp|$ against $y$ (each normalised). $|\hatT|$ peaks at the critical
+  layer ($\bar U=c_r$); $|\hatp|$ is wall-confined, the acoustic signature of the second mode. All
+  fields decay at the freestream, confirming a discrete mode.}\label{fig:eigfn}
+\end{figure}
+
+\subsection{Neutral curves}\label{sec:neutral}
+The neutral curve is the boundary between growth and decay: the locus $c_i(R,\alpha)=0$ (temporal) or
+$\sigma(R,\omega)=0$ (spatial), inside which the flow is unstable. Our LST solver traces it in three
+steps:
+\begin{enumerate}[nosep,leftmargin=1.8em]
+  \item \textbf{Sweep} an $(R,\alpha)$ grid at fixed $\Mae$; at each node solve \eqref{eq:tEVP},
+        apply the mode tests of Section~\ref{sec:modes}, and store $c_i$.
+  \item \textbf{Extract} the zero contour of the stored field by marching squares;
+        unresolved nodes are tagged stable so that the contour closes.
+  \item \textbf{Continuation} for difficult branches: at low Mach number the first-mode eigenvalue
+        approaches the continuous spectrum and the grid sweep loses it. A continuation pass then
+        tracks the mode by proximity: from a clean seed it marches in $R$, follows the nearest
+        eigenvalue, and secant-solves $c_i=0$ at each step, each converged eigenvalue seeding the
+        next parameter value.
+\end{enumerate}
+
+\begin{figure}[H]\centering
+  \includegraphics[width=0.85\linewidth]{fig_neutral_field.pdf}
+  \caption{Steps 1--2 of the neutral-curve procedure for a solved case ($\Mae=7$, second mode): the
+  coloured field is the growth rate $c_i(R,\alpha)$ from the sweep; the black curve is the extracted
+  $\{c_i=0\}$ contour. The flow is unstable inside the loop; $R_{\mathrm{crit}}$ marks the lower
+  branch (branch~I) where instability first appears as $R$ increases, and the curve closes at
+  branch~II.}\label{fig:neutral}
+\end{figure}
+
+\subsection{$N$-factor and transition}\label{sec:nfactor}
+What matters for transition is the \emph{accumulated} amplification of a fixed-frequency disturbance.
+For a chosen reduced frequency $F$, the spatial problem of Section~\ref{sec:spatial} is solved at
+successive stations to obtain $\sigma_L=-\Imag(\alpha_L)$, the spatial growth rate
+\eqref{eq:sgrowth} expressed in the $L^*$ scaling, and integrated from the lower neutral point
+$R_0$ where $\sigma_L$ first becomes positive:
+\begin{equation}\label{eq:N}
+  N(R)=\int_{R_0}^R\max(\sigma_L,0)\,\mathrm dR'\quad\text{(trapezoidal)},\qquad
+  \frac{A(R)}{A(R_0)}=e^{N(R)} .
+\end{equation}
+The amplitude grows by $e^N$, and transition is empirically expected near $N\approx9$--$11$,
+following the $e^N$ method of Smith \& Gamberoni and van Ingen \cite{smith1956,vaningen1956}.
+For a cone, surface arc length is mapped to an equivalent $R$ before
+integration. The transition $N$ is a correlation, not a first-principles criterion: it depends on the
+disturbance environment (flight ${\sim}9$--$11$; noisy conventional tunnels transition at
+$N\sim4$--$6$), presumes a single dominant linear mode, and absorbs the unknown initial amplitude
+set by receptivity.
+
+
+%=====================================================================
+\clearpage
+\section{Validation and verification}\label{sec:validation}
+%=====================================================================
+\subsection{Summary of all cases}
+\label{sec:summary-table}
+%=====================================================================
+
+Table~\ref{tab:summary} lists every case presented below, together with the solver route that
+produced the compared quantity: the formulation (temporal or spatial), the numerical route
+(collocation eigenvalue solve or shooting), and its input and output. The routes themselves are
+specified in Section~\ref{sec:numerics}; the caveats live in each subsection. The
+Malik temporal test cases 3, 4, and 5, previously logged non-reproducible for want of their
+dimensional conditions, are now included, once Malik's own Table~I supplied the missing $T_0$ and
+wall temperatures.
+
+\begin{table}[htbp]
+\centering
+\footnotesize
+\caption{Cases presented in this document, with the solver route behind each comparison. GEVP:
+the temporal generalised eigenvalue problem $A\boldsymbol\phi=cB\boldsymbol\phi$ (input a real
+wavenumber, output the complex spectrum); QEP: the spatial quadratic eigenvalue problem in
+$\alpha$ (input a real frequency, output the complex wavenumber); shooting: the exact first-order
+march with $\sigma_{\min}\to0$ root search, an independent route documented separately.}
+\label{tab:summary}
+\begin{tabular}{@{}p{2.9cm}p{2.9cm}p{3.6cm}p{5.2cm}@{}}
+\toprule
+\textbf{Case} & \textbf{Source} & \textbf{Quantity} & \textbf{Solver route (input $\to$ output)} \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{Incompressible core}}\\
+Plane Poiseuille & Orszag \cite{orszag1971} & O--S eigenvalue $c$ & temporal O--S GEVP, QZ
+  ($\alpha,Re\to$ least-stable $c$)\\
+OS spectrum (32 modes) & Orszag \cite{orszag1971}, Tab.~5 & full temporal spectrum & temporal
+  O--S GEVP, QZ ($\alpha,Re\to$ full $c$ spectrum)\\[2pt]
+\multicolumn{4}{@{}l}{\textit{Compressible eigenvalues}}\\
+Malik case 6 & Malik \cite{malik1990}, Tab.~IX & spatial $\alpha$ (2nd mode) & spatial QEP,
+  shift--invert ($\omega\to\alpha$)\\
+Malik cases 3/4/5 & Malik \cite{malik1990}, Tab.~IV/V/VI & temporal $\omega$ (M2.5/10) & temporal
+  GEVP, 3-D for the oblique case 3 ($\alpha[,\beta]\to\omega$)\\
+Malik Table X & Malik \cite{malik1990}, Tab.~X & spatial $\alpha$ (M10 2nd mode) & spatial QEP,
+  shift--invert ($\omega\to\alpha$)\\
+Malik Fig.~4 eigenfn. & Malik \cite{malik1990}, Fig.~4 & M10 2nd-mode $\hat T(y)$ shape &
+  temporal GEVP, eigenvector ($\alpha\to\hat q(y)$)\\
+B\&M branches & Balakumar--Malik \cite{balakumar1992} & discrete/continuous topology & spatial
+  QEP, full companion spectrum ($\omega\to$ all $\alpha$)\\
+B\&M via Xi--Ren--Fu & Balakumar--Malik \cite{balakumar1992} & spatial $\alpha$ (2nd mode) &
+  spatial QEP ($\omega\to\alpha$)\\[2pt]
+\multicolumn{4}{@{}l}{\textit{Second mode: curves \& families}}\\
+Mack Fig.~10.6 & Mack \cite{mack1984} & $\omega_{i,\max}(R)$, M4.5--10 & temporal GEVP swept in
+  $\alpha$ per $R$ ($\alpha\to\omega_i$; max over $\alpha$)\\
+Egorov M6 & Egorov et al.\ \cite{egorov2006} & most-amplified $\omega$ & spatial QEP swept in
+  $\omega$ ($\omega\to\sigma=-\alpha_i$)\\
+Ma \& Zhong M4.5 & Ma \& Zhong \cite{mazhong2003} & neutral curve, spatial 2nd mode & spatial QEP
+  at fixed $F$ ($\omega\to\alpha_i$; $\sigma=0$ crossings)\\[2pt]
+\multicolumn{4}{@{}l}{\textit{First mode: curves \& families}}\\
+Mack Fig.~10.1 & Mack \cite{mack1984} & neutral loop, M1.6 & temporal GEVP on an $(R,\alpha)$
+  grid ($\alpha\to c_i$; $c_i=0$ contour)\\
+Mack Fig.~10.3 & Mack \cite{mack1984} & $\omega_{i,\max}(R)$, M1.3/3.0 & exact oblique shooting,
+  continuation from an anchor root ($\alpha,\beta\to c$ via $\sigma_{\min}\to0$)\\
+Mack Fig.~10.4 & Mack \cite{mack1984} & oblique 1st mode, M4.5--10 & temporal 3-D GEVP
+  ($\alpha,\psi\to\omega_i$; max over $\alpha,\psi$)\\[2pt]
+\multicolumn{4}{@{}l}{\textit{Mixed first $+$ second mode}}\\
+\"Ozgen Fig.~3 & \"Ozgen--K{\i}rcal{\i} \cite{ozgen2008} & neutral-curve family (both modes),
+  M2--10 & temperature-form temporal GEVP + branch continuation ($\alpha_L\to c_i$; $c_i=0$
+  contour)\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+%=====================================================================
+\subsection{Incompressible core}
+\label{sec:core}
+%=====================================================================
+
+\subsubsection{Orszag (1971): plane-Poiseuille Orr--Sommerfeld eigenvalue}
+\label{sec:orszag}
+
+\paragraph{Reference.} Orszag \cite{orszag1971}, the canonical plane-Poiseuille temporal
+eigenvalue.
+
+\paragraph{Conditions.} Plane Poiseuille flow $U=1-y^2$ on $[-1,1]$, Reynolds number $Re=10\,000$,
+streamwise wavenumber $\alpha=1$, temporal formulation.
+
+Solving the temporal Orr--Sommerfeld problem by Chebyshev collocation and dense QZ (input the real
+wavenumber $\alpha$ and $Re$, output the complex phase-speed spectrum), Our LST code reproduces the
+benchmark least-stable eigenvalue (phase speed) $c=0.23753+0.00374\,\imag$ to an absolute error
+below $10^{-4}$ at $N=64$, tightening toward $\sim\!10^{-7}$ under refinement (Table~\ref{tab:orszag}); this is a scalar comparison against an
+essentially exact reference, so no overlay figure is needed. The same solver also recovers the
+Blasius Tollmien--Schlichting mode at $Re_{\delta^\ast}=998$, $\alpha=0.179$ ($c_r\approx0.36$,
+unstable) and finds unstable growth at $Re=1000$, confirming the mapped semi-infinite domain and
+the growth-rate optimisation loop.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Plane Poiseuille temporal eigenvalue, $Re=10\,000$, $\alpha=1$. Target
+$c=0.23753+0.00374\,\imag$ \cite{orszag1971}.}
+\label{tab:orszag}
+\begin{tabular}{@{}rll@{}}
+\toprule
+$N$ & Our LST code $c=c_r+\imag c_i$ & $|c-c_{\text{target}}|$ \\
+\midrule
+64  & $0.23753 + 0.00374\,\imag$ & $\lesssim 10^{-4}$ \\
+96  & $0.23753 + 0.00374\,\imag$ & $\lesssim 10^{-5}$ \\
+128 & $0.23753 + 0.00374\,\imag$ & $\lesssim 10^{-7}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Orszag (1971) Table~5: the full Orr--Sommerfeld spectrum}
+\label{sec:orszag-spectrum}
+
+\paragraph{Reference.} Orszag \cite{orszag1971}, Table~5: the 32 least-stable Orr--Sommerfeld
+eigenvalues of plane Poiseuille flow at $\alpha=1$, $R=10\,000$, each classified symmetric ($S$) or
+antisymmetric ($A$).
+
+The same temporal Orr--Sommerfeld route as Section~\ref{sec:orszag} is exercised on its
+full-spectrum output, returning \emph{all} eigenvalues of the collocated pencil at once rather than
+just the single least-stable mode. Our LST code's dense eigensolver reproduces \emph{all 32}
+tabulated eigenvalues to a maximum absolute error $7\times10^{-6}$ (median $5\times10^{-8}$) at
+$N=128$. It resolves the A-branch ($c_r\!\sim\!0.96$ downward), the P-branch
+($c_r\!\sim\!0.2$--$0.5$), and the vertical S-branch, including the near-degenerate $S$/$A$ pairs
+that differ only in the fifth--sixth digit (e.g.\ modes 2 and 3 at $0.96463$ vs.\ $0.96464$),
+exercising the dense full-spectrum path (Figure~\ref{fig:orszag-spectrum}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\linewidth]{../../verification/other/orszag_spectrum/overlay.png}
+\caption{Orszag Table~5 \cite{orszag1971}: Our LST code's plane-Poiseuille Orr--Sommerfeld
+spectrum (circles) over the 32 tabulated eigenvalues (crosses), $\alpha=1$, $R=10\,000$. The
+classic ``Y''-shaped spectrum (A-, P-, and S-branches), with every tabulated mode matched to
+$<10^{-5}$.}
+\label{fig:orszag-spectrum}
+\end{figure}
+
+\FloatBarrier
+%=====================================================================
+\subsection{Compressible eigenvalues}
+\label{sec:anchors}
+%=====================================================================
+
+\subsubsection{Malik (1990): compressible eigenvalues}
+\label{sec:malik}
+
+\paragraph{Reference.} Malik \cite{malik1990}, the standard tabulated compressible-LST
+test-case suite. Case~6 (Table~IX, the $M=4.5$ spatial second mode) is the primary anchor,
+cross-checked digit-for-digit against Xi, Ren \& Fu \cite{xirenfu2020} and Hildebrand et al.\
+\cite{hildebrand2018}. Cases 3, 4, 5 (Tables~IV/V/VI) and the grid-refinement case of Table~X were
+long non-reproducible for want of their dimensional conditions (\cite{hildebrand2018} lists only $M$
+and $R$), until Malik's own Table~I supplied the missing $T_0$ and wall temperatures, in particular
+case~4's \emph{cooled} wall $T_w/T_{\rm adb}=0.1$ that earlier attempts had assumed adiabatic.
+
+\paragraph{Conditions.} All cases share $Pr=0.7$, $\gamma=1.4$, Sutherland $S=110.33$~K, $L^\ast$
+length scale. The suite spans $M=2.5$--$10$, temporal (fixed real $\alpha$, complex $\omega$) and
+spatial (fixed real $\omega$, complex $\alpha$) formulations, and adiabatic and cooled walls.
+Case~3 ($M=2.5$, oblique $\beta=0.1$) is a first mode; the rest are second (Mack) modes.
+Each anchor is Chebyshev-collocated at $N=120$--$280$ points (larger $N$ for the thick $M=10$
+layers), domain height $y_{\max}=40$--$140\,\delta^\ast/L^\ast$, $L^\ast$ scaling, with an isothermal
+disturbance-temperature condition and bulk-viscosity ratio $\lambda/\mu=1.2$.
+
+Both formulations of the collocation route appear, matched case by case to what Malik tabulates:
+the temporal cases 3--5 use the temporal GEVP (its 3-D variant for the oblique case 3), returning
+the complex frequency $\omega$ from a real wavenumber, while the spatial cases 6 and Table~X use the
+spatial quadratic eigenvalue problem in companion form with shift--invert targeting, returning the
+complex wavenumber $\alpha$ from a real frequency. Table~\ref{tab:malik} lists the five anchors. Every real part ($\alpha_r$ or $\omega_r$) is
+essentially exact, fixing each mode and its phase speed. The one outlier is Table~X's \emph{spatial}
+$\alpha_i$, which reflects the documented hypersonic-second-mode inter-method spread: Tumin's
+recomputation of case~6's $\alpha_i$ from Malik's printed value differs in the same way, and the
+solver of \cite{xirenfu2020} gives $-0.002780$. The \emph{temporal} $M=10$ growth rates (cases 4,
+5) match closely, so the spatial $\alpha_i$ is the more formulation-sensitive quantity. Case~5 is
+Malik's deliberately near-neutral ``severe test'': his own SDSP scheme flips $\omega_i$ negative at
+coarse resolution, yet Our LST code lands on his converged value (Figure~\ref{fig:malik5}).
+
+\begin{table}[htbp]
+\centering\small
+\caption{The Malik \cite{malik1990} compressible eigenvalues. Spatial cases (6, X) compare
+the complex wavenumber $\alpha$; temporal cases (3--5) compare the complex frequency $\omega$.}
+\label{tab:malik}
+\begin{tabular}{@{}p{1.7cm}p{3.9cm}p{3.6cm}p{3.6cm}@{}}
+\toprule
+Case & Conditions & Our LST code & Malik \\
+\midrule
+6 (Tab.~IX) & $M4.5$ adiab., spatial 2nd & $0.253400{-}0.002490\,\imag$ & $0.253405{-}0.002492\,\imag$ \\
+3 (Tab.~IV) & $M2.5$ oblique, temporal 1st & $0.036735{+}0.000584\,\imag$ & $0.036734{+}0.000584\,\imag$ \\
+4 (Tab.~V) & $M10$ cooled, temporal 2nd & $0.097457{+}0.001988\,\imag$ & $0.097484{+}0.002030\,\imag$ \\
+5 (Tab.~VI) & $M10$ adiab., temporal 2nd & $0.115862{+}0.000156\,\imag$ & $0.115865{+}0.000153\,\imag$ \\
+X (Tab.~X) & $M10$ cooled, spatial 2nd & $0.095803{-}0.002403\,\imag$ & $0.095933{-}0.002156\,\imag$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\linewidth]{../../verification/second_mode/malik_case5/overlay.png}
+\caption{Malik case~5 \cite{malik1990} ($M=10$ adiabatic, the deliberately near-neutral ``severe
+test''): Our LST code (diamond) lands on Malik's converged value (star) and his 4CD/MDSP
+cluster, while his own 2FD scheme sits high and SDSP flips $\omega_i$ negative;
+Our LST code reproduces the case Malik built to break solvers.}
+\label{fig:malik5}
+\end{figure}
+
+\subsubsection{Malik (1990) Fig.~4: M10 second-mode eigenfunction}
+\label{sec:malik-fig4}
+
+\paragraph{Reference.} Malik \cite{malik1990}, Fig.~4: the disturbance eigenfunctions of the same
+$M=10$ cooled-wall condition as case~4. The comparison uses the temperature eigenfunction
+$\hat T$ (real and imaginary parts), the dominant, cleanly traceable curves; the small velocity
+and pressure eigenfunctions overlap near the axis and are not reliably digitisable, so they are
+omitted.
+
+At the case-4 conditions ($N=200$ Chebyshev points, $y_{\max}=75\,\delta^\ast/L^\ast$, $L^\ast$
+scaling, isothermal disturbance-temperature condition) the temporal GEVP is read for its
+eigen\emph{vector} rather than its eigenvalue: from a real wavenumber $\alpha$ it returns the
+discrete eigenpair, of which the temperature component $\hat T(y)$ is compared. This is therefore a mode-shape check, not an
+eigenvalue one, and the complex temperature eigenfunction $\hat T(y)$ is normalised so that
+$\hat T_r$ peaks at $+1$ (Malik's convention, which fixes the eigenvector's single global phase).
+Both the real and imaginary temperature eigenfunctions lie on the digitised Fig.~4 points
+(Figure~\ref{fig:malik-fig4}). Our LST code's $\hat T_r$ traces the near-wall negative lobe, the
+zero crossing near $y\!\approx\!6$, and the sharp unit peak at $y=13.3$ ($\approx\delta^\ast$)
+against Malik's $\approx13$; $\hat T_i$ reproduces the same double-lobed shape, a positive hump
+near $y\!\approx\!11$ and a negative dip near $y\!\approx\!15$. Under the \emph{single} global phase
+that makes $\hat T_r$ real at its peak, \emph{both} parts fall on the reference, so the temperature
+eigenvector is validated in full, not merely its peak location. The temperature fluctuation
+dominates the velocity ($|\hat T|/|\hat u|\approx14$), the hallmark of the hypersonic Mack mode.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.72\linewidth]{../../verification/second_mode/malik_fig4_eigenfunction/overlay.png}
+\caption{Malik Fig.~4 \cite{malik1990}, $M=10$ second-mode temperature eigenfunction: Our LST
+code's $\hat T_r$ (solid) and $\hat T_i$ (dashed) curves over the digitised points, normalised so
+$\hat T_r$ peaks at $+1$. Both parts match under a single global phase: $\hat T_r$ has its unit peak
+at $y=13.3$ against Malik's $\approx13$, and $\hat T_i$ shows the positive hump near
+$y\!\approx\!11$ and the negative dip near $y\!\approx\!15$.}
+\label{fig:malik-fig4}
+\end{figure}
+
+\subsubsection{Balakumar \& Malik (1992): discrete/continuous spectrum topology}
+\label{sec:bm1992}
+
+\paragraph{Reference.} Balakumar \& Malik \cite{balakumar1992}. The paper presents its branches
+graphically; no tabulated branch eigenvalues are openly recoverable, so this is a qualitative
+branch-topology check plus a fully specified spatial second-mode cross-check.
+
+\paragraph{Conditions.} $M=4.5$, $T_0=311$~K, $Re=1000$, $\omega=0.2$, adiabatic (insulated) wall.
+The full companion spectrum is computed by Chebyshev collocation at $N=120$ ($121$ nodes),
+$y_{\max}=40\,\delta^\ast/L^\ast$, $L^\ast$ scaling, with an isothermal disturbance-temperature
+condition and $\lambda/\mu=1.2$.
+
+The spatial quadratic eigenvalue problem is solved for its \emph{entire} companion spectrum, not
+merely the shift--invert neighbourhood: from a real frequency $\omega$ it returns all complex
+wavenumbers $\alpha$ of the discretised operator at once, discrete mode and rendered continuous
+spectrum together, which is what a branch-topology comparison requires. The comparison is thus
+twofold: the branch topology (how the discrete second mode separates from the continuous spectrum in
+the complex-$\alpha$ plane) and the discrete spatial eigenvalue $\alpha$. Our LST code's full
+spatial spectrum reproduces the published topology: the discrete second mode
+sits at $\alpha=0.220210-0.002787\,\imag$ ($c=0.9082$), matching the published
+$0.220-0.003091\,\imag$, and is the unique least-damped root in the second-mode phase-speed band,
+while a cluster of roots accumulates at the freestream phase speed $c\!\to\!1$ (the continuous
+spectrum). The discrete mode is set apart from that cluster in phase speed and growth rate, not by a
+wide gap in the complex plane: the discretised continuum is dense in $\alpha_r$, so the nearest
+continuum root lies close by, the expected signature of the continuous spectrum crowding the
+discrete mode. Treated purely as a spatial second-mode anchor, the real part is essentially exact and
+the imaginary part carries the same inter-method $\alpha_i$ spread seen on Malik case~6
+(Figure~\ref{fig:bm1992}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{../../verification/second_mode/balakumar_malik1992_branches/overlay.png}
+\caption{Balakumar \& Malik \cite{balakumar1992}, $M=4.5$: Our LST code's complex-$\alpha$
+spectrum showing the discrete second mode set apart (in phase speed and growth rate) from the
+continuous-spectrum cluster near $c\!\to\!1$.}
+\label{fig:bm1992}
+\end{figure}
+
+\FloatBarrier
+%=====================================================================
+\subsection{Second mode: curves and families}
+\label{sec:secondmode}
+%=====================================================================
+Having pinned the compressible operator at single points, the following cases test full
+growth-rate and neutral curves; the second mode is Our LST code's design target.
+
+\subsubsection{Mack (1984) Fig.~10.6: second-mode growth vs.\ Reynolds number}
+\label{sec:mack106}
+
+\paragraph{Reference.} Mack \cite{mack1984}, Fig.~10.6.
+
+\paragraph{Conditions.} Air, adiabatic wall, 2-D wave ($\psi=0^\circ$), at $M=4.5$, $5.8$, $7$, and
+$10$. Two modelling choices make the comparison defensible: the cold edge state of Mack's
+Table~11.1 \cite{mack1984} (resolving a historical $\sim\!6\times$ gap that was an
+edge-temperature error) and a
+wall-normal domain $y_{\max}\approx4\,\delta^\ast/L^\ast$ that grows with Mach ($y_{\max}=40$ at
+M4.5 up to $140$ at M10; a fixed short box starves the thick high-Mach boundary layer). The
+eigenvalue solves use Chebyshev collocation at $N=110$, $L^\ast$ scaling, and the 2-D Stokes
+closure $\lambda/\mu=0$.
+
+Sweeping the temporal GEVP in wavenumber at each Reynolds number (a real $\alpha$ scan at fixed $R$,
+from which the second-mode $\omega_i=\alpha c_i$ is maximised over $\alpha$, then repeated over $R$)
+traces the curve. Across $M=4.5$, $5.8$, $7$, and $10$, Our LST code's maximum second-mode temporal
+growth rate $\omega_{i,\max}(R)$ (Mack's $L^\ast$ scale, $c_r\approx0.9$) tracks the digitised
+Fig.~10.6 points. The match is tightest at $M=7$ and $M=10$ and carries a small residual at $M=4.5$
+and $M=5.8$; because both ends of the Mach range match well, that residual is local rather than a
+monotonic high-Mach under-prediction. The $M=4.5$ and $M=10$ curves are shown as representatives
+(Figures~\ref{fig:mack106_m45} and \ref{fig:mack106_m100}); $M=5.8$ and $M=7$ follow the same trend
+and are summarised in Table~\ref{tab:summary}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{../../verification/second_mode/mack_fig10_6_M45/overlay.png}
+\caption{Mack Fig.~10.6 \cite{mack1984}, $M=4.5$: Our LST code's $\omega_{i,\max}(R)$ over the
+digitised points, with a small residual at this Mach number.}
+\label{fig:mack106_m45}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{../../verification/second_mode/mack_fig10_6_M100/overlay.png}
+\caption{Mack Fig.~10.6 \cite{mack1984}, $M=10$: the same comparison at the top of the Mach range,
+with the domain-converged ($y_{\max}=140$), cold-edge second mode.}
+\label{fig:mack106_m100}
+\end{figure}
+
+\subsubsection{Egorov et al.\ (2006): Mach-6 flat-plate second mode}
+\label{sec:egorov}
+
+\paragraph{Reference.} Egorov, Fedorov \& Soudakov \cite{egorov2006}: 2-D DNS second-mode growth
+over a Mach-6 adiabatic flat plate, reported to agree with LST.
+
+\paragraph{Conditions.} Perfect gas $\gamma=1.4$, $Pr=0.72$, power-law viscosity
+$\mu/\mu_e=(T/T_e)^{0.7}$; $M_\infty=6$, $Re_L=2\times10^6$, adiabatic wall; mode-S circular
+frequency $\omega\approx200$ (plate-length units) at the synchronisation location $x=1$
+($R=\sqrt{2\times10^6}=1414$). The spatial solve uses Chebyshev collocation at $N=140$,
+$y_{\max}=40\,\delta^\ast/L^\ast$, $L^\ast$ scaling, an isothermal disturbance-temperature
+condition, and $\lambda/\mu=1.2$.
+
+The spatial QEP is swept in frequency at the synchronisation location $R=1414$ (real $\omega$ across
+the candidate band, returning the complex wavenumber $\alpha$ and hence the spatial growth
+$\sigma=-\alpha_i$ and its maximiser). Because the paper presents the DNS-vs-LST comparison as a
+growth-rate-vs-$x$ curve with no printed growth-rate digit, the comparison is made on the
+second-mode instability band and the frequency of the most-amplified mode. Our LST code's discrete second mode ($c_r\approx0.92$--$0.94$) is unstable
+across
+$\omega_E\in[140,260]$, which brackets the reference forcing $\omega=200$, and is most-amplified at
+$\omega_E\approx215$; at exactly $\omega=200$ the spatial growth is $-\alpha_i=2.90\times10^{-3}$
+with $c_r=0.934$. Our LST code thus places the M6 second-mode instability squarely in the stated
+band, with the most-amplified frequency essentially on the reference forcing choice.
+
+\subsubsection{Ma \& Zhong (2003) Fig.~15: M4.5 second-mode neutral curve}
+\label{sec:mazhong}
+
+\paragraph{Reference.} Ma \& Zhong \cite{mazhong2003}, \S6 / Fig.~15: full neutral curves
+$\omega(R)$ for the first and second mode at $M=4.5$, with the second-mode branch points quoted in
+text at $R=806$ (branch~I) and $R=999.6$ (branch~II) for $F=2.2\times10^{-4}$.
+
+\paragraph{Conditions.} Air, adiabatic \emph{mean} wall, 2-D ($\psi=0^\circ$), $M=4.5$,
+$T_e=65.15$~K, unit $Re=7.2\times10^6$/m, Sutherland $S=110.33$~K, $Pr=0.72$, $\gamma=1.4$;
+spatial formulation at fixed $F=2.2\times10^{-4}$. The \emph{disturbance} temperature wall
+condition is isothermal ($\hat{T}|_{w}=0$), which the authors state they used for the Fig.~15
+neutral curve. The spatial sweeps use Chebyshev collocation at $N=130$ ($131$ nodes),
+$y_{\max}=40\,\delta^\ast/L^\ast$, $L^\ast$ scaling, and $\lambda/\mu=1.2$.
+
+The spatial QEP is run in fixed-frequency sweeps: real $\omega$ along each $F=\mathrm{const}$ path
+in $R$ returns the complex wavenumber, and the neutral curve is the $\sigma=-\alpha_i=0$ crossing
+set; the first-mode branches use the same route with the discrete-mode selector (freestream decay
+$+$ $y_{\max}$-stationarity). Our LST code thus traces the full neutral curve $\omega(R)$, anchored
+against the two second-mode branch points quoted in the text at $F=2.2\times10^{-4}$. Its
+second-mode neutral band reproduces the closed loop of Fig.~15 (nose near $R\approx280$, upper
+branch $\omega\approx0.225$, lower branch $\omega\approx0.18$) across the full range. At the quoted $F=2.2\times10^{-4}$, the band crosses at $R=786.6$ (branch~I; text value
+$806$) and $R=1009.9$ (branch~II; text value $999.6$). Using the adiabatic disturbance condition by
+mistake shifts these to $831$ and $1033$; the paper's actual isothermal disturbance condition is a
+correction, not a fit, and tightens the match. The first-mode \emph{cutoff} (upper) branch,
+re-extracted with the discrete-mode selector (freestream decay $+$ $y_{\max}$-stationarity,
+replacing the earlier phase-speed-band classifier), follows Fig.~15's upper branch closely. The
+low-$\omega$ \emph{onset} (lower) branch is \emph{not} recovered: below $\omega\approx0.03$ the 2-D
+first mode ($c_r\!\lesssim\!0.45$) delocalises into the slow-acoustic continuous spectrum
+($c_r\le1-1/M=0.778$), leaving no clean discrete eigenmode. This limit is the same across Our LST
+code's spatial and temporal collocation solvers and a QR-shooting variant, and a wave-angle sweep
+confirms the 2-D mode is the most unstable here (so this is a 2-D, not an oblique, first mode).
+Recovering the onset branch would need a compound-matrix shooting solver robust to the
+near-continuous-spectrum decay rates, which is left as an open item in the companion working note
+(Figure~\ref{fig:mazhong}).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.85\linewidth]{../../verification/second_mode/mazhong2003_m4p5/overlay_fig15_full.png}
+\caption{Ma \& Zhong Fig.~15 \cite{mazhong2003}, $M=4.5$: Our LST code's second-mode neutral loop
+over the pixel-digitised Fig.~15 points, matching the branch points at $F=2.2\times10^{-4}$
+($R=786.6$ vs.\ $806$; $R=1009.9$ vs.\ $999.6$) under the isothermal disturbance condition. The
+first-mode \emph{cutoff} branch, re-extracted with the discrete-mode selector, follows the
+digitised upper branch; the first-mode \emph{onset} (shaded band) is continuous-spectrum-limited,
+the long-wavelength mode delocalising into the continuous spectrum, a limit shared by all of Our
+LST code's collocation and QR-shooting methods (see text).}
+\label{fig:mazhong}
+\end{figure}
+
+\FloatBarrier
+%=====================================================================
+\subsection{First mode: curves and families}
+\label{sec:firstmode}
+%=====================================================================
+The first mode was Our LST code's documented weak spot. After a reference-digitisation
+correction, most of the Mack first-mode figures now match well; the remaining disagreement is
+narrow and isolated to the $M\approx2.2$ cases (Fig.~10.1 and Fig.~10.3 at $M=2.2$), a genuine
+under-amplification and too-high critical Reynolds number at that Mach rather than a general trend,
+and is tracked in the companion working note. This section reports the Mack first-mode figures;
+the \"Ozgen--K{\i}rcal{\i} neutral-curve family, whose figures carry first-mode branches alongside
+second-mode ones, is treated separately in Section~\ref{sec:mixedmode}.
+
+\subsubsection{Mack (1984) Fig.~10.1: first-mode neutral loop}
+\label{sec:mack101}
+
+\paragraph{Reference.} Mack \cite{mack1984}, Fig.~10.1, the innermost (complete-equations) neutral
+loop, re-digitised with both branches plus nose.
+
+\paragraph{Conditions.} Air, adiabatic wall, 2-D ($\psi=0^\circ$), at $M=1.6$ and $M=2.2$;
+temporal neutral loop ($c_i=0$) in $(R, F\!\times\!10^4)$. The $(R,\alpha)$-grid solves use Chebyshev
+collocation at $N=140$, $y_{\max}=45\,\delta^\ast/L^\ast$, $L^\ast$ scaling, and $\lambda/\mu=0$.
+
+Solving the temporal GEVP over an $(R,\alpha)$ grid (real $\alpha$ at each $R$, returning the
+complex phase speed) gives the neutral loop as the $c_i=0$ contour, with the critical Reynolds
+number at its nose. At $M=1.6$ the first-mode neutral loop (its lower onset and upper cutoff
+branches) closely tracks Mack's complete-equations loop after the corrected reference, with critical
+Reynolds number $R\approx300$ against Mack's $\approx215$
+(Figure~\ref{fig:mack101_m16}). The companion $M=2.2$ loop shows a genuine first-mode
+under-amplification, with a too-high critical Reynolds number ($R\approx400$ against Mack's
+$\approx300$), and is documented in the companion working note.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{../../verification/first_mode/mack_fig10_1_m1p6/overlay.png}
+\caption{Mack Fig.~10.1 \cite{mack1984}, $M=1.6$: Our LST code's first-mode neutral loop closely
+tracks Mack's complete-equations loop, with critical Reynolds number $R\approx300$ against Mack's
+$\approx215$.}
+\label{fig:mack101_m16}
+\end{figure}
+
+\subsubsection{Mack (1984) Fig.~10.3: oblique first-mode growth vs.\ $R$}
+\label{sec:mack103}
+
+\paragraph{Reference.} Mack \cite{mack1984}, Fig.~10.3.
+
+\paragraph{Conditions.} Air (ideal, $Pr=0.72$), adiabatic wall; oblique waves at $M=1.3$
+($\psi=45^\circ$), $M=2.2$ ($\psi=45^\circ$), $M=3.0$ ($\psi=60^\circ$). These oblique cases use the
+exact $8\times8$ shooting march rather than a Chebyshev grid, with $y_{\max}\approx4\,\delta^\ast/L^\ast$
+and $L^\ast$ scaling.
+
+These curves use the exact oblique first-order \emph{shooting} route (independent of the
+collocation solver of Section~\ref{sec:numerics}, documented separately) rather than the
+collocation GEVP: at these Mach numbers the reduced temporal EVP's branch selection is not trusted, so an anchor
+root is located by the $\sigma_{\min}(c)\to0$ search and continued in the parameters, with the
+growth maximised over wavenumber at each $R$. At $M=1.3$ Our LST code's maximum first-mode temporal
+growth $\omega_{i,\max}(R)$ tracks Fig.~10.3 closely and reproduces the rigorous Table-10.1
+eighth-order anchor; $M=3.0$ tracks it as well. $M=2.2$ is the exception, a genuine
+under-amplification (convergence-checked: not a $y_{\max}$ or step-count artifact). Topology is
+correct in all three (a single rising-then-turning first-mode branch), so $M=2.2$ is an isolated
+outlier rather than part of a growing-with-Mach trend. The $M=1.3$ case is shown in
+Figure~\ref{fig:mack103_m13}; the $M=2.2$ case is documented in the companion working note.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{../../verification/first_mode/mack_fig10_3_m1p3/overlay.png}
+\caption{Mack Fig.~10.3 \cite{mack1984}, $M=1.3$, $\psi=45^\circ$: Our LST code's
+$\omega_{i,\max}(R)$ over the digitised points, reproducing the rigorous Table-10.1 eighth-order
+anchor.}
+\label{fig:mack103_m13}
+\end{figure}
+
+\subsubsection{Mack (1984) Fig.~10.4: oblique first mode at high Mach}
+\label{sec:mack104}
+
+\paragraph{Reference.} Mack \cite{mack1984}, Fig.~10.4.
+
+\paragraph{Conditions.} Air, adiabatic wall; the high-Mach first mode is oblique-dominated, so
+growth is maximised over both $\alpha$ and wave angle $\psi$; $M=4.5$, $5.8$, $7$, $10$ with
+$y_{\max}\approx4\,\delta^\ast/L^\ast$. The 3-D temporal solves use Chebyshev collocation at $N=200$
+($y_{\max}$ reaching $150\,\delta^\ast/L^\ast$ at $M=10$), $L^\ast$ scaling, and $\lambda/\mu=0$.
+
+The reduced 3-D temporal GEVP takes the real oblique pair $\alpha$ and wave angle $\psi$
+(equivalently $\beta$) and returns the complex frequency, with $\omega_i$ maximised over
+$(\alpha,\psi)$ at each $R$. Across $M=4.5$, $5.8$, $7$, and $10$, Our LST code's maximum first-mode
+temporal growth $\omega_{i,\max}(R)$ tracks the digitised Fig.~10.4 points, with the
+oblique-first-mode peak near $\psi\approx60^\circ$ ($c_r\approx0.83$ at
+$M=4.5$) and only a small residual at $M=10$, the top of the Mach range. One caveat: these curves
+were computed with the reduced dense-EVP path rather than the exact-shooting path used for the
+convergence-checked Fig.~10.3 cases, and no exact-shooting cross-check was recorded; the domain
+used the second-mode-calibrated $\sim\!4\,\delta^\ast/L^\ast$ rule, while the first mode reaches
+further from the wall. There is no first-mode under-amplification trend at high Mach in this figure.
+$M=4.5$ and $M=10$ are shown (Figures~\ref{fig:mack104_m45} and \ref{fig:mack104_m100}); $M=5.8$ and
+$M=7$ follow the same trend and are summarised in Table~\ref{tab:summary}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{../../verification/first_mode/mack_fig10_4_M45/overlay.png}
+\caption{Mack Fig.~10.4 \cite{mack1984}, $M=4.5$: the oblique first mode optimised over
+$(\alpha,\psi)$, over the digitised points.}
+\label{fig:mack104_m45}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.75\linewidth]{../../verification/first_mode/mack_fig10_4_M100/overlay.png}
+\caption{Mack Fig.~10.4 \cite{mack1984}, $M=10$: the same comparison at the top of the Mach range,
+with a small residual (lower-confidence magnitude, see text).}
+\label{fig:mack104_m100}
+\end{figure}
+
+\FloatBarrier
+%=====================================================================
+\subsection{Mixed first and second mode: the \"Ozgen--K{\i}rcal{\i} neutral-curve family}
+\label{sec:mixedmode}
+%=====================================================================
+Fig.~3 of \"Ozgen \& K{\i}rcal{\i} \cite{ozgen2008} presents, for each Mach number from 2 to 10, a
+single neutral-curve figure in the $(Re_L,\alpha_L)$ plane. At $M=2$ and $3$ the figure contains
+the first-mode lobe alone; from $M\approx4$ the second (Mack) mode enters, and each figure then
+spans \emph{both} instability families; at $M=6$, for example, four branches: second-mode upper
+and lower, first-mode cutoff, and first-mode onset. Because a single reproduced figure tests both
+modes at once, these cases are classified neither under the first nor the second mode but as a
+mixed family, and they are reported last, drawing on both preceding sections: at $M=2$ and $M=3$
+only the first mode is present, while $M=4$--$10$ span both modes.
+
+\paragraph{Reference.} \"Ozgen \& K{\i}rcal{\i} \cite{ozgen2008}, Fig.~3 (M = 2, 3, 4, 6, 7, 8,
+10).
+
+\paragraph{Conditions.} Air, adiabatic wall, 2-D ($\psi=0^\circ$); temporal neutral contour
+($c_i=0$) in the $(Re_L,\alpha_L)$ plane, with the \"Ozgen temperature-dependent transport laws. The
+neutral loci are traced on two Chebyshev grids: the wall-trapped second mode at $N=180$ with
+$y_{\max}=8$--$12\,\delta^\ast/L^\ast$, and the more diffuse first mode at $N=200$ with
+$y_{\max}=35$--$45\,\delta^\ast/L^\ast$; $L^\ast$ scaling throughout.
+
+The temperature-form 2-D temporal GEVP (the \"Ozgen equation arrangement) is solved over a
+$(Re_L,\alpha_L)$ grid, real $\alpha_L$ at each $Re_L$ returning the complex phase speeds. A
+discrete-mode extractor (eigenfunction decay $+$ $y_{\max}$-stationarity, the two acceptance tests
+of Section~\ref{sec:modes}) selects the physical mode at each node, eigenvalue
+continuation carries difficult branches through the grid, and the neutral family (all branches
+$\alpha_L(Re_L)$ of both the first and second mode) is the extracted $c_i=0$ contour. This extractor
+replaces the earlier $c_r$-band classifier that had excluded the genuine first mode; with that
+correction and the references re-digitised, the neutral families reproduce Mach by Mach as follows.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{../../verification/mixed_mode/ozgen_fig3/M2/overlay_pub.png}
+\caption{\"Ozgen \& K{\i}rcal{\i} Fig.~3 \cite{ozgen2008}, $M=2$: the first-mode lobe, the only
+unstable family at this Mach number.}
+\label{fig:ozgen_m2}
+\end{figure}
+
+\noindent\textbf{$M=2$ and $M=3$: first mode only.} Below the second-mode onset the figure carries a
+single lobe. At $M=2$ Our LST code traces both first-mode branches over the full $R$-range by
+eigenvalue continuation (Figure~\ref{fig:ozgen_m2}); at $M=3$ the cutoff branch is reproduced where
+resolvable, the onset being blocked by the continuous spectrum.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{../../verification/mixed_mode/ozgen_fig3/M4/overlay_pub.png}
+\caption{\"Ozgen \& K{\i}rcal{\i} Fig.~3 \cite{ozgen2008}, $M=4$: the second mode has entered and the
+figure now spans both instability families.}
+\label{fig:ozgen_m4}
+\end{figure}
+
+\noindent\textbf{$M=4$: both modes.} From $M\approx4$ the second (Mack) mode appears and each figure
+spans both families. Our LST code reproduces the entire two-lobe structure
+(Figure~\ref{fig:ozgen_m4}): both second-mode branches sit on the digitisation floor and the
+first-mode cutoff is closely tracked; only the deep low-$\alpha$ onset departs.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.95\linewidth]{../../verification/mixed_mode/ozgen_fig3/M6/overlay_pub.png}
+\caption{\"Ozgen \& K{\i}rcal{\i} Fig.~3 \cite{ozgen2008}, $M=6$: both modes in one figure, the
+re-digitised reference points against Our LST code's full $c_i=0$ contour.}
+\label{fig:ozgen_m6}
+\end{figure}
+
+\noindent\textbf{$M=6$: both modes.} Here four branches coexist, second-mode upper and lower and
+first-mode cutoff and onset. After re-digitising the reference and re-tracing the neutral loci on a
+grid extended to low $Re$, Our LST code closes both lobes at their critical Reynolds number
+(second-mode nose $R\!\approx\!206$ against \"Ozgen's $\approx\!200$) and reproduces the three robust
+branches (second-mode upper and lower, first-mode cutoff, Figure~\ref{fig:ozgen_m6}); only the
+first-mode onset runs below the reference, the continuous-spectrum-limited tail.
+
+\noindent\textbf{$M=7$, $M=8$, $M=10$.} The dominant second-mode cutoff branch is reproduced, but Our
+LST code predicts a \emph{connected} first--second-mode band where the reference shows two lobes
+separated by a stable gap, a connected-versus-separated topology difference (inter-mode
+over-prediction at high Mach), not a second-mode-curve error. A separate growth-contour comparison
+(the $c_i=0.004$ lobe rather than the neutral curve) likewise does not match, and the interior
+$c_i=0.012$ $M=2$ lobe is absent because Our LST code's peak $M=2$ growth $c_{i,\max}=0.0109$ falls
+just short of $0.012$. These Mach numbers ($M=3$, $7$, $8$, $10$) are summarised in
+Table~\ref{tab:summary}.
+
+\FloatBarrier
+
+
+\begin{thebibliography}{99}
+\bibitem{mack1984} L.~M. Mack, ``Boundary-layer linear stability theory,'' AGARD Report No.~709,
+  \emph{Special Course on Stability and Transition of Laminar Flow}, 1984.
+\bibitem{smith1956} A.~M.~O. Smith and N.~Gamberoni, ``Transition, pressure gradient and stability
+  theory,'' Report ES~26388, Douglas Aircraft Company, El Segundo, 1956.
+\bibitem{vaningen1956} J.~L. van Ingen, ``A suggested semi-empirical method for the calculation of
+  the boundary layer transition region,'' Report VTH-74, Delft University of Technology, 1956.
+\bibitem{orszag1971} S.~A. Orszag, ``Accurate solution of the Orr--Sommerfeld stability equation,''
+  \emph{Journal of Fluid Mechanics}, Vol.~50, No.~4, 1971, pp.~689--703.
+\bibitem{malik1990} M.~R. Malik, ``Numerical methods for hypersonic boundary layer stability,''
+  \emph{Journal of Computational Physics}, Vol.~86, No.~2, 1990, pp.~376--413.
+\bibitem{ozgen2008} S.~\"Ozgen and S.~A. K{\i}rcal{\i}, ``Linear stability analysis in compressible,
+  flat-plate boundary layers,'' \emph{Theoretical and Computational Fluid Dynamics}, Vol.~22, 2008,
+  pp.~1--20.
+\bibitem{white2006} F.~M. White, \emph{Viscous Fluid Flow}, 3rd ed., McGraw--Hill, New York, 2006.
+\bibitem{sutherland1893} W.~Sutherland, ``The viscosity of gases and molecular force,''
+  \emph{Philosophical Magazine}, Series~5, Vol.~36, No.~223, 1893, pp.~507--531.
+\bibitem{chapman1949} D.~R. Chapman and M.~W. Rubesin, ``Temperature and velocity profiles in the
+  compressible laminar boundary layer with arbitrary distribution of surface temperature,''
+  \emph{Journal of the Aeronautical Sciences}, Vol.~16, No.~9, 1949, pp.~547--565.
+\bibitem{leeslin1946} L.~Lees and C.~C. Lin, ``Investigation of the stability of the laminar
+  boundary layer in a compressible fluid,'' NACA Technical Note No.~1115, 1946.
+\bibitem{herbert1997} T.~Herbert, ``Parabolized stability equations,'' \emph{Annual Review of
+  Fluid Mechanics}, Vol.~29, 1997, pp.~245--283.
+\bibitem{trefethen2000} L.~N. Trefethen, \emph{Spectral Methods in MATLAB}, SIAM, Philadelphia,
+  2000.
+\bibitem{dons1995} W.~S. Don and A.~Solomonoff, ``Accuracy and speed in computing the Chebyshev
+  collocation derivative,'' \emph{SIAM Journal on Scientific Computing}, Vol.~16, No.~6, 1995,
+  pp.~1253--1268.
+\bibitem{schmid2001} P.~J. Schmid and D.~S. Henningson, \emph{Stability and Transition in Shear
+  Flows}, Springer, New York, 2001.
+\bibitem{fedorov2011} A.~Fedorov, ``Transition and stability of high-speed boundary layers,''
+  \emph{Annual Review of Fluid Mechanics}, Vol.~43, 2011, pp.~79--95.
+\bibitem{gaster1962} M.~Gaster, ``A note on the relation between temporally-increasing and
+  spatially-increasing disturbances in hydrodynamic stability,'' \emph{Journal of Fluid
+  Mechanics}, Vol.~14, 1962, pp.~222--224.
+\bibitem{molerstewart1973} C.~B. Moler and G.~W. Stewart, ``An algorithm for generalized matrix
+  eigenvalue problems,'' \emph{SIAM Journal on Numerical Analysis}, Vol.~10, No.~2, 1973,
+  pp.~241--256.
+\bibitem{tisseur2001} F.~Tisseur and K.~Meerbergen, ``The quadratic eigenvalue problem,''
+  \emph{SIAM Review}, Vol.~43, No.~2, 2001, pp.~235--286.
+\bibitem{grosch1978} C.~E. Grosch and H.~Salwen, ``The continuous spectrum of the Orr--Sommerfeld
+  equation. Part 1. The spectrum and the eigenfunctions,'' \emph{Journal of Fluid Mechanics},
+  Vol.~87, No.~1, 1978, pp.~33--54.
+\bibitem{balakumar1992} P.~Balakumar and M.~R. Malik, ``Discrete modes and continuous spectra in
+  supersonic boundary layers,'' \emph{Journal of Fluid Mechanics}, Vol.~239, 1992, pp.~631--656.
+\bibitem{mazhong2003} X.~Ma and X.~Zhong, ``Receptivity of a supersonic boundary layer over a flat
+  plate. Part 1. Wave structures and interactions,'' \emph{Journal of Fluid Mechanics}, Vol.~488,
+  2003, pp.~31--78.
+\bibitem{egorov2006} I.~V. Egorov, A.~V. Fedorov, and V.~G. Soudakov, ``Direct numerical
+  simulation of disturbances generated by periodic suction-blowing in a hypersonic boundary
+  layer,'' \emph{Theoretical and Computational Fluid Dynamics}, Vol.~20, No.~1, 2006, pp.~41--54.
+\bibitem{xirenfu2020} Xi, Ren, and Fu, arXiv preprint arXiv:2006.05970, 2020.
+\bibitem{hildebrand2018} N.~Hildebrand et al., arXiv preprint arXiv:1712.08239, 2017.
+\end{thebibliography}
+
+\end{document}

@@ -1,0 +1,536 @@
+\documentclass[11pt]{article}
+\input{lst_preamble}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning}
+
+\title{\textbf{The Big-Picture Map: How the Stages of the \texttt{pyMack} Workflow Fit Together}\\[3pt]
+\large What each stage consumes, what it produces, which formulation and solver is used when,\\
+and how the chain ends at a transition estimate}
+\author{\texttt{pyMack} technical documentation}
+\date{\today}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\bigskip
+
+%=====================================================================
+\section{Scope}\label{sec:scope}
+%=====================================================================
+The five companion documents each descend into one stage of the linear stability workflow: the
+steady base flow (\emph{Mean Boundary Layer}), the linearised operator and its discretisation
+(\emph{Derivation of the Disturbance Equations}), the spectral eigenvalue algorithms
+(\emph{Numerical Methods}), the independent local solver (\emph{Shooting Solver}), and the
+evidence (\emph{Validation}). What none of them states in one place is the connective tissue: at which
+stage the boundary-layer profile is actually consumed, which of the two stability formulations
+(temporal or spatial) is used for which product, when the global eigenvalue solver is preferred
+over the local shooting solver, and how the chain of intermediate objects terminates in a
+neutral curve and an $N$-factor. This document supplies that map. Section~\ref{sec:pipeline}
+presents the pipeline end to end; Section~\ref{sec:baseflow} traces every consumer of the mean
+flow; Section~\ref{sec:formulations} states the division of labour between the temporal and
+spatial formulations; Section~\ref{sec:engines} does the same for the four eigenvalue engines;
+Section~\ref{sec:deliverables} follows the eigenvalues into neutral curves, $N$-factors, and
+dimensional predictions; Section~\ref{sec:mach6} walks the canonical Mach~6 production case
+through every stage; Section~\ref{sec:validationmap} locates the validation layers on the map.
+Nothing here is new material: every statement is a cross-reference into the companion documents
+and the code, cited by file.
+
+%=====================================================================
+\section{The pipeline at a glance}\label{sec:pipeline}
+%=====================================================================
+Everything the framework produces is assembled from one repeated primitive: an eigenvalue solve
+of the linearised disturbance equations at a single parameter point. The pipeline is therefore a
+chain of \emph{preparations} for that solve (stages 1--2), the \emph{solve itself} in one of two
+formulations by one of several engines (stage 3), an \emph{acceptance test} that separates the
+physical mode from discretisation artifacts (stage 4), and \emph{aggregation} of many accepted
+solves into the engineering products (stages 5--6). For a normal-mode disturbance
+\cite{mack1984,schmid2001}
+\begin{equation}\label{eq:ansatz}
+  q'(x,y,z,t)=\hatq(y)\,e^{\imag(\alpha x+\beta z-\omega t)},
+\end{equation}
+the two formulations differ only in which of $(\alpha,\omega)$ is prescribed real and which is
+the complex unknown:
+\begin{equation}\label{eq:formulations}
+  \text{temporal: given }\alpha\in\mathbb R,\ \text{find }c=\omega/\alpha\in\mathbb C
+  \ (\omega_i=\alpha c_i);\qquad
+  \text{spatial: given }\omega\in\mathbb R,\ \text{find }\alpha\in\mathbb C\ (\sigma=-\alpha_i).
+\end{equation}
+
+\begin{figure}[H]\centering
+\begin{tikzpicture}[
+  node distance=5.5mm and 9mm,
+  stage/.style={draw, rounded corners=2pt, align=center, fill=boxbg, inner sep=5pt,
+                font=\small, minimum width=34mm},
+  side/.style={draw, rounded corners=2pt, align=center, fill=rmkbg, inner sep=4pt,
+               font=\footnotesize},
+  lbl/.style={font=\footnotesize\itshape, text=black!60},
+  arr/.style={-{Stealth[length=2.6mm]}, thick}
+]
+\node[stage] (cond) {1. Flow conditions\\ \footnotesize $\Mae$, wall BC, gas model, $T_e$};
+\node[stage, below=of cond] (bl) {2. Mean boundary layer\\ \footnotesize self-similar BVP:
+  $\bar U,\bar T,\bar\rho,\bar\mu,\bar\kappa$ + derivatives\\ \footnotesize \texttt{baseflow.py}, \texttt{boundary\_layer.py}};
+\node[stage, below=of bl] (ops) {3. Disturbance operator at one $(R,\alpha\ \text{or}\ \omega)$\\
+  \footnotesize temporal GEVP $A\boldsymbol\phi=cB\boldsymbol\phi$ \ / \ spatial QEP
+  $(C_0{+}\alpha C_1{+}\alpha^2C_2)\boldsymbol\phi=0$\\
+  \footnotesize \texttt{equations.py}, \texttt{temporal\_solver.py}, \texttt{solver.py}};
+\node[stage, below=of ops] (accept) {4. Mode acceptance\\ \footnotesize freestream decay +
+  domain stationarity};
+\node[stage, below=of accept] (sweep) {5. Sweeps\\ \footnotesize growth curves
+  $\omega_i(\alpha)$, $\sigma(\omega)$;\ neutral curves ($\omega_i{=}0$ or $\sigma{=}0$)\\
+  \footnotesize \texttt{analysis.py}};
+\node[stage, below=of sweep] (nfac) {6. $N$-factor and transition\\ \footnotesize
+  $N(R)=\int\max(\sigma_L,0)\,\mathrm dR$;\ $e^N$; $N\approx9$--$11$};
+\node[side, right=of ops, yshift=-1mm] (shoot) {Shooting solver\\ (refine / verify one mode)\\
+  \texttt{temporal\_shooting.py}, \texttt{mack\_shooting.py}};
+\node[side, right=of nfac] (dim) {Dimensionalisation\\ kHz, mm, 1/m\\ \texttt{scales.py};
+  cone: \texttt{cone.py}};
+\draw[arr] (cond) -- (bl);
+\draw[arr] (bl) -- node[lbl, right=1mm] {profile sampled into every coefficient matrix} (ops);
+\draw[arr] (ops) -- node[lbl, right=1mm] {full spectrum or targeted mode} (accept);
+\draw[arr] (accept) -- node[lbl, right=1mm] {one trusted eigenvalue per parameter point} (sweep);
+\draw[arr] (sweep) -- node[lbl, right=1mm] {spatial $\sigma_L$ at fixed $F$} (nfac);
+\draw[arr, <->] (ops) -- node[lbl, above=0.5mm, align=center] {} (shoot);
+\draw[arr] (nfac) -- (dim);
+\end{tikzpicture}
+\caption{The \texttt{pyMack} pipeline. The mean flow (stage 2) is computed once per flow
+condition and consumed by every operator assembly (stage 3); stages 3--4 constitute the repeated
+eigenvalue primitive; stages 5--6 aggregate thousands of such solves into the engineering
+products. The shooting solver sits beside stage 3 as an independent second route to the same
+eigenvalue.}\label{fig:pipeline}
+\end{figure}
+
+Table~\ref{tab:stages} states, for each stage, what enters, what leaves, and who consumes the
+output. The remainder of the document expands each row.
+
+\begin{table}[H]\centering\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.6cm}>{\raggedright\arraybackslash}p{3.4cm}
+>{\raggedright\arraybackslash}p{4.2cm}>{\raggedright\arraybackslash}p{4.2cm}@{}}
+\toprule
+\textbf{Stage} & \textbf{Input} & \textbf{Output} & \textbf{Consumed by} \\
+\midrule
+Mean flow & $\Mae$, wall BC, transport law & profiles $\bar U,\bar T,\bar\rho,\bar\mu,\bar\kappa$
+  and $y$-derivatives on a similarity grid; $\delta^*/L^*$ & every coefficient matrix of stage 3;
+  scale conversions; $y_{\max}$ sizing \\
+Operator assembly & profiles sampled on the collocation grid; $(R,\alpha)$ or $(R,\omega)$ &
+  matrix pencil $(A,B)$ or QEP blocks $(C_0,C_1,C_2)$; pointwise $6\times6$ $A(y)$ for shooting &
+  eigenvalue engines \\
+Eigenvalue solve & the operator + (spatial only) a shift target or seed & raw spectrum, or one
+  refined eigenvalue & mode acceptance \\
+Mode acceptance & raw eigenvalues + eigenfunctions & the discrete boundary-layer mode &
+  growth curves, neutral tracing \\
+Sweeps & accepted modes over $(R,\alpha)$ or $(R,\omega)$ grids & $\omega_i$ or $\sigma_L$
+  fields; neutral branches & $N$-factor; overlays; verification verdicts \\
+$N$-factor & $\sigma_L(R)$ at fixed $F$ & $N(R)$, $A/A_0=e^N$ & transition estimate;
+  dimensional plots \\
+\bottomrule
+\end{tabular}
+\caption{Stage-by-stage data flow. One mean-flow solve serves an entire stability survey;
+one eigenvalue solve serves exactly one parameter point.}\label{tab:stages}
+\end{table}
+
+%=====================================================================
+\section{Stage 1--2: the mean boundary layer and its consumers}\label{sec:baseflow}
+%=====================================================================
+The base flow answers a question that must be settled before any stability problem exists: about
+\emph{what} state are the equations linearised? The self-similar compressible flat-plate solution
+(\emph{Mean Boundary Layer}, Sections 2--3; \texttt{pymack/baseflow.py}) provides
+$\bar U(y),\bar T(y),\bar\rho=1/\bar T$, the transport properties
+$\bar\mu(\bar T),\bar\kappa(\bar T)$ with their temperature derivatives, and the first and second
+$y$-derivatives of everything, on a wall-normal grid.
+
+\paragraph{The profile is computed once and reused everywhere.} Because the solution is
+self-similar, the nondimensional profile depends only on $(\Mae,\ \text{wall condition},\
+\text{transport law},\ T_e)$ and \emph{not} on the streamwise station: the Reynolds number $R$
+enters the disturbance operator as an explicit parameter (through the viscous prefactor
+$\nuR=1/(\Ree\bar\rho)$), not through the profile. One call to
+\texttt{flat\_plate}/\texttt{make\_mack\_profile}/\texttt{generate\_boundary\_layer} therefore
+serves an entire $(R,\alpha)$ or $(R,\omega)$ survey of thousands of eigenvalue solves. This is
+the single most economical fact of the workflow: stage 2 costs one boundary-value solve
+\cite{kierzenka2001}, stage 3--4 cost one dense eigensolve \emph{per parameter point}.
+
+\paragraph{Consumer 1: the coefficient matrices.} The profile's role in the eigenvalue problem
+is to populate coefficients. Every entry of the temporal blocks $A,B$
+(\texttt{temporal\_solver.py}), of the spatial blocks $C_0,C_1,C_2$ (\texttt{equations.py}), and
+of the pointwise shooting matrix $A(y)$ (\texttt{mack\_shooting.py}) is an algebraic combination
+of $\bar U,\bar U',\bar U''$, $\bar T,\bar T',\bar T''$, $\bar\rho$, $\bar\mu$,
+$\mathrm d\mu/\mathrm dT$, $\mathrm d^2\mu/\mathrm dT^2$, $\bar\kappa$ and its derivatives,
+evaluated at the grid points (\emph{Numerical Methods}, Section 2; \emph{Shooting Solver},
+Section 2). The profile is
+sampled onto the Chebyshev collocation grid (or the RK4 marching grid) by the single shared
+resampler \texttt{scales.sample\_baseflow}; the solvers never re-solve the mean flow.
+
+\paragraph{Consumer 2: the length scales.} The stability solvers store profiles on a
+$y/\delta^*$ grid, while Mack's figures and all neutral-curve axes use the Falkner--Skan scale
+$L^*=\sqrt{\nu_ex/U_e}$ with $R=\sqrt{Re_x}$ \cite{mack1984}. The conversion factor
+$\delta^*/L^*$ is a property of the profile, computed by quadrature of $(\bar\rho\bar U)$ deficit
+across the layer, and every $\alpha_{\delta^*}\!\leftrightarrow\!\alpha_L$ or
+$y_{\delta^*}\!\leftrightarrow\!y_L$ conversion in the repository routes through
+\texttt{pymack/scales.py} (\emph{Mean Boundary Layer}, Section 4).
+
+\paragraph{Consumer 3: the domain height.} The collocation domain is truncated at
+$y_{\max}=m\,(\delta^*/L^*)$ with $m\approx8$--$12$ for the wall-trapped second mode and
+$m\approx35$--$45$ for the diffuse first mode (\emph{Numerical Methods}, Section 2), so even the
+grid geometry of stage 3 is set by a boundary-layer thickness that stage 2 supplies.
+
+\paragraph{What the profile is \emph{not} used for.} The $N$-factor integration and the
+dimensionalisation consume only eigenvalue outputs ($\sigma_L$ vs $R$) and an edge state
+($U_e,\nu_e,T_e$); the profile does not reappear downstream of stage 3. If two runs share a
+profile and differ in $R$, their difference is carried entirely by the operator, not by the base
+flow.
+
+%=====================================================================
+\section{Stage 3, first decision: temporal or spatial formulation}\label{sec:formulations}
+%=====================================================================
+The repository genuinely uses \emph{both} formulations of Eq.~\eqref{eq:formulations}, not as
+redundant alternatives but with a clean division of labour that follows from what each returns
+and what each costs.
+
+\paragraph{Why the temporal problem is the survey tool.} With $\alpha$ real and $c$ the
+eigenvalue, the discretised problem is the \emph{linear} generalised eigenvalue problem
+\begin{equation}\label{eq:gevp}
+  \boxed{\;A(\alpha)\,\boldsymbol\phi=c\,B(\alpha)\,\boldsymbol\phi\;}
+\end{equation}
+(\emph{Numerical Methods}, Section 3), solved by QZ \cite{molerstewart1973} for \emph{all} $4n$
+eigenvalues at once with no initial guess. This no-guess property is the reason the temporal
+formulation is the discovery and survey tool \cite{malik1990}: when nothing is yet known about
+the spectrum at a new $(\Mae,R)$, a temporal solve finds the second mode (phase speed
+$c_r\approx1-1/\Mae$), the first mode ($c_r\approx0.3$--$0.6$), and the continuous-spectrum
+clusters simultaneously. Temporal sweeps produce the growth maps $\omega_i(R,\alpha)$, the
+temporal neutral curves, and the validation comparisons against Mack's temporal tables (Table
+10.1 growth rates) and \"Ozgen \& K{\i}rcal{\i}'s Fig.~3 lobes \cite{mack1984,ozgen2008}.
+
+\paragraph{Why the spatial problem is the transition tool.} A physical disturbance source
+(roughness, acoustic forcing) oscillates at a fixed real frequency and grows in \emph{space}, so
+transition prediction needs $\sigma=-\alpha_i$ at prescribed real $\omega$; the $N$-factor
+integral is a streamwise integral of spatial growth and cannot be built from temporal quantities
+without an approximate group-velocity conversion \cite{gaster1962}. With $\alpha$ as the
+eigenvalue the viscous terms make the problem \emph{quadratic},
+\begin{equation}\label{eq:qep}
+  \big(C_0+\alpha C_1+\alpha^2C_2\big)\boldsymbol\phi=0,
+\end{equation}
+linearised to companion form at twice the size and solved near a shift target
+$\alpha_0=\omega/c_{\mathrm{ph}}$ \cite{tisseur2001} (\emph{Numerical Methods}, Section 4). The
+spatial formulation therefore requires an idea of where the mode lies; it is used once the mode
+family is known, to produce the quantities transition actually consumes: fixed-frequency growth
+curves $\sigma_L(R)$, spatial neutral branches, and $N$-factors.
+
+\paragraph{The bridge between the two.} The two formulations meet in
+\texttt{solve\_spatial\_from\_temporal} (\texttt{solver.py}): a temporal solve at
+$\alpha_r=\omega/c_{\mathrm{est}}$ supplies the mode and a Gaster-type seed
+$\alpha_i\approx-\alpha_rc_i/c_r$ \cite{gaster1962}, and Newton iteration on the dispersion
+residual $F(\alpha)=\alpha\,c(\alpha)-\omega=0$ converges to the spatial eigenvalue. The temporal
+solver's no-guess robustness thus bootstraps the spatial solver's physically relevant answer;
+both spectral spatial routes return the same $\sigma$ (\emph{Numerical Methods}, Section 4).
+
+\begin{table}[H]\centering\small
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.0cm}>{\raggedright\arraybackslash}p{5.0cm}
+>{\raggedright\arraybackslash}p{5.6cm}@{}}
+\toprule
+ & \textbf{Temporal (real $\alpha$, complex $c$)} & \textbf{Spatial (real $\omega$, complex $\alpha$)} \\
+\midrule
+Algebraic form & linear GEVP, Eq.~\eqref{eq:gevp} & quadratic QEP, Eq.~\eqref{eq:qep} \\
+Needs a guess? & no (full spectrum by QZ) & yes (shift target or temporal seed) \\
+Growth rate & $\omega_i=\alpha c_i$ & $\sigma=-\alpha_i$ \\
+Used in this repository for & mode discovery and surveys; growth maps; temporal neutral curves;
+  Mack Table 10.1 and Fig.~10.6 checks; \"Ozgen Fig.~3 lobes & fixed-frequency growth curves;
+  spatial neutral branches; $N$-factors; Malik Case 6 anchor; Mach 6 production case;
+  Mach 5.35 collaborator benchmark \\
+Typical entry points & \texttt{temporal\_mode}, \texttt{temporal\_growth\_curve},
+  \texttt{trace\_temporal\_neutral\_curve} & \texttt{spatial\_mode},
+  \texttt{spatial\_growth\_curve}, \texttt{trace\_spatial\_neutral\_curve} \\
+\bottomrule
+\end{tabular}
+\caption{Division of labour between the two formulations. The temporal problem is the
+no-guess survey instrument; the spatial problem produces what transition prediction consumes.}
+\label{tab:formulations}
+\end{table}
+
+%=====================================================================
+\section{Stage 3, second decision: which eigenvalue engine}\label{sec:engines}
+%=====================================================================
+Within a formulation, \texttt{pyMack} keeps several numerical routes to the same eigenvalue,
+deliberately: independent discretisations that agree on a mode constitute a verification
+statement no single method can make \cite{malik1990}. The four engines and their roles:
+
+\paragraph{Engine 1: temporal spectral (global).} Chebyshev collocation
+\cite{orszag1971,trefethen2000} plus dense QZ on Eq.~\eqref{eq:gevp}
+(\texttt{temporal\_solver.py} in \"Ozgen's temperature-form energy arrangement,
+\texttt{solver.py} in Mack's enthalpy form; the two arrangements bracket the closure choice and
+agree on the physical mode to discretisation accuracy). Chosen whenever the spectrum is unknown:
+surveys, first looks at a new condition, neutral-curve sweeps.
+
+\paragraph{Engine 2: spatial spectral (global, targeted).} The companion linearisation of
+Eq.~\eqref{eq:qep} with shift--invert selection near $\alpha_0$, or the Newton route from a
+temporal seed (\texttt{solver.py}). Chosen for every product that needs $\sigma$ at fixed
+frequency, which is all of stage 6.
+
+\paragraph{Engine 3: shooting (local).} The classical initial-value route
+\cite{mack1984,ozgen2008}: the disturbance equations recast as a first-order system
+$\mathrm dY/\mathrm dy=A(y)Y$ in a six-component state, the three freestream-decaying solutions
+of the constant-coefficient limit $A_\infty$ marched from $y_{\max}$ to the wall by RK4 with QR
+re-orthonormalisation after every step \cite{conte1966}, and the eigenvalue located by driving
+the smallest singular value of the $3\times3$ wall matrix to zero,
+\begin{equation}\label{eq:sigmamin}
+  \sigma_{\min}\big(M(c)\big)\to0\quad\Longleftrightarrow\quad c\ \text{is an eigenvalue},
+\end{equation}
+by Nelder--Mead search \cite{neldermead1965} (\emph{Shooting Solver} document;
+\texttt{temporal\_shooting.py}, \texttt{mack\_shooting.py}). The shooting engine returns
+\emph{one} eigenvalue and needs a good guess, so it is never the survey tool. It is used in
+exactly three situations:
+\begin{enumerate}[nosep,leftmargin=1.8em]
+  \item \textbf{Independent verification.} Agreement between spectral and shooting eigenvalues
+        at the same conditions is the repository's strongest internal check that a mode is
+        physics rather than discretisation artifact
+        (\texttt{validation/test\_temporal\_shooting\_cross\_check.py}).
+  \item \textbf{Refinement.} A spectral eigenvalue accurate to discretisation error is polished
+        to tight tolerance by the local search seeded with the spectral value.
+  \item \textbf{Regimes where the reduced EVP misses a branch.} For the low-/mid-Mach oblique
+        first mode, the exact first-order shooting system (Mack's Appendix A operator, extended
+        to the sixth- and eighth-order oblique systems) resolves the Table 10.1 growth rates to
+        0.07--0.91\%, while the reduced temporal EVP returns a different, unphysical branch
+        family; the shooting path is authoritative there (\emph{Validation}; the Mack Table 10.1
+        machinery in \texttt{mack\_table\_10\_1.py} and
+        \texttt{analysis.py:temporal\_growth\_scan\_3d\_shooting}).
+\end{enumerate}
+
+\paragraph{Engine 4: the dense spatial backend.} \texttt{pymack/dense.py} is a compact,
+independently written spatial QEP path with its own Lees--Dorodnitsyn base flow and
+most-amplified-seed curve tracking. It exists as an \emph{independent reference implementation}
+for the Mach 6 second-mode production work: the cross-method consistency gate
+(\texttt{validation/test\_spatial\_cross\_method\_consistency.py}) holds the dense backend and
+the main \texttt{solve\_spatial} family to $|\Delta\alpha_r|\le2\times10^{-4}$,
+$|\Delta\sigma|\le10^{-4}$ at the canonical Mach 6 point. The production Mach 6 runner uses it
+as its default backend (Section~\ref{sec:mach6}).
+
+\paragraph{Stage 4, always: mode acceptance.} Whatever the engine, a raw spectral solve returns
+$4n$ eigenvalues, most of them the finite-grid rendering of the continuous spectrum. Two tests
+select the discrete boundary-layer mode (\emph{Numerical Methods}, Section 5): the eigenfunction
+must decay toward the freestream (edge-to-peak amplitude below $0.1$), and the
+eigenvalue must be stationary under a change of domain height. The facade applies the decay test
+always and the stationarity test automatically when no user guess anchors the branch
+(\texttt{api.py}). The worked example of \emph{Numerical Methods} Section 6 shows why the tests
+are not optional: at $\Mae=6$, $R=5500$ the largest-growth raw eigenvalue is spurious, and the
+physical Mack mode is the \emph{second} entry of the sorted list.
+
+%=====================================================================
+\section{Stages 5--6: from eigenvalues to deliverables}\label{sec:deliverables}
+%=====================================================================
+Every engineering product is an aggregation of accepted stage-4 eigenvalues.
+
+\paragraph{Growth curves.} At fixed $R$: sweep $\alpha$ and record $\omega_i=\alpha c_i$
+(temporal, \texttt{temporal\_growth\_curve}) or sweep $\omega$ and record $\sigma=-\alpha_i$
+(spatial, \texttt{spatial\_growth\_curve}). These are the per-station instability portraits and
+the unit of comparison for most literature checks.
+
+\paragraph{Neutral curves.} The neutral curve is the zero-growth contour of a growth field over
+a two-parameter sweep: $\omega_i(R,\alpha)=0$ or $\sigma(R,\omega)=0$. It is traced by sweeping
+the grid, applying stage 4 at every node, and extracting the zero contour, with secant or Brent
+refinement of the crossings and continuation for branches that approach the continuous spectrum
+(\texttt{trace\_temporal\_neutral\_curve}, \texttt{trace\_spatial\_neutral\_curve},
+\texttt{analysis.py}). Each fixed $R$ inside the unstable pocket yields two crossings, the lower
+(branch I) and upper (branch II) neutral points; the critical Reynolds number is the nose where
+the two branches meet (\texttt{critical\_reynolds\_by\_max\_growth}).
+
+\paragraph{$N$-factor.} The transition estimate follows a \emph{fixed physical frequency}
+$F=\omega_L/R$ downstream: the spatial problem is solved at successive stations $R$, and the
+accumulated amplification is
+\begin{equation}\label{eq:nfactor}
+  N(R)=\int_{R_0}^{R}\max(\sigma_L,0)\,\mathrm dR',\qquad \frac{A(R)}{A(R_0)}=e^{N(R)},
+\end{equation}
+integrated by the trapezoid rule from the lower neutral point $R_0$ of that frequency
+(\texttt{integrate\_n\_factor}, \texttt{analysis.py}). Transition is empirically correlated with
+$N\approx9$--$11$ in flight and $N\approx4$--$6$ in noisy conventional tunnels, the $e^N$ method
+of Smith \& Gamberoni and van Ingen \cite{smith1956,vaningen1956}. The envelope over frequencies
+of $N(R)$ curves is the transition-prediction product. Note the chain of dependencies: the
+$N$-factor needs spatial growth rates at fixed $F$ (stage 5, spatial formulation, engines 2 or
+4), which need accepted eigenvalues (stage 4), which need the operator (stage 3), which needs
+the profile (stage 2). A single wrong stage poisons everything downstream, which is why the
+validation pyramid of Section~\ref{sec:validationmap} tests the stages independently.
+
+\paragraph{Dimensionalisation.} The entire eigenvalue pipeline is nondimensional. Physical units
+enter only at the very end, through a \texttt{DimensionalEdgeState} $(U_e,\nu_e,T_e)$ and the
+converters in \texttt{scales.py}: $F\to f$ [kHz], $R\to x$ [mm], $\sigma_L\to\sigma$ [1/m]. The
+conversions apply the same $L^*$ definition the solver used, so no new physics and no new
+approximation enters at this stage.
+
+\paragraph{Geometry: the sharp cone.} For a sharp cone at zero incidence, the Mangler
+transformation maps the cone boundary layer at surface distance $s$ onto the flat-plate problem
+at $x_{\mathrm{eq}}=s/3$, independent of half-angle \cite{mack1984}; \texttt{pymack/cone.py} is
+pure station bookkeeping ($R_{\mathrm{eq}}=R_s/\sqrt3$, $N_{\mathrm{cone}}=3N_{\mathrm{plate}}$
+over the same $R_{\mathrm{eq}}$ window) and the solvers themselves are untouched. The cone path
+therefore reuses stages 2--6 verbatim, changing only the interpretation of the abscissa.
+
+%=====================================================================
+\section{The canonical Mach 6 case, stage by stage}\label{sec:mach6}
+%=====================================================================
+The production case behind the README figures
+(\texttt{scripts/run\_mach6\_spatial\_neutral\_case.py}; conditions $\Mae=6$, air, Sutherland,
+$T_e=300$ K, $T_w/T_e=5.88$, isothermal wall) exercises the full map:
+\begin{enumerate}[nosep,leftmargin=1.8em]
+  \item \textbf{Stage 2.} One mean-flow solve at the stated wall and transport conditions.
+  \item \textbf{Stage 3, formulation.} Spatial: the deliverable is a neutral curve in the
+        $(R,F)$ plane and $N$-factors, both fixed-frequency products.
+  \item \textbf{Stage 3, engine.} The dense spatial backend with continuation
+        (\texttt{pymack\_dense} + \texttt{pymack\_continuation}), cross-checked against the main
+        family by the consistency gate.
+  \item \textbf{Stages 4--5.} One fixed-frequency sweep per $F\in[6.0\times10^{-5},
+        2.30\times10^{-4}]$ over $R\in[200,3300]$, second-mode branch selected by the
+        phase-speed window $0.90\le c\le0.97$; lower and upper neutral crossings extracted per
+        frequency (policy: single sweep, no stitching, no smoothing, recorded in the run
+        manifest).
+  \item \textbf{Stage 6.} $N(R)$ and $e^N$ per frequency by Eq.~\eqref{eq:nfactor}; dimensional
+        overlays via \texttt{DimensionalEdgeState}. Expected anchor: at $F=6.0\times10^{-5}$,
+        $R_{\mathrm{lower}}\approx1543$, $R_{\mathrm{upper}}\approx3041$
+        (\texttt{docs/MACH6\_SPATIAL\_NEUTRAL\_WORKFLOW.md}).
+\end{enumerate}
+Run \texttt{--geometry cone --cone-half-angle-deg 7} and the identical chain serves the cone
+through the Mangler bookkeeping of Section~\ref{sec:deliverables}.
+
+%=====================================================================
+\section{Where validation attaches to the map}\label{sec:validationmap}
+%=====================================================================
+The layered validation strategy (\texttt{docs/VALIDATION\_STRATEGY.md}; \emph{Validation})
+verifies the stages independently, so a failure localises to a stage instead of surfacing as an
+unexplained error in a final product. Table~\ref{tab:valmap} lists, for each layer, the solver
+route that produced the compared quantity, so every verdict can be traced back to a specific
+engine of Section~\ref{sec:engines}:
+
+\begin{table}[H]\centering\footnotesize
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.7cm}>{\raggedright\arraybackslash}p{5.9cm}
+>{\raggedright\arraybackslash}p{4.4cm}>{\raggedright\arraybackslash}p{3.2cm}@{}}
+\toprule
+\textbf{Layer} & \textbf{Stage verified: solver route (what it computed)} & \textbf{Benchmark} & \textbf{Status} \\
+\midrule
+0 & spectral machinery: $D_1,D_2$ and the domain map applied to analytic functions; no
+    eigenvalue solver & analytic derivatives & machine precision \\
+1 & stage 2: mean-flow similarity BVP (\texttt{baseflow.py}; \texttt{solve\_bvp}
+    \cite{kierzenka2001}), thicknesses by quadrature & Mack Table 11.1 thicknesses
+    \cite{mack1984} & $<0.5\%$ \\
+2 & stages 3--4: Orr--Sommerfeld temporal GEVP by QZ (\texttt{solve\_temporal\_os},
+    \texttt{solve\_poiseuille\_temporal}); least-stable eigenvalue & Orszag Poiseuille
+    eigenvalue \cite{orszag1971} & 5+ significant figures \\
+3 & stages 3--4: exact oblique first-order shooting, $6\times6$ and $8\times8$ systems
+    (engine 3; \texttt{evaluate\_table\_10\_1\_exact\_shooting}); temporal growth rates
+    $\omega_i$ & Mack Table 10.1 \cite{mack1984} & 0.07--0.91\% \\
+4a & stage 3, spatial: five routes at one point, dense companion QEP
+    (\texttt{dense.solve\_mack\_branch}) vs shift--invert QEP (\texttt{solve\_spatial}) vs
+    Newton (\texttt{solve\_spatial\_newton}) vs Gaster-seeded pipeline
+    (\texttt{solve\_spatial\_from\_temporal}) vs Muller (\texttt{solve\_spatial\_muller});
+    complex $\alpha$ & internal cross-method redundancy & independent operators
+    $\le2\times10^{-4}$ \\
+4b & stage 3, spatial: shift--invert QEP (\texttt{solve\_spatial}); complex $\alpha$ at
+    Malik's printed conditions & Malik (1990) Table IX Case 6 \cite{malik1990} & $\alpha$ to
+    ${\sim}5\times10^{-6}$ \\
+5 & stages 2--6 end to end: production fixed-frequency spatial sweep
+    (\texttt{compute\_spatial\_fixed\_frequency\_curves.py}), neutral branches
+    dimensionalised via \texttt{scales.py}; committed artifact with run manifest &
+    independent-code Mach 5.35 N$_2$ neutral curve & upper branch MAE 3.2 mm \\
+6 & overlays: \"Ozgen lobes from the temperature-form temporal GEVP
+    (\texttt{solve\_temporal\_2d}); Mack Fig.~10.3 from the exact-shooting scan (engine 3) &
+    \"Ozgen Fig.~3, Mack Fig.~10.3 \cite{ozgen2008,mack1984} & demonstrations, not gates \\
+\bottomrule
+\end{tabular}
+\caption{The validation pyramid mapped onto the pipeline stages, with the solver route behind
+each verdict. Tables and independent codes gate; figures illustrate.}
+\label{tab:valmap}
+\end{table}
+
+\paragraph{The verification audit, case by case.} Beyond the CI gates, the standalone audit
+(\texttt{verification/}\allowbreak\texttt{SUCCESS\_MATRIX.md}) runs published benchmark conditions and records a
+verdict per case. Table~\ref{tab:auditmap} states which solver produced each compared quantity;
+the pattern is the division of labour of Sections~\ref{sec:formulations}--\ref{sec:engines} in
+action: temporal GEVP sweeps for growth-rate figures, the spatial QEP family for neutral
+branches, eigenvalue anchors, and $N$-factors, and the exact shooting engine wherever the
+reduced EVP's oblique first-mode branch selection is not trusted.
+
+\begin{table}[H]\centering\footnotesize
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.4cm}>{\raggedright\arraybackslash}p{5.6cm}
+>{\raggedright\arraybackslash}p{3.0cm}>{\raggedright\arraybackslash}p{2.2cm}@{}}
+\toprule
+\textbf{Case} & \textbf{Solver route} & \textbf{Quantity compared} & \textbf{Verdict} \\
+\midrule
+Mack Fig.~10.6, $M$=4.5--10 \cite{mack1984} & temporal GEVP sweep over $\alpha$
+  (\texttt{solve\_temporal\_compressible}) & second-mode max $\omega_i$ vs $M$ & 1--7\% \\
+Ma \& Zhong (2003), $M$=4.5 \cite{mazhong2003} & spatial QEP fixed-frequency sweeps
+  (\texttt{solve\_spatial}), $\sigma=0$ crossings & second-mode neutral branches I/II &
+  ${\sim}3\%$ \\
+Balakumar \& Malik (1992) \cite{balakumar1992} & full companion-QEP spectrum
+  (\texttt{solve\_spatial\_full\_spectrum}) & discrete eigenvalue + discrete/continuous branch
+  topology & $\alpha_r$ exact; $\alpha_i$ ${\sim}10\%$ \\
+Egorov et al.\ (2006), $M$=6 & spatial QEP growth curves (\texttt{solve\_spatial}) &
+  most-amplified frequency vs DNS-LST & ${\sim}7\%$ \\
+Sivasubramanian \& Fasel (2015), $M$=6 cone & spatial QEP (\texttt{solve\_spatial}) + Mangler
+  bookkeeping (\texttt{cone.py}) + trapezoid $N$; Taylor--Maccoll edge state & sharp-cone
+  $N$-factor & $N\approx7.1$ vs ${\sim}7$--$8$ \\
+Malik (1990) anchors \cite{malik1990} & Cases 3--5: temporal GEVP
+  (\texttt{solve\_temporal\_compressible}, \texttt{\_3d}); Case 6, Table X: spatial QEP
+  (\texttt{solve\_spatial}); Fig.~4: temporal eigenfunction & eigenvalue anchors +
+  second-mode eigenfunction & anchors within literature spread \\
+Mack Fig.~10.1, $M$=2.2 \cite{mack1984} & temporal GEVP neutral tracing
+  (\texttt{solve\_temporal\_compressible}) & first-mode neutral loop & documented weak spot \\
+Mack Fig.~10.3 \cite{mack1984} & exact 3D shooting continuation from an anchor root
+  (\texttt{temporal\_growth\_scan\_3d\_shooting\_from\_anchor}) & oblique first-mode
+  $\omega_i(R)$ & open ($M{\approx}2.2$) \\
+Mack Fig.~10.4 \cite{mack1984} & reduced 3D temporal GEVP
+  (\texttt{solve\_temporal\_compressible\_3d}) & high-$M$ oblique first mode & under-amplified \\
+\"Ozgen Fig.~3, $M$=2--8 \cite{ozgen2008} & temperature-form temporal GEVP
+  (\texttt{solve\_temporal\_2d}) + discrete-mode acceptance + branch continuation & first/second
+  mode growth lobes & mixed (second mode agrees; first mode under-amplified) \\
+\bottomrule
+\end{tabular}
+\caption{The verification-audit cases with the solver route behind each verdict. Verdicts
+paraphrase \texttt{verification/SUCCESS\_MATRIX.md}, which remains the single source of truth;
+each case folder's \texttt{verdict.json} records metrics and provenance.}
+\label{tab:auditmap}
+\end{table}
+
+A confidence note: the second (Mack) mode, the design target, is validated across
+Mach 4.5--10 against Mack, Ma \& Zhong, Balakumar \& Malik, Egorov et al., and a sharp-cone
+$N$-factor comparison \cite{mack1984,mazhong2003,balakumar1992}; the first mode at low-to-moderate
+Mach is systematically under-amplified in the reduced EVP path and is the documented weak spot,
+partially recovered by the exact shooting engine (Section~\ref{sec:engines}, item 3).
+
+\begin{thebibliography}{99}
+\bibitem{mack1984} L.~M. Mack, ``Boundary-layer linear stability theory,'' AGARD Report No.~709,
+  \emph{Special Course on Stability and Transition of Laminar Flow}, 1984.
+\bibitem{malik1990} M.~R. Malik, ``Numerical methods for hypersonic boundary layer stability,''
+  \emph{Journal of Computational Physics}, Vol.~86, No.~2, 1990, pp.~376--413.
+\bibitem{ozgen2008} S.~\"Ozgen and S.~A. K{\i}rcal{\i}, ``Linear stability analysis in
+  compressible, flat-plate boundary layers,'' \emph{Theoretical and Computational Fluid
+  Dynamics}, Vol.~22, 2008, pp.~1--20.
+\bibitem{orszag1971} S.~A. Orszag, ``Accurate solution of the Orr--Sommerfeld stability
+  equation,'' \emph{Journal of Fluid Mechanics}, Vol.~50, 1971, pp.~689--703.
+\bibitem{schmid2001} P.~J. Schmid and D.~S. Henningson, \emph{Stability and Transition in Shear
+  Flows}, Springer, 2001.
+\bibitem{molerstewart1973} C.~B. Moler and G.~W. Stewart, ``An algorithm for generalized matrix
+  eigenvalue problems,'' \emph{SIAM Journal on Numerical Analysis}, Vol.~10, 1973, pp.~241--256.
+\bibitem{tisseur2001} F.~Tisseur and K.~Meerbergen, ``The quadratic eigenvalue problem,''
+  \emph{SIAM Review}, Vol.~43, No.~2, 2001, pp.~235--286.
+\bibitem{gaster1962} M.~Gaster, ``A note on the relation between temporally-increasing and
+  spatially-increasing disturbances in hydrodynamic stability,'' \emph{Journal of Fluid
+  Mechanics}, Vol.~14, 1962, pp.~222--224.
+\bibitem{trefethen2000} L.~N. Trefethen, \emph{Spectral Methods in MATLAB}, SIAM, 2000.
+\bibitem{conte1966} S.~D. Conte, ``The numerical solution of linear boundary value problems,''
+  \emph{SIAM Review}, Vol.~8, No.~3, 1966, pp.~309--321.
+\bibitem{neldermead1965} J.~A. Nelder and R.~Mead, ``A simplex method for function
+  minimization,'' \emph{The Computer Journal}, Vol.~7, No.~4, 1965, pp.~308--313.
+\bibitem{smith1956} A.~M.~O. Smith and N.~Gamberoni, ``Transition, pressure gradient and
+  stability theory,'' Douglas Aircraft Co.\ Report ES-26388, 1956.
+\bibitem{vaningen1956} J.~L. van Ingen, ``A suggested semi-empirical method for the calculation
+  of the boundary layer transition region,'' Delft University of Technology, Report VTH-74,
+  1956.
+\bibitem{kierzenka2001} J.~Kierzenka and L.~F. Shampine, ``A BVP solver based on residual
+  control and the MATLAB PSE,'' \emph{ACM Transactions on Mathematical Software}, Vol.~27,
+  No.~3, 2001, pp.~299--316.
+\bibitem{mazhong2003} Y.~Ma and X.~Zhong, ``Receptivity of a supersonic boundary layer over a
+  flat plate. Part 1. Wave structures and interactions,'' \emph{Journal of Fluid Mechanics},
+  Vol.~488, 2003, pp.~31--78.
+\bibitem{balakumar1992} P.~Balakumar and M.~R. Malik, ``Discrete modes and continuous spectra in
+  supersonic boundary layers,'' \emph{Journal of Fluid Mechanics}, Vol.~239, 1992, pp.~631--656.
+\end{thebibliography}
+
+\end{document}

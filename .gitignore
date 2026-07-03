@@ -69,3 +69,10 @@ docs/*.out
 docs/*.toc
 docs/*.log
 docs/*.synctex.gz
+# singleDOCdraft build intermediates (PDF of the note is committed; junk is not)
+docs/singleDOCdraft/*.aux
+docs/singleDOCdraft/*.out
+docs/singleDOCdraft/*.toc
+docs/singleDOCdraft/*.fls
+docs/singleDOCdraft/*.fdb_latexmk
+docs/singleDOCdraft/*.synctex.gz
