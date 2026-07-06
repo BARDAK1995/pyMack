@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "artifact": "probe_overlay_n128",
+  "probe": "R3-5(a) overlay workload; measurement-only (no gate)",
+  "sysmem_policy": "prefer_no_sysmem_fallback",
+  "sysmem_policy_trusted": true,
+  "numbers_provisional": false,
+  "workload": {
+    "Ma": 2.0,
+    "N": 128,
+    "y_max_rule": "6*delta_star/L*",
+    "y_max_abs": 19.612565428698005,
+    "n_alpha": 30,
+    "n_re": 24,
+    "n_points": 720,
+    "alpha_range": [
+      0.02,
+      0.24
+    ],
+    "Re_range": [
+      300.0000000000001,
+      4499.999999999998
+    ],
+    "families": [
+      "TS(-inf,0.45)",
+      "Mack(0.88,0.99)"
+    ]
+  },
+  "generated_at_unix": 1783318225.700832,
+  "status": "measured_trusted",
+  "engine_wall_time_s": 754.8450574000599,
+  "committed_cpu_baseline_s": 1598.6826644999674,
+  "speedup_headline_engine_vs_committed": 2.1178951214258035,
+  "speedup_headline_fullwall_vs_committed": 1.92802455829423,
+  "audit_wall_time_s": 73.33494169998448,
+  "full_wall_time_s": 829.181691500009,
+  "gpu_engine_status": "device_contour_projection",
+  "affine_reverified": true,
+  "operator_source": "gpu_contour_projection_device",
+  "vram_observed": {
+    "start": {
+      "free_bytes": 11540627456,
+      "total_bytes": 12877955072,
+      "pool_used_bytes": 38350336,
+      "pool_total_bytes": 38368768
+    },
+    "end": {
+      "free_bytes": 6253707264,
+      "total_bytes": 12877955072,
+      "pool_used_bytes": 727912448,
+      "pool_total_bytes": 5316931072
+    },
+    "min_free_bytes": 6253707264,
+    "peak_used_bytes": 6624247808,
+    "peak_delta_bytes": 5286920192
+  },
+  "batch_meta": {
+    "batched_family_runs": 2,
+    "per_point_fallback_runs": 0,
+    "batch_failures": []
+  },
+  "escalation": {
+    "rungs": [
+      "device_filter",
+      "enlarged_reproject",
+      "z128_recheck",
+      "xgeev_deflated",
+      "cpu_qz_async"
+    ],
+    "fractions": {
+      "device_filter": 0.9520833333333333,
+      "enlarged_reproject": 0.0,
+      "z128_recheck": 0.0,
+      "xgeev_deflated": 0.0,
+      "cpu_qz_async": 0.0,
+      "enlarged_reproject_refused": 0.04791666666666667
+    },
+    "cpu_qz_fraction": 0.0
+  },
+  "audit": {
+    "passed": false,
+    "n_drift": 1,
+    "n_sample_points": 36
+  },
+  "ci_grid_comparison": {
+    "protocol": "GPU families[TS].c vs committed ozgen_M2_ci_grid.csv TS rows, matched by nearest (alpha,Re); tol 1e-6-rel. Band-protocol matched to ozgen_M2.json (TS c_r<0.45, ci_abs_max=0.05).",
+    "committed_N": 128,
+    "n_ts_resolved_in_csv": 627,
+    "n_compared": 627,
+    "worst_abs_error": 5.089322106049029e-10,
+    "n_fails": 0,
+    "failures": []
+  },
+  "gpu_vs_fresh_cpu_subset": {
+    "n_nodes": 40,
+    "n_point_family_checks": 80,
+    "worst_abs_error": 1.0403840145672864e-11,
+    "n_fails": 0,
+    "failures": [],
+    "note": "same bands both sides; isolates GPU verdict correctness at N=128."
+  }
+}

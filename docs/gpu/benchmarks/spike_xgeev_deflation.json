@@ -1,0 +1,759 @@
+{
+  "command": "python scripts/gpu_bench/spike_xgeev_deflation.py",
+  "deflation": {
+    "all_contract_gates_passed": true,
+    "all_deflation_error_below_qz_noise_floor": true,
+    "all_deflation_exact_by_construction": true,
+    "anchors": [
+      {
+        "bc_rows_detected": [
+          0,
+          128,
+          129,
+          257,
+          258,
+          386
+        ],
+        "bc_rows_match_expected_structure": true,
+        "contract_gate": {
+          "backstop_abs_dc": 1e-06,
+          "control_max_abs_dc": 2.1026744666726215e-10,
+          "criterion": "counts identical AND exact bitwise submatrix AND max|dc| <= measured QZ noise-floor control AND max|dc| <= 1e-6 absolute backstop (spec amended 2026-07-04)"
+        },
+        "contract_gate_passed": true,
+        "deflation_error_below_qz_noise_floor": true,
+        "elimination": {
+          "constraint_nullspace_residual_max": 0.0,
+          "constraint_rows_all_unit": true,
+          "eliminated_dof_columns": [
+            0,
+            128,
+            129,
+            257,
+            258,
+            386
+          ],
+          "reduced_is_exact_submatrix": true
+        },
+        "id": "malik_case4_2d_temporal_N128",
+        "matrix_shape": [
+          516,
+          516
+        ],
+        "parameters": {
+          "Ma": 10.0,
+          "N": 128,
+          "Pr": 0.7,
+          "R_L": 2000.0,
+          "alpha": 0.105,
+          "gamma": 1.4,
+          "lambda_mu_ratio": 1.2,
+          "length_scale": "L_star",
+          "wall_bc": "isothermal",
+          "y_max": 75.0
+        },
+        "qz_noise_control": {
+          "description": "row/column-permuted ORIGINAL pencil vs the original: same exact spectrum, so matched |dc| here is scipy QZ's own reproducibility floor -- no deflation involved",
+          "max_abs_dc": 2.1026744666726215e-10,
+          "median_abs_dc": 4.4133165640764475e-13,
+          "n_matched": 510,
+          "physical_box": {
+            "definition": "c_r in (-0.5, 1.5), |c_i| < 0.5 (production filter)",
+            "max_abs_dc": 1.0962899493460357e-10,
+            "n_pairs": 176
+          },
+          "worst_pairs": [
+            {
+              "abs_dc": 2.1026744666726215e-10,
+              "c": {
+                "imag": -513.4472851100453,
+                "real": 0.0368389460831378
+              }
+            },
+            {
+              "abs_dc": 1.9919755166734043e-10,
+              "c": {
+                "imag": -537.4018212697899,
+                "real": -0.011462558239532386
+              }
+            },
+            {
+              "abs_dc": 1.0962899493460357e-10,
+              "c": {
+                "imag": -0.3147506513060171,
+                "real": 0.5845034107312644
+              }
+            },
+            {
+              "abs_dc": 1.0553413678399729e-10,
+              "c": {
+                "imag": -12574.363194360853,
+                "real": 0.0038819660302065774
+              }
+            },
+            {
+              "abs_dc": 1.0169149216530193e-10,
+              "c": {
+                "imag": -0.3502586440771377,
+                "real": 0.5923011196016805
+              }
+            }
+          ]
+        },
+        "reduced_B": {
+          "cond_2": 646.0031687122963,
+          "exactly_zero_columns": 0,
+          "invertible": true,
+          "rank": 510,
+          "rank_tol": 3.022157018879668e-12,
+          "sigma_max": 26.687422008003143,
+          "sigma_min": 0.041311596135356794,
+          "size": 510
+        },
+        "reduced_shape": [
+          510,
+          510
+        ],
+        "source_reference": "validation/test_malik1990_case4_anchor.py (N=128 per slice)",
+        "spectrum_comparison": {
+          "max_abs_dc": 1.80350272927181e-10,
+          "median_abs_dc": 4.742076017749039e-13,
+          "n_matched": 510,
+          "physical_box": {
+            "definition": "c_r in (-0.5, 1.5), |c_i| < 0.5 (production filter)",
+            "max_abs_dc": 1.3236007665354153e-10,
+            "n_pairs": 176
+          },
+          "worst_pairs": [
+            {
+              "abs_dc": 1.80350272927181e-10,
+              "c": {
+                "imag": -537.4018212697899,
+                "real": -0.011462558239532386
+              }
+            },
+            {
+              "abs_dc": 1.7644682099741826e-10,
+              "c": {
+                "imag": -513.4472851100453,
+                "real": 0.0368389460831378
+              }
+            },
+            {
+              "abs_dc": 1.3236007665354153e-10,
+              "c": {
+                "imag": -0.3502586440771377,
+                "real": 0.5923011196016805
+              }
+            },
+            {
+              "abs_dc": 9.573898039910455e-11,
+              "c": {
+                "imag": -0.43041101284039834,
+                "real": 0.5388646875824956
+              }
+            },
+            {
+              "abs_dc": 9.131122463282994e-11,
+              "c": {
+                "imag": -923.8568230092833,
+                "real": 0.0031147782319769944
+              }
+            }
+          ]
+        },
+        "spectrum_counts": {
+          "finite_counts_equal": true,
+          "full": {
+            "classification_gap": {
+              "largest_infinite_class_beta_n": 0.0,
+              "smallest_finite_class_beta_n": 7.235958109056282e-05,
+              "threshold": 1e-12,
+              "unambiguous": true
+            },
+            "n_finite": 510,
+            "n_infinite": 6
+          },
+          "infinite_count_difference_equals_k": true,
+          "reduced": {
+            "classification_gap": {
+              "largest_infinite_class_beta_n": 0.0,
+              "smallest_finite_class_beta_n": 7.235958109056274e-05,
+              "threshold": 1e-12,
+              "unambiguous": true
+            },
+            "n_finite": 510,
+            "n_infinite": 0
+          }
+        },
+        "timings_s": {
+          "qz_full": 1.1013125000172295,
+          "qz_reduced": 0.9696161999600008,
+          "total": 3.1875874000252225
+        }
+      },
+      {
+        "bc_rows_detected": [
+          0,
+          200,
+          201,
+          401,
+          402,
+          602
+        ],
+        "bc_rows_match_expected_structure": true,
+        "contract_gate": {
+          "backstop_abs_dc": 1e-06,
+          "control_max_abs_dc": 2.4280266895561534e-09,
+          "criterion": "counts identical AND exact bitwise submatrix AND max|dc| <= measured QZ noise-floor control AND max|dc| <= 1e-6 absolute backstop (spec amended 2026-07-04)"
+        },
+        "contract_gate_passed": true,
+        "deflation_error_below_qz_noise_floor": true,
+        "elimination": {
+          "constraint_nullspace_residual_max": 0.0,
+          "constraint_rows_all_unit": true,
+          "eliminated_dof_columns": [
+            0,
+            200,
+            201,
+            401,
+            402,
+            602
+          ],
+          "reduced_is_exact_submatrix": true
+        },
+        "id": "ozgen_m2_firstmode_midgrid_N200",
+        "matrix_shape": [
+          804,
+          804
+        ],
+        "parameters": {
+          "Ma": 2.0,
+          "N": 200,
+          "Pr": 0.72,
+          "R_L": 1387.4436925511613,
+          "alpha": 0.0425,
+          "delta_star_over_lstar": 3.268760904783001,
+          "gamma": 1.4,
+          "length_scale": "L_star",
+          "y_max": 114.40663166740504,
+          "ymf": 35.0
+        },
+        "qz_noise_control": {
+          "description": "row/column-permuted ORIGINAL pencil vs the original: same exact spectrum, so matched |dc| here is scipy QZ's own reproducibility floor -- no deflation involved",
+          "max_abs_dc": 2.4280266895561534e-09,
+          "median_abs_dc": 2.0817744976224076e-12,
+          "n_matched": 794,
+          "physical_box": {
+            "definition": "c_r in (-0.5, 1.5), |c_i| < 0.5 (production filter)",
+            "max_abs_dc": 4.0968110028705924e-10,
+            "n_pairs": 231
+          },
+          "worst_pairs": [
+            {
+              "abs_dc": 2.4280266895561534e-09,
+              "c": {
+                "imag": -2.884290123708976,
+                "real": 0.7310179908233064
+              }
+            },
+            {
+              "abs_dc": 2.177280060876677e-09,
+              "c": {
+                "imag": -2.673351954670835,
+                "real": 0.7465711116268602
+              }
+            },
+            {
+              "abs_dc": 1.609110379304864e-09,
+              "c": {
+                "imag": -0.9178781514793307,
+                "real": 0.8826840511567492
+              }
+            },
+            {
+              "abs_dc": 1.5772775147349723e-09,
+              "c": {
+                "imag": -0.8632873308115446,
+                "real": 0.8875301098574729
+              }
+            },
+            {
+              "abs_dc": 1.5447934808315483e-09,
+              "c": {
+                "imag": -1.52568928240814,
+                "real": 0.8334833892063005
+              }
+            }
+          ]
+        },
+        "reduced_B": {
+          "cond_2": Infinity,
+          "exactly_zero_columns": 2,
+          "invertible": false,
+          "rank": 796,
+          "rank_tol": 1.7719159473017498e-13,
+          "sigma_max": 0.24188383329585708,
+          "sigma_min": 0.0,
+          "size": 798
+        },
+        "reduced_shape": [
+          798,
+          798
+        ],
+        "source_reference": "verification/mixed_mode/ozgen_fig3/_refdigitize/build_firstmode_grid.py (GRID[2] mid-node, N=200, short domain ymf=35)",
+        "spectrum_comparison": {
+          "max_abs_dc": 2.022346897653891e-09,
+          "median_abs_dc": 1.5714705666949187e-12,
+          "n_matched": 794,
+          "physical_box": {
+            "definition": "c_r in (-0.5, 1.5), |c_i| < 0.5 (production filter)",
+            "max_abs_dc": 1.7478364878169773e-10,
+            "n_pairs": 231
+          },
+          "worst_pairs": [
+            {
+              "abs_dc": 2.022346897653891e-09,
+              "c": {
+                "imag": -2.884290123708976,
+                "real": 0.7310179908233064
+              }
+            },
+            {
+              "abs_dc": 1.8915576179373732e-09,
+              "c": {
+                "imag": -2.673351954670835,
+                "real": 0.7465711116268602
+              }
+            },
+            {
+              "abs_dc": 1.2349832401837428e-09,
+              "c": {
+                "imag": -0.9178781514793307,
+                "real": 0.8826840511567492
+              }
+            },
+            {
+              "abs_dc": 1.2125535635813834e-09,
+              "c": {
+                "imag": -0.8632873308115446,
+                "real": 0.8875301098574729
+              }
+            },
+            {
+              "abs_dc": 1.0112604276234891e-09,
+              "c": {
+                "imag": -2.1479066022527844,
+                "real": 0.7860922397860112
+              }
+            }
+          ]
+        },
+        "spectrum_counts": {
+          "finite_counts_equal": true,
+          "full": {
+            "classification_gap": {
+              "largest_infinite_class_beta_n": 0.0,
+              "smallest_finite_class_beta_n": 1.6017339994067096e-05,
+              "threshold": 1e-12,
+              "unambiguous": true
+            },
+            "n_finite": 794,
+            "n_infinite": 10
+          },
+          "infinite_count_difference_equals_k": true,
+          "reduced": {
+            "classification_gap": {
+              "largest_infinite_class_beta_n": 3.0431076011052312e-24,
+              "smallest_finite_class_beta_n": 1.6017339994067147e-05,
+              "threshold": 1e-12,
+              "unambiguous": true
+            },
+            "n_finite": 794,
+            "n_infinite": 4
+          }
+        },
+        "timings_s": {
+          "qz_full": 4.124956399959046,
+          "qz_reduced": 4.168599300028291,
+          "total": 12.322615900018718
+        }
+      },
+      {
+        "bc_rows_detected": [
+          0,
+          200,
+          201,
+          401,
+          402,
+          602,
+          603,
+          803
+        ],
+        "bc_rows_match_expected_structure": true,
+        "contract_gate": {
+          "backstop_abs_dc": 1e-06,
+          "control_max_abs_dc": 1.254734479421263e-07,
+          "criterion": "counts identical AND exact bitwise submatrix AND max|dc| <= measured QZ noise-floor control AND max|dc| <= 1e-6 absolute backstop (spec amended 2026-07-04)"
+        },
+        "contract_gate_passed": true,
+        "deflation_error_below_qz_noise_floor": true,
+        "elimination": {
+          "constraint_nullspace_residual_max": 0.0,
+          "constraint_rows_all_unit": true,
+          "eliminated_dof_columns": [
+            0,
+            200,
+            201,
+            401,
+            402,
+            602,
+            603,
+            803
+          ],
+          "reduced_is_exact_submatrix": true
+        },
+        "id": "mack_fig10_4_m10_3d_R1500_midgrid_N200",
+        "matrix_shape": [
+          1005,
+          1005
+        ],
+        "parameters": {
+          "Ma": 10.0,
+          "N": 200,
+          "Pr": 0.72,
+          "R_L": 1500.0,
+          "alpha": 0.03,
+          "beta": 0.0412914576141352,
+          "gamma": 1.4,
+          "lambda_mu_ratio": 0.0,
+          "length_scale": "L_star",
+          "psi_deg": 54.0,
+          "y_max": 150.0
+        },
+        "qz_noise_control": {
+          "description": "row/column-permuted ORIGINAL pencil vs the original: same exact spectrum, so matched |dc| here is scipy QZ's own reproducibility floor -- no deflation involved",
+          "max_abs_dc": 1.254734479421263e-07,
+          "median_abs_dc": 9.167136282502192e-11,
+          "n_matched": 997,
+          "physical_box": {
+            "definition": "c_r in (-0.5, 1.5), |c_i| < 0.5 (production filter)",
+            "max_abs_dc": 4.165754603552183e-09,
+            "n_pairs": 251
+          },
+          "worst_pairs": [
+            {
+              "abs_dc": 1.254734479421263e-07,
+              "c": {
+                "imag": -6072753.749940966,
+                "real": -6.0967798211476734e-05
+              }
+            },
+            {
+              "abs_dc": 4.8652934370881156e-08,
+              "c": {
+                "imag": -16274.973214201693,
+                "real": 0.007430234841502429
+              }
+            },
+            {
+              "abs_dc": 4.861343583984358e-08,
+              "c": {
+                "imag": -16346.447222585486,
+                "real": 0.013104628747941778
+              }
+            },
+            {
+              "abs_dc": 2.6188657099524168e-08,
+              "c": {
+                "imag": -2707.62073412326,
+                "real": 0.06921642445879617
+              }
+            },
+            {
+              "abs_dc": 2.1664645871661603e-08,
+              "c": {
+                "imag": -2933.5693379549507,
+                "real": 0.05497774255132899
+              }
+            }
+          ]
+        },
+        "reduced_B": {
+          "cond_2": 4846.917310852162,
+          "exactly_zero_columns": 0,
+          "invertible": true,
+          "rank": 997,
+          "rank_tol": 4.623697826851389e-12,
+          "sigma_max": 20.885941634986647,
+          "sigma_min": 0.004309118620246191,
+          "size": 997
+        },
+        "reduced_shape": [
+          997,
+          997
+        ],
+        "source_reference": "verification/compute_mack_fig10_4.py (R=1500, mid alpha/psi grid, N_BY_MACH[10.0]=200, Y_MAX_BY_MACH[10.0]=150)",
+        "spectrum_comparison": {
+          "max_abs_dc": 8.7211124567504e-08,
+          "median_abs_dc": 1.319957999045876e-10,
+          "n_matched": 997,
+          "physical_box": {
+            "definition": "c_r in (-0.5, 1.5), |c_i| < 0.5 (production filter)",
+            "max_abs_dc": 4.960712332731651e-09,
+            "n_pairs": 251
+          },
+          "worst_pairs": [
+            {
+              "abs_dc": 8.7211124567504e-08,
+              "c": {
+                "imag": -6072753.749940966,
+                "real": -6.0967798211476734e-05
+              }
+            },
+            {
+              "abs_dc": 7.079236567785883e-08,
+              "c": {
+                "imag": -2972.3313508176534,
+                "real": 0.03779626297530779
+              }
+            },
+            {
+              "abs_dc": 7.042847190392172e-08,
+              "c": {
+                "imag": -3186.8093644436967,
+                "real": 0.052035513214234844
+              }
+            },
+            {
+              "abs_dc": 5.060867537571796e-08,
+              "c": {
+                "imag": -2707.62073412326,
+                "real": 0.06921642445879617
+              }
+            },
+            {
+              "abs_dc": 5.036538240951942e-08,
+              "c": {
+                "imag": -8440.669926678953,
+                "real": 0.022241743797237798
+              }
+            }
+          ]
+        },
+        "spectrum_counts": {
+          "finite_counts_equal": true,
+          "full": {
+            "classification_gap": {
+              "largest_infinite_class_beta_n": 0.0,
+              "smallest_finite_class_beta_n": 1.6466994071836152e-07,
+              "threshold": 1e-12,
+              "unambiguous": true
+            },
+            "n_finite": 997,
+            "n_infinite": 8
+          },
+          "infinite_count_difference_equals_k": true,
+          "reduced": {
+            "classification_gap": {
+              "largest_infinite_class_beta_n": 0.0,
+              "smallest_finite_class_beta_n": 1.6466994071836372e-07,
+              "threshold": 1e-12,
+              "unambiguous": true
+            },
+            "n_finite": 997,
+            "n_infinite": 0
+          }
+        },
+        "timings_s": {
+          "qz_full": 7.214739800023381,
+          "qz_reduced": 7.22891270002583,
+          "total": 21.67485020001186
+        }
+      }
+    ],
+    "gate_calibration_history": "The slice's original absolute gate (max|dc| <= 1e-10) was proven unimplementable by the permutation control: scipy QZ's own reproducibility error on these pencils (no deflation involved) violates it on every anchor (2.1e-10 / 2.4e-9 / 1.3e-7 for m = 516 / 804 / 1005). The orchestrator amended the spec on 2026-07-04: the gate is now exact-submatrix reduction AND max|dc| <= the anchor's measured QZ noise-floor control, with 1e-6 as an absolute backstop.",
+    "method": "zero-B constraint rows -> exact submatrix elimination (unit rows) or pivoted-QR null-space projection (general rows); finite/infinite split via homogeneous QZ (alpha, beta); one-to-one assignment matching; permuted-pencil control for the QZ reproducibility floor; reduced-B SVD for invertibility",
+    "question": "Is exact structural deflation spectrum-identical?"
+  },
+  "elapsed_s": 66.89131410000846,
+  "environment": {
+    "nvcp_sysmem_fallback": "not_queried: this probe is functional fact-finding, not a timing benchmark; no performance number here feeds a milestone gate",
+    "packages": {
+      "cupy": null,
+      "cupy-cuda12x": "14.1.1",
+      "numpy": "2.2.6",
+      "nvidia-cusolver-cu12": "11.7.5.82",
+      "scipy": "1.14.1"
+    },
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python_executable": "C:\\Program Files\\Python312\\python.exe",
+    "python_version": "3.12.7"
+  },
+  "generated_at_utc": "2026-07-05T00:34:21.118996Z",
+  "schema": "pymack-gpu-slice-03-xgeev-deflation-probe-v2",
+  "slice": "03-xgeev-deflation-probe",
+  "status": "pass_gate_noise_floor_calibrated",
+  "xgeev": {
+    "crash_signature_sequence_64_997": {
+      "crash_count": 0,
+      "interpretation": "no crash in this sample; instability remains documented from the session history above",
+      "run_count": 5,
+      "runs": [
+        {
+          "exit_code": 0,
+          "exit_code_hex": "0x0",
+          "last_completed_step": "sequence_complete",
+          "repeat": 1
+        },
+        {
+          "exit_code": 0,
+          "exit_code_hex": "0x0",
+          "last_completed_step": "sequence_complete",
+          "repeat": 2
+        },
+        {
+          "exit_code": 0,
+          "exit_code_hex": "0x0",
+          "last_completed_step": "sequence_complete",
+          "repeat": 3
+        },
+        {
+          "exit_code": 0,
+          "exit_code_hex": "0x0",
+          "last_completed_step": "sequence_complete",
+          "repeat": 4
+        },
+        {
+          "exit_code": 0,
+          "exit_code_hex": "0x0",
+          "last_completed_step": "sequence_complete",
+          "repeat": 5
+        }
+      ],
+      "session_history_note": "earlier in this probe's development session the identical sequence crashed deterministically (3/3 in-probe, 8/8 across bisection variants, including with a pure-CPU numpy eigvals(64) as the arming step), while every single-solve process succeeded; the trigger is heap-layout dependent and varies with machine state"
+    },
+    "ctypes_wheel_dll": {
+      "candidate_dlls": [
+        "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cusolver\\bin\\cusolver64_11.dll"
+      ],
+      "dll_directories_registered": [
+        "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cublas\\bin",
+        "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cuda_nvrtc\\bin",
+        "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cuda_runtime\\bin",
+        "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cufft\\bin",
+        "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\curand\\bin",
+        "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cusolver\\bin",
+        "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cusparse\\bin",
+        "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\nvjitlink\\bin"
+      ],
+      "feasible_without_building_bindings": true,
+      "probe": {
+        "cusolverDnXgeev": true,
+        "cusolverDnXgeev_bufferSize": true,
+        "cusolverGetVersion": {
+          "rc": 0,
+          "version": 11705
+        },
+        "dll": "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cusolver\\bin\\cusolver64_11.dll",
+        "loaded": true
+      }
+    },
+    "cupy_import": {
+      "cuda_driver_version": 13020,
+      "cuda_runtime_version": 12090,
+      "cupy_version": "14.1.1",
+      "device_name": "NVIDIA GeForce RTX 4070 Ti"
+    },
+    "functional_single_solve": {
+      "api": "cupy.linalg.eigvals",
+      "cases": [
+        {
+          "completed": true,
+          "dtype": "complex128",
+          "elapsed_s": 0.2716577000101097,
+          "exit_code": 0,
+          "max_abs_dw_vs_numpy": 8.530212769772282e-14,
+          "n": 64
+        },
+        {
+          "completed": true,
+          "dtype": "complex128",
+          "elapsed_s": 0.9161496000015177,
+          "exit_code": 0,
+          "max_abs_dw_vs_numpy": 1.348835133216236e-12,
+          "n": 997
+        }
+      ]
+    },
+    "high_level_api": {
+      "cupy.linalg.eig": true,
+      "cupy.linalg.eigvals": true
+    },
+    "isolation": "one child process per fact with file checkpointing; keeps native CUDA crashes from corrupting the deflation result or this script's exit code",
+    "pass_for_slice": true,
+    "presence": {
+      "exit_code": 0,
+      "payload": {
+        "ctypes_wheel_dll": {
+          "candidate_dlls": [
+            "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cusolver\\bin\\cusolver64_11.dll"
+          ],
+          "dll_directories_registered": [
+            "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cublas\\bin",
+            "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cuda_nvrtc\\bin",
+            "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cuda_runtime\\bin",
+            "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cufft\\bin",
+            "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\curand\\bin",
+            "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cusolver\\bin",
+            "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cusparse\\bin",
+            "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\nvjitlink\\bin"
+          ],
+          "feasible_without_building_bindings": true,
+          "probe": {
+            "cusolverDnXgeev": true,
+            "cusolverDnXgeev_bufferSize": true,
+            "cusolverGetVersion": {
+              "rc": 0,
+              "version": 11705
+            },
+            "dll": "C:\\Users\\merts\\AppData\\Roaming\\Python\\Python312\\site-packages\\nvidia\\cusolver\\bin\\cusolver64_11.dll",
+            "loaded": true
+          }
+        },
+        "cupy_import": {
+          "cuda_driver_version": 13020,
+          "cuda_runtime_version": 12090,
+          "cupy_version": "14.1.1",
+          "device_name": "NVIDIA GeForce RTX 4070 Ti"
+        },
+        "high_level_api": {
+          "cupy.linalg.eig": true,
+          "cupy.linalg.eigvals": true
+        },
+        "last_completed_step": "presence_complete",
+        "raw_bindings": {
+          "geev_symbols": [
+            "xgeev",
+            "xgeev_bufferSize"
+          ],
+          "module": "cupy_backends.cuda.libs.cusolver",
+          "xgeev_present": true
+        },
+        "task": "presence"
+      },
+      "task": "presence"
+    },
+    "question": "Does this Python/CUDA stack expose cusolverDnXgeev usably?",
+    "raw_bindings": {
+      "geev_symbols": [
+        "xgeev",
+        "xgeev_bufferSize"
+      ],
+      "module": "cupy_backends.cuda.libs.cusolver",
+      "xgeev_present": true
+    },
+    "stability_caveat": "cusolverDnXgeev on this stack is functionally correct per single-solve process but has an observed heap-layout-dependent native crash (0xC0000005) when a small eigensolve precedes a large one in the same process (not reproduced in this sample; documented from session history); any slice-09 Xgeev rung must run it sandboxed (worker process, uniform matrix size) and treat worker death as an escalation to CPU QZ",
+    "verdict": "xgeev_usable_via_cupy_linalg_eig_single_solve"
+  }
+}

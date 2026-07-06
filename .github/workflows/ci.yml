@@ -27,5 +27,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Run test suite
-        run: pytest validation/ -q --tb=short
+      # GPU-less runners: everything unmarked runs here (affine cache,
+      # extraction fixtures, the pymack.sweep CPU backend, ...); gpu-marked
+      # tests skip cleanly via importorskip("cupy") + device-count checks
+      # inside the test modules themselves (see validation/test_gpu_ops.py).
+      - name: Run test suite (not slow)
+        run: pytest -m "not slow" -q --tb=short

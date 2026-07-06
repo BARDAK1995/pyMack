@@ -61,6 +61,35 @@ def solve_temporal_2d(
     y, D1, D2 = physical_derivatives(D_eta, y_max, N, L)
     bf, D1, D2 = _scaled_problem(baseflow, y, D1, D2, length_scale)
 
+    A, B = _assemble_temporal_ozgen_2d_evp(
+        bf, y, D1, D2, alpha, Re, Ma, Pr, gamma, wall_bc=wall_bc,
+    )
+
+    eigenvalues, eigenvectors = linalg.eig(A, B)
+    valid = np.isfinite(eigenvalues)
+    eigenvalues = eigenvalues[valid]
+    eigenvectors = eigenvectors[:, valid]
+    physical = (
+        (eigenvalues.real > -0.5)
+        & (eigenvalues.real < 1.5)
+        & (np.abs(eigenvalues.imag) < 0.5)
+    )
+    eigenvalues = eigenvalues[physical]
+    eigenvectors = eigenvectors[:, physical]
+    idx = np.argsort(-eigenvalues.imag)
+    return eigenvalues[idx], eigenvectors[:, idx], y
+
+
+def _assemble_temporal_ozgen_2d_evp(bf, y, D1, D2, alpha, Re, Ma, Pr, gamma,
+                                    wall_bc='isothermal'):
+    """Assemble the 2D temporal EVP operators ``(A, B)`` (Ozgen arrangement).
+
+    Assembly stage of :func:`solve_temporal_2d`, extracted unchanged so
+    operator-probing callers can obtain the generalized eigenvalue problem
+    ``A phi = c B phi`` from the discretized inputs (sampled base flow ``bf``,
+    grid ``y``, physical derivative matrices ``D1``/``D2``).  Returns the pair
+    with boundary-condition rows applied, exactly as handed to the QZ solver.
+    """
     n = len(y)
     I = np.eye(n)
     alpha = float(alpha)
@@ -192,19 +221,7 @@ def solve_temporal_2d(
     B[temp_free_row, :] = 0.0
     A[temp_free_row, temp_free_row] = 1.0
 
-    eigenvalues, eigenvectors = linalg.eig(A, B)
-    valid = np.isfinite(eigenvalues)
-    eigenvalues = eigenvalues[valid]
-    eigenvectors = eigenvectors[:, valid]
-    physical = (
-        (eigenvalues.real > -0.5)
-        & (eigenvalues.real < 1.5)
-        & (np.abs(eigenvalues.imag) < 0.5)
-    )
-    eigenvalues = eigenvalues[physical]
-    eigenvectors = eigenvectors[:, physical]
-    idx = np.argsort(-eigenvalues.imag)
-    return eigenvalues[idx], eigenvectors[:, idx], y
+    return A, B
 
 
 # Backwards-compatible alias: this solver formerly carried the reference name.

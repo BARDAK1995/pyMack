@@ -125,6 +125,16 @@ Requires Python ≥ 3.9 (NumPy, SciPy, Matplotlib). Working from a plain
 checkout without installing also works — the test suite and the examples
 bootstrap the import path themselves.
 
+An optional `pymack[gpu]` extra (`pip install -e ".[gpu]"`) pulls in
+`cupy-cuda12x` for the in-development GPU batch-sweep engine (see
+*Batch sweeps* below); **`import pymack` never requires it** — GPU is an
+upgrade, not a requirement. Match `cupy-cuda12x` to your CUDA runtime (12.x);
+on some environments `cupy-cuda12x` transitively pulls the `nvidia-*-cu12`
+meta-packages (e.g. `nvidia-cublas-cu12`), which can duplicate CUDA libraries
+already provided by your driver/toolkit install — if that happens, install a
+CuPy wheel matching your system CUDA instead of the generic one (see the
+[CuPy install guide](https://docs.cupy.dev/en/stable/install.html)).
+
 ## Quickstart
 
 ```python
@@ -146,11 +156,16 @@ branch) persist under a domain-height change, so continuous-spectrum
 artifacts are rejected automatically. Each `ModeResult` carries the
 eigenfunctions, the grid, and every solver parameter that produced it.
 
-Start with [`examples/`](examples/) — three runnable files covering the
-first Mack mode, a growth curve with its N-factor, and dimensional units.
-The layered design (facade → workflows → eigenvalue engines → operators) is
-documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); the complete
-API reference lives in [`docs/LST_API_CHEATSHEET.md`](docs/LST_API_CHEATSHEET.md).
+Start with [`examples/`](examples/) — four runnable files covering the
+first Mack mode, a growth curve with its N-factor, dimensional units, and a
+`pymack.sweep` parameter sweep. The layered design
+(facade → workflows → eigenvalue engines → operators) is documented in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); the complete API reference
+lives in [`docs/LST_API_CHEATSHEET.md`](docs/LST_API_CHEATSHEET.md) (per-point
+API) and [`docs/SWEEP_API.md`](docs/SWEEP_API.md) (batch sweeps). Backend
+status: the CPU backend is the reference path; the temporal GPU backend
+exists but is experimental and not release-certified; the spatial GPU
+backend is not yet implemented.
 
 ## Testing
 
@@ -199,6 +214,48 @@ For the exact assumptions and artifact policy, see
 `sigma`) to physical units (kHz, mm, 1/m) with `pymack.DimensionalEdgeState` and
 the converters in `pymack.scales` — see the *Dimensional Units / Plots* section
 of [`docs/LST_API_CHEATSHEET.md`](docs/LST_API_CHEATSHEET.md).
+
+## Batch sweeps (`pymack.sweep`)
+
+The per-point API above (`temporal_mode`, `spatial_mode`) solves one point.
+`pymack.sweep.temporal_sweep` / `spatial_sweep` solve a whole `(alpha, Re)` or
+`(omega, Re)` grid in one call — the facade behind growth-rate maps and
+neutral-curve grids — and return a structured result with convergence masks,
+certified FP64 residuals, provenance codes, and full reproducibility metadata
+(backend, precision, tile size, package/solver versions, wall time; see the
+`seed_map` legend below).
+
+```python
+from pymack.scales import delta_star_over_lstar
+from pymack.sweep import CBand, temporal_sweep
+
+if __name__ == '__main__':          # the CPU backend uses a spawn-context pool
+    y_max = 10.0 * delta_star_over_lstar(boundary_layer)
+    result = temporal_sweep(
+        boundary_layer, alphas=[0.10, 0.14, 0.18], Res=[3000.0, 5500.0, 8000.0],
+        Ma=6.0, N=100, y_max=y_max, operator='ozgen_2d',
+        families=(CBand(0.885, 0.96, label='Mack'),),
+        backend='cpu',
+    )
+    result.families[0].omega_i   # growth-rate grid; result.to_csv/.to_npz to save
+```
+
+**GPU is an upgrade, not a requirement.** `import pymack` and
+`import pymack.sweep` never import CuPy or require a GPU; the CPU backend
+(a `ProcessPoolExecutor` over the exact same validated per-point solvers used
+above) is available unconditionally and is **bitwise-identical** to the
+deployed per-point loop it replaces — proven in
+`validation/test_sweep_cpu_backend.py`, which runs in the default GPU-less CI
+suite. A GPU-native batched temporal engine exists and is experimental
+(design docs: [`docs/gpu/PLAN.md`](docs/gpu/PLAN.md)); `temporal_sweep`
+dispatches to it when a CUDA device and the optional CuPy stack are present,
+spatial GPU sweeps still raise `NotImplementedError`, and **no GPU performance numbers
+are published anywhere in this repo yet**.
+
+Full API reference, the `seed_map` provenance contract, the `meta`
+determinism contract, and backend-resolution rules:
+[`docs/SWEEP_API.md`](docs/SWEEP_API.md). Runnable example:
+[`examples/04_parameter_sweep.py`](examples/04_parameter_sweep.py).
 
 ## Citing
 

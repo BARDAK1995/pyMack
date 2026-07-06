@@ -1,0 +1,27 @@
+{
+  "N": 128,
+  "dim_4Np1": 516,
+  "n_points": 36,
+  "engine_wall_s": 52.10817689995747,
+  "timing_s": {
+    "assembly_rhs": 0.22811349981930107,
+    "batched_solve": 45.16060360008851,
+    "moment_transfer": 0.1112090999959037,
+    "projection": 1.8810877000214536,
+    "polish": 4.307624600594863,
+    "total_accounted": 51.68863850052003,
+    "fractions": {
+      "assembly_rhs": 0.004413223223455694,
+      "batched_solve": 0.8737046459375043,
+      "moment_transfer": 0.002151519235601163,
+      "projection": 0.03639267263738294,
+      "polish": 0.08333793896605586
+    }
+  },
+  "cross_point_batching": {
+    "enabled_for_operator": true,
+    "batched_family_runs": 2,
+    "per_point_fallback_runs": 0,
+    "batch_failures": []
+  }
+}

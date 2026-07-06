@@ -1,0 +1,462 @@
+{
+  "schema_version": 1,
+  "artifact": "certify_twodomain_n200_full",
+  "status": "certified_zero_drift",
+  "sysmem_policy": "prefer_no_sysmem_fallback",
+  "sysmem_policy_trusted": true,
+  "numbers_provisional": false,
+  "n_grid_nodes": 195,
+  "n_matched_reference": 195,
+  "n_resolved": 87,
+  "n_none": 108,
+  "worst_abs_error": 4.935332262915512e-07,
+  "n_fails": 0,
+  "none_mismatches": 0,
+  "per_failure_details": [],
+  "reference_provenance": "firstmode_grid.csv is a LOCAL gitignored regenerable artifact rebuilt by build_firstmode_grid.py (deterministic, resumable).",
+  "workload": {
+    "Ma": 2.0,
+    "N": 200,
+    "ymf_pair": [
+      35.0,
+      45.0
+    ],
+    "n_re": 13,
+    "n_alpha": 15,
+    "n_points": 195,
+    "alpha_range": [
+      0.01,
+      0.075
+    ],
+    "Re_range": [
+      350.0,
+      5499.999999999997
+    ],
+    "node_match_tolerance": {
+      "Re": 0.051,
+      "alpha": 5.1e-06
+    },
+    "failure_abs_tolerance": 0.004,
+    "y_short_abs": 114.40663166740504,
+    "y_tall_abs": 147.09424071523503
+  },
+  "run_provenance": {
+    "fresh_python_process_required": true,
+    "serial_gpu_run": true,
+    "gpu_candidate_capture_env": "PYMACK_GPU_CAPTURE_CANDIDATE_SETS=1"
+  },
+  "generated_at_unix": 1783324908.4609733,
+  "reference_csv": "C:\\Users\\merts\\OneDrive\\Masa\u00fcst\u00fc\\MS_LST\\verification\\mixed_mode\\ozgen_fig3\\_refdigitize\\firstmode_grid.csv",
+  "ma2_reference_rows_total": 286,
+  "reference_match": {
+    "matched_of_grid_nodes": [
+      195,
+      195
+    ],
+    "off_grid_rows": [
+      {
+        "row_number": 1354,
+        "Re": 350.0,
+        "alpha": 0.003,
+        "nearest_grid": {
+          "j_re": 0,
+          "i_alpha": 0,
+          "Re": 350.0,
+          "alpha": 0.01,
+          "re_delta": 0.0,
+          "alpha_delta": 0.007
+        }
+      },
+      {
+        "row_number": 1355,
+        "Re": 350.0,
+        "alpha": 0.004,
+        "nearest_grid": {
+          "j_re": 0,
+          "i_alpha": 0,
+          "Re": 350.0,
+          "alpha": 0.01,
+          "re_delta": 0.0,
+          "alpha_delta": 0.006
+        }
+      },
+      {
+        "row_number": 1356,
+        "Re": 350.0,
+        "alpha": 0.005,
+        "nearest_grid": {
+          "j_re": 0,
+          "i_alpha": 0,
+          "Re": 350.0,
+          "alpha": 0.01,
+          "re_delta": 0.0,
+          "alpha_delta": 0.005
+        }
+      },
+      {
+        "row_number": 1357,
+        "Re": 350.0,
+        "alpha": 0.006,
+        "nearest_grid": {
+          "j_re": 0,
+          "i_alpha": 0,
+          "Re": 350.0,
+          "alpha": 0.01,
+          "re_delta": 0.0,
+          "alpha_delta": 0.004
+        }
+      },
+      {
+        "row_number": 1358,
+        "Re": 350.0,
+        "alpha": 0.007,
+        "nearest_grid": {
+          "j_re": 0,
+          "i_alpha": 0,
+          "Re": 350.0,
+          "alpha": 0.01,
+          "re_delta": 0.0,
+          "alpha_delta": 0.003
+        }
+      },
+      {
+        "row_number": 1359,
+        "Re": 350.0,
+        "alpha": 0.008,
+        "nearest_grid": {
+          "j_re": 0,
+          "i_alpha": 0,
+          "Re": 350.0,
+          "alpha": 0.01,
+          "re_delta": 0.0,
+          "alpha_delta": 0.002
+        }
+      },
+      {
+        "row_number": 1360,
+        "Re": 350.0,
+        "alpha": 0.009,
+        "nearest_grid": {
+          "j_re": 0,
+          "i_alpha": 0,
+          "Re": 350.0,
+          "alpha": 0.01,
+          "re_delta": 0.0,
+          "alpha_delta": 0.0010000000000000009
+        }
+      },
+      {
+        "row_number": 1361,
+        "Re": 440.3,
+        "alpha": 0.003,
+        "nearest_grid": {
+          "j_re": 1,
+          "i_alpha": 0,
+          "Re": 440.3107257431707,
+          "alpha": 0.01,
+          "re_delta": 0.010725743170667101,
+          "alpha_delta": 0.007
+        }
+      },
+      {
+        "row_number": 1362,
+        "Re": 440.3,
+        "alpha": 0.004,
+        "nearest_grid": {
+          "j_re": 1,
+          "i_alpha": 0,
+          "Re": 440.3107257431707,
+          "alpha": 0.01,
+          "re_delta": 0.010725743170667101,
+          "alpha_delta": 0.006
+        }
+      },
+      {
+        "row_number": 1363,
+        "Re": 440.3,
+        "alpha": 0.005,
+        "nearest_grid": {
+          "j_re": 1,
+          "i_alpha": 0,
+          "Re": 440.3107257431707,
+          "alpha": 0.01,
+          "re_delta": 0.010725743170667101,
+          "alpha_delta": 0.005
+        }
+      },
+      {
+        "row_number": 1364,
+        "Re": 440.3,
+        "alpha": 0.006,
+        "nearest_grid": {
+          "j_re": 1,
+          "i_alpha": 0,
+          "Re": 440.3107257431707,
+          "alpha": 0.01,
+          "re_delta": 0.010725743170667101,
+          "alpha_delta": 0.004
+        }
+      },
+      {
+        "row_number": 1365,
+        "Re": 440.3,
+        "alpha": 0.007,
+        "nearest_grid": {
+          "j_re": 1,
+          "i_alpha": 0,
+          "Re": 440.3107257431707,
+          "alpha": 0.01,
+          "re_delta": 0.010725743170667101,
+          "alpha_delta": 0.003
+        }
+      },
+      {
+        "row_number": 1366,
+        "Re": 440.3,
+        "alpha": 0.008,
+        "nearest_grid": {
+          "j_re": 1,
+          "i_alpha": 0,
+          "Re": 440.3107257431707,
+          "alpha": 0.01,
+          "re_delta": 0.010725743170667101,
+          "alpha_delta": 0.002
+        }
+      },
+      {
+        "row_number": 1367,
+        "Re": 440.3,
+        "alpha": 0.009,
+        "nearest_grid": {
+          "j_re": 1,
+          "i_alpha": 0,
+          "Re": 440.3107257431707,
+          "alpha": 0.01,
+          "re_delta": 0.010725743170667101,
+          "alpha_delta": 0.0010000000000000009
+        }
+      },
+      {
+        "row_number": 1368,
+        "Re": 553.9,
+        "alpha": 0.003,
+        "nearest_grid": {
+          "j_re": 2,
+          "i_alpha": 0,
+          "Re": 553.924386298507,
+          "alpha": 0.01,
+          "re_delta": 0.024386298507010906,
+          "alpha_delta": 0.007
+        }
+      },
+      {
+        "row_number": 1369,
+        "Re": 553.9,
+        "alpha": 0.004,
+        "nearest_grid": {
+          "j_re": 2,
+          "i_alpha": 0,
+          "Re": 553.924386298507,
+          "alpha": 0.01,
+          "re_delta": 0.024386298507010906,
+          "alpha_delta": 0.006
+        }
+      },
+      {
+        "row_number": 1370,
+        "Re": 553.9,
+        "alpha": 0.005,
+        "nearest_grid": {
+          "j_re": 2,
+          "i_alpha": 0,
+          "Re": 553.924386298507,
+          "alpha": 0.01,
+          "re_delta": 0.024386298507010906,
+          "alpha_delta": 0.005
+        }
+      },
+      {
+        "row_number": 1371,
+        "Re": 553.9,
+        "alpha": 0.006,
+        "nearest_grid": {
+          "j_re": 2,
+          "i_alpha": 0,
+          "Re": 553.924386298507,
+          "alpha": 0.01,
+          "re_delta": 0.024386298507010906,
+          "alpha_delta": 0.004
+        }
+      },
+      {
+        "row_number": 1372,
+        "Re": 553.9,
+        "alpha": 0.007,
+        "nearest_grid": {
+          "j_re": 2,
+          "i_alpha": 0,
+          "Re": 553.924386298507,
+          "alpha": 0.01,
+          "re_delta": 0.024386298507010906,
+          "alpha_delta": 0.003
+        }
+      },
+      {
+        "row_number": 1373,
+        "Re": 553.9,
+        "alpha": 0.008,
+        "nearest_grid": {
+          "j_re": 2,
+          "i_alpha": 0,
+          "Re": 553.924386298507,
+          "alpha": 0.01,
+          "re_delta": 0.024386298507010906,
+          "alpha_delta": 0.002
+        }
+      }
+    ],
+    "n_off_grid_rows": 91,
+    "duplicates": [],
+    "missing_nodes": [],
+    "reference_load_wall_time_s": 0.007997400010935962
+  },
+  "wall_times": {
+    "reference_load_s": 0.007997400010935962,
+    "gpu_short_call_s": 451.803013500059,
+    "gpu_tall_call_s": 490.0554728000425,
+    "engine_wall_time_s_short": 377.82599789998494,
+    "engine_wall_time_s_tall": 416.8289737999439,
+    "engine_wall_time_s_total": 794.6549716999289,
+    "gpu_sweeps_call_s_total": 941.8584863001015,
+    "gpu_sweeps_enclosed_s": 941.8625452000415,
+    "comparison_s": 0.05135079997126013,
+    "full_process_s": 942.0628208999988
+  },
+  "gpu_engine_status_short": "device_contour_projection",
+  "gpu_engine_status_tall": "device_contour_projection",
+  "affine_reverified_short": true,
+  "affine_reverified_tall": true,
+  "vram_observed_short": {
+    "start": {
+      "free_bytes": 11488198656,
+      "total_bytes": 12877955072,
+      "pool_used_bytes": 93097472,
+      "pool_total_bytes": 93115904
+    },
+    "end": {
+      "free_bytes": 6721372160,
+      "total_bytes": 12877955072,
+      "pool_used_bytes": 540777472,
+      "pool_total_bytes": 4853831168
+    },
+    "min_free_bytes": 6721372160,
+    "peak_used_bytes": 6156582912,
+    "peak_delta_bytes": 4766826496
+  },
+  "vram_observed_tall": {
+    "start": {
+      "free_bytes": 1450455040,
+      "total_bytes": 12877955072,
+      "pool_used_bytes": 93097472,
+      "pool_total_bytes": 9684007424
+    },
+    "end": {
+      "free_bytes": 1457565696,
+      "total_bytes": 12877955072,
+      "pool_used_bytes": 540777472,
+      "pool_total_bytes": 9684007424
+    },
+    "min_free_bytes": 1400209408,
+    "peak_used_bytes": 11477745664,
+    "peak_delta_bytes": 50245632
+  },
+  "vram": {
+    "short": {
+      "start": {
+        "free_bytes": 11488198656,
+        "total_bytes": 12877955072,
+        "pool_used_bytes": 93097472,
+        "pool_total_bytes": 93115904
+      },
+      "end": {
+        "free_bytes": 6721372160,
+        "total_bytes": 12877955072,
+        "pool_used_bytes": 540777472,
+        "pool_total_bytes": 4853831168
+      },
+      "min_free_bytes": 6721372160,
+      "peak_used_bytes": 6156582912,
+      "peak_delta_bytes": 4766826496
+    },
+    "tall": {
+      "start": {
+        "free_bytes": 1450455040,
+        "total_bytes": 12877955072,
+        "pool_used_bytes": 93097472,
+        "pool_total_bytes": 9684007424
+      },
+      "end": {
+        "free_bytes": 1457565696,
+        "total_bytes": 12877955072,
+        "pool_used_bytes": 540777472,
+        "pool_total_bytes": 9684007424
+      },
+      "min_free_bytes": 1400209408,
+      "peak_used_bytes": 11477745664,
+      "peak_delta_bytes": 50245632
+    }
+  },
+  "gpu_candidate_capture_ok": true,
+  "gpu_candidate_entries_short": 390,
+  "gpu_candidate_entries_tall": 390,
+  "escalation_short": {
+    "rungs": [
+      "device_filter",
+      "enlarged_reproject",
+      "z128_recheck",
+      "xgeev_deflated",
+      "cpu_qz_async"
+    ],
+    "fractions": {
+      "device_filter": 0.9538461538461539,
+      "enlarged_reproject": 0.0,
+      "z128_recheck": 0.0,
+      "xgeev_deflated": 0.0,
+      "cpu_qz_async": 0.0,
+      "enlarged_reproject_refused": 0.046153846153846156
+    },
+    "cpu_qz_fraction": 0.0
+  },
+  "escalation_tall": {
+    "rungs": [
+      "device_filter",
+      "enlarged_reproject",
+      "z128_recheck",
+      "xgeev_deflated",
+      "cpu_qz_async"
+    ],
+    "fractions": {
+      "device_filter": 0.9358974358974359,
+      "enlarged_reproject": 0.0,
+      "z128_recheck": 0.0,
+      "xgeev_deflated": 0.0,
+      "cpu_qz_async": 0.0,
+      "enlarged_reproject_refused": 0.0641025641025641
+    },
+    "cpu_qz_fraction": 0.0
+  },
+  "n_nodes_compared": 195,
+  "all_matched_nodes_compared": true,
+  "missing_capture_entries": {
+    "short": 0,
+    "tall": 0
+  },
+  "zero_drift_held": true,
+  "comparison": {
+    "source": "gpu_sweep_derived_candidate_sets",
+    "assembly": "pymack.gpu.verdict.assemble_ozgen_verdict_from_gpu_candidate_sets",
+    "reference": "local firstmode_grid.csv matched to build_firstmode_grid.py GRID[2]",
+    "n_rows_recorded": 195,
+    "failure_abs_tolerance": 0.004
+  }
+}

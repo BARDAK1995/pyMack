@@ -142,6 +142,8 @@ from .analysis import (
     trace_temporal_neutral_curve_shooting,
 )
 
+from . import sweep  # batch sweep facade (numpy-safe; GPU dispatch is lazy)
+
 # --- Geometry --------------------------------------------------------------------
 from .cone import ConeGeometry, cone_n_factor, cone_n_factor_multiplier
 

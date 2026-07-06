@@ -27,6 +27,12 @@ Implementation notes (the two known pitfalls):
 Outputs: a PNG figure, a JSON metadata file, and a CSV of the gridded
 ``c_i`` field so the figure can be re-drawn without recomputing.
 
+Two compute engines produce identical grids: ``--engine sweep`` (default)
+goes through the ``pymack.sweep`` batch facade (parallel CPU backend today,
+GPU-ready), while ``--engine point`` keeps the original serial per-point
+loop for A/B checks.  Equality of the two paths is asserted in
+``validation/test_sweep_cpu_backend.py``.
+
 Usage::
 
     python scripts/make_ozgen_fig3_overlay.py --quality production
@@ -58,6 +64,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from pymack import load_reference_csv, make_flatplate_profile  # noqa: E402
+from pymack.sweep import CBand, temporal_sweep  # noqa: E402
 from pymack.temporal_solver import solve_temporal_2d  # noqa: E402
 from pymack.scales import delta_star_over_lstar  # noqa: E402
 
@@ -189,6 +196,93 @@ def compute_panel(Ma, re_values, alpha_values, N, *, verbose=True):
         "y_max_lstar": float(y_max),
         "N": int(N),
         "wall_time_s": float(time.perf_counter() - t0),
+    }
+
+
+def compute_panel_sweep(Ma, re_values, alpha_values, N, *, backend="cpu",
+                        workers=None, verbose=True):
+    """Compute one panel through the ``pymack.sweep`` batch facade.
+
+    Produces grids identical to :func:`compute_panel`: the two CBand
+    families below partition exactly the admissible set of
+    :func:`classify_most_unstable` (TS: ``c_r < TS_CR_MAX``; Mack:
+    ``MACK_CR_MIN < c_r < MACK_CR_MAX``; both ``|c_i| < CI_ABS_MAX``), the
+    per-family selection is the same most-unstable-admitted-mode rule, and
+    the cross-family argmax below reproduces the global argmax over the
+    union EXACTLY -- including the deployed tie-break.  On bitwise-equal
+    ``c_i`` across families, ``classify_most_unstable`` keeps the eigenvalue
+    earliest in solver order (``np.argmax`` returns the first maximum), so
+    the combiner breaks ties by the smaller ``mode_index`` carried in each
+    family record, not by family order.
+    """
+    profile = make_flatplate_profile(Ma)
+    delta_over_l = delta_star_over_lstar(profile)
+    y_max = Y_MAX_FACTOR * delta_over_l
+
+    t0 = time.perf_counter()
+    res = temporal_sweep(
+        profile,
+        alpha_values,
+        re_values,
+        Ma=Ma,
+        N=N,
+        y_max=y_max,
+        length_scale="L_star",
+        operator="ozgen_2d",
+        families=(
+            CBand(float("-inf"), TS_CR_MAX, ci_abs_max=CI_ABS_MAX, label="TS"),
+            CBand(MACK_CR_MIN, MACK_CR_MAX, ci_abs_max=CI_ABS_MAX,
+                  label="Mack"),
+        ),
+        backend=backend,
+        cpu_workers=workers,
+    )
+
+    n_a, n_r = len(alpha_values), len(re_values)
+    ci_grid = np.full((n_a, n_r), np.nan)
+    cr_grid = np.full((n_a, n_r), np.nan)
+    family_grid = [["" for _ in range(n_r)] for _ in range(n_a)]
+    ci_stack = np.stack([fam.c.imag for fam in res.families])
+    cr_stack = np.stack([fam.c.real for fam in res.families])
+    idx_stack = np.stack([fam.mode_index for fam in res.families])
+    labels = [fam.band.label for fam in res.families]
+    for i in range(n_a):
+        for j in range(n_r):
+            best_k, best_ci, best_idx = -1, -np.inf, None
+            for k in range(len(labels)):
+                v = ci_stack[k, i, j]
+                if not np.isfinite(v):
+                    continue
+                idx_k = int(idx_stack[k, i, j])
+                # deployed global-argmax tie-break: on bit-equal c_i, the
+                # smaller solver-order index wins (np.argmax first-maximum).
+                if v > best_ci or (v == best_ci and idx_k < best_idx):
+                    best_k, best_ci, best_idx = k, v, idx_k
+            if best_k >= 0:
+                ci_grid[i, j] = ci_stack[best_k, i, j]
+                cr_grid[i, j] = cr_stack[best_k, i, j]
+                family_grid[i][j] = labels[best_k]
+
+    wall = time.perf_counter() - t0
+    if verbose:
+        print(
+            f"  [M={Ma:g}] sweep engine (backend={res.meta['backend']}, "
+            f"{res.meta['cpu_workers']} workers): {n_a * n_r} nodes in "
+            f"{wall:.1f}s",
+            flush=True,
+        )
+
+    return {
+        "Ma": float(Ma),
+        "re_values": np.asarray(re_values, dtype=float),
+        "alpha_values": np.asarray(alpha_values, dtype=float),
+        "ci_grid": ci_grid,
+        "cr_grid": cr_grid,
+        "family_grid": family_grid,
+        "delta_star_over_lstar": float(delta_over_l),
+        "y_max_lstar": float(y_max),
+        "N": int(N),
+        "wall_time_s": float(wall),
     }
 
 
@@ -384,6 +478,8 @@ def build_metadata(panels, digitized_by_ma, args, paths, total_wall_s):
             "Fig. 3 curves. Layer 6 of docs/VALIDATION_STRATEGY.md."
         ),
         "quality": args.quality,
+        "engine": args.engine,
+        "sweep_backend": args.sweep_backend if args.engine == "sweep" else None,
         "panels_requested": args.panels,
         "re_range": list(RE_RANGE),
         "re_spacing": "log",
@@ -456,6 +552,26 @@ def parse_args(argv=None):
         default="2,4",
         help="comma-separated Mach numbers, e.g. '2,4' (default)",
     )
+    parser.add_argument(
+        "--engine",
+        choices=("sweep", "point"),
+        default="sweep",
+        help="sweep: pymack.sweep batch facade (default); "
+             "point: legacy serial per-point loop (kept for A/B checks)",
+    )
+    parser.add_argument(
+        "--sweep-backend",
+        default="cpu",
+        help="pymack.sweep backend for --engine sweep (default cpu; "
+             "'auto' defers to PYMACK_SWEEP_BACKEND / GPU availability)",
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help="CPU worker processes for --engine sweep "
+             "(default: all cores, capped at the number of grid points)",
+    )
     return parser.parse_args(argv)
 
 
@@ -501,9 +617,17 @@ def main(argv=None):
                 "pyMack contours will be drawn without overlay"
             )
         digitized_by_ma[float(Ma)] = load_digitized_curves(Ma)
-        panels.append(
-            compute_panel(Ma, re_values, alpha_values, settings["N"])
-        )
+        if args.engine == "sweep":
+            panels.append(
+                compute_panel_sweep(
+                    Ma, re_values, alpha_values, settings["N"],
+                    backend=args.sweep_backend, workers=args.workers,
+                )
+            )
+        else:
+            panels.append(
+                compute_panel(Ma, re_values, alpha_values, settings["N"])
+            )
 
     write_grid_csv(panels, output_grid_csv)
     plot_overlay(panels, digitized_by_ma, output_png, args.quality)

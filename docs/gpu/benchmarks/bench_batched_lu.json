@@ -1,0 +1,5619 @@
+{
+  "benchmark_errors": [],
+  "command": "python.exe scripts/gpu_bench/bench_batched_lu.py --gate-tflops 1.0 --n 645 --batch 64 --sysmem-policy unknown",
+  "cuda_graph": {
+    "attempted": true,
+    "captured": {
+      "getrf_info_nonzero_after_replay": 0,
+      "median_event_ms_per_iteration": 40.011905670166016,
+      "median_wall_ms_per_iteration": 40.01531250105472,
+      "samples_event_ms": [
+        320.0952453613281,
+        320.4831848144531,
+        320.39825439453125,
+        320.0440368652344,
+        320.0256042480469
+      ]
+    },
+    "config": {
+      "batch": 64,
+      "dtype": "complex64",
+      "loop_iterations": 8,
+      "n": 645,
+      "nrhs": 32,
+      "trans": "N"
+    },
+    "ctypes_bypass_capture": {
+      "attempted": true,
+      "supported": true
+    },
+    "cupy_wrapper_capture": {
+      "error": "calling cuBLAS API during stream capture is currently unsupported",
+      "error_type": "NotImplementedError",
+      "supported": false
+    },
+    "eager": {
+      "median_event_ms_per_iteration": 40.16908645629883,
+      "median_wall_ms_per_iteration": 40.17144999670563,
+      "samples_event_ms": [
+        321.48468017578125,
+        321.2021789550781,
+        321.649658203125,
+        321.1858825683594,
+        321.3526916503906
+      ]
+    },
+    "isolation": "subprocess",
+    "launch_overhead_proxy": {
+      "attempted": true,
+      "captured_event_us_per_launch": 0.7919999770820141,
+      "captured_wall_us_per_launch": 0.8855467967805453,
+      "eager_event_us_per_launch": 14.039999805390835,
+      "eager_wall_us_per_launch": 14.104296951700235,
+      "kernel": "x *= 1.000001 on 1024 float32 elements",
+      "launches_per_loop": 256,
+      "speedup_event": 17.72727299452554,
+      "supported": true
+    },
+    "speedup_captured_vs_eager_event": 1.0039283504122127,
+    "subprocess_returncode": 0
+  },
+  "cupy": {
+    "cuda_driver_version": 13020,
+    "cuda_driver_version_string": "13.2.0",
+    "cuda_runtime_version": 12090,
+    "cuda_runtime_version_string": "12.9.0",
+    "cupy_version": "14.1.1",
+    "device": {
+      "compute_capability": [
+        8,
+        9
+      ],
+      "id": 0,
+      "name": "NVIDIA GeForce RTX 4070 Ti",
+      "total_global_mem_bytes": 12877955072
+    },
+    "imported": true,
+    "mem_info_at_start": {
+      "free_bytes": 11595153408,
+      "free_gib": 10.798828125,
+      "total_bytes": 12877955072
+    }
+  },
+  "elapsed_s": 107.71295299998019,
+  "environment": {
+    "cwd": "C:\\Users\\merts\\OneDrive\\Masa\u00fcst\u00fc\\MS_LST",
+    "numbers_provisional": true,
+    "nvidia_smi": {
+      "compute_cap": "8.9",
+      "driver_model": "WDDM",
+      "driver_version": "595.71",
+      "memory_total_mib": 12282,
+      "name": "NVIDIA GeForce RTX 4070 Ti",
+      "query": {
+        "command": [
+          "nvidia-smi",
+          "--query-gpu=name,driver_version,driver_model.current,memory.total,compute_cap",
+          "--format=csv,noheader,nounits"
+        ],
+        "returncode": 0,
+        "stderr": "",
+        "stdout": "NVIDIA GeForce RTX 4070 Ti, 595.71, WDDM, 12282, 8.9"
+      }
+    },
+    "packages": {
+      "cupy": null,
+      "cupy-cuda12x": "14.1.1",
+      "numpy": "2.2.6",
+      "nvidia-cublas-cu12": "12.9.2.10",
+      "nvidia-cuda-nvrtc-cu12": "12.9.86",
+      "nvidia-cuda-runtime-cu12": "12.9.79",
+      "nvidia-cusolver-cu12": "11.7.5.82",
+      "pytest": "9.0.3",
+      "scipy": "1.14.1"
+    },
+    "platform": "Windows-10-10.0.19045-SP0",
+    "python_executable": "C:\\Program Files\\Python312\\python.exe",
+    "python_version": "3.12.7",
+    "sysmem_policy": "unknown",
+    "sysmem_policy_note": "NVCP 'CUDA - Sysmem Fallback Policy' state at run time. Under 'unknown' the numbers are PROVISIONAL: a sysmem spill can only deflate measured throughput, so a PASS is a safe PASS, while a marginal FAIL (0.5-1.0 TFLOPS) requires a re-run after the user confirms 'Prefer No Sysmem Fallback' before being declared a K1 kill."
+  },
+  "gate": {
+    "batch": 64,
+    "dtype": "complex64",
+    "getrf_info_nonzero_count": 0,
+    "measured_gflops": 1254.9157213046396,
+    "measured_tflops": 1.2549157213046396,
+    "median_ms": 36.49331283569336,
+    "n": 645,
+    "passed": true,
+    "sysmem_policy": "unknown",
+    "threshold_tflops": 1.0,
+    "verdict": "PASS"
+  },
+  "generated_at_utc": "2026-07-05T01:33:15.606437Z",
+  "gpu_busy_checks": [],
+  "primitive_inventory": {
+    "batched_geqrf": {
+      "high_level_qr_smoke": {
+        "attempted": true,
+        "cupy_linalg_qr_batched_works": true,
+        "max_abs_reconstruction_error": 7.180539682849485e-07
+      },
+      "note": "cgeqrfBatched/zgeqrfBatched are NOT wrapped by cupy_backends.cuda.libs.cublas in CuPy 14.1.1 (present in the cuBLAS C API but unreachable without ctypes); only single-matrix cusolver geqrf wrappers exist",
+      "present": false,
+      "single_matrix_geqrf": {
+        "present": true,
+        "symbols": [
+          "cupy.cuda.cusolver.cgeqrf",
+          "cupy.cuda.cusolver.cgeqrf_bufferSize",
+          "cupy.cuda.cusolver.dgeqrf",
+          "cupy.cuda.cusolver.dgeqrf_bufferSize",
+          "cupy.cuda.cusolver.sgeqrf",
+          "cupy.cuda.cusolver.sgeqrf_bufferSize",
+          "cupy.cuda.cusolver.zgeqrf",
+          "cupy.cuda.cusolver.zgeqrf_bufferSize",
+          "cupy_backends.cuda.libs.cusolver.cgeqrf",
+          "cupy_backends.cuda.libs.cusolver.cgeqrf_bufferSize",
+          "cupy_backends.cuda.libs.cusolver.dgeqrf",
+          "cupy_backends.cuda.libs.cusolver.dgeqrf_bufferSize",
+          "cupy_backends.cuda.libs.cusolver.sgeqrf",
+          "cupy_backends.cuda.libs.cusolver.sgeqrf_bufferSize",
+          "cupy_backends.cuda.libs.cusolver.zgeqrf",
+          "cupy_backends.cuda.libs.cusolver.zgeqrf_bufferSize"
+        ]
+      },
+      "symbols": []
+    },
+    "cupy_imported": true,
+    "eigvalsh": {
+      "functional_smoke": {
+        "attempted": true,
+        "max_abs_diff_vs_numpy": 1.5735626220703125e-05,
+        "works_batched": true
+      },
+      "present": true,
+      "symbols": [
+        "cupy.linalg.eigvalsh"
+      ]
+    },
+    "gemmBatched": {
+      "present": true,
+      "symbols": [
+        "cupy.cuda.cublas.cgemmBatched",
+        "cupy.cuda.cublas.cgemmStridedBatched",
+        "cupy.cuda.cublas.dgemmBatched",
+        "cupy.cuda.cublas.dgemmStridedBatched",
+        "cupy.cuda.cublas.gemmStridedBatchedEx",
+        "cupy.cuda.cublas.sgemmBatched",
+        "cupy.cuda.cublas.sgemmStridedBatched",
+        "cupy.cuda.cublas.zgemmBatched",
+        "cupy.cuda.cublas.zgemmStridedBatched",
+        "cupy_backends.cuda.libs.cublas.cgemmBatched",
+        "cupy_backends.cuda.libs.cublas.cgemmStridedBatched",
+        "cupy_backends.cuda.libs.cublas.dgemmBatched",
+        "cupy_backends.cuda.libs.cublas.dgemmStridedBatched",
+        "cupy_backends.cuda.libs.cublas.gemmStridedBatchedEx",
+        "cupy_backends.cuda.libs.cublas.sgemmBatched",
+        "cupy_backends.cuda.libs.cublas.sgemmStridedBatched",
+        "cupy_backends.cuda.libs.cublas.zgemmBatched",
+        "cupy_backends.cuda.libs.cublas.zgemmStridedBatched"
+      ]
+    },
+    "gesvdjBatched": {
+      "functional_smoke": {
+        "attempted": true,
+        "documented_size_limit": "m, n <= 32",
+        "info": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "lwork": 992,
+        "max_abs_sigma_diff_vs_numpy": 3.4332275390625e-05,
+        "works": true
+      },
+      "present": true,
+      "symbols": [
+        "cupy.cuda.cusolver.cgesvdjBatched",
+        "cupy.cuda.cusolver.cgesvdjBatched_bufferSize",
+        "cupy.cuda.cusolver.dgesvdjBatched",
+        "cupy.cuda.cusolver.dgesvdjBatched_bufferSize",
+        "cupy.cuda.cusolver.sgesvdjBatched",
+        "cupy.cuda.cusolver.sgesvdjBatched_bufferSize",
+        "cupy.cuda.cusolver.zgesvdjBatched",
+        "cupy.cuda.cusolver.zgesvdjBatched_bufferSize",
+        "cupy_backends.cuda.libs.cusolver.cgesvdjBatched",
+        "cupy_backends.cuda.libs.cusolver.cgesvdjBatched_bufferSize",
+        "cupy_backends.cuda.libs.cusolver.dgesvdjBatched",
+        "cupy_backends.cuda.libs.cusolver.dgesvdjBatched_bufferSize",
+        "cupy_backends.cuda.libs.cusolver.sgesvdjBatched",
+        "cupy_backends.cuda.libs.cusolver.sgesvdjBatched_bufferSize",
+        "cupy_backends.cuda.libs.cusolver.zgesvdjBatched",
+        "cupy_backends.cuda.libs.cusolver.zgesvdjBatched_bufferSize"
+      ]
+    },
+    "low_level_getrfBatched_getrsBatched": {
+      "functional_note": "exercised directly by this benchmark",
+      "present": true,
+      "symbols": [
+        "cupy.cuda.cublas.cgetrfBatched",
+        "cupy.cuda.cublas.cgetrsBatched",
+        "cupy.cuda.cublas.zgetrfBatched",
+        "cupy.cuda.cublas.zgetrsBatched",
+        "cupy_backends.cuda.libs.cublas.cgetrfBatched",
+        "cupy_backends.cuda.libs.cublas.cgetrsBatched",
+        "cupy_backends.cuda.libs.cublas.zgetrfBatched",
+        "cupy_backends.cuda.libs.cublas.zgetrsBatched"
+      ]
+    },
+    "modules": [
+      {
+        "direct_import_error": "ModuleNotFoundError: No module named 'cupy.cuda.cublas'",
+        "import_mode": "parent_attribute",
+        "imported": true,
+        "module": "cupy.cuda.cublas",
+        "symbol_count": 143
+      },
+      {
+        "direct_import_error": "ModuleNotFoundError: No module named 'cupy.cuda.cusolver'",
+        "import_mode": "parent_attribute",
+        "imported": true,
+        "module": "cupy.cuda.cusolver",
+        "symbol_count": 248
+      },
+      {
+        "import_mode": "direct_import",
+        "imported": true,
+        "module": "cupy_backends.cuda.libs.cublas",
+        "symbol_count": 143
+      },
+      {
+        "import_mode": "direct_import",
+        "imported": true,
+        "module": "cupy_backends.cuda.libs.cusolver",
+        "symbol_count": 248
+      }
+    ],
+    "trsmBatched": {
+      "present": true,
+      "symbols": [
+        "cupy.cuda.cublas.ctrsmBatched",
+        "cupy.cuda.cublas.dtrsmBatched",
+        "cupy.cuda.cublas.strsmBatched",
+        "cupy.cuda.cublas.ztrsmBatched",
+        "cupy_backends.cuda.libs.cublas.ctrsmBatched",
+        "cupy_backends.cuda.libs.cublas.dtrsmBatched",
+        "cupy_backends.cuda.libs.cublas.strsmBatched",
+        "cupy_backends.cuda.libs.cublas.ztrsmBatched"
+      ]
+    },
+    "xgeev": {
+      "note": "cusolverDnXgeev binding present; probed further in slice 03",
+      "present": true,
+      "symbols": [
+        "cupy.cuda.cusolver.xgeev",
+        "cupy.cuda.cusolver.xgeev_bufferSize",
+        "cupy_backends.cuda.libs.cusolver.xgeev",
+        "cupy_backends.cuda.libs.cusolver.xgeev_bufferSize"
+      ]
+    }
+  },
+  "requested_command": "python scripts/gpu_bench/bench_batched_lu.py --gate-tflops 1.0 --n 645 --batch 64 --sysmem-policy unknown",
+  "results": [
+    {
+      "batch": 16,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 53.3878732005474,
+          "iters_per_sample": 5,
+          "max_rel_residual_fp64_sampled": 0.00015862913893689967,
+          "median_ms": 0.6383615970611572,
+          "nrhs": 1,
+          "samples_ms": [
+            0.6586368083953857,
+            0.6301695823669433,
+            0.6383615970611572,
+            0.6368959903717041,
+            0.6643712043762207
+          ],
+          "tflops": 0.0533878732005474,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 49.571046307592376,
+          "iters_per_sample": 5,
+          "max_rel_residual_fp64_sampled": 0.00010755754953665311,
+          "median_ms": 0.6875135898590088,
+          "nrhs": 1,
+          "samples_ms": [
+            0.6875135898590088,
+            0.6875135898590088,
+            0.6725632190704346,
+            0.6798975944519043,
+            0.6887423992156982
+          ],
+          "tflops": 0.049571046307592376,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 557.8962854065987,
+          "iters_per_sample": 4,
+          "max_rel_residual_fp64_sampled": 0.0002111234896148508,
+          "median_ms": 0.9774079918861389,
+          "nrhs": 16,
+          "samples_ms": [
+            0.9505199790000916,
+            1.006592035293579,
+            0.9774079918861389,
+            0.9528319835662842,
+            1.0065679550170898
+          ],
+          "tflops": 0.5578962854065987,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 567.4075733291072,
+          "iters_per_sample": 4,
+          "max_rel_residual_fp64_sampled": 0.00020185677952537983,
+          "median_ms": 0.9610239863395691,
+          "nrhs": 16,
+          "samples_ms": [
+            0.9579280018806458,
+            0.9428480267524719,
+            0.9610239863395691,
+            0.9812480211257935,
+            1.0060800313949585
+          ],
+          "tflops": 0.5674075733291072,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 951.4806551128661,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.00021003678035380976,
+          "median_ms": 1.1461973190307617,
+          "nrhs": 32,
+          "samples_ms": [
+            1.1461973190307617,
+            1.2602026462554932,
+            1.1318613688151042,
+            1.1670186519622803,
+            1.1301546891530354
+          ],
+          "tflops": 0.9514806551128661,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 980.6945057775723,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.00020217821595142993,
+          "median_ms": 1.1120533148447673,
+          "nrhs": 32,
+          "samples_ms": [
+            1.1100160280863445,
+            1.1167679627736409,
+            1.1120533148447673,
+            1.132543961207072,
+            1.106613318125407
+          ],
+          "tflops": 0.9806945057775723,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 644.723932089636,
+        "iters_per_sample": 1,
+        "median_ms": 9.092096328735352,
+        "samples_ms": [
+          9.11251163482666,
+          9.108480453491211,
+          9.086976051330566,
+          9.092096328735352,
+          9.091072082519531
+        ],
+        "tflops": 0.6447239320896361,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 340857728,
+      "memory_estimate_gib": 0.3174484968185425,
+      "n": 516
+    },
+    {
+      "batch": 64,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 157.18316526058456,
+          "iters_per_sample": 4,
+          "max_rel_residual_fp64_sampled": 0.0002918030045587839,
+          "median_ms": 0.8672879934310913,
+          "nrhs": 1,
+          "samples_ms": [
+            1.0652159452438354,
+            0.8440319895744324,
+            0.8672879934310913,
+            0.8655359745025635,
+            0.8755199909210205
+          ],
+          "tflops": 0.15718316526058457,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 145.13818487461015,
+          "iters_per_sample": 4,
+          "max_rel_residual_fp64_sampled": 0.00017810823127336402,
+          "median_ms": 0.9392639994621277,
+          "nrhs": 1,
+          "samples_ms": [
+            0.9451040029525757,
+            0.9291999936103821,
+            1.0603519678115845,
+            0.9118720293045044,
+            0.9392639994621277
+          ],
+          "tflops": 0.14513818487461014,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1549.5601680966925,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.00021741476671269152,
+          "median_ms": 1.4076053301493328,
+          "nrhs": 16,
+          "samples_ms": [
+            1.4066346486409504,
+            1.407317320505778,
+            1.4191786448160808,
+            1.4107306798299153,
+            1.4076053301493328
+          ],
+          "tflops": 1.5495601680966924,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1520.1056848580747,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.0002575763052407409,
+          "median_ms": 1.4348799387613933,
+          "nrhs": 16,
+          "samples_ms": [
+            1.4271146456400554,
+            1.4389972686767578,
+            1.4348799387613933,
+            1.4301865895589192,
+            1.4372906684875488
+          ],
+          "tflops": 1.5201056848580747,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2152.6509043594765,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.00021096626226969783,
+          "median_ms": 2.026495933532715,
+          "nrhs": 32,
+          "samples_ms": [
+            2.026495933532715,
+            2.025984048843384,
+            2.0244479179382324,
+            2.0290560722351074,
+            2.032639980316162
+          ],
+          "tflops": 2.1526509043594766,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2118.3968744679732,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0002443344055404612,
+          "median_ms": 2.0592639446258545,
+          "nrhs": 32,
+          "samples_ms": [
+            2.0679678916931152,
+            2.0520639419555664,
+            2.0541439056396484,
+            2.0592639446258545,
+            2.066943883895874
+          ],
+          "tflops": 2.1183968744679733,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 1269.4320236692222,
+        "iters_per_sample": 1,
+        "median_ms": 18.47091293334961,
+        "samples_ms": [
+          18.47091293334961,
+          18.521087646484375,
+          18.327552795410156,
+          18.341888427734375,
+          18.566944122314453
+        ],
+        "tflops": 1.2694320236692223,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 558124544,
+      "memory_estimate_gib": 0.5197939872741699,
+      "n": 516
+    },
+    {
+      "batch": 256,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 267.9979874535747,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.00037859106203539983,
+          "median_ms": 2.0346879959106445,
+          "nrhs": 1,
+          "samples_ms": [
+            2.035599946975708,
+            2.0305919647216797,
+            2.0336639881134033,
+            2.0346879959106445,
+            2.0894079208374023
+          ],
+          "tflops": 0.26799798745357467,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 266.85643440745235,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.00023351325779284948,
+          "median_ms": 2.0433919429779053,
+          "nrhs": 1,
+          "samples_ms": [
+            2.1943039894104004,
+            2.042367935180664,
+            2.0433919429779053,
+            2.0398080348968506,
+            2.0454399585723877
+          ],
+          "tflops": 0.2668564344074524,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 3203.0797013116185,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.000993008087289504,
+          "median_ms": 2.7238399982452393,
+          "nrhs": 16,
+          "samples_ms": [
+            2.7238399982452393,
+            3.1580159664154053,
+            2.722815990447998,
+            2.721791982650757,
+            2.7243518829345703
+          ],
+          "tflops": 3.2030797013116183,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 3187.4829653234924,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0012541208959663988,
+          "median_ms": 2.737168073654175,
+          "nrhs": 16,
+          "samples_ms": [
+            2.7310080528259277,
+            2.73305606842041,
+            2.7386879920959473,
+            2.738607883453369,
+            2.737168073654175
+          ],
+          "tflops": 3.1874829653234924,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 4594.643466446125,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0012711334801864286,
+          "median_ms": 3.797760009765625,
+          "nrhs": 32,
+          "samples_ms": [
+            3.797760009765625,
+            3.8010880947113037,
+            3.7949440479278564,
+            3.7977919578552246,
+            3.796992063522339
+          ],
+          "tflops": 4.594643466446125,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 4655.84271280032,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0012439619150497658,
+          "median_ms": 3.74783992767334,
+          "nrhs": 32,
+          "samples_ms": [
+            3.744767904281616,
+            3.748703956604004,
+            3.7457919120788574,
+            3.74783992767334,
+            3.7519359588623047
+          ],
+          "tflops": 4.655842712800321,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 1196.34360343511,
+        "iters_per_sample": 1,
+        "median_ms": 78.3974380493164,
+        "samples_ms": [
+          78.87667083740234,
+          78.3974380493164,
+          77.36729431152344,
+          78.08102416992188,
+          79.10707092285156
+        ],
+        "tflops": 1.19634360343511,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 1427191808,
+      "memory_estimate_gib": 1.3291759490966797,
+      "n": 516
+    },
+    {
+      "batch": 16,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 61.12733598046732,
+          "iters_per_sample": 4,
+          "max_rel_residual_fp64_sampled": 0.00022602868645689656,
+          "median_ms": 0.8711519837379456,
+          "nrhs": 1,
+          "samples_ms": [
+            0.8647680282592773,
+            0.8667439818382263,
+            0.906495988368988,
+            0.8757759928703308,
+            0.8711519837379456
+          ],
+          "tflops": 0.06112733598046732,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 59.09445976572078,
+          "iters_per_sample": 4,
+          "max_rel_residual_fp64_sampled": 0.00025834455079207886,
+          "median_ms": 0.9011200070381165,
+          "nrhs": 1,
+          "samples_ms": [
+            0.893671989440918,
+            0.9215840101242065,
+            0.9013199806213379,
+            0.8977919816970825,
+            0.9011200070381165
+          ],
+          "tflops": 0.05909445976572078,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 691.8375833257121,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.00036247592056554276,
+          "median_ms": 1.2315306663513184,
+          "nrhs": 16,
+          "samples_ms": [
+            1.2315306663513184,
+            1.2416853109995525,
+            1.2259946664174397,
+            1.2267200152079265,
+            1.2390399773915608
+          ],
+          "tflops": 0.6918375833257121,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 691.6938100313797,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.00035962133734639904,
+          "median_ms": 1.2317866484324138,
+          "nrhs": 16,
+          "samples_ms": [
+            1.3199893633524578,
+            1.2270932992299397,
+            1.228117307027181,
+            1.2493333021799724,
+            1.2317866484324138
+          ],
+          "tflops": 0.6916938100313798,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1089.7839001151344,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.000376332087752992,
+          "median_ms": 1.563647985458374,
+          "nrhs": 32,
+          "samples_ms": [
+            1.5447039604187012,
+            1.563647985458374,
+            1.5590399503707886,
+            1.570304036140442,
+            1.5641599893569946
+          ],
+          "tflops": 1.0897839001151344,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1083.398399179272,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.00035940192185261635,
+          "median_ms": 1.572864055633545,
+          "nrhs": 32,
+          "samples_ms": [
+            1.572864055633545,
+            1.5672320127487183,
+            1.5774240493774414,
+            1.5732640027999878,
+            1.5411200523376465
+          ],
+          "tflops": 1.083398399179272,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 695.2721877346188,
+        "iters_per_sample": 1,
+        "median_ms": 16.466943740844727,
+        "samples_ms": [
+          16.476959228515625,
+          16.449535369873047,
+          16.457632064819336,
+          16.61849594116211,
+          16.466943740844727
+        ],
+        "tflops": 0.6952721877346189,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 380263616,
+      "memory_estimate_gib": 0.35414808988571167,
+      "n": 645
+    },
+    {
+      "batch": 64,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 176.78115628295453,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.0003725067162436937,
+          "median_ms": 1.204906702041626,
+          "nrhs": 1,
+          "samples_ms": [
+            1.2096853256225586,
+            1.2000640233357747,
+            1.204906702041626,
+            1.198421319325765,
+            1.3195947011311848
+          ],
+          "tflops": 0.17678115628295452,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 155.73562254243274,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.00014578353037453563,
+          "median_ms": 1.367733319600423,
+          "nrhs": 1,
+          "samples_ms": [
+            1.3728426297505696,
+            1.361237366994222,
+            1.367733319600423,
+            1.3663573265075684,
+            1.3707200686136882
+          ],
+          "tflops": 0.15573562254243273,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1787.4328913861539,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.000522388549653758,
+          "median_ms": 1.9066879749298096,
+          "nrhs": 16,
+          "samples_ms": [
+            1.916864037513733,
+            1.8877439498901367,
+            1.901568055152893,
+            1.9066879749298096,
+            1.9128320217132568
+          ],
+          "tflops": 1.787432891386154,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1719.111608507675,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0004817171345215473,
+          "median_ms": 1.9824639558792114,
+          "nrhs": 16,
+          "samples_ms": [
+            1.9886080026626587,
+            1.985535979270935,
+            1.9824639558792114,
+            1.9563519954681396,
+            1.97324800491333
+          ],
+          "tflops": 1.7191116085076752,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2499.117788103949,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0005864754812750352,
+          "median_ms": 2.727423906326294,
+          "nrhs": 32,
+          "samples_ms": [
+            2.7519679069519043,
+            2.7059199810028076,
+            3.134320020675659,
+            2.727423906326294,
+            2.6849279403686523
+          ],
+          "tflops": 2.499117788103949,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2460.321571270308,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0005949723451661728,
+          "median_ms": 2.7704319953918457,
+          "nrhs": 32,
+          "samples_ms": [
+            2.751487970352173,
+            2.7555840015411377,
+            2.780672073364258,
+            2.7704319953918457,
+            2.7729759216308594
+          ],
+          "tflops": 2.460321571270308,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 1254.9157213046396,
+        "iters_per_sample": 1,
+        "median_ms": 36.49331283569336,
+        "samples_ms": [
+          36.59571075439453,
+          36.299617767333984,
+          36.49331283569336,
+          36.49740982055664,
+          36.340641021728516
+        ],
+        "tflops": 1.2549157213046396,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 715748096,
+      "memory_estimate_gib": 0.6665923595428467,
+      "n": 645
+    },
+    {
+      "batch": 256,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 290.6820147125157,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0008784242140185457,
+          "median_ms": 2.9311039447784424,
+          "nrhs": 1,
+          "samples_ms": [
+            2.9516000747680664,
+            2.929663896560669,
+            2.9281599521636963,
+            2.944000005722046,
+            2.9311039447784424
+          ],
+          "tflops": 0.2906820147125157,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 282.6256730764266,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0003997426704039317,
+          "median_ms": 3.0146560668945312,
+          "nrhs": 1,
+          "samples_ms": [
+            3.067903995513916,
+            3.0146560668945312,
+            3.009536027908325,
+            3.0320639610290527,
+            3.009536027908325
+          ],
+          "tflops": 0.2826256730764266,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 3518.1818718814166,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0006006742835628997,
+          "median_ms": 3.8748159408569336,
+          "nrhs": 16,
+          "samples_ms": [
+            3.8991360664367676,
+            3.8686718940734863,
+            3.8746559619903564,
+            3.8766720294952393,
+            3.8748159408569336
+          ],
+          "tflops": 3.5181818718814166,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 3394.4989788957278,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0009156096976304556,
+          "median_ms": 4.015999794006348,
+          "nrhs": 16,
+          "samples_ms": [
+            4.027167797088623,
+            4.015999794006348,
+            4.009696006774902,
+            4.007904052734375,
+            4.242432117462158
+          ],
+          "tflops": 3.3944989788957276,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 5077.345650523576,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0008237503507162292,
+          "median_ms": 5.369855880737305,
+          "nrhs": 32,
+          "samples_ms": [
+            5.356480121612549,
+            5.36678409576416,
+            5.371903896331787,
+            5.371903896331787,
+            5.369855880737305
+          ],
+          "tflops": 5.077345650523577,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 5032.243424080119,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0007471161266611853,
+          "median_ms": 5.4179840087890625,
+          "nrhs": 32,
+          "samples_ms": [
+            5.4179840087890625,
+            5.4036478996276855,
+            5.425151824951172,
+            5.409567832946777,
+            5.4231038093566895
+          ],
+          "tflops": 5.03224342408012,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 1233.984619292959,
+        "iters_per_sample": 1,
+        "median_ms": 148.44927978515625,
+        "samples_ms": [
+          149.04421997070312,
+          148.44927978515625,
+          148.13792419433594,
+          148.8179168701172,
+          147.9720916748047
+        ],
+        "tflops": 1.233984619292959,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 2057686016,
+      "memory_estimate_gib": 1.9163694381713867,
+      "n": 645
+    },
+    {
+      "batch": 16,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 82.26739157162028,
+          "iters_per_sample": 4,
+          "max_rel_residual_fp64_sampled": 0.0005261012525746337,
+          "median_ms": 1.0057599544525146,
+          "nrhs": 1,
+          "samples_ms": [
+            1.0057599544525146,
+            0.9937919974327087,
+            0.983568012714386,
+            1.0590720176696777,
+            1.0137360095977783
+          ],
+          "tflops": 0.08226739157162027,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 80.50680543255315,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.0001940280650268469,
+          "median_ms": 1.0277547041575115,
+          "nrhs": 1,
+          "samples_ms": [
+            0.9829653104146322,
+            0.9864532947540283,
+            1.0533546606699626,
+            1.0277547041575115,
+            1.0680320262908936
+          ],
+          "tflops": 0.08050680543255315,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 846.9256568958286,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0010790956169138418,
+          "median_ms": 1.5631359815597534,
+          "nrhs": 16,
+          "samples_ms": [
+            1.5774719715118408,
+            1.5631359815597534,
+            1.6696319580078125,
+            1.5400960445404053,
+            1.550704002380371
+          ],
+          "tflops": 0.8469256568958287,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 844.6776768607392,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.000828971946028008,
+          "median_ms": 1.567296028137207,
+          "nrhs": 16,
+          "samples_ms": [
+            1.5918079614639282,
+            1.567296028137207,
+            1.5672320127487183,
+            1.5831040143966675,
+            1.5672320127487183
+          ],
+          "tflops": 0.8446776768607392,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1367.3527498142396,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0008311856853190955,
+          "median_ms": 1.9363839626312256,
+          "nrhs": 32,
+          "samples_ms": [
+            1.935871958732605,
+            1.9434399604797363,
+            1.9363839626312256,
+            1.9292160272598267,
+            1.9563519954681396
+          ],
+          "tflops": 1.3673527498142395,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1329.101919041284,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0008124548679377916,
+          "median_ms": 1.9921120405197144,
+          "nrhs": 32,
+          "samples_ms": [
+            1.9901440143585205,
+            1.9763200283050537,
+            1.9921120405197144,
+            2.001408100128174,
+            1.9936959743499756
+          ],
+          "tflops": 1.329101919041284,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 625.9556313918088,
+        "iters_per_sample": 1,
+        "median_ms": 35.4252815246582,
+        "samples_ms": [
+          35.3966064453125,
+          35.21843338012695,
+          35.44883346557617,
+          35.4252815246582,
+          35.70278549194336
+        ],
+        "tflops": 0.6259556313918088,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 440556416,
+      "memory_estimate_gib": 0.4103001356124878,
+      "n": 804
+    },
+    {
+      "batch": 64,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 208.1184869344326,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.00047807713398720565,
+          "median_ms": 1.5902719497680664,
+          "nrhs": 1,
+          "samples_ms": [
+            1.5902719497680664,
+            1.5882240533828735,
+            1.5882240533828735,
+            1.6183840036392212,
+            1.6030720472335815
+          ],
+          "tflops": 0.2081184869344326,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 181.78177376163276,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0003322052178464718,
+          "median_ms": 1.8206720352172852,
+          "nrhs": 1,
+          "samples_ms": [
+            1.8201600313186646,
+            1.8375519514083862,
+            1.8206720352172852,
+            1.8191360235214233,
+            1.8335039615631104
+          ],
+          "tflops": 0.18178177376163276,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2092.8078072883145,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0006448086831990275,
+          "median_ms": 2.530303955078125,
+          "nrhs": 16,
+          "samples_ms": [
+            2.5210559368133545,
+            2.5139200687408447,
+            2.6127359867095947,
+            2.5425920486450195,
+            2.530303955078125
+          ],
+          "tflops": 2.0928078072883145,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2053.030769452314,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.000650979920274234,
+          "median_ms": 2.5793280601501465,
+          "nrhs": 16,
+          "samples_ms": [
+            2.571216106414795,
+            2.5793280601501465,
+            2.5866239070892334,
+            2.5733120441436768,
+            2.6808159351348877
+          ],
+          "tflops": 2.053030769452314,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2994.3995449204517,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.000559444763262698,
+          "median_ms": 3.536895990371704,
+          "nrhs": 32,
+          "samples_ms": [
+            3.5491840839385986,
+            3.536895990371704,
+            3.5275840759277344,
+            3.5430400371551514,
+            3.5348479747772217
+          ],
+          "tflops": 2.994399544920452,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2962.026502037092,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0005593114056006121,
+          "median_ms": 3.575551986694336,
+          "nrhs": 32,
+          "samples_ms": [
+            3.571712017059326,
+            3.583807945251465,
+            3.5696640014648438,
+            3.575808048248291,
+            3.575551986694336
+          ],
+          "tflops": 2.962026502037092,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 1310.6728306470445,
+        "iters_per_sample": 1,
+        "median_ms": 67.67411041259766,
+        "samples_ms": [
+          68.3087387084961,
+          67.67411041259766,
+          67.77216339111328,
+          67.53584289550781,
+          67.42733001708984
+        ],
+        "tflops": 1.3106728306470445,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 956919296,
+      "memory_estimate_gib": 0.8912005424499512,
+      "n": 804
+    },
+    {
+      "batch": 256,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 315.80148311060253,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.00042888113786108484,
+          "median_ms": 4.192063808441162,
+          "nrhs": 1,
+          "samples_ms": [
+            4.186975955963135,
+            4.192255973815918,
+            4.192063808441162,
+            4.18393611907959,
+            4.382719993591309
+          ],
+          "tflops": 0.3158014831106025,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 311.97684229624235,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.00033939571442703054,
+          "median_ms": 4.24345588684082,
+          "nrhs": 1,
+          "samples_ms": [
+            4.24345588684082,
+            4.237311840057373,
+            4.399104118347168,
+            4.260863780975342,
+            4.24345588684082
+          ],
+          "tflops": 0.31197684229624234,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 3938.6526564584797,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0005449435926164975,
+          "median_ms": 5.377920150756836,
+          "nrhs": 16,
+          "samples_ms": [
+            5.374815940856934,
+            5.599232196807861,
+            5.377920150756836,
+            5.377024173736572,
+            5.3830718994140625
+          ],
+          "tflops": 3.93865265645848,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 3870.098112394585,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0005643725961412883,
+          "median_ms": 5.473184108734131,
+          "nrhs": 16,
+          "samples_ms": [
+            5.468160152435303,
+            5.467135906219482,
+            5.473184108734131,
+            5.475264072418213,
+            5.475327968597412
+          ],
+          "tflops": 3.870098112394585,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 5775.600306684827,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0005297111295879082,
+          "median_ms": 7.334911823272705,
+          "nrhs": 32,
+          "samples_ms": [
+            7.321599960327148,
+            7.562240123748779,
+            7.322624206542969,
+            7.334911823272705,
+            7.34003210067749
+          ],
+          "tflops": 5.775600306684827,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 5840.910990163415,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0005417215249971654,
+          "median_ms": 7.252895832061768,
+          "nrhs": 32,
+          "samples_ms": [
+            7.515135765075684,
+            7.264256000518799,
+            7.24889612197876,
+            7.251967906951904,
+            7.252895832061768
+          ],
+          "tflops": 5.840910990163414,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 1228.0087610807022,
+        "iters_per_sample": 1,
+        "median_ms": 288.91851806640625,
+        "samples_ms": [
+          287.7018127441406,
+          288.91851806640625,
+          289.07623291015625,
+          288.1228942871094,
+          289.422119140625
+        ],
+        "tflops": 1.2280087610807022,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 3022370816,
+      "memory_estimate_gib": 2.8148021697998047,
+      "n": 804
+    },
+    {
+      "batch": 16,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 93.82199560951858,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.0018713224502734647,
+          "median_ms": 1.377962589263916,
+          "nrhs": 1,
+          "samples_ms": [
+            1.377962589263916,
+            1.3933226267496746,
+            1.3800106048583984,
+            1.3701119422912598,
+            1.3755733172098796
+          ],
+          "tflops": 0.09382199560951858,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 93.56703720242484,
+          "iters_per_sample": 3,
+          "max_rel_residual_fp64_sampled": 0.0011615037442539778,
+          "median_ms": 1.381717363993327,
+          "nrhs": 1,
+          "samples_ms": [
+            1.3595306078592937,
+            1.3758506774902344,
+            1.4345706303914387,
+            1.381717363993327,
+            1.3833386103312175
+          ],
+          "tflops": 0.09356703720242485,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1018.1703766757206,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0020656278384940103,
+          "median_ms": 2.031615972518921,
+          "nrhs": 16,
+          "samples_ms": [
+            2.0346879959106445,
+            2.032128095626831,
+            2.031615972518921,
+            2.0152320861816406,
+            2.0152320861816406
+          ],
+          "tflops": 1.0181703766757206,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 980.4209239234245,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.002209926280176691,
+          "median_ms": 2.109839916229248,
+          "nrhs": 16,
+          "samples_ms": [
+            2.0924160480499268,
+            2.1335039138793945,
+            2.109839916229248,
+            2.0976641178131104,
+            2.1181440353393555
+          ],
+          "tflops": 0.9804209239234245,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1618.6500963581698,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.002285528505509515,
+          "median_ms": 2.5558719635009766,
+          "nrhs": 32,
+          "samples_ms": [
+            2.5727999210357666,
+            2.545583963394165,
+            2.5543839931488037,
+            2.5558719635009766,
+            2.559999942779541
+          ],
+          "tflops": 1.6186500963581698,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1571.1064152943345,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.002751716794598644,
+          "median_ms": 2.63321590423584,
+          "nrhs": 32,
+          "samples_ms": [
+            2.6255359649658203,
+            2.632175922393799,
+            2.657792091369629,
+            2.63321590423584,
+            2.63321590423584
+          ],
+          "tflops": 1.5711064152943346,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 629.1633113409429,
+        "iters_per_sample": 1,
+        "median_ms": 68.83724975585938,
+        "samples_ms": [
+          68.83724975585938,
+          68.66329956054688,
+          68.86605072021484,
+          68.890625,
+          68.69197082519531
+        ],
+        "tflops": 0.6291633113409428,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 535299776,
+      "memory_estimate_gib": 0.49853676557540894,
+      "n": 1005
+    },
+    {
+      "batch": 64,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 221.10880720380482,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0008402218673729197,
+          "median_ms": 2.338815927505493,
+          "nrhs": 1,
+          "samples_ms": [
+            2.3311359882354736,
+            2.331536054611206,
+            2.338815927505493,
+            2.3485119342803955,
+            2.354543924331665
+          ],
+          "tflops": 0.22110880720380482,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 192.1306909713609,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0007499578000708066,
+          "median_ms": 2.691567897796631,
+          "nrhs": 1,
+          "samples_ms": [
+            2.6827199459075928,
+            2.88102388381958,
+            2.6920158863067627,
+            2.691567897796631,
+            2.6864640712738037
+          ],
+          "tflops": 0.1921306909713609,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2451.4472382797157,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0018991142097285285,
+          "median_ms": 3.375200033187866,
+          "nrhs": 16,
+          "samples_ms": [
+            3.387392044067383,
+            3.375200033187866,
+            3.5327999591827393,
+            3.3710079193115234,
+            3.3709120750427246
+          ],
+          "tflops": 2.451447238279716,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2346.848741980036,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0015106531339069685,
+          "median_ms": 3.525631904602051,
+          "nrhs": 16,
+          "samples_ms": [
+            3.5246078968048096,
+            3.525631904602051,
+            3.525696039199829,
+            3.5235838890075684,
+            3.531775951385498
+          ],
+          "tflops": 2.3468487419800357,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 3554.0796666019974,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0021535735496665044,
+          "median_ms": 4.6561279296875,
+          "nrhs": 32,
+          "samples_ms": [
+            4.644864082336426,
+            4.81382417678833,
+            4.6561279296875,
+            4.649695873260498,
+            4.855807781219482
+          ],
+          "tflops": 3.5540796666019974,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 3458.989589314988,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.001904382839706753,
+          "median_ms": 4.784128189086914,
+          "nrhs": 32,
+          "samples_ms": [
+            4.783840179443359,
+            4.784128189086914,
+            4.786975860595703,
+            4.789216041564941,
+            4.784128189086914
+          ],
+          "tflops": 3.458989589314988,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 1426.8897790487024,
+        "iters_per_sample": 1,
+        "median_ms": 121.41056060791016,
+        "samples_ms": [
+          120.95356750488281,
+          121.06752014160156,
+          121.4760971069336,
+          121.41056060791016,
+          121.50447845458984
+        ],
+        "tflops": 1.4268897790487023,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 1335892736,
+      "memory_estimate_gib": 1.2441470623016357,
+      "n": 1005
+    },
+    {
+      "batch": 256,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 334.94445058086825,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0010217166681957155,
+          "median_ms": 6.17574405670166,
+          "nrhs": 1,
+          "samples_ms": [
+            6.171648025512695,
+            6.17574405670166,
+            6.178815841674805,
+            6.176767826080322,
+            6.174528121948242
+          ],
+          "tflops": 0.33494445058086825,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 331.75398088336914,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0010163673001291685,
+          "median_ms": 6.235136032104492,
+          "nrhs": 1,
+          "samples_ms": [
+            6.505472183227539,
+            6.2269439697265625,
+            6.230048179626465,
+            6.235136032104492,
+            6.240255832672119
+          ],
+          "tflops": 0.33175398088336916,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 4251.617915075952,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0014344699715993054,
+          "median_ms": 7.784448146820068,
+          "nrhs": 16,
+          "samples_ms": [
+            7.775231838226318,
+            7.973663806915283,
+            8.044544219970703,
+            7.770112037658691,
+            7.784448146820068
+          ],
+          "tflops": 4.251617915075951,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 4115.726251321789,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0014918097902115973,
+          "median_ms": 8.041472434997559,
+          "nrhs": 16,
+          "samples_ms": [
+            8.036128044128418,
+            8.041472434997559,
+            8.035327911376953,
+            8.045568466186523,
+            8.048640251159668
+          ],
+          "tflops": 4.11572625132179,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 6295.442178253436,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0014576345005549037,
+          "median_ms": 10.514431953430176,
+          "nrhs": 32,
+          "samples_ms": [
+            10.514431953430176,
+            10.516287803649902,
+            10.514431953430176,
+            10.510335922241211,
+            10.504192352294922
+          ],
+          "tflops": 6.295442178253436,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 6110.369468948805,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0015713871108244766,
+          "median_ms": 10.83289623260498,
+          "nrhs": 32,
+          "samples_ms": [
+            10.816512107849121,
+            10.82470417022705,
+            10.83289623260498,
+            10.844160079956055,
+            10.835968017578125
+          ],
+          "tflops": 6.110369468948805,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 1225.5964572663513,
+        "iters_per_sample": 1,
+        "median_ms": 565.4046630859375,
+        "samples_ms": [
+          563.0494995117188,
+          566.982666015625,
+          564.6837768554688,
+          567.7269897460938,
+          565.4046630859375
+        ],
+        "tflops": 1.2255964572663514,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 4538264576,
+      "memory_estimate_gib": 4.226588249206543,
+      "n": 1005
+    },
+    {
+      "batch": 16,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 110.99926315168557,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0008590471831670658,
+          "median_ms": 1.9041279554367065,
+          "nrhs": 1,
+          "samples_ms": [
+            1.9071999788284302,
+            1.888767957687378,
+            1.9041279554367065,
+            1.9215359687805176,
+            1.8892799615859985
+          ],
+          "tflops": 0.11099926315168557,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 96.31503644480757,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0017172536428686983,
+          "median_ms": 2.194432020187378,
+          "nrhs": 1,
+          "samples_ms": [
+            2.2016000747680664,
+            2.194432020187378,
+            2.1937758922576904,
+            2.1836800575256348,
+            2.200063943862915
+          ],
+          "tflops": 0.09631503644480757,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1210.5754908262934,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0018931605991831838,
+          "median_ms": 2.7934720516204834,
+          "nrhs": 16,
+          "samples_ms": [
+            2.772336006164551,
+            2.7934720516204834,
+            2.802687883377075,
+            2.7991039752960205,
+            2.7929599285125732
+          ],
+          "tflops": 1.2105754908262933,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1160.79085708644,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 0.0017611402759169243,
+          "median_ms": 2.9132800102233887,
+          "nrhs": 16,
+          "samples_ms": [
+            2.9460480213165283,
+            2.905600070953369,
+            3.015727996826172,
+            2.894335985183716,
+            2.9132800102233887
+          ],
+          "tflops": 1.16079085708644,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1991.827440575555,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.002198888827826728,
+          "median_ms": 3.3955841064453125,
+          "nrhs": 32,
+          "samples_ms": [
+            3.403775930404663,
+            3.3656320571899414,
+            3.432255983352661,
+            3.3863680362701416,
+            3.3955841064453125
+          ],
+          "tflops": 1.9918274405755552,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 1842.8850193654416,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.00200444188853728,
+          "median_ms": 3.670016050338745,
+          "nrhs": 32,
+          "samples_ms": [
+            3.670016050338745,
+            3.689471960067749,
+            3.6597440242767334,
+            3.759104013442993,
+            3.655519962310791
+          ],
+          "tflops": 1.8428850193654416,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 624.6596961695584,
+        "iters_per_sample": 1,
+        "median_ms": 144.92877197265625,
+        "samples_ms": [
+          144.93894958496094,
+          144.81507873535156,
+          145.07110595703125,
+          144.92361450195312,
+          144.92877197265625
+        ],
+        "tflops": 0.6246596961695584,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 701758656,
+      "memory_estimate_gib": 0.6535636782646179,
+      "n": 1285
+    },
+    {
+      "batch": 64,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 240.93164373977893,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.001669094396824851,
+          "median_ms": 3.5089919567108154,
+          "nrhs": 1,
+          "samples_ms": [
+            3.509216070175171,
+            3.5040640830993652,
+            3.5131518840789795,
+            3.5089919567108154,
+            3.5051519870758057
+          ],
+          "tflops": 0.24093164373977893,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 212.35401691469198,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0010377598627105127,
+          "median_ms": 3.9812159538269043,
+          "nrhs": 1,
+          "samples_ms": [
+            3.9833600521087646,
+            3.9782400131225586,
+            3.9843521118164062,
+            3.9812159538269043,
+            3.9792640209198
+          ],
+          "tflops": 0.212354016914692,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2755.4859194144133,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0019548309139035117,
+          "median_ms": 4.909056186676025,
+          "nrhs": 16,
+          "samples_ms": [
+            4.873216152191162,
+            5.183487892150879,
+            4.9100799560546875,
+            4.884479999542236,
+            4.909056186676025
+          ],
+          "tflops": 2.7554859194144132,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 2675.1316962717488,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.001516569967975329,
+          "median_ms": 5.056511878967285,
+          "nrhs": 16,
+          "samples_ms": [
+            5.053440093994141,
+            5.060448169708252,
+            5.065728187561035,
+            5.053440093994141,
+            5.056511878967285
+          ],
+          "tflops": 2.6751316962717486,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 4086.5583278532577,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0017709172510947438,
+          "median_ms": 6.620160102844238,
+          "nrhs": 32,
+          "samples_ms": [
+            6.654975891113281,
+            6.620160102844238,
+            6.619135856628418,
+            6.607872009277344,
+            6.620160102844238
+          ],
+          "tflops": 4.086558327853258,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 4008.435667541501,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.001929049136808719,
+          "median_ms": 6.7491841316223145,
+          "nrhs": 32,
+          "samples_ms": [
+            6.780831813812256,
+            6.761472225189209,
+            6.7254719734191895,
+            6.7491841316223145,
+            6.732480049133301
+          ],
+          "tflops": 4.008435667541501,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 1383.054561080332,
+        "iters_per_sample": 1,
+        "median_ms": 261.8296203613281,
+        "samples_ms": [
+          261.8296203613281,
+          261.9217834472656,
+          262.0168151855469,
+          261.63507080078125,
+          261.8039245605469
+        ],
+        "tflops": 1.383054561080332,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 2001728256,
+      "memory_estimate_gib": 1.8642547130584717,
+      "n": 1285
+    },
+    {
+      "batch": 256,
+      "dtype": "complex64",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 350.83925753307665,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0009659883871362023,
+          "median_ms": 9.638912200927734,
+          "nrhs": 1,
+          "samples_ms": [
+            9.89798355102539,
+            9.63584041595459,
+            9.639840126037598,
+            9.637887954711914,
+            9.638912200927734
+          ],
+          "tflops": 0.35083925753307665,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 345.3361936875164,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0006036308019218204,
+          "median_ms": 9.792511940002441,
+          "nrhs": 1,
+          "samples_ms": [
+            9.789440155029297,
+            9.796607971191406,
+            9.788415908813477,
+            9.945088386535645,
+            9.792511940002441
+          ],
+          "tflops": 0.3453361936875164,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 4468.431313853252,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0012892388147999307,
+          "median_ms": 12.108799934387207,
+          "nrhs": 16,
+          "samples_ms": [
+            12.13542366027832,
+            12.106752395629883,
+            12.116991996765137,
+            12.106752395629883,
+            12.108799934387207
+          ],
+          "tflops": 4.468431313853252,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 4330.726987813864,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0009706502518943765,
+          "median_ms": 12.493824005126953,
+          "nrhs": 16,
+          "samples_ms": [
+            12.487744331359863,
+            12.493824005126953,
+            12.502816200256348,
+            12.497920036315918,
+            12.49180793762207
+          ],
+          "tflops": 4.330726987813864,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 6674.565897876128,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.001131085835725657,
+          "median_ms": 16.21299171447754,
+          "nrhs": 32,
+          "samples_ms": [
+            16.20992088317871,
+            16.21299171447754,
+            16.20159912109375,
+            16.368640899658203,
+            16.220096588134766
+          ],
+          "tflops": 6.6745658978761275,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 6498.187891566198,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 0.0012436724100445074,
+          "median_ms": 16.65305519104004,
+          "nrhs": 32,
+          "samples_ms": [
+            16.642047882080078,
+            16.655359268188477,
+            16.905216217041016,
+            16.65305519104004,
+            16.65123176574707
+          ],
+          "tflops": 6.498187891566198,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 1207.8675580318475,
+        "iters_per_sample": 1,
+        "median_ms": 1199.2197265625,
+        "samples_ms": [
+          1196.7989501953125,
+          1200.1976318359375,
+          1199.1510009765625,
+          1200.6375732421875,
+          1199.2197265625
+        ],
+        "tflops": 1.2078675580318474,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 7201606656,
+      "memory_estimate_gib": 6.707018852233887,
+      "n": 1285
+    },
+    {
+      "batch": 16,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 15.270475241109464,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 1.8039035794335772e-13,
+          "median_ms": 2.2318079471588135,
+          "nrhs": 1,
+          "samples_ms": [
+            2.22873592376709,
+            2.2312960624694824,
+            2.2332959175109863,
+            2.232271909713745,
+            2.2318079471588135
+          ],
+          "tflops": 0.015270475241109464,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 15.962589593226673,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 2.1396714156452098e-13,
+          "median_ms": 2.135040044784546,
+          "nrhs": 1,
+          "samples_ms": [
+            2.135040044784546,
+            2.1335039138793945,
+            2.135535955429077,
+            2.1329920291900635,
+            2.135040044784546
+          ],
+          "tflops": 0.015962589593226672,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 134.41120004350952,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 4.4393491927807694e-13,
+          "median_ms": 4.056896209716797,
+          "nrhs": 16,
+          "samples_ms": [
+            4.050943851470947,
+            4.056896209716797,
+            4.068096160888672,
+            4.0570878982543945,
+            4.056064128875732
+          ],
+          "tflops": 0.13441120004350954,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 137.6355686235726,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 3.3551717876792795e-13,
+          "median_ms": 3.961855888366699,
+          "nrhs": 16,
+          "samples_ms": [
+            3.961855888366699,
+            4.062143802642822,
+            4.056896209716797,
+            3.961855888366699,
+            3.9567999839782715
+          ],
+          "tflops": 0.1376355686235726,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 208.09379251354852,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 4.121719864434467e-13,
+          "median_ms": 5.2408318519592285,
+          "nrhs": 32,
+          "samples_ms": [
+            5.348351955413818,
+            5.239776134490967,
+            5.2408318519592285,
+            5.238783836364746,
+            5.2408318519592285
+          ],
+          "tflops": 0.2080937925135485,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 203.94943756175692,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 3.5024656742622737e-13,
+          "median_ms": 5.347328186035156,
+          "nrhs": 32,
+          "samples_ms": [
+            5.347328186035156,
+            5.245952129364014,
+            5.349376201629639,
+            5.243743896484375,
+            5.558271884918213
+          ],
+          "tflops": 0.20394943756175693,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 126.73242830146926,
+        "iters_per_sample": 1,
+        "median_ms": 46.25408172607422,
+        "samples_ms": [
+          46.115840911865234,
+          46.25408172607422,
+          46.39651107788086,
+          46.09126281738281,
+          46.4087028503418
+        ],
+        "tflops": 0.12673242830146925,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 413246336,
+      "memory_estimate_gib": 0.3848656415939331,
+      "n": 516
+    },
+    {
+      "batch": 64,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 49.80471199224002,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 4.347955742366745e-13,
+          "median_ms": 2.737152099609375,
+          "nrhs": 1,
+          "samples_ms": [
+            2.7356159687042236,
+            2.736128091812134,
+            2.7376160621643066,
+            2.738176107406616,
+            2.737152099609375
+          ],
+          "tflops": 0.04980471199224002,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 49.60059708238978,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 5.575396899627585e-13,
+          "median_ms": 2.748415946960449,
+          "nrhs": 1,
+          "samples_ms": [
+            2.74833607673645,
+            2.746880054473877,
+            2.748415946960449,
+            2.748415946960449,
+            2.7494239807128906
+          ],
+          "tflops": 0.049600597082389786,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 299.880057597976,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 5.483416917894493e-13,
+          "median_ms": 7.273471832275391,
+          "nrhs": 16,
+          "samples_ms": [
+            7.273471832275391,
+            7.301119804382324,
+            7.271200180053711,
+            7.271423816680908,
+            7.442431926727295
+          ],
+          "tflops": 0.29988005759797604,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 298.49327962230694,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 5.503577117961062e-13,
+          "median_ms": 7.3072638511657715,
+          "nrhs": 16,
+          "samples_ms": [
+            7.514815807342529,
+            7.275455951690674,
+            7.3072638511657715,
+            7.300096035003662,
+            7.324672222137451
+          ],
+          "tflops": 0.29849327962230693,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 350.71177896910814,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 4.858541639337558e-13,
+          "median_ms": 12.438528060913086,
+          "nrhs": 32,
+          "samples_ms": [
+            12.430335998535156,
+            12.438528060913086,
+            13.322239875793457,
+            12.4334077835083,
+            12.455936431884766
+          ],
+          "tflops": 0.35071177896910816,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 349.3027298194745,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 5.149495080204611e-13,
+          "median_ms": 12.488703727722168,
+          "nrhs": 32,
+          "samples_ms": [
+            12.488703727722168,
+            12.513279914855957,
+            12.46617603302002,
+            12.469056129455566,
+            12.493696212768555
+          ],
+          "tflops": 0.3493027298194745,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 282.1516283980126,
+        "iters_per_sample": 1,
+        "median_ms": 83.10272216796875,
+        "samples_ms": [
+          82.93465423583984,
+          83.10774230957031,
+          83.26553344726562,
+          83.0545883178711,
+          83.10272216796875
+        ],
+        "tflops": 0.28215162839801256,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 847678976,
+      "memory_estimate_gib": 0.7894625663757324,
+      "n": 516
+    },
+    {
+      "batch": 256,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 91.24605581183135,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.2696616865724787e-12,
+          "median_ms": 5.976064205169678,
+          "nrhs": 1,
+          "samples_ms": [
+            5.984255790710449,
+            5.972991943359375,
+            5.968736171722412,
+            5.981184005737305,
+            5.976064205169678
+          ],
+          "tflops": 0.09124605581183136,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 60.935117135406564,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.1958670798510528e-12,
+          "median_ms": 8.948736190795898,
+          "nrhs": 1,
+          "samples_ms": [
+            8.947711944580078,
+            9.163776397705078,
+            9.111552238464355,
+            8.931327819824219,
+            8.948736190795898
+          ],
+          "tflops": 0.060935117135406565,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 413.08457068085465,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.852653669681581e-12,
+          "median_ms": 21.120800018310547,
+          "nrhs": 16,
+          "samples_ms": [
+            21.120800018310547,
+            21.12009620666504,
+            21.313535690307617,
+            21.121984481811523,
+            21.113855361938477
+          ],
+          "tflops": 0.41308457068085463,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 413.0219835788794,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.0812956290242413e-12,
+          "median_ms": 21.124000549316406,
+          "nrhs": 16,
+          "samples_ms": [
+            21.328895568847656,
+            21.120960235595703,
+            21.121023178100586,
+            21.127168655395508,
+            21.124000549316406
+          ],
+          "tflops": 0.41302198357887937,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 451.0782849853653,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.7778618854564815e-12,
+          "median_ms": 38.68364715576172,
+          "nrhs": 32,
+          "samples_ms": [
+            38.544288635253906,
+            38.547454833984375,
+            38.68364715576172,
+            39.44140625,
+            38.86592102050781
+          ],
+          "tflops": 0.45107828498536534,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 453.0469401055169,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.2200018510648837e-12,
+          "median_ms": 38.51555252075195,
+          "nrhs": 32,
+          "samples_ms": [
+            38.51555252075195,
+            38.51161575317383,
+            38.69286346435547,
+            38.52083206176758,
+            38.46217727661133
+          ],
+          "tflops": 0.45304694010551694,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 451.6221524041452,
+        "iters_per_sample": 1,
+        "median_ms": 207.67420959472656,
+        "samples_ms": [
+          207.60780334472656,
+          207.67420959472656,
+          208.89804077148438,
+          207.4898223876953,
+          209.50221252441406
+        ],
+        "tflops": 0.4516221524041452,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 2585409536,
+      "memory_estimate_gib": 2.4078502655029297,
+      "n": 516
+    },
+    {
+      "batch": 16,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 17.864350450888413,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.7894371884438853e-12,
+          "median_ms": 2.9808640480041504,
+          "nrhs": 1,
+          "samples_ms": [
+            2.98905611038208,
+            2.9808640480041504,
+            2.978816032409668,
+            2.9808640480041504,
+            2.979935884475708
+          ],
+          "tflops": 0.017864350450888414,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 18.764376872888395,
+          "iters_per_sample": 2,
+          "max_rel_residual_fp64_sampled": 1.0879718137133824e-12,
+          "median_ms": 2.83788800239563,
+          "nrhs": 1,
+          "samples_ms": [
+            2.836479902267456,
+            2.83788800239563,
+            2.8368639945983887,
+            2.939840078353882,
+            2.855936050415039
+          ],
+          "tflops": 0.018764376872888396,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 161.24999452382346,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.7243847053509135e-12,
+          "median_ms": 5.283840179443359,
+          "nrhs": 16,
+          "samples_ms": [
+            5.473184108734131,
+            5.2890238761901855,
+            5.282815933227539,
+            5.283840179443359,
+            5.280767917633057
+          ],
+          "tflops": 0.16124999452382346,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 159.82519985316375,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.304506412793207e-12,
+          "median_ms": 5.330944061279297,
+          "nrhs": 16,
+          "samples_ms": [
+            5.330944061279297,
+            5.332831859588623,
+            5.22649621963501,
+            5.228544235229492,
+            5.3318400382995605
+          ],
+          "tflops": 0.15982519985316376,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 233.2305509981533,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.0397276824524556e-12,
+          "median_ms": 7.306240081787109,
+          "nrhs": 32,
+          "samples_ms": [
+            7.250944137573242,
+            7.260159969329834,
+            7.358463764190674,
+            7.469056129455566,
+            7.306240081787109
+          ],
+          "tflops": 0.2332305509981533,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 230.7404336459006,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.8458580654840194e-12,
+          "median_ms": 7.385087966918945,
+          "nrhs": 32,
+          "samples_ms": [
+            7.388160228729248,
+            7.385087966918945,
+            7.274432182312012,
+            7.332767963409424,
+            7.391104221343994
+          ],
+          "tflops": 0.2307404336459006,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 131.2054400451013,
+        "iters_per_sample": 1,
+        "median_ms": 87.26016235351562,
+        "samples_ms": [
+          87.41785430908203,
+          87.26016235351562,
+          87.09529876708984,
+          87.6072998046875,
+          87.25606536865234
+        ],
+        "tflops": 0.13120544004510132,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 492049856,
+      "memory_estimate_gib": 0.45825713872909546,
+      "n": 645
+    },
+    {
+      "batch": 64,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 57.55741489306927,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 5.106949693552841e-13,
+          "median_ms": 3.7007360458374023,
+          "nrhs": 1,
+          "samples_ms": [
+            3.7067840099334717,
+            3.7007360458374023,
+            3.7007360458374023,
+            3.69868803024292,
+            3.693567991256714
+          ],
+          "tflops": 0.05755741489306927,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 53.4500333482323,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.847365449353316e-13,
+          "median_ms": 3.9851200580596924,
+          "nrhs": 1,
+          "samples_ms": [
+            3.985408067703247,
+            3.985408067703247,
+            3.976191997528076,
+            3.9851200580596924,
+            3.98419189453125
+          ],
+          "tflops": 0.053450033348232305,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 339.7140646619864,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 7.794488659575327e-13,
+          "median_ms": 10.03219223022461,
+          "nrhs": 16,
+          "samples_ms": [
+            10.056703567504883,
+            10.03219223022461,
+            10.054656028747559,
+            9.979616165161133,
+            10.03007984161377
+          ],
+          "tflops": 0.3397140646619864,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 340.1676207998675,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 6.824929501240873e-13,
+          "median_ms": 10.018815994262695,
+          "nrhs": 16,
+          "samples_ms": [
+            10.017791748046875,
+            10.145792007446289,
+            10.018815994262695,
+            9.93990421295166,
+            10.120991706848145
+          ],
+          "tflops": 0.3401676207998675,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 384.9410053195903,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 7.473068195491433e-13,
+          "median_ms": 17.707008361816406,
+          "nrhs": 32,
+          "samples_ms": [
+            17.680063247680664,
+            17.879039764404297,
+            17.908735275268555,
+            17.705984115600586,
+            17.707008361816406
+          ],
+          "tflops": 0.3849410053195903,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 381.9590447460033,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 6.924386268478123e-13,
+          "median_ms": 17.845247268676758,
+          "nrhs": 32,
+          "samples_ms": [
+            17.84012794494629,
+            17.845247268676758,
+            18.0467529296875,
+            17.845247268676758,
+            17.846176147460938
+          ],
+          "tflops": 0.38195904474600334,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 289.8818980764744,
+        "iters_per_sample": 1,
+        "median_ms": 157.981689453125,
+        "samples_ms": [
+          157.981689453125,
+          157.82298278808594,
+          158.12069702148438,
+          158.08717346191406,
+          157.64566040039062
+        ],
+        "tflops": 0.2898818980764744,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 1162893056,
+      "memory_estimate_gib": 1.0830285549163818,
+      "n": 645
+    },
+    {
+      "batch": 256,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 103.5660918672148,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.0209199877496997e-12,
+          "median_ms": 8.226816177368164,
+          "nrhs": 1,
+          "samples_ms": [
+            8.219648361206055,
+            8.230912208557129,
+            8.224703788757324,
+            8.226816177368164,
+            8.453120231628418
+          ],
+          "tflops": 0.1035660918672148,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 63.88590073629113,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 5.720092357225635e-12,
+          "median_ms": 13.336576461791992,
+          "nrhs": 1,
+          "samples_ms": [
+            13.3570556640625,
+            13.316096305847168,
+            13.330431938171387,
+            13.336576461791992,
+            13.347776412963867
+          ],
+          "tflops": 0.06388590073629112,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 442.88897796519143,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.8527091706125846e-12,
+          "median_ms": 30.78041648864746,
+          "nrhs": 16,
+          "samples_ms": [
+            30.77017593383789,
+            30.843904495239258,
+            30.59609603881836,
+            30.78041648864746,
+            30.79680061340332
+          ],
+          "tflops": 0.44288897796519144,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 443.65649272316966,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.8979638405415424e-12,
+          "median_ms": 30.7271671295166,
+          "nrhs": 16,
+          "samples_ms": [
+            30.930944442749023,
+            30.722047805786133,
+            30.7271671295166,
+            30.722047805786133,
+            30.733312606811523
+          ],
+          "tflops": 0.44365649272316965,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 471.6262360048804,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 3.067365678951985e-12,
+          "median_ms": 57.809791564941406,
+          "nrhs": 32,
+          "samples_ms": [
+            58.07001495361328,
+            57.809791564941406,
+            57.89491271972656,
+            57.744384765625,
+            57.75155258178711
+          ],
+          "tflops": 0.4716262360048804,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 469.8939418305342,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 3.2363278973569837e-12,
+          "median_ms": 58.022911071777344,
+          "nrhs": 32,
+          "samples_ms": [
+            58.022911071777344,
+            57.86316680908203,
+            58.187774658203125,
+            58.05875015258789,
+            57.860801696777344
+          ],
+          "tflops": 0.4698939418305342,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 464.14614962038326,
+        "iters_per_sample": 1,
+        "median_ms": 394.6690673828125,
+        "samples_ms": [
+          396.5232238769531,
+          392.99554443359375,
+          394.208251953125,
+          396.18048095703125,
+          394.6690673828125
+        ],
+        "tflops": 0.46414614962038325,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 3846265856,
+      "memory_estimate_gib": 3.5821142196655273,
+      "n": 645
+    },
+    {
+      "batch": 16,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 22.773957108460756,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.745276603605074e-13,
+          "median_ms": 3.6331520080566406,
+          "nrhs": 1,
+          "samples_ms": [
+            3.634176015853882,
+            3.6331520080566406,
+            3.6270079612731934,
+            3.6331520080566406,
+            3.6280319690704346
+          ],
+          "tflops": 0.022773957108460755,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 22.987766783273553,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 6.724052477602891e-13,
+          "median_ms": 3.5993599891662598,
+          "nrhs": 1,
+          "samples_ms": [
+            3.6154561042785645,
+            3.600383996963501,
+            3.59932804107666,
+            3.5993599891662598,
+            3.5973119735717773
+          ],
+          "tflops": 0.022987766783273553,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 188.0756422241332,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.189337073251728e-12,
+          "median_ms": 7.038976192474365,
+          "nrhs": 16,
+          "samples_ms": [
+            7.038976192474365,
+            6.93555212020874,
+            6.932223796844482,
+            7.039999961853027,
+            7.040895938873291
+          ],
+          "tflops": 0.1880756422241332,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 183.82369436801665,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.2063005508067371e-12,
+          "median_ms": 7.201791763305664,
+          "nrhs": 16,
+          "samples_ms": [
+            7.19865608215332,
+            7.203616142272949,
+            7.201791763305664,
+            7.2038397789001465,
+            7.079808235168457
+          ],
+          "tflops": 0.18382369436801665,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 272.4332432408352,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.0697463840705884e-12,
+          "median_ms": 9.71878433227539,
+          "nrhs": 32,
+          "samples_ms": [
+            9.71878433227539,
+            9.61945629119873,
+            9.92460823059082,
+            9.71673583984375,
+            9.777119636535645
+          ],
+          "tflops": 0.27243324324083523,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 263.8971316833077,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.1781413354687468e-12,
+          "median_ms": 10.033151626586914,
+          "nrhs": 32,
+          "samples_ms": [
+            10.027008056640625,
+            10.033151626586914,
+            10.294367790222168,
+            10.027999877929688,
+            10.084351539611816
+          ],
+          "tflops": 0.2638971316833077,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 134.4083768064424,
+        "iters_per_sample": 1,
+        "median_ms": 164.97970581054688,
+        "samples_ms": [
+          165.17205810546875,
+          164.77081298828125,
+          164.93670654296875,
+          164.97970581054688,
+          165.09132385253906
+        ],
+        "tflops": 0.13440837680644238,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 612625280,
+      "memory_estimate_gib": 0.5705517530441284,
+      "n": 804
+    },
+    {
+      "batch": 64,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 69.20941933064474,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 9.508458315293388e-13,
+          "median_ms": 4.782080173492432,
+          "nrhs": 1,
+          "samples_ms": [
+            4.775936126708984,
+            4.782080173492432,
+            4.774816036224365,
+            4.792223930358887,
+            4.959231853485107
+          ],
+          "tflops": 0.06920941933064474,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 67.18104234011722,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.1064154667541394e-12,
+          "median_ms": 4.926464080810547,
+          "nrhs": 1,
+          "samples_ms": [
+            4.927487850189209,
+            4.927328109741211,
+            4.926464080810547,
+            4.924191951751709,
+            4.926464080810547
+          ],
+          "tflops": 0.06718104234011722,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 368.7747173869593,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.4175237530271855e-12,
+          "median_ms": 14.359552383422852,
+          "nrhs": 16,
+          "samples_ms": [
+            14.211999893188477,
+            14.359552383422852,
+            14.387136459350586,
+            14.338047981262207,
+            14.384127616882324
+          ],
+          "tflops": 0.3687747173869593,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 365.18098931450373,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.492360252531893e-12,
+          "median_ms": 14.500864028930664,
+          "nrhs": 16,
+          "samples_ms": [
+            14.499648094177246,
+            14.500864028930664,
+            14.47424030303955,
+            14.545920372009277,
+            14.547967910766602
+          ],
+          "tflops": 0.3651809893145037,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 407.64054203048374,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.418099343612409e-12,
+          "median_ms": 25.980928421020508,
+          "nrhs": 32,
+          "samples_ms": [
+            25.989120483398438,
+            25.997215270996094,
+            25.93894386291504,
+            25.91436767578125,
+            25.980928421020508
+          ],
+          "tflops": 0.4076405420304837,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 407.80127960257926,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.4867243625431465e-12,
+          "median_ms": 25.970687866210938,
+          "nrhs": 32,
+          "samples_ms": [
+            25.970687866210938,
+            26.858335494995117,
+            25.969663619995117,
+            25.94304084777832,
+            26.024959564208984
+          ],
+          "tflops": 0.4078012796025793,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 294.9480322909493,
+        "iters_per_sample": 1,
+        "median_ms": 300.72625732421875,
+        "samples_ms": [
+          301.4656066894531,
+          302.635009765625,
+          300.71807861328125,
+          300.6873779296875,
+          300.72625732421875
+        ],
+        "tflops": 0.2949480322909493,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 1645194752,
+      "memory_estimate_gib": 1.5322070121765137,
+      "n": 804
+    },
+    {
+      "batch": 256,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 116.839767803607,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.1148235206301887e-12,
+          "median_ms": 11.330559730529785,
+          "nrhs": 1,
+          "samples_ms": [
+            11.335488319396973,
+            11.330559730529785,
+            11.324416160583496,
+            11.316224098205566,
+            11.462656021118164
+          ],
+          "tflops": 0.116839767803607,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 73.37714655363978,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.3178911771495425e-12,
+          "median_ms": 18.04185676574707,
+          "nrhs": 1,
+          "samples_ms": [
+            17.963008880615234,
+            18.364416122436523,
+            17.973247528076172,
+            18.062335968017578,
+            18.04185676574707
+          ],
+          "tflops": 0.07337714655363978,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 466.6631782562481,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.0308014365791204e-12,
+          "median_ms": 45.38982391357422,
+          "nrhs": 16,
+          "samples_ms": [
+            45.19638442993164,
+            45.72380828857422,
+            45.20857620239258,
+            45.57712173461914,
+            45.38982391357422
+          ],
+          "tflops": 0.4666631782562481,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 466.9370537144189,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.278317806418985e-12,
+          "median_ms": 45.36320114135742,
+          "nrhs": 16,
+          "samples_ms": [
+            45.36320114135742,
+            45.1940803527832,
+            45.34272003173828,
+            45.39276885986328,
+            45.38665771484375
+          ],
+          "tflops": 0.4669370537144189,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 488.1201382203097,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.90334567487514e-12,
+          "median_ms": 86.78912353515625,
+          "nrhs": 32,
+          "samples_ms": [
+            86.6160659790039,
+            86.95500946044922,
+            86.57091522216797,
+            86.9928970336914,
+            86.78912353515625
+          ],
+          "tflops": 0.4881201382203097,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 488.5755730497854,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.4284367336188137e-12,
+          "median_ms": 86.70822143554688,
+          "nrhs": 32,
+          "samples_ms": [
+            86.70822143554688,
+            86.71334075927734,
+            86.69491577148438,
+            86.92940521240234,
+            86.67235565185547
+          ],
+          "tflops": 0.48857557304978544,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 475.4108923068858,
+        "iters_per_sample": 1,
+        "median_ms": 746.2901611328125,
+        "samples_ms": [
+          741.6882934570312,
+          746.80322265625,
+          745.1729736328125,
+          746.988525390625,
+          746.2901611328125
+        ],
+        "tflops": 0.47541089230688577,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 5775472640,
+      "memory_estimate_gib": 5.378828048706055,
+      "n": 804
+    },
+    {
+      "batch": 16,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 26.812626893489913,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 6.881518986689715e-13,
+          "median_ms": 4.821728229522705,
+          "nrhs": 1,
+          "samples_ms": [
+            4.813663959503174,
+            4.821728229522705,
+            4.822015762329102,
+            4.8209919929504395,
+            4.826111793518066
+          ],
+          "tflops": 0.026812626893489913,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 26.38518874429005,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 6.982963803551707e-13,
+          "median_ms": 4.899839878082275,
+          "nrhs": 1,
+          "samples_ms": [
+            4.902912139892578,
+            4.899839878082275,
+            4.899775981903076,
+            4.903872013092041,
+            4.89961576461792
+          ],
+          "tflops": 0.02638518874429005,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 209.9625836550709,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.118704798529525e-12,
+          "median_ms": 9.851903915405273,
+          "nrhs": 16,
+          "samples_ms": [
+            9.877504348754883,
+            9.572352409362793,
+            9.876480102539062,
+            9.851903915405273,
+            9.683967590332031
+          ],
+          "tflops": 0.2099625836550709,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 208.0809567152979,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.3042192235872812e-12,
+          "median_ms": 9.94099235534668,
+          "nrhs": 16,
+          "samples_ms": [
+            9.94099235534668,
+            9.63584041595459,
+            10.041343688964844,
+            9.834495544433594,
+            10.04032039642334
+          ],
+          "tflops": 0.2080809567152979,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 296.4775779423013,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.2052663461222828e-12,
+          "median_ms": 13.954048156738281,
+          "nrhs": 32,
+          "samples_ms": [
+            13.845503807067871,
+            13.793279647827148,
+            13.989855766296387,
+            13.954048156738281,
+            14.13094425201416
+          ],
+          "tflops": 0.2964775779423013,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 292.6124501475566,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.127049133867239e-12,
+          "median_ms": 14.138367652893066,
+          "nrhs": 32,
+          "samples_ms": [
+            14.307328224182129,
+            14.050304412841797,
+            14.138367652893066,
+            14.139328002929688,
+            14.0480318069458
+          ],
+          "tflops": 0.2926124501475566,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 140.42936370079886,
+        "iters_per_sample": 1,
+        "median_ms": 308.4103698730469,
+        "samples_ms": [
+          308.2496032714844,
+          308.4103698730469,
+          308.45318603515625,
+          308.07244873046875,
+          308.5875244140625
+        ],
+        "tflops": 0.14042936370079886,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 802099136,
+      "memory_estimate_gib": 0.7470130324363708,
+      "n": 1005
+    },
+    {
+      "batch": 64,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 78.98225154490456,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 3.9823706524092295e-12,
+          "median_ms": 6.547455787658691,
+          "nrhs": 1,
+          "samples_ms": [
+            6.585184097290039,
+            6.531871795654297,
+            6.534143924713135,
+            6.547455787658691,
+            6.772736072540283
+          ],
+          "tflops": 0.07898225154490456,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 72.79984175340506,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 9.498227987860306e-12,
+          "median_ms": 7.103487968444824,
+          "nrhs": 1,
+          "samples_ms": [
+            7.081888198852539,
+            7.132160186767578,
+            7.1495680809021,
+            7.103487968444824,
+            7.102464199066162
+          ],
+          "tflops": 0.07279984175340506,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 402.9823820344811,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.5577044140576594e-11,
+          "median_ms": 20.532224655151367,
+          "nrhs": 16,
+          "samples_ms": [
+            20.64486312866211,
+            20.532224655151367,
+            20.436832427978516,
+            20.605663299560547,
+            20.411104202270508
+          ],
+          "tflops": 0.40298238203448106,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 401.86066028933993,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.490506642294782e-11,
+          "median_ms": 20.589536666870117,
+          "nrhs": 16,
+          "samples_ms": [
+            20.717567443847656,
+            20.45644760131836,
+            20.589536666870117,
+            20.515840530395508,
+            20.796127319335938
+          ],
+          "tflops": 0.4018606602893399,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 438.7955325587796,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.3992159150166957e-11,
+          "median_ms": 37.712894439697266,
+          "nrhs": 32,
+          "samples_ms": [
+            37.712894439697266,
+            37.87343978881836,
+            37.84294509887695,
+            37.644287109375,
+            37.594112396240234
+          ],
+          "tflops": 0.4387955325587796,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 437.9512339436348,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.699212834110178e-11,
+          "median_ms": 37.78559875488281,
+          "nrhs": 32,
+          "samples_ms": [
+            37.762046813964844,
+            37.96480178833008,
+            37.80601501464844,
+            37.77948760986328,
+            37.78559875488281
+          ],
+          "tflops": 0.4379512339436348,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 308.10942347034927,
+        "iters_per_sample": 1,
+        "median_ms": 562.26611328125,
+        "samples_ms": [
+          562.165771484375,
+          562.26611328125,
+          562.230224609375,
+          563.9649047851562,
+          569.3870239257812
+        ],
+        "tflops": 0.30810942347034925,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 2403090176,
+      "memory_estimate_gib": 2.2380521297454834,
+      "n": 1005
+    },
+    {
+      "batch": 256,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 129.89004510502022,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 2.34105797690582e-12,
+          "median_ms": 15.925248146057129,
+          "nrhs": 1,
+          "samples_ms": [
+            15.922975540161133,
+            15.925248146057129,
+            15.923199653625488,
+            16.089088439941406,
+            16.079872131347656
+          ],
+          "tflops": 0.12989004510502022,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 92.43387867898622,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.0623385717063008e-12,
+          "median_ms": 22.378496170043945,
+          "nrhs": 1,
+          "samples_ms": [
+            22.334272384643555,
+            22.45734405517578,
+            22.349824905395508,
+            22.378496170043945,
+            22.47248077392578
+          ],
+          "tflops": 0.09243387867898621,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 492.48491794886286,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 3.350742450779762e-12,
+          "median_ms": 67.20307159423828,
+          "nrhs": 16,
+          "samples_ms": [
+            67.3812484741211,
+            67.22764587402344,
+            67.20307159423828,
+            67.02489471435547,
+            67.02591705322266
+          ],
+          "tflops": 0.49248491794886284,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 492.6064415871059,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 3.343085133330951e-12,
+          "median_ms": 67.18649291992188,
+          "nrhs": 16,
+          "samples_ms": [
+            67.18669128417969,
+            67.18649291992188,
+            67.1825942993164,
+            67.18771362304688,
+            67.18156433105469
+          ],
+          "tflops": 0.4926064415871059,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 514.2611648628584,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 3.433216570014035e-12,
+          "median_ms": 128.71475219726562,
+          "nrhs": 32,
+          "samples_ms": [
+            128.71475219726562,
+            128.5621795654297,
+            128.73727416992188,
+            128.50892639160156,
+            128.81382751464844
+          ],
+          "tflops": 0.5142611648628584,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 513.8034869202805,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 3.97529074142709e-12,
+          "median_ms": 128.82940673828125,
+          "nrhs": 32,
+          "samples_ms": [
+            128.6246337890625,
+            128.87545776367188,
+            128.92160034179688,
+            128.82940673828125,
+            128.66653442382812
+          ],
+          "tflops": 0.5138034869202805,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 493.6058012440507,
+        "iters_per_sample": 1,
+        "median_ms": 1403.869140625,
+        "samples_ms": [
+          1405.843505859375,
+          1406.4947509765625,
+          1400.468505859375,
+          1403.869140625,
+          1403.020263671875
+        ],
+        "tflops": 0.49360580124405073,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 8807054336,
+      "memory_estimate_gib": 8.202208518981934,
+      "n": 1005
+    },
+    {
+      "batch": 16,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 32.98162414574476,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 9.285729600786765e-12,
+          "median_ms": 6.40831995010376,
+          "nrhs": 1,
+          "samples_ms": [
+            6.410240173339844,
+            6.401023864746094,
+            6.402048110961914,
+            6.40831995010376,
+            6.640639781951904
+          ],
+          "tflops": 0.03298162414574476,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 31.716662480705136,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 7.90966973442172e-12,
+          "median_ms": 6.663904190063477,
+          "nrhs": 1,
+          "samples_ms": [
+            6.663936138153076,
+            6.663904190063477,
+            6.662144184112549,
+            6.649951934814453,
+            6.979584217071533
+          ],
+          "tflops": 0.031716662480705135,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 236.92105321253447,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.1377276359634194e-11,
+          "median_ms": 14.273568153381348,
+          "nrhs": 16,
+          "samples_ms": [
+            14.273568153381348,
+            14.48038387298584,
+            14.370847702026367,
+            14.267359733581543,
+            13.866080284118652
+          ],
+          "tflops": 0.23692105321253448,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 232.74719457334774,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.3246906751114186e-11,
+          "median_ms": 14.529536247253418,
+          "nrhs": 16,
+          "samples_ms": [
+            14.529536247253418,
+            14.229248046875,
+            14.529536247253418,
+            14.634847640991211,
+            14.530559539794922
+          ],
+          "tflops": 0.23274719457334775,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 329.2572434400068,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.0674451675718171e-11,
+          "median_ms": 20.541439056396484,
+          "nrhs": 32,
+          "samples_ms": [
+            20.541439056396484,
+            20.539392471313477,
+            20.38140869140625,
+            20.743167877197266,
+            20.54751968383789
+          ],
+          "tflops": 0.3292572434400068,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 320.3463127672776,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.264718179827888e-11,
+          "median_ms": 21.112831115722656,
+          "nrhs": 32,
+          "samples_ms": [
+            21.168127059936523,
+            21.002239227294922,
+            21.112831115722656,
+            21.112831115722656,
+            21.163007736206055
+          ],
+          "tflops": 0.3203463127672776,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 140.42500526909222,
+        "iters_per_sample": 1,
+        "median_ms": 644.6940307617188,
+        "samples_ms": [
+          644.791015625,
+          644.5506591796875,
+          644.6827392578125,
+          644.7462158203125,
+          644.6940307617188
+        ],
+        "tflops": 0.1404250052690922,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 1134998976,
+      "memory_estimate_gib": 1.0570501685142517,
+      "n": 1285
+    },
+    {
+      "batch": 64,
+      "dtype": "complex128",
+      "getrs": [
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 91.52117276515877,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.3998879334709196e-12,
+          "median_ms": 9.237504005432129,
+          "nrhs": 1,
+          "samples_ms": [
+            9.265151977539062,
+            9.237504005432129,
+            9.23136043548584,
+            9.264127731323242,
+            9.232352256774902
+          ],
+          "tflops": 0.09152117276515877,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 71.4568549676032,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.1065072419460725e-12,
+          "median_ms": 11.83129596710205,
+          "nrhs": 1,
+          "samples_ms": [
+            11.859968185424805,
+            11.667455673217773,
+            11.645824432373047,
+            11.83129596710205,
+            11.93779182434082
+          ],
+          "tflops": 0.0714568549676032,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 429.3635956170746,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.7149744372748021e-12,
+          "median_ms": 31.504383087158203,
+          "nrhs": 16,
+          "samples_ms": [
+            31.43270492553711,
+            31.504383087158203,
+            31.534080505371094,
+            31.359872817993164,
+            31.508480072021484
+          ],
+          "tflops": 0.4293635956170746,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 426.88340098205447,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.962207194681648e-12,
+          "median_ms": 31.687423706054688,
+          "nrhs": 16,
+          "samples_ms": [
+            31.687423706054688,
+            31.5863037109375,
+            31.907840728759766,
+            31.661056518554688,
+            31.735807418823242
+          ],
+          "tflops": 0.42688340098205446,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 460.5044224688289,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.888775069049322e-12,
+          "median_ms": 58.74790573120117,
+          "nrhs": 32,
+          "samples_ms": [
+            58.698753356933594,
+            59.17881774902344,
+            58.7775993347168,
+            58.74790573120117,
+            58.67622375488281
+          ],
+          "tflops": 0.46050442246882894,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "N",
+          "warmup_repetitions": 2
+        },
+        {
+          "flop_model": "complex LU triangular solves: 8*n^2*nrhs real flops per matrix",
+          "gflops": 459.1518984437946,
+          "iters_per_sample": 1,
+          "max_rel_residual_fp64_sampled": 1.8439180052773555e-12,
+          "median_ms": 58.92095947265625,
+          "nrhs": 32,
+          "samples_ms": [
+            59.15033721923828,
+            59.1278076171875,
+            58.874881744384766,
+            58.87590408325195,
+            58.92095947265625
+          ],
+          "tflops": 0.4591518984437946,
+          "timed_repetitions": 5,
+          "timer": "cupy.cuda.Event",
+          "trans": "C",
+          "warmup_repetitions": 2
+        }
+      ],
+      "lu": {
+        "flop_model": "complex LU factorization: (8/3)*n^3 real flops per matrix",
+        "getrf_info_nonzero_count": 0,
+        "gflops": 306.28429738278936,
+        "iters_per_sample": 1,
+        "median_ms": 1182.3154296875,
+        "samples_ms": [
+          1182.181396484375,
+          1182.410400390625,
+          1182.3154296875,
+          1182.5684814453125,
+          1182.1761474609375
+        ],
+        "tflops": 0.30628429738278934,
+        "timed_repetitions": 5,
+        "timer": "cupy.cuda.Event",
+        "warmup_repetitions": 2
+      },
+      "memory_estimate_bytes": 3734689536,
+      "memory_estimate_gib": 3.478200674057007,
+      "n": 1285
+    }
+  ],
+  "schema": "pymack-gpu-slice-00-batched-lu-benchmark-v2",
+  "skipped_configs": [
+    {
+      "batch": 256,
+      "budget_bytes": 11001659392,
+      "budget_gib": 10.24609375,
+      "dtype": "complex128",
+      "estimated_memory_bytes": 14133451776,
+      "estimated_memory_gib": 13.162802696228027,
+      "n": 1285,
+      "reason": "estimated peak allocation exceeds free-VRAM budget"
+    }
+  ],
+  "slice": "00-gpu-lu-spike",
+  "status": "pass",
+  "tables": {
+    "complex128": {
+      "getrs": {
+        "n1005_batch16_L16_transC": {
+          "gflops": 208.0809567152979,
+          "median_ms": 9.94099235534668,
+          "tflops": 0.2080809567152979
+        },
+        "n1005_batch16_L16_transN": {
+          "gflops": 209.9625836550709,
+          "median_ms": 9.851903915405273,
+          "tflops": 0.2099625836550709
+        },
+        "n1005_batch16_L1_transC": {
+          "gflops": 26.38518874429005,
+          "median_ms": 4.899839878082275,
+          "tflops": 0.02638518874429005
+        },
+        "n1005_batch16_L1_transN": {
+          "gflops": 26.812626893489913,
+          "median_ms": 4.821728229522705,
+          "tflops": 0.026812626893489913
+        },
+        "n1005_batch16_L32_transC": {
+          "gflops": 292.6124501475566,
+          "median_ms": 14.138367652893066,
+          "tflops": 0.2926124501475566
+        },
+        "n1005_batch16_L32_transN": {
+          "gflops": 296.4775779423013,
+          "median_ms": 13.954048156738281,
+          "tflops": 0.2964775779423013
+        },
+        "n1005_batch256_L16_transC": {
+          "gflops": 492.6064415871059,
+          "median_ms": 67.18649291992188,
+          "tflops": 0.4926064415871059
+        },
+        "n1005_batch256_L16_transN": {
+          "gflops": 492.48491794886286,
+          "median_ms": 67.20307159423828,
+          "tflops": 0.49248491794886284
+        },
+        "n1005_batch256_L1_transC": {
+          "gflops": 92.43387867898622,
+          "median_ms": 22.378496170043945,
+          "tflops": 0.09243387867898621
+        },
+        "n1005_batch256_L1_transN": {
+          "gflops": 129.89004510502022,
+          "median_ms": 15.925248146057129,
+          "tflops": 0.12989004510502022
+        },
+        "n1005_batch256_L32_transC": {
+          "gflops": 513.8034869202805,
+          "median_ms": 128.82940673828125,
+          "tflops": 0.5138034869202805
+        },
+        "n1005_batch256_L32_transN": {
+          "gflops": 514.2611648628584,
+          "median_ms": 128.71475219726562,
+          "tflops": 0.5142611648628584
+        },
+        "n1005_batch64_L16_transC": {
+          "gflops": 401.86066028933993,
+          "median_ms": 20.589536666870117,
+          "tflops": 0.4018606602893399
+        },
+        "n1005_batch64_L16_transN": {
+          "gflops": 402.9823820344811,
+          "median_ms": 20.532224655151367,
+          "tflops": 0.40298238203448106
+        },
+        "n1005_batch64_L1_transC": {
+          "gflops": 72.79984175340506,
+          "median_ms": 7.103487968444824,
+          "tflops": 0.07279984175340506
+        },
+        "n1005_batch64_L1_transN": {
+          "gflops": 78.98225154490456,
+          "median_ms": 6.547455787658691,
+          "tflops": 0.07898225154490456
+        },
+        "n1005_batch64_L32_transC": {
+          "gflops": 437.9512339436348,
+          "median_ms": 37.78559875488281,
+          "tflops": 0.4379512339436348
+        },
+        "n1005_batch64_L32_transN": {
+          "gflops": 438.7955325587796,
+          "median_ms": 37.712894439697266,
+          "tflops": 0.4387955325587796
+        },
+        "n1285_batch16_L16_transC": {
+          "gflops": 232.74719457334774,
+          "median_ms": 14.529536247253418,
+          "tflops": 0.23274719457334775
+        },
+        "n1285_batch16_L16_transN": {
+          "gflops": 236.92105321253447,
+          "median_ms": 14.273568153381348,
+          "tflops": 0.23692105321253448
+        },
+        "n1285_batch16_L1_transC": {
+          "gflops": 31.716662480705136,
+          "median_ms": 6.663904190063477,
+          "tflops": 0.031716662480705135
+        },
+        "n1285_batch16_L1_transN": {
+          "gflops": 32.98162414574476,
+          "median_ms": 6.40831995010376,
+          "tflops": 0.03298162414574476
+        },
+        "n1285_batch16_L32_transC": {
+          "gflops": 320.3463127672776,
+          "median_ms": 21.112831115722656,
+          "tflops": 0.3203463127672776
+        },
+        "n1285_batch16_L32_transN": {
+          "gflops": 329.2572434400068,
+          "median_ms": 20.541439056396484,
+          "tflops": 0.3292572434400068
+        },
+        "n1285_batch64_L16_transC": {
+          "gflops": 426.88340098205447,
+          "median_ms": 31.687423706054688,
+          "tflops": 0.42688340098205446
+        },
+        "n1285_batch64_L16_transN": {
+          "gflops": 429.3635956170746,
+          "median_ms": 31.504383087158203,
+          "tflops": 0.4293635956170746
+        },
+        "n1285_batch64_L1_transC": {
+          "gflops": 71.4568549676032,
+          "median_ms": 11.83129596710205,
+          "tflops": 0.0714568549676032
+        },
+        "n1285_batch64_L1_transN": {
+          "gflops": 91.52117276515877,
+          "median_ms": 9.237504005432129,
+          "tflops": 0.09152117276515877
+        },
+        "n1285_batch64_L32_transC": {
+          "gflops": 459.1518984437946,
+          "median_ms": 58.92095947265625,
+          "tflops": 0.4591518984437946
+        },
+        "n1285_batch64_L32_transN": {
+          "gflops": 460.5044224688289,
+          "median_ms": 58.74790573120117,
+          "tflops": 0.46050442246882894
+        },
+        "n516_batch16_L16_transC": {
+          "gflops": 137.6355686235726,
+          "median_ms": 3.961855888366699,
+          "tflops": 0.1376355686235726
+        },
+        "n516_batch16_L16_transN": {
+          "gflops": 134.41120004350952,
+          "median_ms": 4.056896209716797,
+          "tflops": 0.13441120004350954
+        },
+        "n516_batch16_L1_transC": {
+          "gflops": 15.962589593226673,
+          "median_ms": 2.135040044784546,
+          "tflops": 0.015962589593226672
+        },
+        "n516_batch16_L1_transN": {
+          "gflops": 15.270475241109464,
+          "median_ms": 2.2318079471588135,
+          "tflops": 0.015270475241109464
+        },
+        "n516_batch16_L32_transC": {
+          "gflops": 203.94943756175692,
+          "median_ms": 5.347328186035156,
+          "tflops": 0.20394943756175693
+        },
+        "n516_batch16_L32_transN": {
+          "gflops": 208.09379251354852,
+          "median_ms": 5.2408318519592285,
+          "tflops": 0.2080937925135485
+        },
+        "n516_batch256_L16_transC": {
+          "gflops": 413.0219835788794,
+          "median_ms": 21.124000549316406,
+          "tflops": 0.41302198357887937
+        },
+        "n516_batch256_L16_transN": {
+          "gflops": 413.08457068085465,
+          "median_ms": 21.120800018310547,
+          "tflops": 0.41308457068085463
+        },
+        "n516_batch256_L1_transC": {
+          "gflops": 60.935117135406564,
+          "median_ms": 8.948736190795898,
+          "tflops": 0.060935117135406565
+        },
+        "n516_batch256_L1_transN": {
+          "gflops": 91.24605581183135,
+          "median_ms": 5.976064205169678,
+          "tflops": 0.09124605581183136
+        },
+        "n516_batch256_L32_transC": {
+          "gflops": 453.0469401055169,
+          "median_ms": 38.51555252075195,
+          "tflops": 0.45304694010551694
+        },
+        "n516_batch256_L32_transN": {
+          "gflops": 451.0782849853653,
+          "median_ms": 38.68364715576172,
+          "tflops": 0.45107828498536534
+        },
+        "n516_batch64_L16_transC": {
+          "gflops": 298.49327962230694,
+          "median_ms": 7.3072638511657715,
+          "tflops": 0.29849327962230693
+        },
+        "n516_batch64_L16_transN": {
+          "gflops": 299.880057597976,
+          "median_ms": 7.273471832275391,
+          "tflops": 0.29988005759797604
+        },
+        "n516_batch64_L1_transC": {
+          "gflops": 49.60059708238978,
+          "median_ms": 2.748415946960449,
+          "tflops": 0.049600597082389786
+        },
+        "n516_batch64_L1_transN": {
+          "gflops": 49.80471199224002,
+          "median_ms": 2.737152099609375,
+          "tflops": 0.04980471199224002
+        },
+        "n516_batch64_L32_transC": {
+          "gflops": 349.3027298194745,
+          "median_ms": 12.488703727722168,
+          "tflops": 0.3493027298194745
+        },
+        "n516_batch64_L32_transN": {
+          "gflops": 350.71177896910814,
+          "median_ms": 12.438528060913086,
+          "tflops": 0.35071177896910816
+        },
+        "n645_batch16_L16_transC": {
+          "gflops": 159.82519985316375,
+          "median_ms": 5.330944061279297,
+          "tflops": 0.15982519985316376
+        },
+        "n645_batch16_L16_transN": {
+          "gflops": 161.24999452382346,
+          "median_ms": 5.283840179443359,
+          "tflops": 0.16124999452382346
+        },
+        "n645_batch16_L1_transC": {
+          "gflops": 18.764376872888395,
+          "median_ms": 2.83788800239563,
+          "tflops": 0.018764376872888396
+        },
+        "n645_batch16_L1_transN": {
+          "gflops": 17.864350450888413,
+          "median_ms": 2.9808640480041504,
+          "tflops": 0.017864350450888414
+        },
+        "n645_batch16_L32_transC": {
+          "gflops": 230.7404336459006,
+          "median_ms": 7.385087966918945,
+          "tflops": 0.2307404336459006
+        },
+        "n645_batch16_L32_transN": {
+          "gflops": 233.2305509981533,
+          "median_ms": 7.306240081787109,
+          "tflops": 0.2332305509981533
+        },
+        "n645_batch256_L16_transC": {
+          "gflops": 443.65649272316966,
+          "median_ms": 30.7271671295166,
+          "tflops": 0.44365649272316965
+        },
+        "n645_batch256_L16_transN": {
+          "gflops": 442.88897796519143,
+          "median_ms": 30.78041648864746,
+          "tflops": 0.44288897796519144
+        },
+        "n645_batch256_L1_transC": {
+          "gflops": 63.88590073629113,
+          "median_ms": 13.336576461791992,
+          "tflops": 0.06388590073629112
+        },
+        "n645_batch256_L1_transN": {
+          "gflops": 103.5660918672148,
+          "median_ms": 8.226816177368164,
+          "tflops": 0.1035660918672148
+        },
+        "n645_batch256_L32_transC": {
+          "gflops": 469.8939418305342,
+          "median_ms": 58.022911071777344,
+          "tflops": 0.4698939418305342
+        },
+        "n645_batch256_L32_transN": {
+          "gflops": 471.6262360048804,
+          "median_ms": 57.809791564941406,
+          "tflops": 0.4716262360048804
+        },
+        "n645_batch64_L16_transC": {
+          "gflops": 340.1676207998675,
+          "median_ms": 10.018815994262695,
+          "tflops": 0.3401676207998675
+        },
+        "n645_batch64_L16_transN": {
+          "gflops": 339.7140646619864,
+          "median_ms": 10.03219223022461,
+          "tflops": 0.3397140646619864
+        },
+        "n645_batch64_L1_transC": {
+          "gflops": 53.4500333482323,
+          "median_ms": 3.9851200580596924,
+          "tflops": 0.053450033348232305
+        },
+        "n645_batch64_L1_transN": {
+          "gflops": 57.55741489306927,
+          "median_ms": 3.7007360458374023,
+          "tflops": 0.05755741489306927
+        },
+        "n645_batch64_L32_transC": {
+          "gflops": 381.9590447460033,
+          "median_ms": 17.845247268676758,
+          "tflops": 0.38195904474600334
+        },
+        "n645_batch64_L32_transN": {
+          "gflops": 384.9410053195903,
+          "median_ms": 17.707008361816406,
+          "tflops": 0.3849410053195903
+        },
+        "n804_batch16_L16_transC": {
+          "gflops": 183.82369436801665,
+          "median_ms": 7.201791763305664,
+          "tflops": 0.18382369436801665
+        },
+        "n804_batch16_L16_transN": {
+          "gflops": 188.0756422241332,
+          "median_ms": 7.038976192474365,
+          "tflops": 0.1880756422241332
+        },
+        "n804_batch16_L1_transC": {
+          "gflops": 22.987766783273553,
+          "median_ms": 3.5993599891662598,
+          "tflops": 0.022987766783273553
+        },
+        "n804_batch16_L1_transN": {
+          "gflops": 22.773957108460756,
+          "median_ms": 3.6331520080566406,
+          "tflops": 0.022773957108460755
+        },
+        "n804_batch16_L32_transC": {
+          "gflops": 263.8971316833077,
+          "median_ms": 10.033151626586914,
+          "tflops": 0.2638971316833077
+        },
+        "n804_batch16_L32_transN": {
+          "gflops": 272.4332432408352,
+          "median_ms": 9.71878433227539,
+          "tflops": 0.27243324324083523
+        },
+        "n804_batch256_L16_transC": {
+          "gflops": 466.9370537144189,
+          "median_ms": 45.36320114135742,
+          "tflops": 0.4669370537144189
+        },
+        "n804_batch256_L16_transN": {
+          "gflops": 466.6631782562481,
+          "median_ms": 45.38982391357422,
+          "tflops": 0.4666631782562481
+        },
+        "n804_batch256_L1_transC": {
+          "gflops": 73.37714655363978,
+          "median_ms": 18.04185676574707,
+          "tflops": 0.07337714655363978
+        },
+        "n804_batch256_L1_transN": {
+          "gflops": 116.839767803607,
+          "median_ms": 11.330559730529785,
+          "tflops": 0.116839767803607
+        },
+        "n804_batch256_L32_transC": {
+          "gflops": 488.5755730497854,
+          "median_ms": 86.70822143554688,
+          "tflops": 0.48857557304978544
+        },
+        "n804_batch256_L32_transN": {
+          "gflops": 488.1201382203097,
+          "median_ms": 86.78912353515625,
+          "tflops": 0.4881201382203097
+        },
+        "n804_batch64_L16_transC": {
+          "gflops": 365.18098931450373,
+          "median_ms": 14.500864028930664,
+          "tflops": 0.3651809893145037
+        },
+        "n804_batch64_L16_transN": {
+          "gflops": 368.7747173869593,
+          "median_ms": 14.359552383422852,
+          "tflops": 0.3687747173869593
+        },
+        "n804_batch64_L1_transC": {
+          "gflops": 67.18104234011722,
+          "median_ms": 4.926464080810547,
+          "tflops": 0.06718104234011722
+        },
+        "n804_batch64_L1_transN": {
+          "gflops": 69.20941933064474,
+          "median_ms": 4.782080173492432,
+          "tflops": 0.06920941933064474
+        },
+        "n804_batch64_L32_transC": {
+          "gflops": 407.80127960257926,
+          "median_ms": 25.970687866210938,
+          "tflops": 0.4078012796025793
+        },
+        "n804_batch64_L32_transN": {
+          "gflops": 407.64054203048374,
+          "median_ms": 25.980928421020508,
+          "tflops": 0.4076405420304837
+        }
+      },
+      "lu": {
+        "n1005_batch16": {
+          "gflops": 140.42936370079886,
+          "median_ms": 308.4103698730469,
+          "tflops": 0.14042936370079886
+        },
+        "n1005_batch256": {
+          "gflops": 493.6058012440507,
+          "median_ms": 1403.869140625,
+          "tflops": 0.49360580124405073
+        },
+        "n1005_batch64": {
+          "gflops": 308.10942347034927,
+          "median_ms": 562.26611328125,
+          "tflops": 0.30810942347034925
+        },
+        "n1285_batch16": {
+          "gflops": 140.42500526909222,
+          "median_ms": 644.6940307617188,
+          "tflops": 0.1404250052690922
+        },
+        "n1285_batch64": {
+          "gflops": 306.28429738278936,
+          "median_ms": 1182.3154296875,
+          "tflops": 0.30628429738278934
+        },
+        "n516_batch16": {
+          "gflops": 126.73242830146926,
+          "median_ms": 46.25408172607422,
+          "tflops": 0.12673242830146925
+        },
+        "n516_batch256": {
+          "gflops": 451.6221524041452,
+          "median_ms": 207.67420959472656,
+          "tflops": 0.4516221524041452
+        },
+        "n516_batch64": {
+          "gflops": 282.1516283980126,
+          "median_ms": 83.10272216796875,
+          "tflops": 0.28215162839801256
+        },
+        "n645_batch16": {
+          "gflops": 131.2054400451013,
+          "median_ms": 87.26016235351562,
+          "tflops": 0.13120544004510132
+        },
+        "n645_batch256": {
+          "gflops": 464.14614962038326,
+          "median_ms": 394.6690673828125,
+          "tflops": 0.46414614962038325
+        },
+        "n645_batch64": {
+          "gflops": 289.8818980764744,
+          "median_ms": 157.981689453125,
+          "tflops": 0.2898818980764744
+        },
+        "n804_batch16": {
+          "gflops": 134.4083768064424,
+          "median_ms": 164.97970581054688,
+          "tflops": 0.13440837680644238
+        },
+        "n804_batch256": {
+          "gflops": 475.4108923068858,
+          "median_ms": 746.2901611328125,
+          "tflops": 0.47541089230688577
+        },
+        "n804_batch64": {
+          "gflops": 294.9480322909493,
+          "median_ms": 300.72625732421875,
+          "tflops": 0.2949480322909493
+        }
+      }
+    },
+    "complex64": {
+      "getrs": {
+        "n1005_batch16_L16_transC": {
+          "gflops": 980.4209239234245,
+          "median_ms": 2.109839916229248,
+          "tflops": 0.9804209239234245
+        },
+        "n1005_batch16_L16_transN": {
+          "gflops": 1018.1703766757206,
+          "median_ms": 2.031615972518921,
+          "tflops": 1.0181703766757206
+        },
+        "n1005_batch16_L1_transC": {
+          "gflops": 93.56703720242484,
+          "median_ms": 1.381717363993327,
+          "tflops": 0.09356703720242485
+        },
+        "n1005_batch16_L1_transN": {
+          "gflops": 93.82199560951858,
+          "median_ms": 1.377962589263916,
+          "tflops": 0.09382199560951858
+        },
+        "n1005_batch16_L32_transC": {
+          "gflops": 1571.1064152943345,
+          "median_ms": 2.63321590423584,
+          "tflops": 1.5711064152943346
+        },
+        "n1005_batch16_L32_transN": {
+          "gflops": 1618.6500963581698,
+          "median_ms": 2.5558719635009766,
+          "tflops": 1.6186500963581698
+        },
+        "n1005_batch256_L16_transC": {
+          "gflops": 4115.726251321789,
+          "median_ms": 8.041472434997559,
+          "tflops": 4.11572625132179
+        },
+        "n1005_batch256_L16_transN": {
+          "gflops": 4251.617915075952,
+          "median_ms": 7.784448146820068,
+          "tflops": 4.251617915075951
+        },
+        "n1005_batch256_L1_transC": {
+          "gflops": 331.75398088336914,
+          "median_ms": 6.235136032104492,
+          "tflops": 0.33175398088336916
+        },
+        "n1005_batch256_L1_transN": {
+          "gflops": 334.94445058086825,
+          "median_ms": 6.17574405670166,
+          "tflops": 0.33494445058086825
+        },
+        "n1005_batch256_L32_transC": {
+          "gflops": 6110.369468948805,
+          "median_ms": 10.83289623260498,
+          "tflops": 6.110369468948805
+        },
+        "n1005_batch256_L32_transN": {
+          "gflops": 6295.442178253436,
+          "median_ms": 10.514431953430176,
+          "tflops": 6.295442178253436
+        },
+        "n1005_batch64_L16_transC": {
+          "gflops": 2346.848741980036,
+          "median_ms": 3.525631904602051,
+          "tflops": 2.3468487419800357
+        },
+        "n1005_batch64_L16_transN": {
+          "gflops": 2451.4472382797157,
+          "median_ms": 3.375200033187866,
+          "tflops": 2.451447238279716
+        },
+        "n1005_batch64_L1_transC": {
+          "gflops": 192.1306909713609,
+          "median_ms": 2.691567897796631,
+          "tflops": 0.1921306909713609
+        },
+        "n1005_batch64_L1_transN": {
+          "gflops": 221.10880720380482,
+          "median_ms": 2.338815927505493,
+          "tflops": 0.22110880720380482
+        },
+        "n1005_batch64_L32_transC": {
+          "gflops": 3458.989589314988,
+          "median_ms": 4.784128189086914,
+          "tflops": 3.458989589314988
+        },
+        "n1005_batch64_L32_transN": {
+          "gflops": 3554.0796666019974,
+          "median_ms": 4.6561279296875,
+          "tflops": 3.5540796666019974
+        },
+        "n1285_batch16_L16_transC": {
+          "gflops": 1160.79085708644,
+          "median_ms": 2.9132800102233887,
+          "tflops": 1.16079085708644
+        },
+        "n1285_batch16_L16_transN": {
+          "gflops": 1210.5754908262934,
+          "median_ms": 2.7934720516204834,
+          "tflops": 1.2105754908262933
+        },
+        "n1285_batch16_L1_transC": {
+          "gflops": 96.31503644480757,
+          "median_ms": 2.194432020187378,
+          "tflops": 0.09631503644480757
+        },
+        "n1285_batch16_L1_transN": {
+          "gflops": 110.99926315168557,
+          "median_ms": 1.9041279554367065,
+          "tflops": 0.11099926315168557
+        },
+        "n1285_batch16_L32_transC": {
+          "gflops": 1842.8850193654416,
+          "median_ms": 3.670016050338745,
+          "tflops": 1.8428850193654416
+        },
+        "n1285_batch16_L32_transN": {
+          "gflops": 1991.827440575555,
+          "median_ms": 3.3955841064453125,
+          "tflops": 1.9918274405755552
+        },
+        "n1285_batch256_L16_transC": {
+          "gflops": 4330.726987813864,
+          "median_ms": 12.493824005126953,
+          "tflops": 4.330726987813864
+        },
+        "n1285_batch256_L16_transN": {
+          "gflops": 4468.431313853252,
+          "median_ms": 12.108799934387207,
+          "tflops": 4.468431313853252
+        },
+        "n1285_batch256_L1_transC": {
+          "gflops": 345.3361936875164,
+          "median_ms": 9.792511940002441,
+          "tflops": 0.3453361936875164
+        },
+        "n1285_batch256_L1_transN": {
+          "gflops": 350.83925753307665,
+          "median_ms": 9.638912200927734,
+          "tflops": 0.35083925753307665
+        },
+        "n1285_batch256_L32_transC": {
+          "gflops": 6498.187891566198,
+          "median_ms": 16.65305519104004,
+          "tflops": 6.498187891566198
+        },
+        "n1285_batch256_L32_transN": {
+          "gflops": 6674.565897876128,
+          "median_ms": 16.21299171447754,
+          "tflops": 6.6745658978761275
+        },
+        "n1285_batch64_L16_transC": {
+          "gflops": 2675.1316962717488,
+          "median_ms": 5.056511878967285,
+          "tflops": 2.6751316962717486
+        },
+        "n1285_batch64_L16_transN": {
+          "gflops": 2755.4859194144133,
+          "median_ms": 4.909056186676025,
+          "tflops": 2.7554859194144132
+        },
+        "n1285_batch64_L1_transC": {
+          "gflops": 212.35401691469198,
+          "median_ms": 3.9812159538269043,
+          "tflops": 0.212354016914692
+        },
+        "n1285_batch64_L1_transN": {
+          "gflops": 240.93164373977893,
+          "median_ms": 3.5089919567108154,
+          "tflops": 0.24093164373977893
+        },
+        "n1285_batch64_L32_transC": {
+          "gflops": 4008.435667541501,
+          "median_ms": 6.7491841316223145,
+          "tflops": 4.008435667541501
+        },
+        "n1285_batch64_L32_transN": {
+          "gflops": 4086.5583278532577,
+          "median_ms": 6.620160102844238,
+          "tflops": 4.086558327853258
+        },
+        "n516_batch16_L16_transC": {
+          "gflops": 567.4075733291072,
+          "median_ms": 0.9610239863395691,
+          "tflops": 0.5674075733291072
+        },
+        "n516_batch16_L16_transN": {
+          "gflops": 557.8962854065987,
+          "median_ms": 0.9774079918861389,
+          "tflops": 0.5578962854065987
+        },
+        "n516_batch16_L1_transC": {
+          "gflops": 49.571046307592376,
+          "median_ms": 0.6875135898590088,
+          "tflops": 0.049571046307592376
+        },
+        "n516_batch16_L1_transN": {
+          "gflops": 53.3878732005474,
+          "median_ms": 0.6383615970611572,
+          "tflops": 0.0533878732005474
+        },
+        "n516_batch16_L32_transC": {
+          "gflops": 980.6945057775723,
+          "median_ms": 1.1120533148447673,
+          "tflops": 0.9806945057775723
+        },
+        "n516_batch16_L32_transN": {
+          "gflops": 951.4806551128661,
+          "median_ms": 1.1461973190307617,
+          "tflops": 0.9514806551128661
+        },
+        "n516_batch256_L16_transC": {
+          "gflops": 3187.4829653234924,
+          "median_ms": 2.737168073654175,
+          "tflops": 3.1874829653234924
+        },
+        "n516_batch256_L16_transN": {
+          "gflops": 3203.0797013116185,
+          "median_ms": 2.7238399982452393,
+          "tflops": 3.2030797013116183
+        },
+        "n516_batch256_L1_transC": {
+          "gflops": 266.85643440745235,
+          "median_ms": 2.0433919429779053,
+          "tflops": 0.2668564344074524
+        },
+        "n516_batch256_L1_transN": {
+          "gflops": 267.9979874535747,
+          "median_ms": 2.0346879959106445,
+          "tflops": 0.26799798745357467
+        },
+        "n516_batch256_L32_transC": {
+          "gflops": 4655.84271280032,
+          "median_ms": 3.74783992767334,
+          "tflops": 4.655842712800321
+        },
+        "n516_batch256_L32_transN": {
+          "gflops": 4594.643466446125,
+          "median_ms": 3.797760009765625,
+          "tflops": 4.594643466446125
+        },
+        "n516_batch64_L16_transC": {
+          "gflops": 1520.1056848580747,
+          "median_ms": 1.4348799387613933,
+          "tflops": 1.5201056848580747
+        },
+        "n516_batch64_L16_transN": {
+          "gflops": 1549.5601680966925,
+          "median_ms": 1.4076053301493328,
+          "tflops": 1.5495601680966924
+        },
+        "n516_batch64_L1_transC": {
+          "gflops": 145.13818487461015,
+          "median_ms": 0.9392639994621277,
+          "tflops": 0.14513818487461014
+        },
+        "n516_batch64_L1_transN": {
+          "gflops": 157.18316526058456,
+          "median_ms": 0.8672879934310913,
+          "tflops": 0.15718316526058457
+        },
+        "n516_batch64_L32_transC": {
+          "gflops": 2118.3968744679732,
+          "median_ms": 2.0592639446258545,
+          "tflops": 2.1183968744679733
+        },
+        "n516_batch64_L32_transN": {
+          "gflops": 2152.6509043594765,
+          "median_ms": 2.026495933532715,
+          "tflops": 2.1526509043594766
+        },
+        "n645_batch16_L16_transC": {
+          "gflops": 691.6938100313797,
+          "median_ms": 1.2317866484324138,
+          "tflops": 0.6916938100313798
+        },
+        "n645_batch16_L16_transN": {
+          "gflops": 691.8375833257121,
+          "median_ms": 1.2315306663513184,
+          "tflops": 0.6918375833257121
+        },
+        "n645_batch16_L1_transC": {
+          "gflops": 59.09445976572078,
+          "median_ms": 0.9011200070381165,
+          "tflops": 0.05909445976572078
+        },
+        "n645_batch16_L1_transN": {
+          "gflops": 61.12733598046732,
+          "median_ms": 0.8711519837379456,
+          "tflops": 0.06112733598046732
+        },
+        "n645_batch16_L32_transC": {
+          "gflops": 1083.398399179272,
+          "median_ms": 1.572864055633545,
+          "tflops": 1.083398399179272
+        },
+        "n645_batch16_L32_transN": {
+          "gflops": 1089.7839001151344,
+          "median_ms": 1.563647985458374,
+          "tflops": 1.0897839001151344
+        },
+        "n645_batch256_L16_transC": {
+          "gflops": 3394.4989788957278,
+          "median_ms": 4.015999794006348,
+          "tflops": 3.3944989788957276
+        },
+        "n645_batch256_L16_transN": {
+          "gflops": 3518.1818718814166,
+          "median_ms": 3.8748159408569336,
+          "tflops": 3.5181818718814166
+        },
+        "n645_batch256_L1_transC": {
+          "gflops": 282.6256730764266,
+          "median_ms": 3.0146560668945312,
+          "tflops": 0.2826256730764266
+        },
+        "n645_batch256_L1_transN": {
+          "gflops": 290.6820147125157,
+          "median_ms": 2.9311039447784424,
+          "tflops": 0.2906820147125157
+        },
+        "n645_batch256_L32_transC": {
+          "gflops": 5032.243424080119,
+          "median_ms": 5.4179840087890625,
+          "tflops": 5.03224342408012
+        },
+        "n645_batch256_L32_transN": {
+          "gflops": 5077.345650523576,
+          "median_ms": 5.369855880737305,
+          "tflops": 5.077345650523577
+        },
+        "n645_batch64_L16_transC": {
+          "gflops": 1719.111608507675,
+          "median_ms": 1.9824639558792114,
+          "tflops": 1.7191116085076752
+        },
+        "n645_batch64_L16_transN": {
+          "gflops": 1787.4328913861539,
+          "median_ms": 1.9066879749298096,
+          "tflops": 1.787432891386154
+        },
+        "n645_batch64_L1_transC": {
+          "gflops": 155.73562254243274,
+          "median_ms": 1.367733319600423,
+          "tflops": 0.15573562254243273
+        },
+        "n645_batch64_L1_transN": {
+          "gflops": 176.78115628295453,
+          "median_ms": 1.204906702041626,
+          "tflops": 0.17678115628295452
+        },
+        "n645_batch64_L32_transC": {
+          "gflops": 2460.321571270308,
+          "median_ms": 2.7704319953918457,
+          "tflops": 2.460321571270308
+        },
+        "n645_batch64_L32_transN": {
+          "gflops": 2499.117788103949,
+          "median_ms": 2.727423906326294,
+          "tflops": 2.499117788103949
+        },
+        "n804_batch16_L16_transC": {
+          "gflops": 844.6776768607392,
+          "median_ms": 1.567296028137207,
+          "tflops": 0.8446776768607392
+        },
+        "n804_batch16_L16_transN": {
+          "gflops": 846.9256568958286,
+          "median_ms": 1.5631359815597534,
+          "tflops": 0.8469256568958287
+        },
+        "n804_batch16_L1_transC": {
+          "gflops": 80.50680543255315,
+          "median_ms": 1.0277547041575115,
+          "tflops": 0.08050680543255315
+        },
+        "n804_batch16_L1_transN": {
+          "gflops": 82.26739157162028,
+          "median_ms": 1.0057599544525146,
+          "tflops": 0.08226739157162027
+        },
+        "n804_batch16_L32_transC": {
+          "gflops": 1329.101919041284,
+          "median_ms": 1.9921120405197144,
+          "tflops": 1.329101919041284
+        },
+        "n804_batch16_L32_transN": {
+          "gflops": 1367.3527498142396,
+          "median_ms": 1.9363839626312256,
+          "tflops": 1.3673527498142395
+        },
+        "n804_batch256_L16_transC": {
+          "gflops": 3870.098112394585,
+          "median_ms": 5.473184108734131,
+          "tflops": 3.870098112394585
+        },
+        "n804_batch256_L16_transN": {
+          "gflops": 3938.6526564584797,
+          "median_ms": 5.377920150756836,
+          "tflops": 3.93865265645848
+        },
+        "n804_batch256_L1_transC": {
+          "gflops": 311.97684229624235,
+          "median_ms": 4.24345588684082,
+          "tflops": 0.31197684229624234
+        },
+        "n804_batch256_L1_transN": {
+          "gflops": 315.80148311060253,
+          "median_ms": 4.192063808441162,
+          "tflops": 0.3158014831106025
+        },
+        "n804_batch256_L32_transC": {
+          "gflops": 5840.910990163415,
+          "median_ms": 7.252895832061768,
+          "tflops": 5.840910990163414
+        },
+        "n804_batch256_L32_transN": {
+          "gflops": 5775.600306684827,
+          "median_ms": 7.334911823272705,
+          "tflops": 5.775600306684827
+        },
+        "n804_batch64_L16_transC": {
+          "gflops": 2053.030769452314,
+          "median_ms": 2.5793280601501465,
+          "tflops": 2.053030769452314
+        },
+        "n804_batch64_L16_transN": {
+          "gflops": 2092.8078072883145,
+          "median_ms": 2.530303955078125,
+          "tflops": 2.0928078072883145
+        },
+        "n804_batch64_L1_transC": {
+          "gflops": 181.78177376163276,
+          "median_ms": 1.8206720352172852,
+          "tflops": 0.18178177376163276
+        },
+        "n804_batch64_L1_transN": {
+          "gflops": 208.1184869344326,
+          "median_ms": 1.5902719497680664,
+          "tflops": 0.2081184869344326
+        },
+        "n804_batch64_L32_transC": {
+          "gflops": 2962.026502037092,
+          "median_ms": 3.575551986694336,
+          "tflops": 2.962026502037092
+        },
+        "n804_batch64_L32_transN": {
+          "gflops": 2994.3995449204517,
+          "median_ms": 3.536895990371704,
+          "tflops": 2.994399544920452
+        }
+      },
+      "lu": {
+        "n1005_batch16": {
+          "gflops": 629.1633113409429,
+          "median_ms": 68.83724975585938,
+          "tflops": 0.6291633113409428
+        },
+        "n1005_batch256": {
+          "gflops": 1225.5964572663513,
+          "median_ms": 565.4046630859375,
+          "tflops": 1.2255964572663514
+        },
+        "n1005_batch64": {
+          "gflops": 1426.8897790487024,
+          "median_ms": 121.41056060791016,
+          "tflops": 1.4268897790487023
+        },
+        "n1285_batch16": {
+          "gflops": 624.6596961695584,
+          "median_ms": 144.92877197265625,
+          "tflops": 0.6246596961695584
+        },
+        "n1285_batch256": {
+          "gflops": 1207.8675580318475,
+          "median_ms": 1199.2197265625,
+          "tflops": 1.2078675580318474
+        },
+        "n1285_batch64": {
+          "gflops": 1383.054561080332,
+          "median_ms": 261.8296203613281,
+          "tflops": 1.383054561080332
+        },
+        "n516_batch16": {
+          "gflops": 644.723932089636,
+          "median_ms": 9.092096328735352,
+          "tflops": 0.6447239320896361
+        },
+        "n516_batch256": {
+          "gflops": 1196.34360343511,
+          "median_ms": 78.3974380493164,
+          "tflops": 1.19634360343511
+        },
+        "n516_batch64": {
+          "gflops": 1269.4320236692222,
+          "median_ms": 18.47091293334961,
+          "tflops": 1.2694320236692223
+        },
+        "n645_batch16": {
+          "gflops": 695.2721877346188,
+          "median_ms": 16.466943740844727,
+          "tflops": 0.6952721877346189
+        },
+        "n645_batch256": {
+          "gflops": 1233.984619292959,
+          "median_ms": 148.44927978515625,
+          "tflops": 1.233984619292959
+        },
+        "n645_batch64": {
+          "gflops": 1254.9157213046396,
+          "median_ms": 36.49331283569336,
+          "tflops": 1.2549157213046396
+        },
+        "n804_batch16": {
+          "gflops": 625.9556313918088,
+          "median_ms": 35.4252815246582,
+          "tflops": 0.6259556313918088
+        },
+        "n804_batch256": {
+          "gflops": 1228.0087610807022,
+          "median_ms": 288.91851806640625,
+          "tflops": 1.2280087610807022
+        },
+        "n804_batch64": {
+          "gflops": 1310.6728306470445,
+          "median_ms": 67.67411041259766,
+          "tflops": 1.3106728306470445
+        }
+      }
+    }
+  },
+  "vram_budget": {
+    "budget_bytes": 11001659392,
+    "budget_gib": 10.24609375,
+    "free_bytes_at_start": 11538530304,
+    "headroom_bytes": 536870912
+  }
+}

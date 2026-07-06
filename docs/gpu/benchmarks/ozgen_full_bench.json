@@ -1,0 +1,156 @@
+{
+  "schema_version": 1,
+  "artifact": "ozgen_full_bench",
+  "status": "m3_gate_failed",
+  "numbers_provisional": false,
+  "sysmem_policy": "prefer_no_sysmem_fallback",
+  "sysmem_policy_trusted": true,
+  "gate_seconds": 30.0,
+  "gate_cpu_fallback": 0.03,
+  "gate_elapsed_s": 110.53210879990365,
+  "gate_passed": false,
+  "gate_components": {
+    "time_ok": false,
+    "cpu_fraction_ok": true,
+    "verdict_identity_ok": true,
+    "audit_ok": true
+  },
+  "engine_wall_time_s": 110.53210879990365,
+  "audit_wall_time_s_short": 1.5836363000562415,
+  "audit_wall_time_s_tall": 1.5261717999819666,
+  "full_call_time_s": 114.22718329995405,
+  "cpu_escalation_fraction": 0.0,
+  "audit_drift_total": 0,
+  "verify_verdicts": true,
+  "n_verdict_checks": 2880,
+  "verdict_worst_abs_error": 1.7809974393172289e-12,
+  "verdict_failures": [],
+  "two_domain_verdicts": {
+    "enabled": true,
+    "source": "gpu_sweep_derived_candidate_sets",
+    "gpu_candidate_capture_ok": true,
+    "gpu_candidate_entries_short": 1440,
+    "gpu_candidate_entries_tall": 1440,
+    "n_two_domain_checks": 720,
+    "two_domain_worst_abs_error": 3.9703222743061766e-14,
+    "two_domain_failures": [],
+    "two_domain_ver_fails": 0,
+    "two_domain_none_mismatch": 0,
+    "two_domain_worst_fs_diff": 7.98666688339722e-14,
+    "two_domain_nmatch_mismatch_soft": 0,
+    "ymf_short": 6.0,
+    "ymf_tall": 12.0,
+    "y_short_abs": 19.612565428698005,
+    "y_tall_abs": 39.22513085739601,
+    "regimes": [
+      "6*dstar",
+      "12*dstar"
+    ],
+    "note": "GPU-DERIVED two-domain verdict assembled from res_short/res_tall meta['gpu_candidate_sets'] via assemble_ozgen_verdict_from_gpu_candidate_sets, compared vs dm.discrete_mode (CPU authority). Nonzero worst expected (~1e-12 refine floor); exact zero would mean CPU-vs-CPU. K3 on value/None drift; fs/n_match are soft diagnostics."
+  },
+  "layer_equivalence_cpu": {
+    "enabled": true,
+    "n_checks": 720,
+    "worst_abs_error": 0.0,
+    "n_fails": 0,
+    "failures": [],
+    "note": "Logic-only check: assemble_ozgen_verdict_from_spectra on FRESH CPU spectra vs dm.discrete_mode. NOT the gate; certifies the assembly chain (expected worst ~0)."
+  },
+  "panel": {
+    "mach": 2.0,
+    "N": 31,
+    "n_points": 720,
+    "n_alpha": 30,
+    "n_re": 24,
+    "alpha_range": [
+      0.02,
+      0.24
+    ],
+    "Re_range": [
+      300.0000000000001,
+      4499.999999999998
+    ]
+  },
+  "backend_meta_short": {
+    "gpu_engine_status": "device_contour_projection",
+    "escalation": {
+      "rungs": [
+        "device_filter",
+        "enlarged_reproject",
+        "z128_recheck",
+        "xgeev_deflated",
+        "cpu_qz_async"
+      ],
+      "fractions": {
+        "device_filter": 0.9541666666666667,
+        "enlarged_reproject": 0.0,
+        "z128_recheck": 0.0,
+        "xgeev_deflated": 0.0,
+        "cpu_qz_async": 0.0,
+        "enlarged_reproject_refused": 0.04583333333333333
+      },
+      "cpu_qz_fraction": 0.0
+    },
+    "audit": {
+      "sample_frac": 0.05,
+      "n_sample_points": 36,
+      "n_point_family_checks": 72,
+      "n_drift": 0,
+      "worst_abs_error": 2.1557591991421192e-13,
+      "passed": true,
+      "failures": [],
+      "audit_seed": 794161335,
+      "audit_seed_provenance": "sha256(grid+params) ^ (pid:time_ns) for non-fixed-per-grid samples; record enables exact repro",
+      "stratified": true,
+      "strata_note": "corners + 4x4 param bins (alpha/Re extent+extremes) + light c_r-edge bias"
+    },
+    "wall_time_s": 56.139674499980174
+  },
+  "backend_meta_tall": {
+    "gpu_engine_status": "device_contour_projection",
+    "escalation": {
+      "rungs": [
+        "device_filter",
+        "enlarged_reproject",
+        "z128_recheck",
+        "xgeev_deflated",
+        "cpu_qz_async"
+      ],
+      "fractions": {
+        "device_filter": 0.9715277777777778,
+        "enlarged_reproject": 0.0,
+        "z128_recheck": 0.0,
+        "xgeev_deflated": 0.0,
+        "cpu_qz_async": 0.0,
+        "enlarged_reproject_refused": 0.02847222222222222
+      },
+      "cpu_qz_fraction": 0.0
+    },
+    "audit": {
+      "sample_frac": 0.05,
+      "n_sample_points": 36,
+      "n_point_family_checks": 72,
+      "n_drift": 0,
+      "worst_abs_error": 1.53547871980242e-13,
+      "passed": true,
+      "failures": [],
+      "audit_seed": 3006854944,
+      "audit_seed_provenance": "sha256(grid+params) ^ (pid:time_ns) for non-fixed-per-grid samples; record enables exact repro",
+      "stratified": true,
+      "strata_note": "corners + 4x4 param bins (alpha/Re extent+extremes) + light c_r-edge bias"
+    },
+    "wall_time_s": 54.39243429992348
+  },
+  "seed_codes": {
+    "0": "full-spectrum CPU QZ at this point",
+    "-1": "no admissible mode in the family window",
+    "-2": "per-point record construction raised; exception repr in meta['errors']",
+    "1": "GPU contour enumerator candidate source",
+    "reserved_positive": "positive ints are reserved for GPU seed or candidate-chain ids"
+  },
+  "generated_at_unix": 1783317719.2108319,
+  "run_provenance": {
+    "fresh_python_process_required": true,
+    "serial_gpu_run": true
+  }
+}

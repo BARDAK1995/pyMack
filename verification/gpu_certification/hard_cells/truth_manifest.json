@@ -1,0 +1,3467 @@
+{
+  "cell_count": 53,
+  "cell_source": "manifest",
+  "cells": [
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -3.6668499601181384e-05,
+          "c_r": 0.4033719474251593,
+          "fs": 0.018697403811156955,
+          "n_match": 2
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_001",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_001_ozgen_first_pair.npz",
+      "npz_sha256": "a65f07bc786737ec1b816635a5854c05a26a58466d9aea7ac6c5dae241dd7336",
+      "params": {
+        "Ma": 8.0,
+        "N": 200,
+        "Re": 2628.0,
+        "alpha": 0.00433,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -1.038694e-06,
+        "grid_fs": 0.0187,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          23.0,
+          31.0
+        ]
+      },
+      "stratum": "lobe_edge",
+      "verdict": {
+        "min_match_distance": 0.000974649455904622,
+        "n_decaying": [
+          5,
+          7
+        ],
+        "n_match": 2,
+        "selected": [
+          0.4033719474251593,
+          -3.6668499601181384e-05
+        ],
+        "selected_fs": 0.018697403811156955,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -3.5799920758269614e-06,
+          "c_r": 0.7379495886242802,
+          "fs": 0.042895107380674924,
+          "n_match": 2
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_002",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_002_ozgen_first_pair.npz",
+      "npz_sha256": "a3a5c94d6627012d0498ab86199d9fdc7f074960629c659d27f364852808b873",
+      "params": {
+        "Ma": 7.0,
+        "N": 200,
+        "Re": 533.8,
+        "alpha": 0.01321,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -2.447772e-06,
+        "grid_fs": 0.0429,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          28.0,
+          37.0
+        ]
+      },
+      "stratum": "lobe_edge",
+      "verdict": {
+        "min_match_distance": 0.0004388040998198875,
+        "n_decaying": [
+          11,
+          14
+        ],
+        "n_match": 2,
+        "selected": [
+          0.7379495886242802,
+          -3.5799920758269614e-06
+        ],
+        "selected_fs": 0.042895107380674924,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -8.270164268227942e-06,
+          "c_r": 0.8376346577877567,
+          "fs": 0.040784919548016045,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_003",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_003_ozgen_first_pair.npz",
+      "npz_sha256": "dd7f6466b6a63f864720b117900f1d1ef75ab4e07b0f81cc8ff78d364f3fc588",
+      "params": {
+        "Ma": 6.0,
+        "N": 200,
+        "Re": 3855.0,
+        "alpha": 0.006,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -8.270164e-06,
+        "grid_fs": 0.0408,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "lobe_edge",
+      "verdict": {
+        "min_match_distance": 0.0008898389514813687,
+        "n_decaying": [
+          6,
+          7
+        ],
+        "n_match": 1,
+        "selected": [
+          0.8376346577877567,
+          -8.270164268227942e-06
+        ],
+        "selected_fs": 0.040784919548016045,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -8.825670839576402e-06,
+          "c_r": 0.8811166815946808,
+          "fs": 5.938857068206978e-07,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_004",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_004_ozgen_first_pair.npz",
+      "npz_sha256": "b74ad2cfa1151fdadbc48ab049fd0743f8a51cf255d41b3919938d2cfabd51f9",
+      "params": {
+        "Ma": 6.0,
+        "N": 200,
+        "Re": 807.0,
+        "alpha": 0.05991,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -8.825671e-06,
+        "grid_fs": 0.0,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "lobe_edge",
+      "verdict": {
+        "min_match_distance": 6.759700449345038e-08,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 1,
+        "selected": [
+          0.8811166815946808,
+          -8.825670839576402e-06
+        ],
+        "selected_fs": 5.938857068206978e-07,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -9.468405853339956e-06,
+          "c_r": 0.7879540339823954,
+          "fs": 0.00037757342640853324,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_005",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_005_ozgen_first_pair.npz",
+      "npz_sha256": "9fd5ebc301fc72b240addafb53606f9cdd75e6d3489dd62da93a27bb2c79dacd",
+      "params": {
+        "Ma": 4.0,
+        "N": 200,
+        "Re": 1200.0,
+        "alpha": 0.05057,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -9.518409e-06,
+        "grid_fs": 0.0004,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "lobe_edge",
+      "verdict": {
+        "min_match_distance": 2.0606737540720286e-07,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 1,
+        "selected": [
+          0.7879540339823954,
+          -9.468405853339956e-06
+        ],
+        "selected_fs": 0.00037757342640853324,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -1.526308111466425e-05,
+          "c_r": 0.9045674540662594,
+          "fs": 0.017298885619266006,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_006",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_006_ozgen_first_pair.npz",
+      "npz_sha256": "74078216cf587b2879b58eeb692bb6f5a2353beb2f49c4880f7deb876ee85ad8",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Re": 5500.0,
+        "alpha": 0.00367,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -1.641041e-05,
+        "grid_fs": 0.0173,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          17.0,
+          22.0
+        ]
+      },
+      "stratum": "lobe_edge",
+      "verdict": {
+        "min_match_distance": 0.00119053396503488,
+        "n_decaying": [
+          6,
+          8
+        ],
+        "n_match": 1,
+        "selected": [
+          0.9045674540662594,
+          -1.526308111466425e-05
+        ],
+        "selected_fs": 0.017298885619266006,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -0.00040120382590207366,
+          "c_r": 0.832358948744776,
+          "fs": 0.05984919198560027,
+          "n_match": 4
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_007",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_007_ozgen_first_pair.npz",
+      "npz_sha256": "3692e94ccb1c737cd0052d3cd4fb3f8931af071be78d828ba2d6836fb32b6261",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Re": 258.4,
+        "alpha": 0.04607,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -0.0004010753,
+        "grid_fs": 0.0598,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          17.0,
+          22.0
+        ]
+      },
+      "stratum": "fs_boundary",
+      "verdict": {
+        "min_match_distance": 2.255607022412049e-06,
+        "n_decaying": [
+          4,
+          18
+        ],
+        "n_match": 4,
+        "selected": [
+          0.832358948744776,
+          -0.00040120382590207366
+        ],
+        "selected_fs": 0.05984919198560027,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -0.0002564207587472027,
+          "c_r": 0.8381205660683892,
+          "fs": 0.05981083896807929,
+          "n_match": 4
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_008",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_008_ozgen_first_pair.npz",
+      "npz_sha256": "825c1fa8257cff0cefd73e88379c1d4b928b01beac48214fedaede4be6dae451",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Re": 371.4,
+        "alpha": 0.05429,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -0.0002563356,
+        "grid_fs": 0.0598,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          17.0,
+          22.0
+        ]
+      },
+      "stratum": "fs_boundary",
+      "verdict": {
+        "min_match_distance": 2.9757153473721956e-06,
+        "n_decaying": [
+          4,
+          25
+        ],
+        "n_match": 4,
+        "selected": [
+          0.8381205660683892,
+          -0.0002564207587472027
+        ],
+        "selected_fs": 0.05981083896807929,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": 0.0011311808238668635,
+          "c_r": 0.7039285985398273,
+          "fs": 0.05976259752313127,
+          "n_match": 2
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_009",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_009_ozgen_first_pair.npz",
+      "npz_sha256": "f81bc5cdce7316720f5398ff58640cb9b9c931f8bf26218829eb5983eca76177",
+      "params": {
+        "Ma": 6.0,
+        "N": 200,
+        "Re": 999.0,
+        "alpha": 0.03296,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": 0.001131181,
+        "grid_fs": 0.0598,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "fs_boundary",
+      "verdict": {
+        "min_match_distance": 2.70768570496599e-08,
+        "n_decaying": [
+          3,
+          5
+        ],
+        "n_match": 2,
+        "selected": [
+          0.7039285985398273,
+          0.0011311808238668635
+        ],
+        "selected_fs": 0.05976259752313127,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": 0.00021209965968108747,
+          "c_r": 0.7881428702576863,
+          "fs": 0.059768824355012476,
+          "n_match": 3
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_010",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_010_ozgen_first_pair.npz",
+      "npz_sha256": "6ab13c71de6c63a7ba235308547784d18363efaf4bcf52a9e396e75f24e4e2f0",
+      "params": {
+        "Ma": 8.0,
+        "N": 200,
+        "Re": 640.0,
+        "alpha": 0.04607,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": 0.000212067,
+        "grid_fs": 0.0598,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          23.0,
+          31.0
+        ]
+      },
+      "stratum": "fs_boundary",
+      "verdict": {
+        "min_match_distance": 1.6603968593256668e-06,
+        "n_decaying": [
+          3,
+          6
+        ],
+        "n_match": 3,
+        "selected": [
+          0.7881428702576863,
+          0.00021209965968108747
+        ],
+        "selected_fs": 0.059768824355012476,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": 1.6998177626111057e-05,
+          "c_r": 0.6840303133233469,
+          "fs": 0.059426010595929245,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_011",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_011_ozgen_first_pair.npz",
+      "npz_sha256": "1299bffe1793bddc24e93f229e27304e689636f6cb0d51d5dc926527ec0aea71",
+      "params": {
+        "Ma": 3.0,
+        "N": 200,
+        "Re": 2699.1,
+        "alpha": 0.027,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": 1.698226e-05,
+        "grid_fs": 0.0594,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "resolve_transition",
+      "verdict": {
+        "min_match_distance": 0.0016006514900388812,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 1,
+        "selected": [
+          0.6840303133233469,
+          1.6998177626111057e-05
+        ],
+        "selected_fs": 0.059426010595929245,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": null,
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_012",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_012_ozgen_first_pair.npz",
+      "npz_sha256": "58bf3d29c76a04c5226bc72040f872aa98e2fdbdbeb46c1e07eb528b5855aeea",
+      "params": {
+        "Ma": 3.0,
+        "N": 200,
+        "Re": 2699.1,
+        "alpha": 0.0235,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": null,
+        "grid_fs": null,
+        "grid_resolved": 0,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "no_discrete_frontier",
+      "verdict": {
+        "min_match_distance": null,
+        "n_decaying": [
+          0,
+          0
+        ],
+        "n_match": 0,
+        "selected": null,
+        "status": "no_discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -6.680434797719118e-05,
+          "c_r": 0.7610961148666681,
+          "fs": 0.04029942458548626,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_013",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_013_ozgen_first_pair.npz",
+      "npz_sha256": "fe3869ffaa9a46e95286a742899361f492a59c899d89c16005d4f40c7f586fd0",
+      "params": {
+        "Ma": 4.0,
+        "N": 200,
+        "Re": 1546.6,
+        "alpha": 0.02086,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -6.695902e-05,
+        "grid_fs": 0.0403,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "resolve_transition",
+      "verdict": {
+        "min_match_distance": 0.000998360516334811,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 1,
+        "selected": [
+          0.7610961148666681,
+          -6.680434797719118e-05
+        ],
+        "selected_fs": 0.04029942458548626,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": null,
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_014",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_014_ozgen_first_pair.npz",
+      "npz_sha256": "2ca105d0e5d7d6a6eabf6c855bb254f66950690766616f9fbf5e11651908c773",
+      "params": {
+        "Ma": 4.0,
+        "N": 200,
+        "Re": 1546.6,
+        "alpha": 0.01343,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": null,
+        "grid_fs": null,
+        "grid_resolved": 0,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "no_discrete_frontier",
+      "verdict": {
+        "min_match_distance": 0.006827801346402817,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 0,
+        "selected": null,
+        "status": "no_discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": 0.00010582435601437126,
+          "c_r": 0.7611622420561648,
+          "fs": 0.039038243635706134,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_015",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_015_ozgen_first_pair.npz",
+      "npz_sha256": "f5a4eba90bff981d6adb46b2ccfad4fe4b09985fdd1b1449d0e9422ab48807ca",
+      "params": {
+        "Ma": 4.0,
+        "N": 200,
+        "Re": 1755.8,
+        "alpha": 0.02086,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": 0.0001056206,
+        "grid_fs": 0.0391,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "resolve_transition",
+      "verdict": {
+        "min_match_distance": 0.0009947077001459803,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 1,
+        "selected": [
+          0.7611622420561648,
+          0.00010582435601437126
+        ],
+        "selected_fs": 0.039038243635706134,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": null,
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_016",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_016_ozgen_first_pair.npz",
+      "npz_sha256": "5426b3a7001642106bac89fdb9e525c8a480637fa8319f2a36f5a1012468c8d7",
+      "params": {
+        "Ma": 4.0,
+        "N": 200,
+        "Re": 1755.8,
+        "alpha": 0.01343,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": null,
+        "grid_fs": null,
+        "grid_resolved": 0,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "no_discrete_frontier",
+      "verdict": {
+        "min_match_distance": 0.006787499494882171,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 0,
+        "selected": null,
+        "status": "no_discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -0.0001073719759861232,
+          "c_r": 0.6862468149175348,
+          "fs": 0.046271775200741015,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_017",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_017_ozgen_first_pair.npz",
+      "npz_sha256": "540e6c65249aeaf8be28164426b969352d350a6ac47409a728c65537c20391df",
+      "params": {
+        "Ma": 3.0,
+        "N": 200,
+        "Re": 2259.0,
+        "alpha": 0.0305,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -0.0001073426,
+        "grid_fs": 0.0463,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "resolve_transition",
+      "verdict": {
+        "min_match_distance": 0.0012064626404588018,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 1,
+        "selected": [
+          0.6862468149175348,
+          -0.0001073719759861232
+        ],
+        "selected_fs": 0.046271775200741015,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": null,
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_018",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_018_ozgen_first_pair.npz",
+      "npz_sha256": "16211a2287a533729690a7f841d5266381bb76e5f3a6e38dfe96cf1103885b47",
+      "params": {
+        "Ma": 3.0,
+        "N": 200,
+        "Re": 2259.0,
+        "alpha": 0.027,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": null,
+        "grid_fs": null,
+        "grid_resolved": 0,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "no_discrete_frontier",
+      "verdict": {
+        "min_match_distance": null,
+        "n_decaying": [
+          0,
+          1
+        ],
+        "n_match": 0,
+        "selected": null,
+        "status": "no_discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": null,
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_019",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_019_ozgen_first_pair.npz",
+      "npz_sha256": "2054c6fa64a171f67a8c69e10e713129e3bdc64e3624fbb1bc96af20aa30e6bf",
+      "params": {
+        "Ma": 3.0,
+        "N": 200,
+        "Re": 3224.8,
+        "alpha": 0.0235,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": null,
+        "grid_fs": null,
+        "grid_resolved": 0,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "no_discrete_frontier",
+      "verdict": {
+        "min_match_distance": null,
+        "n_decaying": [
+          0,
+          1
+        ],
+        "n_match": 0,
+        "selected": null,
+        "status": "no_discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": null,
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_020",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_020_ozgen_first_pair.npz",
+      "npz_sha256": "c5f610779b3e860336fa88c6ad9660ffdee7da9c3d39ad0fe9b09e36dc090ce1",
+      "params": {
+        "Ma": 4.0,
+        "N": 200,
+        "Re": 1362.3,
+        "alpha": 0.01343,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": null,
+        "grid_fs": null,
+        "grid_resolved": 0,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "no_discrete_frontier",
+      "verdict": {
+        "min_match_distance": 0.006847488006446259,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 0,
+        "selected": null,
+        "status": "no_discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.99
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": 9.290412815859339e-06,
+          "c_r": 0.9601150459660898,
+          "fs": 7.195034895279911e-05,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_second_pair",
+      "id": "hc_021",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_021_ozgen_second_pair.npz",
+      "npz_sha256": "89167bafb83c06066471e467a6def9bd28563df55406e2621add8de0ebfb6462",
+      "params": {
+        "Ma": 10.0,
+        "N": 180,
+        "Re": 640.0,
+        "alpha": 0.13385,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.4,
+          0.99
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": 9.669461e-06,
+        "grid_fs": 0.0001,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          8.0,
+          12.0
+        ]
+      },
+      "stratum": "second_lobe_edge",
+      "verdict": {
+        "min_match_distance": 3.388513130006396e-06,
+        "n_decaying": [
+          1,
+          4
+        ],
+        "n_match": 1,
+        "selected": [
+          0.9601150459660898,
+          9.290412815859339e-06
+        ],
+        "selected_fs": 7.195034895279911e-05,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.99
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": 1.3996052922021928e-05,
+          "c_r": 0.9135800488264457,
+          "fs": 1.608174896315911e-05,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_second_pair",
+      "id": "hc_022",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_022_ozgen_second_pair.npz",
+      "npz_sha256": "41f3d4a2a1faf3273305ceaa2cab4ac8f9b5f0e0d2dd101cc8215c4fcd94b495",
+      "params": {
+        "Ma": 6.0,
+        "N": 180,
+        "Re": 4858.0,
+        "alpha": 0.11913,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.4,
+          0.99
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": 1.399605e-05,
+        "grid_fs": 0.0,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          8.0,
+          12.0
+        ]
+      },
+      "stratum": "second_lobe_edge",
+      "verdict": {
+        "min_match_distance": 3.246195378339893e-07,
+        "n_decaying": [
+          3,
+          4
+        ],
+        "n_match": 1,
+        "selected": [
+          0.9135800488264457,
+          1.3996052922021928e-05
+        ],
+        "selected_fs": 1.608174896315911e-05,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.99
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": 1.4869544557661455e-05,
+          "c_r": 0.9116275196930684,
+          "fs": 2.602125143906562e-05,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_second_pair",
+      "id": "hc_023",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_023_ozgen_second_pair.npz",
+      "npz_sha256": "3843c7e1541430e1e3e8ef053e31a848427891c1e65538867e9eef8817ae07cd",
+      "params": {
+        "Ma": 6.0,
+        "N": 180,
+        "Re": 2956.0,
+        "alpha": 0.11457,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.4,
+          0.99
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": 1.486954e-05,
+        "grid_fs": 0.0,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          8.0,
+          12.0
+        ]
+      },
+      "stratum": "second_lobe_edge",
+      "verdict": {
+        "min_match_distance": 6.92602200870454e-08,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 1,
+        "selected": [
+          0.9116275196930684,
+          1.4869544557661455e-05
+        ],
+        "selected_fs": 2.602125143906562e-05,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -0.0035615221383694376,
+          "c_r": 0.16453590915947666,
+          "fs": 0.049063300166791474,
+          "n_match": 5
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_024",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_024_ozgen_first_pair.npz",
+      "npz_sha256": "9c39aa12737673a28a7afea95adcb8f5a01d30932cd2b25816fb25e905ad8bda",
+      "params": {
+        "Ma": 6.0,
+        "N": 200,
+        "Re": 700.0,
+        "alpha": 0.13,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -0.003561522,
+        "grid_fs": 0.0491,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "coalescence_m6",
+      "verdict": {
+        "min_match_distance": 3.856222652987577e-07,
+        "n_decaying": [
+          9,
+          15
+        ],
+        "n_match": 5,
+        "selected": [
+          0.16453590915947666,
+          -0.0035615221383694376
+        ],
+        "selected_fs": 0.049063300166791474,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.05,
+          0.97
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -0.00025687380258233937,
+          "c_r": 0.16471700019170607,
+          "fs": 0.03607360979631585,
+          "n_match": 5
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_first_pair",
+      "id": "hc_025",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_025_ozgen_first_pair.npz",
+      "npz_sha256": "d6c6456d4e39d14cbeb8eca6b9af5c88530518a6410f3e0b88b1f8c4d1c7bfe9",
+      "params": {
+        "Ma": 6.0,
+        "N": 200,
+        "Re": 5500.0,
+        "alpha": 0.13,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.05,
+          0.97
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -0.0002568738,
+        "grid_fs": 0.0361,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          35.0,
+          45.0
+        ]
+      },
+      "stratum": "coalescence_m6",
+      "verdict": {
+        "min_match_distance": 5.852126036799937e-05,
+        "n_decaying": [
+          12,
+          19
+        ],
+        "n_match": 5,
+        "selected": [
+          0.16471700019170607,
+          -0.00025687380258233937
+        ],
+        "selected_fs": 0.03607360979631585,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.99
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": -0.01615543176702888,
+          "c_r": 0.9173621199910436,
+          "fs": 6.632361005215927e-05,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_second_pair",
+      "id": "hc_026",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_026_ozgen_second_pair.npz",
+      "npz_sha256": "166efaa5aec4593c68df917551b943cf5cd7f98db7ee1a27b9cac4aa980f69cd",
+      "params": {
+        "Ma": 6.0,
+        "N": 180,
+        "Re": 150.0,
+        "alpha": 0.11,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.4,
+          0.99
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": -0.01615543,
+        "grid_fs": 0.0001,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          8.0,
+          12.0
+        ]
+      },
+      "stratum": "coalescence_m6",
+      "verdict": {
+        "min_match_distance": 1.8912776162561366e-08,
+        "n_decaying": [
+          1,
+          1
+        ],
+        "n_match": 1,
+        "selected": [
+          0.9173621199910436,
+          -0.01615543176702888
+        ],
+        "selected_fs": 6.632361005215927e-05,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.05,
+          0.05
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.99
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c_i": 0.0012687060569127856,
+          "c_r": 0.9090861452165243,
+          "fs": 3.3749102623104674e-05,
+          "n_match": 1
+        },
+        "reference": "discrete_mode.discrete_mode (verbatim)"
+      },
+      "family": "ozgen_second_pair",
+      "id": "hc_027",
+      "kind": "ozgen_pair",
+      "npz": "data/hc_027_ozgen_second_pair.npz",
+      "npz_sha256": "2b0f187e10c1f187ec71d2e3f29610de13cafb4972b44ea40b75253badb6cd64",
+      "params": {
+        "Ma": 6.0,
+        "N": 180,
+        "Re": 5500.0,
+        "alpha": 0.11,
+        "ci_abs_max": 0.05,
+        "cr_band": [
+          0.4,
+          0.99
+        ],
+        "fs_thresh": 0.06,
+        "grid_c_i": 0.001268706,
+        "grid_fs": 0.0,
+        "grid_resolved": 1,
+        "length_scale": "L_star",
+        "match_tol": 0.004,
+        "wall_bc": "isothermal",
+        "ymf_pair": [
+          8.0,
+          12.0
+        ]
+      },
+      "stratum": "coalescence_m6",
+      "verdict": {
+        "min_match_distance": 2.8248863288940423e-07,
+        "n_decaying": [
+          3,
+          4
+        ],
+        "n_match": 1,
+        "selected": [
+          0.9090861452165243,
+          0.0012687060569127856
+        ],
+        "selected_fs": 3.3749102623104674e-05,
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered(two_domain_match+fs_decay)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.5,
+          0.12
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.95
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c": [
+            0.9071166195224662,
+            0.0132099163708439
+          ],
+          "omega_i": 0.000132099163708439
+        },
+        "reference": "compute_mack_fig10_4.first_mode_growth (verbatim)",
+        "selected_c_distance": 2.4366012601947097e-11
+      },
+      "family": "mack_fig10_4_m10_3d",
+      "id": "hc_028",
+      "kind": "mack_3d",
+      "npz": "data/hc_028_mack_fig10_4_m10_3d.npz",
+      "npz_sha256": "a88062b968548090b25c8ddf3cc47a5642e7fdedbb7024bf15ab616ac21890e8",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Pr": 0.72,
+        "R": 1500.0,
+        "alpha": 0.01,
+        "beta": 0.01539864963814583,
+        "ci_cap": 0.12,
+        "cr_band": [
+          0.4,
+          0.95
+        ],
+        "gamma": 1.4,
+        "lambda_mu_ratio": 0.0,
+        "phys_ci_abs": 0.5,
+        "phys_cr": [
+          -0.5,
+          1.5
+        ],
+        "psi_deg": 57.0,
+        "y_max": 150.0
+      },
+      "stratum": "m10_mode_death_alpha_strip",
+      "verdict": {
+        "n_band": 14,
+        "omega_i": 0.00013209916393962354,
+        "selected": [
+          0.9071166195147695,
+          0.013209916393962353
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.5,
+          0.12
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.95
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c": [
+            0.922458290022226,
+            0.015570326686425554
+          ],
+          "omega_i": 0.0002335549002963833
+        },
+        "reference": "compute_mack_fig10_4.first_mode_growth (verbatim)",
+        "selected_c_distance": 6.739536738675121e-12
+      },
+      "family": "mack_fig10_4_m10_3d",
+      "id": "hc_029",
+      "kind": "mack_3d",
+      "npz": "data/hc_029_mack_fig10_4_m10_3d.npz",
+      "npz_sha256": "00a985c00e0a6584691dd287aef80080e63dbadbaadd3bd52e7ea7f23e500d0b",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Pr": 0.72,
+        "R": 1500.0,
+        "alpha": 0.015,
+        "beta": 0.023097974457218742,
+        "ci_cap": 0.12,
+        "cr_band": [
+          0.4,
+          0.95
+        ],
+        "gamma": 1.4,
+        "lambda_mu_ratio": 0.0,
+        "phys_ci_abs": 0.5,
+        "phys_cr": [
+          -0.5,
+          1.5
+        ],
+        "psi_deg": 57.0,
+        "y_max": 150.0
+      },
+      "stratum": "m10_mode_death_alpha_strip",
+      "verdict": {
+        "n_band": 16,
+        "omega_i": 0.00023355490022404173,
+        "selected": [
+          0.9224582900269337,
+          0.015570326681602784
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.5,
+          0.12
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.95
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c": [
+            0.9341527336103809,
+            0.015543277485787533
+          ],
+          "omega_i": 0.0003108655497157507
+        },
+        "reference": "compute_mack_fig10_4.first_mode_growth (verbatim)",
+        "selected_c_distance": 3.345940660231517e-12
+      },
+      "family": "mack_fig10_4_m10_3d",
+      "id": "hc_030",
+      "kind": "mack_3d",
+      "npz": "data/hc_030_mack_fig10_4_m10_3d.npz",
+      "npz_sha256": "23ca0ea6dffb4be0af3b8e5b52ecc4b4f2226719130c16791aadeac6408d0d0d",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Pr": 0.72,
+        "R": 1500.0,
+        "alpha": 0.02,
+        "beta": 0.03079729927629166,
+        "ci_cap": 0.12,
+        "cr_band": [
+          0.4,
+          0.95
+        ],
+        "gamma": 1.4,
+        "lambda_mu_ratio": 0.0,
+        "phys_ci_abs": 0.5,
+        "phys_cr": [
+          -0.5,
+          1.5
+        ],
+        "psi_deg": 57.0,
+        "y_max": 150.0
+      },
+      "stratum": "m10_mode_death_alpha_strip",
+      "verdict": {
+        "n_band": 19,
+        "omega_i": 0.0003108655496914657,
+        "selected": [
+          0.934152733607263,
+          0.015543277484573285
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.5,
+          0.12
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.95
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c": [
+            0.9456760223808384,
+            0.013938540535411334
+          ],
+          "omega_i": 0.0003833098647238117
+        },
+        "reference": "compute_mack_fig10_4.first_mode_growth (verbatim)",
+        "selected_c_distance": 2.8555096923551043e-11
+      },
+      "family": "mack_fig10_4_m10_3d",
+      "id": "hc_031",
+      "kind": "mack_3d",
+      "npz": "data/hc_031_mack_fig10_4_m10_3d.npz",
+      "npz_sha256": "fa8517d8c875b3e696a60eff74f9b76d69f39c7ef675d7b03829dd952f45d247",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Pr": 0.72,
+        "R": 1500.0,
+        "alpha": 0.0275,
+        "beta": 0.04234628650490103,
+        "ci_cap": 0.12,
+        "cr_band": [
+          0.4,
+          0.95
+        ],
+        "gamma": 1.4,
+        "lambda_mu_ratio": 0.0,
+        "phys_ci_abs": 0.5,
+        "phys_cr": [
+          -0.5,
+          1.5
+        ],
+        "psi_deg": 57.0,
+        "y_max": 150.0
+      },
+      "stratum": "m10_mode_death_alpha_strip",
+      "verdict": {
+        "n_band": 22,
+        "omega_i": 0.0003833098640554788,
+        "selected": [
+          0.9456760223958303,
+          0.013938540511108318
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.5,
+          0.12
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.95
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c": [
+            0.714599909831414,
+            0.00038583553102045396
+          ],
+          "omega_i": 1.2539654758164755e-05
+        },
+        "reference": "compute_mack_fig10_4.first_mode_growth (verbatim)",
+        "selected_c_distance": 4.3779534483615306e-11
+      },
+      "family": "mack_fig10_4_m10_3d",
+      "id": "hc_032",
+      "kind": "mack_3d",
+      "npz": "data/hc_032_mack_fig10_4_m10_3d.npz",
+      "npz_sha256": "401082ffc16d437c084c9abc02df36e7c3b80d5aa73517c1215d7852ae11b9b0",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Pr": 0.72,
+        "R": 1500.0,
+        "alpha": 0.0325,
+        "beta": 0.05004561132397395,
+        "ci_cap": 0.12,
+        "cr_band": [
+          0.4,
+          0.95
+        ],
+        "gamma": 1.4,
+        "lambda_mu_ratio": 0.0,
+        "phys_ci_abs": 0.5,
+        "phys_cr": [
+          -0.5,
+          1.5
+        ],
+        "psi_deg": 57.0,
+        "y_max": 150.0
+      },
+      "stratum": "m10_mode_death_alpha_strip",
+      "verdict": {
+        "n_band": 24,
+        "omega_i": 1.2539653808596716e-05,
+        "selected": [
+          0.7145999098640174,
+          0.00038583550180297586
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.5,
+          0.12
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.95
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c": [
+            0.736384173568661,
+            0.00010624609379652801
+          ],
+          "omega_i": 3.9842285173698e-06
+        },
+        "reference": "compute_mack_fig10_4.first_mode_growth (verbatim)",
+        "selected_c_distance": 4.350465472945036e-12
+      },
+      "family": "mack_fig10_4_m10_3d",
+      "id": "hc_033",
+      "kind": "mack_3d",
+      "npz": "data/hc_033_mack_fig10_4_m10_3d.npz",
+      "npz_sha256": "7745307641e7e9e08bcfc4ede3203c2dac8e306b5982bdcf8ea608d82c1fe0d8",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Pr": 0.72,
+        "R": 1500.0,
+        "alpha": 0.0375,
+        "beta": 0.057744936143046856,
+        "ci_cap": 0.12,
+        "cr_band": [
+          0.4,
+          0.95
+        ],
+        "gamma": 1.4,
+        "lambda_mu_ratio": 0.0,
+        "phys_ci_abs": 0.5,
+        "phys_cr": [
+          -0.5,
+          1.5
+        ],
+        "psi_deg": 57.0,
+        "y_max": 150.0
+      },
+      "stratum": "m10_mode_death_alpha_strip",
+      "verdict": {
+        "n_band": 28,
+        "omega_i": 3.984228433417763e-06,
+        "selected": [
+          0.7363841735723913,
+          0.000106246091557807
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.5,
+          0.12
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.95
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c": [
+            0.7519907303890944,
+            -8.262721563187169e-05
+          ],
+          "omega_i": -3.511656664354547e-06
+        },
+        "reference": "compute_mack_fig10_4.first_mode_growth (verbatim)",
+        "selected_c_distance": 7.040247763967926e-13
+      },
+      "family": "mack_fig10_4_m10_3d",
+      "id": "hc_034",
+      "kind": "mack_3d",
+      "npz": "data/hc_034_mack_fig10_4_m10_3d.npz",
+      "npz_sha256": "f8cb4748311c9dca878703bfdb0c58365866f270ce81a4f28199ddf8709a94e8",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Pr": 0.72,
+        "R": 1500.0,
+        "alpha": 0.0425,
+        "beta": 0.06544426096211978,
+        "ci_cap": 0.12,
+        "cr_band": [
+          0.4,
+          0.95
+        ],
+        "gamma": 1.4,
+        "lambda_mu_ratio": 0.0,
+        "phys_ci_abs": 0.5,
+        "phys_cr": [
+          -0.5,
+          1.5
+        ],
+        "psi_deg": 57.0,
+        "y_max": 150.0
+      },
+      "stratum": "m10_mode_death_alpha_strip",
+      "verdict": {
+        "n_band": 29,
+        "omega_i": -3.5116566427809998e-06,
+        "selected": [
+          0.7519907303895822,
+          -8.262721512425881e-05
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.5,
+          0.12
+        ],
+        "plane": "c",
+        "real": [
+          0.4,
+          0.95
+        ]
+      },
+      "crosscheck": {
+        "match": true,
+        "ref": {
+          "c": [
+            0.7635316751327663,
+            -0.0002123287642893915
+          ],
+          "omega_i": -1.0085616303746097e-05
+        },
+        "reference": "compute_mack_fig10_4.first_mode_growth (verbatim)",
+        "selected_c_distance": 9.864917000635055e-11
+      },
+      "family": "mack_fig10_4_m10_3d",
+      "id": "hc_035",
+      "kind": "mack_3d",
+      "npz": "data/hc_035_mack_fig10_4_m10_3d.npz",
+      "npz_sha256": "3b3646d67d27056f7d0e4a53985449f6148844813bcdd5fac391d1a71a9e817a",
+      "params": {
+        "Ma": 10.0,
+        "N": 200,
+        "Pr": 0.72,
+        "R": 1500.0,
+        "alpha": 0.0475,
+        "beta": 0.07314358578119269,
+        "ci_cap": 0.12,
+        "cr_band": [
+          0.4,
+          0.95
+        ],
+        "gamma": 1.4,
+        "lambda_mu_ratio": 0.0,
+        "phys_ci_abs": 0.5,
+        "phys_cr": [
+          -0.5,
+          1.5
+        ],
+        "psi_deg": 57.0,
+        "y_max": 150.0
+      },
+      "stratum": "m10_mode_death_alpha_strip",
+      "verdict": {
+        "n_band": 33,
+        "omega_i": -1.008561450518252e-05,
+        "selected": [
+          0.7635316752238593,
+          -0.00021232872642489516
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.06,
+          0.06
+        ],
+        "plane": "alpha",
+        "real": [
+          0.1787537688442211,
+          0.22232499999999997
+        ]
+      },
+      "box_content_contradicts_verdict": false,
+      "crosscheck": {
+        "match": true,
+        "ref_growth": 1.15923401109356e-06,
+        "reference": "trace_mazhong_curves.growth (verbatim)",
+        "selected_to_full_spectrum_distance": 2.3017849358999708e-11
+      },
+      "family": "mazhong_second_spatial",
+      "id": "hc_036",
+      "kind": "mazhong_spatial",
+      "npz": "data/hc_036_mazhong_second_spatial.npz",
+      "npz_sha256": "e3dcb3f062c1d090cb81dcc1c58967b1a8b98f8bbf9565d266798cb138107a66",
+      "params": {
+        "Ma": 4.5,
+        "N": 130,
+        "Pr": 0.72,
+        "R": 1765.3,
+        "ai_cap": 0.06,
+        "c_guess": 0.9,
+        "c_hi": 0.995,
+        "c_lo": 0.8,
+        "gamma": 1.4,
+        "grid_neg_alpha_i": 5.813743e-07,
+        "lambda_mu_ratio": 1.2,
+        "mode": "second",
+        "n_modes": 25,
+        "omega": 0.17786,
+        "wall_bc": "isothermal",
+        "y_max": 40.0
+      },
+      "stratum": "mazhong_band_edge",
+      "verdict": {
+        "growth": 1.15923401109356e-06,
+        "n_band": 6,
+        "phase_speed": 0.9199859463935397,
+        "selected": [
+          0.1933290401850523,
+          -1.15923401109356e-06
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "prod_candidates(shift_invert n_modes=25)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.06,
+          0.06
+        ],
+        "plane": "alpha",
+        "real": [
+          0.1749246231155779,
+          0.2175625
+        ]
+      },
+      "box_content_contradicts_verdict": false,
+      "crosscheck": {
+        "match": true,
+        "ref_growth": -3.972525426711924e-07,
+        "reference": "trace_mazhong_curves.growth (verbatim)",
+        "selected_to_full_spectrum_distance": 5.119848430995621e-12
+      },
+      "family": "mazhong_second_spatial",
+      "id": "hc_037",
+      "kind": "mazhong_spatial",
+      "npz": "data/hc_037_mazhong_second_spatial.npz",
+      "npz_sha256": "15befec77ec1f0ddaf7ce7ff27a15bf2fccc36a947578d56c76723d34dcd3490",
+      "params": {
+        "Ma": 4.5,
+        "N": 130,
+        "Pr": 0.72,
+        "R": 944.0,
+        "ai_cap": 0.06,
+        "c_guess": 0.9,
+        "c_hi": 0.995,
+        "c_lo": 0.8,
+        "gamma": 1.4,
+        "grid_neg_alpha_i": -7.096883e-07,
+        "lambda_mu_ratio": 1.2,
+        "mode": "second",
+        "n_modes": 25,
+        "omega": 0.17405,
+        "wall_bc": "isothermal",
+        "y_max": 40.0
+      },
+      "stratum": "mazhong_band_edge",
+      "verdict": {
+        "growth": -3.972525426711924e-07,
+        "n_band": 2,
+        "phase_speed": 0.9161263894125963,
+        "selected": [
+          0.18998470299670958,
+          3.972525426711924e-07
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "prod_candidates(shift_invert n_modes=25)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.06,
+          0.06
+        ],
+        "plane": "alpha",
+        "real": [
+          0.2246934673366834,
+          0.27946249999999995
+        ]
+      },
+      "box_content_contradicts_verdict": false,
+      "crosscheck": {
+        "match": true,
+        "ref_growth": -1.4366964500259139e-05,
+        "reference": "trace_mazhong_curves.growth (verbatim)",
+        "selected_to_full_spectrum_distance": 1.5309339169463296e-11
+      },
+      "family": "mazhong_second_spatial",
+      "id": "hc_038",
+      "kind": "mazhong_spatial",
+      "npz": "data/hc_038_mazhong_second_spatial.npz",
+      "npz_sha256": "bbf6f67e9888552e85aaa4adcf5a804148c0be9b5d759c6fd315a8a1c6257312",
+      "params": {
+        "Ma": 4.5,
+        "N": 130,
+        "Pr": 0.72,
+        "R": 1178.7,
+        "ai_cap": 0.06,
+        "c_guess": 0.9,
+        "c_hi": 0.995,
+        "c_lo": 0.8,
+        "gamma": 1.4,
+        "grid_neg_alpha_i": -1.469029e-05,
+        "lambda_mu_ratio": 1.2,
+        "mode": "second",
+        "n_modes": 25,
+        "omega": 0.22357,
+        "wall_bc": "isothermal",
+        "y_max": 40.0
+      },
+      "stratum": "mazhong_band_edge",
+      "verdict": {
+        "growth": -1.4366964500259139e-05,
+        "n_band": 4,
+        "phase_speed": 0.9027032758630296,
+        "selected": [
+          0.24766720801611788,
+          1.4366964500259139e-05
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "prod_candidates(shift_invert n_modes=25)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.06,
+          0.06
+        ],
+        "plane": "alpha",
+        "real": [
+          0.2208643216080402,
+          0.2747
+        ]
+      },
+      "box_content_contradicts_verdict": false,
+      "crosscheck": {
+        "match": true,
+        "ref_growth": 4.4229641145279255e-05,
+        "reference": "trace_mazhong_curves.growth (verbatim)",
+        "selected_to_full_spectrum_distance": 8.24490567813318e-12
+      },
+      "family": "mazhong_second_spatial",
+      "id": "hc_039",
+      "kind": "mazhong_spatial",
+      "npz": "data/hc_039_mazhong_second_spatial.npz",
+      "npz_sha256": "9576b961dd451560e6b8f464d4a2a877bb299b9c0a3848fb3e8496e06710a74e",
+      "params": {
+        "Ma": 4.5,
+        "N": 130,
+        "Pr": 0.72,
+        "R": 826.7,
+        "ai_cap": 0.06,
+        "c_guess": 0.9,
+        "c_hi": 0.995,
+        "c_lo": 0.8,
+        "gamma": 1.4,
+        "grid_neg_alpha_i": 4.382324e-05,
+        "lambda_mu_ratio": 1.2,
+        "mode": "second",
+        "n_modes": 25,
+        "omega": 0.21976,
+        "wall_bc": "isothermal",
+        "y_max": 40.0
+      },
+      "stratum": "mazhong_band_edge",
+      "verdict": {
+        "growth": 4.4229641145279255e-05,
+        "n_band": 2,
+        "phase_speed": 0.903589757766347,
+        "selected": [
+          0.24320771468596727,
+          -4.4229641145279255e-05
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "prod_candidates(shift_invert n_modes=25)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.06,
+          0.06
+        ],
+        "plane": "alpha",
+        "real": [
+          0.17105263157894737,
+          0.43333333333333335
+        ]
+      },
+      "box_content_contradicts_verdict": false,
+      "crosscheck": {
+        "match": true,
+        "ref_growth": 3.3565825223173767e-07,
+        "reference": "trace_mazhong_curves.growth (verbatim)",
+        "selected_to_full_spectrum_distance": 2.015212525414172e-12
+      },
+      "family": "mazhong_first_spatial",
+      "id": "hc_040",
+      "kind": "mazhong_spatial",
+      "npz": "data/hc_040_mazhong_first_spatial.npz",
+      "npz_sha256": "eb01f8d4361fbf5c64098bfdf161cd4b56814d75524d9ce69dc627dfdea2b5f4",
+      "params": {
+        "Ma": 4.5,
+        "N": 130,
+        "Pr": 0.72,
+        "R": 1690.0,
+        "ai_cap": 0.06,
+        "c_guess": 0.55,
+        "c_hi": 0.76,
+        "c_lo": 0.3,
+        "gamma": 1.4,
+        "grid_neg_alpha_i": 3.356583e-07,
+        "lambda_mu_ratio": 1.2,
+        "mode": "first",
+        "n_modes": 25,
+        "omega": 0.13,
+        "wall_bc": "isothermal",
+        "y_max": 40.0
+      },
+      "stratum": "mazhong_band_edge",
+      "verdict": {
+        "growth": 3.3565825223173767e-07,
+        "n_band": 10,
+        "phase_speed": 0.6970351608663199,
+        "selected": [
+          0.18650422144906964,
+          -3.3565825223173767e-07
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "prod_candidates(shift_invert n_modes=25)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.06,
+          0.06
+        ],
+        "plane": "alpha",
+        "real": [
+          0.1409736842105263,
+          0.35713333333333336
+        ]
+      },
+      "box_content_contradicts_verdict": false,
+      "crosscheck": {
+        "match": true,
+        "ref_growth": 1.2965075171872164e-06,
+        "reference": "trace_mazhong_curves.growth (verbatim)",
+        "selected_to_full_spectrum_distance": 8.586092199468064e-12
+      },
+      "family": "mazhong_first_spatial",
+      "id": "hc_041",
+      "kind": "mazhong_spatial",
+      "npz": "data/hc_041_mazhong_first_spatial.npz",
+      "npz_sha256": "a933f54669194977725cca4d86a14152a5bfe720dec3e6591bb3b3be926a349a",
+      "params": {
+        "Ma": 4.5,
+        "N": 130,
+        "Pr": 0.72,
+        "R": 1070.0,
+        "ai_cap": 0.06,
+        "c_guess": 0.55,
+        "c_hi": 0.76,
+        "c_lo": 0.3,
+        "gamma": 1.4,
+        "grid_neg_alpha_i": 1.28285e-06,
+        "lambda_mu_ratio": 1.2,
+        "mode": "first",
+        "n_modes": 25,
+        "omega": 0.10714,
+        "wall_bc": "isothermal",
+        "y_max": 40.0
+      },
+      "stratum": "mazhong_band_edge",
+      "verdict": {
+        "growth": 1.2965075171872164e-06,
+        "n_band": 9,
+        "phase_speed": 0.6717750032498191,
+        "selected": [
+          0.1594879230124567,
+          -1.2965075171872164e-06
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "prod_candidates(shift_invert n_modes=25)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.06,
+          0.06
+        ],
+        "plane": "alpha",
+        "real": [
+          0.1635394736842105,
+          0.4143
+        ]
+      },
+      "box_content_contradicts_verdict": false,
+      "crosscheck": {
+        "match": true,
+        "ref_growth": -3.7985331590214963e-06,
+        "reference": "trace_mazhong_curves.growth (verbatim)",
+        "selected_to_full_spectrum_distance": 3.6293088610792637e-13
+      },
+      "family": "mazhong_first_spatial",
+      "id": "hc_042",
+      "kind": "mazhong_spatial",
+      "npz": "data/hc_042_mazhong_first_spatial.npz",
+      "npz_sha256": "5d59db85e8785d648e1d0d04895fd51b0a9e13b3af3d7a496acb8a1c9ec77924",
+      "params": {
+        "Ma": 4.5,
+        "N": 130,
+        "Pr": 0.72,
+        "R": 1483.3,
+        "ai_cap": 0.06,
+        "c_guess": 0.55,
+        "c_hi": 0.76,
+        "c_lo": 0.3,
+        "gamma": 1.4,
+        "grid_neg_alpha_i": -3.776922e-06,
+        "lambda_mu_ratio": 1.2,
+        "mode": "first",
+        "n_modes": 25,
+        "omega": 0.12429,
+        "wall_bc": "isothermal",
+        "y_max": 40.0
+      },
+      "stratum": "mazhong_band_edge",
+      "verdict": {
+        "growth": -3.7985331590214963e-06,
+        "n_band": 10,
+        "phase_speed": 0.69155071010337,
+        "selected": [
+          0.17972651634096604,
+          3.7985331590214963e-06
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "prod_candidates(shift_invert n_modes=25)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.06,
+          0.06
+        ],
+        "plane": "alpha",
+        "real": [
+          0.013157894736842105,
+          0.03333333333333333
+        ]
+      },
+      "box_content_contradicts_verdict": true,
+      "crosscheck": {
+        "match": true,
+        "ref_growth": null,
+        "reference": "trace_mazhong_curves.growth (verbatim)",
+        "selected_to_full_spectrum_distance": null
+      },
+      "family": "mazhong_first_spatial",
+      "id": "hc_043",
+      "kind": "mazhong_spatial",
+      "npz": "data/hc_043_mazhong_first_spatial.npz",
+      "npz_sha256": "a19ee793b9bada577a1f74d2d6d0b2750b7138f10f6a4155183c823bf3e57e1d",
+      "params": {
+        "Ma": 4.5,
+        "N": 130,
+        "Pr": 0.72,
+        "R": 1586.7,
+        "ai_cap": 0.06,
+        "c_guess": 0.55,
+        "c_hi": 0.76,
+        "c_lo": 0.3,
+        "gamma": 1.4,
+        "grid_neg_alpha_i": null,
+        "lambda_mu_ratio": 1.2,
+        "mode": "first",
+        "n_modes": 25,
+        "omega": 0.01,
+        "wall_bc": "isothermal",
+        "y_max": 40.0
+      },
+      "stratum": "mazhong_no_candidate",
+      "verdict": {
+        "n_band": 0,
+        "selected": null,
+        "status": "no_discrete_mode"
+      },
+      "verdict_basis": "prod_candidates(shift_invert n_modes=25)"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.0841728267346825,
+          0.0841728267346825
+        ],
+        "note": "bounding rectangle of the candidate_indices region",
+        "plane": "alpha",
+        "real": [
+          0.07809849903217964,
+          0.0841728267346825
+        ]
+      },
+      "crosscheck": {
+        "csv_alpha_to_spectrum_distance": 0.0,
+        "csv_n_filtered": 3,
+        "match": true,
+        "reference": "aps_dimensional_production growth CSV fingerprint"
+      },
+      "family": "mach6_spatial_dense",
+      "id": "hc_044",
+      "kind": "mach6_dense",
+      "npz": "data/hc_044_mach6_spatial_dense.npz",
+      "npz_sha256": "0f7e55c9ec05c3c3c14d7ed3699ebac944de4e222c3f40ea8690a4a492bd6bbf",
+      "params": {
+        "R_L": 764.5395090271052,
+        "base_cfg": {
+          "Tw_Te": 5.769230769230769,
+          "adiabatic": false,
+          "bvp_tol": 0.0001,
+          "eta_max": 16.0,
+          "eta_nodes": 80,
+          "mach_edge": 5.85
+        },
+        "csv_alpha": [
+          0.08408462779644432,
+          -1.0104952995832275e-08
+        ],
+        "csv_n_filtered": 3,
+        "csv_sigma_L": 1.0104952995832275e-08,
+        "freq_parameter": 9.90865e-05,
+        "gas": {
+          "T_edge_K": 52.0,
+          "gamma": 1.4,
+          "mu_power": 0.74,
+          "prandtl": 0.72,
+          "sutherland_S_K": 111.0,
+          "viscosity_law": "power"
+        },
+        "lst_cfg": {
+          "c_max": 0.97,
+          "c_min": 0.9,
+          "c_target": 0.86,
+          "c_target_half_width": 0.08,
+          "max_abs_ai": 0.4,
+          "max_abs_alpha": 8.0,
+          "max_ai_over_ar": 1.0,
+          "ny": 31,
+          "y_max": 30.0
+        },
+        "omega_L": 0.07575554406121425
+      },
+      "seed_vs_tracked_alpha_distance": 0.0,
+      "stratum": "en_near_neutral",
+      "verdict": {
+        "growth": 1.0104952995832275e-08,
+        "n_filtered": 3,
+        "phase_speed": 0.9009440375309328,
+        "selected": [
+          0.08408462779644432,
+          -1.0104952995832275e-08
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.10693771679099348,
+          0.10693771679099348
+        ],
+        "note": "bounding rectangle of the candidate_indices region",
+        "plane": "alpha",
+        "real": [
+          0.09922056197102488,
+          0.10693771679099348
+        ]
+      },
+      "crosscheck": {
+        "csv_alpha_to_spectrum_distance": 0.0,
+        "csv_n_filtered": 3,
+        "match": true,
+        "reference": "aps_dimensional_production growth CSV fingerprint"
+      },
+      "family": "mach6_spatial_dense",
+      "id": "hc_045",
+      "kind": "mach6_dense",
+      "npz": "data/hc_045_mach6_spatial_dense.npz",
+      "npz_sha256": "43a12bb2b813d513ea96fb8bfcd634fc1ec69829609e0c69b7c400b907620c1f",
+      "params": {
+        "R_L": 745.3571597657931,
+        "base_cfg": {
+          "Tw_Te": 5.769230769230769,
+          "adiabatic": false,
+          "bvp_tol": 0.0001,
+          "eta_max": 16.0,
+          "eta_nodes": 80,
+          "mach_edge": 5.85
+        },
+        "csv_alpha": [
+          0.10586305839796017,
+          8.060655900527787e-08
+        ],
+        "csv_n_filtered": 3,
+        "csv_sigma_L": -8.060655900527787e-08,
+        "freq_parameter": 0.0001291246,
+        "gas": {
+          "T_edge_K": 52.0,
+          "gamma": 1.4,
+          "mu_power": 0.74,
+          "prandtl": 0.72,
+          "sutherland_S_K": 111.0,
+          "viscosity_law": "power"
+        },
+        "lst_cfg": {
+          "c_max": 0.97,
+          "c_min": 0.9,
+          "c_target": 0.86,
+          "c_target_half_width": 0.08,
+          "max_abs_ai": 0.4,
+          "max_abs_alpha": 8.0,
+          "max_ai_over_ar": 1.0,
+          "ny": 31,
+          "y_max": 30.0
+        },
+        "omega_L": 0.09624394511189413
+      },
+      "seed_vs_tracked_alpha_distance": 0.0,
+      "stratum": "en_near_neutral",
+      "verdict": {
+        "growth": -8.060655900527787e-08,
+        "n_filtered": 3,
+        "phase_speed": 0.9091362612073242,
+        "selected": [
+          0.10586305839796017,
+          8.060655900527787e-08
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.08595008311122725,
+          0.08595008311122725
+        ],
+        "note": "bounding rectangle of the candidate_indices region",
+        "plane": "alpha",
+        "real": [
+          0.07974749979392219,
+          0.08595008311122725
+        ]
+      },
+      "crosscheck": {
+        "csv_alpha_to_spectrum_distance": 0.0,
+        "csv_n_filtered": 3,
+        "match": true,
+        "reference": "aps_dimensional_production growth CSV fingerprint"
+      },
+      "family": "mach6_spatial_dense",
+      "id": "hc_046",
+      "kind": "mach6_dense",
+      "npz": "data/hc_046_mach6_spatial_dense.npz",
+      "npz_sha256": "d08112d7d6dd21c8dec615c7dfa12ed165685020364383fc71cd37ed5cd183b8",
+      "params": {
+        "R_L": 759.7439217117771,
+        "base_cfg": {
+          "Tw_Te": 5.769230769230769,
+          "adiabatic": false,
+          "bvp_tol": 0.0001,
+          "eta_max": 16.0,
+          "eta_nodes": 80,
+          "mach_edge": 5.85
+        },
+        "csv_alpha": [
+          0.08580380497046214,
+          1.3222545804947798e-07
+        ],
+        "csv_n_filtered": 3,
+        "csv_sigma_L": -1.3222545804947798e-07,
+        "freq_parameter": 0.0001018173,
+        "gas": {
+          "T_edge_K": 52.0,
+          "gamma": 1.4,
+          "mu_power": 0.74,
+          "prandtl": 0.72,
+          "sutherland_S_K": 111.0,
+          "viscosity_law": "power"
+        },
+        "lst_cfg": {
+          "c_max": 0.97,
+          "c_min": 0.9,
+          "c_target": 0.86,
+          "c_target_half_width": 0.08,
+          "max_abs_ai": 0.4,
+          "max_abs_alpha": 8.0,
+          "max_ai_over_ar": 1.0,
+          "ny": 31,
+          "y_max": 30.0
+        },
+        "omega_L": 0.07735507480010452
+      },
+      "seed_vs_tracked_alpha_distance": 0.0,
+      "stratum": "en_near_neutral",
+      "verdict": {
+        "growth": -1.3222545804947798e-07,
+        "n_filtered": 3,
+        "phase_speed": 0.9015343180495774,
+        "selected": [
+          0.08580380497046214,
+          1.3222545804947798e-07
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.21096771248427842,
+          0.21096771248427842
+        ],
+        "note": "bounding rectangle of the candidate_indices region",
+        "plane": "alpha",
+        "real": [
+          0.19574323838747482,
+          0.21096771248427842
+        ]
+      },
+      "crosscheck": {
+        "csv_alpha_to_spectrum_distance": 0.0,
+        "csv_n_filtered": 3,
+        "match": true,
+        "reference": "aps_dimensional_production growth CSV fingerprint"
+      },
+      "family": "mach6_spatial_dense",
+      "id": "hc_047",
+      "kind": "mach6_dense",
+      "npz": "data/hc_047_mach6_spatial_dense.npz",
+      "npz_sha256": "afd359e839deb51adfc9dbe00f39b2a96bd77c32e2b968f33e3aaf0b74e8765d",
+      "params": {
+        "R_L": 745.3571597657931,
+        "base_cfg": {
+          "Tw_Te": 5.769230769230769,
+          "adiabatic": false,
+          "bvp_tol": 0.0001,
+          "eta_max": 16.0,
+          "eta_nodes": 80,
+          "mach_edge": 5.85
+        },
+        "csv_alpha": [
+          0.20684448926667234,
+          1.7737911587686154e-07
+        ],
+        "csv_n_filtered": 3,
+        "csv_sigma_L": -1.7737911587686154e-07,
+        "freq_parameter": 0.0002547382,
+        "gas": {
+          "T_edge_K": 52.0,
+          "gamma": 1.4,
+          "mu_power": 0.74,
+          "prandtl": 0.72,
+          "sutherland_S_K": 111.0,
+          "viscosity_law": "power"
+        },
+        "lst_cfg": {
+          "c_max": 0.97,
+          "c_min": 0.9,
+          "c_target": 0.86,
+          "c_target_half_width": 0.08,
+          "max_abs_ai": 0.4,
+          "max_abs_alpha": 8.0,
+          "max_ai_over_ar": 1.0,
+          "ny": 31,
+          "y_max": 30.0
+        },
+        "omega_L": 0.18987094123585058
+      },
+      "seed_vs_tracked_alpha_distance": 0.0,
+      "stratum": "en_near_neutral",
+      "verdict": {
+        "growth": -1.7737911587686154e-07,
+        "n_filtered": 3,
+        "phase_speed": 0.9179405354670156,
+        "selected": [
+          0.20684448926667234,
+          1.7737911587686154e-07
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.22152019255548194,
+          0.22152019255548194
+        ],
+        "note": "bounding rectangle of the candidate_indices region",
+        "plane": "alpha",
+        "real": [
+          0.20553419927828223,
+          0.22152019255548194
+        ]
+      },
+      "crosscheck": {
+        "csv_alpha_to_spectrum_distance": 0.0,
+        "csv_n_filtered": 3,
+        "match": true,
+        "reference": "aps_dimensional_production growth CSV fingerprint"
+      },
+      "family": "mach6_spatial_dense",
+      "id": "hc_048",
+      "kind": "mach6_dense",
+      "npz": "data/hc_048_mach6_spatial_dense.npz",
+      "npz_sha256": "a79254d843ef4f6c517b3e5bd6545195f2a37a57a482274c83facf266b730261",
+      "params": {
+        "R_L": 1172.164430829987,
+        "base_cfg": {
+          "Tw_Te": 5.769230769230769,
+          "adiabatic": false,
+          "bvp_tol": 0.0001,
+          "eta_max": 16.0,
+          "eta_nodes": 80,
+          "mach_edge": 5.85
+        },
+        "csv_alpha": [
+          0.2159635937947306,
+          -2.6032713236816173e-07
+        ],
+        "csv_n_filtered": 3,
+        "csv_sigma_L": 2.6032713236816173e-07,
+        "freq_parameter": 0.0001700855,
+        "gas": {
+          "T_edge_K": 52.0,
+          "gamma": 1.4,
+          "mu_power": 0.74,
+          "prandtl": 0.72,
+          "sutherland_S_K": 111.0,
+          "viscosity_law": "power"
+        },
+        "lst_cfg": {
+          "c_max": 0.97,
+          "c_min": 0.9,
+          "c_target": 0.86,
+          "c_target_half_width": 0.08,
+          "max_abs_ai": 0.4,
+          "max_abs_alpha": 8.0,
+          "max_ai_over_ar": 1.0,
+          "ny": 31,
+          "y_max": 30.0
+        },
+        "omega_L": 0.19936817329993375
+      },
+      "seed_vs_tracked_alpha_distance": 0.0,
+      "stratum": "en_near_neutral",
+      "verdict": {
+        "growth": 2.6032713236816173e-07,
+        "n_filtered": 3,
+        "phase_speed": 0.923156397783552,
+        "selected": [
+          0.2159635937947306,
+          -2.6032713236816173e-07
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.12748487221372817,
+          0.12748487221372817
+        ],
+        "note": "bounding rectangle of the candidate_indices region",
+        "plane": "alpha",
+        "real": [
+          0.11828493298180966,
+          0.12748487221372817
+        ]
+      },
+      "crosscheck": {
+        "csv_alpha_to_spectrum_distance": 0.0,
+        "csv_n_filtered": 3,
+        "match": true,
+        "reference": "aps_dimensional_production growth CSV fingerprint"
+      },
+      "family": "mach6_spatial_dense",
+      "id": "hc_049",
+      "kind": "mach6_dense",
+      "npz": "data/hc_049_mach6_spatial_dense.npz",
+      "npz_sha256": "14519adc46be03241dd2f88def75958d01c48c5aad56837cbcd7168503700544",
+      "params": {
+        "R_L": 788.5174456037453,
+        "base_cfg": {
+          "Tw_Te": 5.769230769230769,
+          "adiabatic": false,
+          "bvp_tol": 0.0001,
+          "eta_max": 16.0,
+          "eta_nodes": 80,
+          "mach_edge": 5.85
+        },
+        "csv_alpha": [
+          0.12494612067777461,
+          -5.09775598808822e-07
+        ],
+        "csv_n_filtered": 3,
+        "csv_sigma_L": 5.09775598808822e-07,
+        "freq_parameter": 0.000145509,
+        "gas": {
+          "T_edge_K": 52.0,
+          "gamma": 1.4,
+          "mu_power": 0.74,
+          "prandtl": 0.72,
+          "sutherland_S_K": 111.0,
+          "viscosity_law": "power"
+        },
+        "lst_cfg": {
+          "c_max": 0.97,
+          "c_min": 0.9,
+          "c_target": 0.86,
+          "c_target_half_width": 0.08,
+          "max_abs_ai": 0.4,
+          "max_abs_alpha": 8.0,
+          "max_ai_over_ar": 1.0,
+          "ny": 31,
+          "y_max": 30.0
+        },
+        "omega_L": 0.11473638499235536
+      },
+      "seed_vs_tracked_alpha_distance": 0.0,
+      "stratum": "en_near_neutral",
+      "verdict": {
+        "growth": 5.09775598808822e-07,
+        "n_filtered": 3,
+        "phase_speed": 0.9182868933422168,
+        "selected": [
+          0.12494612067777461,
+          -5.09775598808822e-07
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.044574663191328336,
+          0.044574663191328336
+        ],
+        "note": "bounding rectangle of the candidate_indices region",
+        "plane": "alpha",
+        "real": [
+          0.04135793491978918,
+          0.044574663191328336
+        ]
+      },
+      "crosscheck": {
+        "csv_alpha_to_spectrum_distance": 0.0,
+        "csv_n_filtered": 2,
+        "match": true,
+        "reference": "aps_dimensional_production growth CSV fingerprint"
+      },
+      "family": "mach6_spatial_dense",
+      "id": "hc_050",
+      "kind": "mach6_dense",
+      "npz": "data/hc_050_mach6_spatial_dense.npz",
+      "npz_sha256": "623f59de9281dab10967cc8239496d45e1843a0afc03367cc22caf98ff119788",
+      "params": {
+        "R_L": 404.87046037750355,
+        "base_cfg": {
+          "Tw_Te": 5.769230769230769,
+          "adiabatic": false,
+          "bvp_tol": 0.0001,
+          "eta_max": 16.0,
+          "eta_nodes": 80,
+          "mach_edge": 5.85
+        },
+        "csv_alpha": [
+          0.04224494298279161,
+          0.006404199894406237
+        ],
+        "csv_n_filtered": 2,
+        "csv_sigma_L": -0.006404199894406237,
+        "freq_parameter": 9.90865e-05,
+        "gas": {
+          "T_edge_K": 52.0,
+          "gamma": 1.4,
+          "mu_power": 0.74,
+          "prandtl": 0.72,
+          "sutherland_S_K": 111.0,
+          "viscosity_law": "power"
+        },
+        "lst_cfg": {
+          "c_max": 0.97,
+          "c_min": 0.9,
+          "c_target": 0.86,
+          "c_target_half_width": 0.08,
+          "max_abs_ai": 0.4,
+          "max_abs_alpha": 8.0,
+          "max_ai_over_ar": 1.0,
+          "ny": 31,
+          "y_max": 30.0
+        },
+        "omega_L": 0.040117196872195504
+      },
+      "seed_vs_tracked_alpha_distance": 0.004058818229048079,
+      "stratum": "candidate_count_edge",
+      "verdict": {
+        "growth": -0.010363497824526655,
+        "n_filtered": 2,
+        "phase_speed": 0.9299684986354794,
+        "selected": [
+          0.04313823202727674,
+          0.010363497824526655
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.04526060374781494,
+          0.04526060374781494
+        ],
+        "note": "bounding rectangle of the candidate_indices region",
+        "plane": "alpha",
+        "real": [
+          0.04199437461137468,
+          0.04526060374781494
+        ]
+      },
+      "crosscheck": {
+        "csv_alpha_to_spectrum_distance": 0.0,
+        "csv_n_filtered": 2,
+        "match": true,
+        "reference": "aps_dimensional_production growth CSV fingerprint"
+      },
+      "family": "mach6_spatial_dense",
+      "id": "hc_051",
+      "kind": "mach6_dense",
+      "npz": "data/hc_051_mach6_spatial_dense.npz",
+      "npz_sha256": "07066fe51389c48a371c1bcf2e73b4c606a78771435bfdf625a2644cc3c613fc",
+      "params": {
+        "R_L": 400.0748730621755,
+        "base_cfg": {
+          "Tw_Te": 5.769230769230769,
+          "adiabatic": false,
+          "bvp_tol": 0.0001,
+          "eta_max": 16.0,
+          "eta_nodes": 80,
+          "mach_edge": 5.85
+        },
+        "csv_alpha": [
+          0.042895892312191916,
+          0.00648875715782297
+        ],
+        "csv_n_filtered": 2,
+        "csv_sigma_L": -0.00648875715782297,
+        "freq_parameter": 0.0001018173,
+        "gas": {
+          "T_edge_K": 52.0,
+          "gamma": 1.4,
+          "mu_power": 0.74,
+          "prandtl": 0.72,
+          "sutherland_S_K": 111.0,
+          "viscosity_law": "power"
+        },
+        "lst_cfg": {
+          "c_max": 0.97,
+          "c_min": 0.9,
+          "c_target": 0.86,
+          "c_target_half_width": 0.08,
+          "max_abs_ai": 0.4,
+          "max_abs_alpha": 8.0,
+          "max_ai_over_ar": 1.0,
+          "ny": 31,
+          "y_max": 30.0
+        },
+        "omega_L": 0.04073454337303344
+      },
+      "seed_vs_tracked_alpha_distance": 0.0041000504077216265,
+      "stratum": "candidate_count_edge",
+      "verdict": {
+        "growth": -0.010487308334910447,
+        "n_filtered": 2,
+        "phase_speed": 0.9299585726837875,
+        "selected": [
+          0.043802535477980215,
+          0.010487308334910447
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.15729624728347005,
+          0.15729624728347005
+        ],
+        "note": "bounding rectangle of the candidate_indices region",
+        "plane": "alpha",
+        "real": [
+          0.14594497170631243,
+          0.15729624728347005
+        ]
+      },
+      "crosscheck": {
+        "csv_alpha_to_spectrum_distance": 0.0,
+        "csv_n_filtered": 5,
+        "match": true,
+        "reference": "aps_dimensional_production growth CSV fingerprint"
+      },
+      "family": "mach6_spatial_dense",
+      "id": "hc_052",
+      "kind": "mach6_dense",
+      "npz": "data/hc_052_mach6_spatial_dense.npz",
+      "npz_sha256": "85aa4237bf5744a25ab128856bc5ddaa01b7c579367a1cbbfdc8bceead4e4da6",
+      "params": {
+        "R_L": 457.62192084611183,
+        "base_cfg": {
+          "Tw_Te": 5.769230769230769,
+          "adiabatic": false,
+          "bvp_tol": 0.0001,
+          "eta_max": 16.0,
+          "eta_nodes": 80,
+          "mach_edge": 5.85
+        },
+        "csv_alpha": [
+          0.15255000358855464,
+          -0.002119917472634949
+        ],
+        "csv_n_filtered": 5,
+        "csv_sigma_L": 0.002119917472634949,
+        "freq_parameter": 0.0003093528,
+        "gas": {
+          "T_edge_K": 52.0,
+          "gamma": 1.4,
+          "mu_power": 0.74,
+          "prandtl": 0.72,
+          "sutherland_S_K": 111.0,
+          "viscosity_law": "power"
+        },
+        "lst_cfg": {
+          "c_max": 0.97,
+          "c_min": 0.9,
+          "c_target": 0.86,
+          "c_target_half_width": 0.08,
+          "max_abs_ai": 0.4,
+          "max_abs_alpha": 8.0,
+          "max_ai_over_ar": 1.0,
+          "ny": 31,
+          "y_max": 30.0
+        },
+        "omega_L": 0.14156662255512306
+      },
+      "seed_vs_tracked_alpha_distance": 0.0,
+      "stratum": "candidate_count_edge",
+      "verdict": {
+        "growth": 0.002119917472634949,
+        "n_filtered": 5,
+        "phase_speed": 0.9280014370694146,
+        "selected": [
+          0.15255000358855464,
+          -0.002119917472634949
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    },
+    {
+      "box": {
+        "imag": [
+          -0.03771098151048029,
+          0.03771098151048029
+        ],
+        "note": "bounding rectangle of the candidate_indices region",
+        "plane": "alpha",
+        "real": [
+          0.034989570473641506,
+          0.03771098151048029
+        ]
+      },
+      "crosscheck": {
+        "csv_alpha_to_spectrum_distance": 0.0,
+        "csv_n_filtered": 5,
+        "match": true,
+        "reference": "aps_dimensional_production growth CSV fingerprint"
+      },
+      "family": "mach6_spatial_dense",
+      "id": "hc_053",
+      "kind": "mach6_dense",
+      "npz": "data/hc_053_mach6_spatial_dense.npz",
+      "npz_sha256": "88a26240f6d76f4f76c13cdd36c309cd44d28c4f85d73b49d3e730df0e233ce5",
+      "params": {
+        "R_L": 342.5278252782393,
+        "base_cfg": {
+          "Tw_Te": 5.769230769230769,
+          "adiabatic": false,
+          "bvp_tol": 0.0001,
+          "eta_max": 16.0,
+          "eta_nodes": 80,
+          "mach_edge": 5.85
+        },
+        "csv_alpha": [
+          0.03564856392175877,
+          0.0074918658987131025
+        ],
+        "csv_n_filtered": 5,
+        "csv_sigma_L": -0.0074918658987131025,
+        "freq_parameter": 9.90865e-05,
+        "gas": {
+          "T_edge_K": 52.0,
+          "gamma": 1.4,
+          "mu_power": 0.74,
+          "prandtl": 0.72,
+          "sutherland_S_K": 111.0,
+          "viscosity_law": "power"
+        },
+        "lst_cfg": {
+          "c_max": 0.97,
+          "c_min": 0.9,
+          "c_target": 0.86,
+          "c_target_half_width": 0.08,
+          "max_abs_ai": 0.4,
+          "max_abs_alpha": 8.0,
+          "max_ai_over_ar": 1.0,
+          "ny": 31,
+          "y_max": 30.0
+        },
+        "omega_L": 0.03393988335943226
+      },
+      "seed_vs_tracked_alpha_distance": 0.006941597135809609,
+      "stratum": "candidate_count_edge",
+      "verdict": {
+        "growth": -0.000853630858231364,
+        "n_filtered": 5,
+        "phase_speed": 0.9007819531765848,
+        "selected": [
+          0.03767824526206827,
+          0.000853630858231364
+        ],
+        "status": "discrete_mode"
+      },
+      "verdict_basis": "full_spectrum_filtered"
+    }
+  ],
+  "data_size_bytes": 24221823,
+  "environment": {
+    "git_dirty": true,
+    "git_sha": "4e763679acaca34302f30541044aebcf7f75848b",
+    "numpy": "2.2.6",
+    "python": "3.12.7",
+    "scipy": "1.14.1"
+  },
+  "generated_at_unix": 1783212642.4600177,
+  "n_strata": 11,
+  "notes": [
+    "verdict_basis declares the candidate set each production verdict is computed over; box content and verdict emptiness are distinct facts for shift-invert-basis families.",
+    "mack_fig10_4_m10_3d: measured fact, not an error: this family contains NO empty-box cells in this corpus because the production band filter retains damped modes at these parameters; mode death manifests as argmax handover plus omega_i sign flip along the alpha strip, not as an empty box.",
+    "hc_043: production verdict is no_discrete_mode (shift-invert basis) while the full QZ spectrum holds 14 in-box eigenvalues; both sets are stored."
+  ],
+  "status": "complete",
+  "storage_policy": {
+    "eigenvectors": "in-box + near-box candidates only",
+    "npz_files_gitignored": true,
+    "storage_collar_rel": 0.01
+  },
+  "strata": [
+    "candidate_count_edge",
+    "coalescence_m6",
+    "en_near_neutral",
+    "fs_boundary",
+    "lobe_edge",
+    "m10_mode_death_alpha_strip",
+    "mazhong_band_edge",
+    "mazhong_no_candidate",
+    "no_discrete_frontier",
+    "resolve_transition",
+    "second_lobe_edge"
+  ]
+}

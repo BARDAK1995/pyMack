@@ -1,0 +1,49 @@
+{
+  "artifact": "probe_overlay_n128_drift_rootcause",
+  "purpose": "root-cause the 1 in-sweep audit drift at N=128 overlay",
+  "N": 128,
+  "Ma": 2.0,
+  "y_max_abs": 19.612565428698005,
+  "corner_block": {
+    "alpha_range": [
+      0.20206896551724138,
+      0.24
+    ],
+    "Re_range": [
+      2497.7013060598065,
+      4499.999999999998
+    ],
+    "n_alpha": 6,
+    "n_re": 6
+  },
+  "gpu_sweep_s": 101.11423360009212,
+  "n_point_family_checks": 72,
+  "gpu_vs_cpu_worst_abs_error": 0.0054964109678118265,
+  "n_disagreements": 1,
+  "disagreements": [
+    {
+      "alpha": 0.24,
+      "Re": 4499.999999999998,
+      "family": "Mack",
+      "abs_alpha_idx": 29,
+      "abs_Re_idx": 23,
+      "gpu_vs_cpu_abs_err": 0.0054964109678118265,
+      "gpu": [
+        0.9862142815893473,
+        -0.04991355877929964
+      ],
+      "cpu_select_ymax_base": [
+        0.98944180005161,
+        -0.04546455236181317
+      ],
+      "cpu_select_ymax_plus8pct": [
+        0.9887994890057553,
+        -0.04454938747517709
+      ],
+      "cpu_ymax_fragility_shift": 0.0011180743487615376,
+      "reason": "value_disagreement"
+    }
+  ],
+  "match_tol_reference": 0.004,
+  "known_artifact_quote": "ozgen_M2.json known_artifacts: 'At M=2, high-Re/high-alpha corner: weak (c_i ~ 1e-3) spurious instability from the discretized slow-acoustic continuous spectrum (c_r <= 1 - 1/Ma overlaps the TS band); it is y_max-sensitive, unlike the converged mid-lobe discrete modes.'"
+}
