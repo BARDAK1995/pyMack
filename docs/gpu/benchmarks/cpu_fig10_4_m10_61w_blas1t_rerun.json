@@ -1,0 +1,428 @@
+{
+ "artifact": "cpu_fig10_4_m10_61w_blas1t_rerun.json",
+ "purpose": "Stage 1 CPU anchor for Mack Fig. 10.4 M10 flagship workload",
+ "generated_at": "2026-07-08T01:37:14.358994+00:00",
+ "generated_at_unix": 1783474634.3589942,
+ "repo": "C:\\Users\\merts\\pymack-wt\\12-flagship",
+ "command_argv": [
+  "scripts\\gpu_bench\\measure_fig10_4_m10_cpu_anchor.py",
+  "--mode",
+  "parallel",
+  "--workers",
+  "61",
+  "--blas-threads",
+  "1",
+  "--output",
+  "docs\\gpu\\benchmarks\\cpu_fig10_4_m10_61w_blas1t_rerun.json"
+ ],
+ "mode": "parallel",
+ "workers_requested": 61,
+ "workers_effective": 9,
+ "blas_threads_requested": 1,
+ "blas_env_before_driver_import": {
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1",
+  "NUMEXPR_NUM_THREADS": "1",
+  "VECLIB_MAXIMUM_THREADS": "1"
+ },
+ "blas_env_after_driver_import": {
+  "OMP_NUM_THREADS": "1",
+  "OPENBLAS_NUM_THREADS": "1",
+  "MKL_NUM_THREADS": "1",
+  "NUMEXPR_NUM_THREADS": "1",
+  "VECLIB_MAXIMUM_THREADS": "1"
+ },
+ "wall_time_s": 1175.9048786000349,
+ "prior_anchor_artifacts": {
+  "serial": {
+   "artifact": "docs\\gpu\\benchmarks\\cpu_fig10_4_m10_serial.json",
+   "wall_time_s": 9717.078423800063,
+   "identity_ok": true,
+   "mode": "serial",
+   "workers_requested": null,
+   "workers_effective": 1,
+   "blas_threads_requested": null
+  },
+  "tuned_station_parallel": {
+   "artifact": "docs\\gpu\\benchmarks\\cpu_fig10_4_m10_61w_blas1t.json",
+   "wall_time_s": 1253.8038179998985,
+   "identity_ok": true,
+   "mode": "parallel",
+   "workers_requested": 61,
+   "workers_effective": 9,
+   "blas_threads_requested": 1
+  }
+ },
+ "rerun_comparison": {
+  "original_wall_time_s": 1253.8038179998985,
+  "rerun_wall_time_s": 1175.9048786000349,
+  "delta_s": -77.8989393998636,
+  "ratio_rerun_over_original": 0.9378699137125535
+ },
+ "workload": {
+  "driver": "verification/compute_mack_fig10_4.py",
+  "mach": 10.0,
+  "stations": [
+   450.0,
+   650.0,
+   850.0,
+   1050.0,
+   1250.0,
+   1450.0,
+   1650.0,
+   1850.0,
+   2000.0
+  ],
+  "n_stations": 9,
+  "N": 200,
+  "y_max": 150.0,
+  "matrix_dim": 1005,
+  "alpha_grid": [
+   0.01,
+   0.0125,
+   0.015,
+   0.0175,
+   0.02,
+   0.0225,
+   0.025,
+   0.0275,
+   0.03,
+   0.0325,
+   0.035,
+   0.0375,
+   0.04,
+   0.0425,
+   0.045,
+   0.0475,
+   0.05
+  ],
+  "psi_grid": [
+   42.0,
+   45.0,
+   48.0,
+   51.0,
+   54.0,
+   57.0,
+   60.0,
+   63.0
+  ],
+  "coarse_points_per_station": 136,
+  "refine_solves_per_station": 9,
+  "total_solves": 1305,
+  "cr_band": [
+   0.4,
+   0.95
+  ],
+  "ci_cap": 0.12,
+  "refine_rule": "np.arange(best_a - da, best_a + da + 1e-12, da/4), skip a <= 0, strict oi > best_oi"
+ },
+ "identity_check": {
+  "ok": true,
+  "row_count_match": true,
+  "station_count": 9,
+  "reference_station_count": 9,
+  "n_valid_stations": 9,
+  "reference_n_valid_stations": 9,
+  "committed_verdict": "acceptable",
+  "committed_verdict_identity_ok": true,
+  "max_abs_diff": {
+   "omega_i_max": 0.0,
+   "alpha_peak": 0.0,
+   "psi_peak": 0.0,
+   "c_r": 0.0,
+   "c_i": 0.0
+  },
+  "station_checks": [
+   {
+    "index": 0,
+    "R": 450.0,
+    "reference_R": 450.0,
+    "band_decision_match": true,
+    "field_matches": {
+     "omega_i_max": true,
+     "alpha_peak": true,
+     "psi_peak": true,
+     "c_r": true,
+     "c_i": true
+    },
+    "abs_diffs": {
+     "omega_i_max": 0.0,
+     "alpha_peak": 0.0,
+     "psi_peak": 0.0,
+     "c_r": 0.0,
+     "c_i": 0.0
+    },
+    "ok": true
+   },
+   {
+    "index": 1,
+    "R": 650.0,
+    "reference_R": 650.0,
+    "band_decision_match": true,
+    "field_matches": {
+     "omega_i_max": true,
+     "alpha_peak": true,
+     "psi_peak": true,
+     "c_r": true,
+     "c_i": true
+    },
+    "abs_diffs": {
+     "omega_i_max": 0.0,
+     "alpha_peak": 0.0,
+     "psi_peak": 0.0,
+     "c_r": 0.0,
+     "c_i": 0.0
+    },
+    "ok": true
+   },
+   {
+    "index": 2,
+    "R": 850.0,
+    "reference_R": 850.0,
+    "band_decision_match": true,
+    "field_matches": {
+     "omega_i_max": true,
+     "alpha_peak": true,
+     "psi_peak": true,
+     "c_r": true,
+     "c_i": true
+    },
+    "abs_diffs": {
+     "omega_i_max": 0.0,
+     "alpha_peak": 0.0,
+     "psi_peak": 0.0,
+     "c_r": 0.0,
+     "c_i": 0.0
+    },
+    "ok": true
+   },
+   {
+    "index": 3,
+    "R": 1050.0,
+    "reference_R": 1050.0,
+    "band_decision_match": true,
+    "field_matches": {
+     "omega_i_max": true,
+     "alpha_peak": true,
+     "psi_peak": true,
+     "c_r": true,
+     "c_i": true
+    },
+    "abs_diffs": {
+     "omega_i_max": 0.0,
+     "alpha_peak": 0.0,
+     "psi_peak": 0.0,
+     "c_r": 0.0,
+     "c_i": 0.0
+    },
+    "ok": true
+   },
+   {
+    "index": 4,
+    "R": 1250.0,
+    "reference_R": 1250.0,
+    "band_decision_match": true,
+    "field_matches": {
+     "omega_i_max": true,
+     "alpha_peak": true,
+     "psi_peak": true,
+     "c_r": true,
+     "c_i": true
+    },
+    "abs_diffs": {
+     "omega_i_max": 0.0,
+     "alpha_peak": 0.0,
+     "psi_peak": 0.0,
+     "c_r": 0.0,
+     "c_i": 0.0
+    },
+    "ok": true
+   },
+   {
+    "index": 5,
+    "R": 1450.0,
+    "reference_R": 1450.0,
+    "band_decision_match": true,
+    "field_matches": {
+     "omega_i_max": true,
+     "alpha_peak": true,
+     "psi_peak": true,
+     "c_r": true,
+     "c_i": true
+    },
+    "abs_diffs": {
+     "omega_i_max": 0.0,
+     "alpha_peak": 0.0,
+     "psi_peak": 0.0,
+     "c_r": 0.0,
+     "c_i": 0.0
+    },
+    "ok": true
+   },
+   {
+    "index": 6,
+    "R": 1650.0,
+    "reference_R": 1650.0,
+    "band_decision_match": true,
+    "field_matches": {
+     "omega_i_max": true,
+     "alpha_peak": true,
+     "psi_peak": true,
+     "c_r": true,
+     "c_i": true
+    },
+    "abs_diffs": {
+     "omega_i_max": 0.0,
+     "alpha_peak": 0.0,
+     "psi_peak": 0.0,
+     "c_r": 0.0,
+     "c_i": 0.0
+    },
+    "ok": true
+   },
+   {
+    "index": 7,
+    "R": 1850.0,
+    "reference_R": 1850.0,
+    "band_decision_match": true,
+    "field_matches": {
+     "omega_i_max": true,
+     "alpha_peak": true,
+     "psi_peak": true,
+     "c_r": true,
+     "c_i": true
+    },
+    "abs_diffs": {
+     "omega_i_max": 0.0,
+     "alpha_peak": 0.0,
+     "psi_peak": 0.0,
+     "c_r": 0.0,
+     "c_i": 0.0
+    },
+    "ok": true
+   },
+   {
+    "index": 8,
+    "R": 2000.0,
+    "reference_R": 2000.0,
+    "band_decision_match": true,
+    "field_matches": {
+     "omega_i_max": true,
+     "alpha_peak": true,
+     "psi_peak": true,
+     "c_r": true,
+     "c_i": true
+    },
+    "abs_diffs": {
+     "omega_i_max": 0.0,
+     "alpha_peak": 0.0,
+     "psi_peak": 0.0,
+     "c_r": 0.0,
+     "c_i": 0.0
+    },
+    "ok": true
+   }
+  ]
+ },
+ "rows": [
+  {
+   "mach": 10.0,
+   "R": 450.0,
+   "omega_i_max": 5.359949276673664e-05,
+   "alpha_peak": 0.02375,
+   "psi_peak": 57.0,
+   "c_r": 0.9492165100889467,
+   "c_i": 0.0022568207480731218
+  },
+  {
+   "mach": 10.0,
+   "R": 650.0,
+   "omega_i_max": 0.00015094241977739415,
+   "alpha_peak": 0.028125000000000004,
+   "psi_peak": 54.0,
+   "c_r": 0.9494473786986969,
+   "c_i": 0.005366841592085125
+  },
+  {
+   "mach": 10.0,
+   "R": 850.0,
+   "omega_i_max": 0.0002365876714429754,
+   "alpha_peak": 0.03,
+   "psi_peak": 54.0,
+   "c_r": 0.9496415968470041,
+   "c_i": 0.007886255714765847
+  },
+  {
+   "mach": 10.0,
+   "R": 1050.0,
+   "omega_i_max": 0.00030101516801548885,
+   "alpha_peak": 0.0325,
+   "psi_peak": 51.0,
+   "c_r": 0.9494840258083934,
+   "c_i": 0.009262005169707349
+  },
+  {
+   "mach": 10.0,
+   "R": 1250.0,
+   "omega_i_max": 0.00036079525865959425,
+   "alpha_peak": 0.0325,
+   "psi_peak": 54.0,
+   "c_r": 0.9499433480631039,
+   "c_i": 0.011101392574141361
+  },
+  {
+   "mach": 10.0,
+   "R": 1450.0,
+   "omega_i_max": 0.0004042417994912531,
+   "alpha_peak": 0.033125,
+   "psi_peak": 54.0,
+   "c_r": 0.9498577619980162,
+   "c_i": 0.012203526022377452
+  },
+  {
+   "mach": 10.0,
+   "R": 1650.0,
+   "omega_i_max": 0.00043897697151530017,
+   "alpha_peak": 0.035,
+   "psi_peak": 51.0,
+   "c_r": 0.9496074263558126,
+   "c_i": 0.012542199186151431
+  },
+  {
+   "mach": 10.0,
+   "R": 1850.0,
+   "omega_i_max": 0.00047082913710153117,
+   "alpha_peak": 0.035625000000000004,
+   "psi_peak": 51.0,
+   "c_r": 0.9497441272899578,
+   "c_i": 0.013216256480042978
+  },
+  {
+   "mach": 10.0,
+   "R": 2000.0,
+   "omega_i_max": 0.0004890758716735559,
+   "alpha_peak": 0.035625000000000004,
+   "psi_peak": 51.0,
+   "c_r": 0.9494909374040863,
+   "c_i": 0.013728445520661216
+  }
+ ],
+ "machine": {
+  "python": "C:\\Program Files\\Python312\\python.exe",
+  "python_version": "3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "processor": "AMD64 Family 23 Model 49 Stepping 0, AuthenticAMD",
+  "logical_cores": 64,
+  "numpy": "2.2.6",
+  "scipy": "1.14.1",
+  "pymack_file": "C:\\Users\\merts\\pymack-wt\\12-flagship\\pymack\\__init__.py",
+  "gpu": [
+   "NVIDIA GeForce RTX 4070 Ti, 595.71, 12282 MiB, 1527 MiB"
+  ]
+ },
+ "reference_artifacts": {
+  "pymack_curve": "verification\\first_mode\\mack_fig10_4_M100\\pymack_curve.json",
+  "verdict": "verification\\first_mode\\mack_fig10_4_M100\\verdict.json"
+ }
+}
