@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "figure": "docs/gpu/demo/ozgen_m2_4x_ci_map.png",
+  "figure_sha256": "bbd4b8c0be701e6f39ff50aeed5d7f7d1e39b966e5df51684c74ad35c429d316",
+  "purpose": "Slice 15R 4x capability figure. pyMack field/contours are computed; external reference data are plotted as points only.",
+  "selected_run": {
+    "path": "docs/gpu/demo/ozgen_4x_eigenvalues_only.json",
+    "sha256": "5a8586a1b99e6a21468123293067988bb0a0ea2d00853f699dd8a996b131a2f6",
+    "configuration": "eigenvalues-only",
+    "map_wall_time_s": 169.4716034999583
+  },
+  "digitized_reference_points_only": [
+    {
+      "path": "reference_data/digitized/ozgen_fig3_M2_neutral.csv",
+      "sha256": "dafa9285466df85e76303969c1b2c1e81abcf3091cef7b500759cd017db09be6",
+      "level": 0.0,
+      "n_points": 20,
+      "rendered_as": "unconnected open markers"
+    },
+    {
+      "path": "reference_data/digitized/ozgen_fig3_M2_004.csv",
+      "sha256": "75e8a056e04eba46004d49033451e71f4ae5f5d286bb7965bf5adacfee993c38",
+      "level": 0.004,
+      "n_points": 20,
+      "rendered_as": "unconnected open markers"
+    },
+    {
+      "path": "reference_data/digitized/ozgen_fig3_M2_012.csv",
+      "sha256": "3f52197be52f58d5a7b67c00e9bd40231c3529c1a110c84fa76b2904063571cf",
+      "level": 0.012,
+      "n_points": 19,
+      "rendered_as": "unconnected open markers"
+    }
+  ],
+  "forbidden_source_check": "no refPapers path; all references under reference_data/digitized",
+  "computed_contour_levels_present": [
+    0.0,
+    0.004
+  ],
+  "matplotlib_font_minimums": {
+    "axis_labels_pt": 16,
+    "ticks_pt": 13,
+    "title_pt": 17,
+    "required": {
+      "axis_labels_pt": 14,
+      "ticks_pt": 12,
+      "title_pt": 16
+    },
+    "passed": true
+  },
+  "generated_at_utc": "2026-07-13T18:30:49.481719+00:00",
+  "source_commit": "1ff0e9ae6b1e99823e827947940b6090a5910619"
+}

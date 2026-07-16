@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "case_id": "mack_fig10_6_family",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/mack_fig10_6_family/verdict.json",
+    "sha256": "b10c1a3495c29b1a9ac63df05035e3211321d80d747296402de930df239d8ebf",
+    "committed_when": {
+      "commit": "fbaca209fda00463f3164433d67717e434df9ccd",
+      "authored_at": "2026-06-19T05:37:26-05:00"
+    }
+  },
+  "status": "REGENERATED_POINTER",
+  "regeneration": {
+    "scratch_dir": "SCRATCH/mack_fig10_6_family",
+    "driver": "verification/verify_mack_fig10_6.py",
+    "configuration": "deterministic family-pointer finalization; no compute surface",
+    "started_at_utc": "2026-07-14T06:10:34.749154+00:00",
+    "elapsed_s": 0.0
+  },
+  "comparison": {
+    "verdict": "byte-identical",
+    "byte_identical": true,
+    "canonical_json_identical": true,
+    "max_abs_drift": 0.0,
+    "note": "Pointer-only row; no numerical solver payload exists."
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:10:34.752698+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "202952d94f65d6e54eae00736f536cbe3ed4f716",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "\"C:\\Program Files\\Python312\\python.exe\" scripts/verification/provenance_census.py --prepare-carried",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "record_type": "family pointer",
+      "compute_surface": null,
+      "finalizer": "verification/verify_mack_fig10_6.py"
+    },
+    "sha256": {
+      "verification/second_mode/mack_fig10_6_family/verdict.json": "b10c1a3495c29b1a9ac63df05035e3211321d80d747296402de930df239d8ebf",
+      "SCRATCH/mack_fig10_6_family/verdict.json": "b10c1a3495c29b1a9ac63df05035e3211321d80d747296402de930df239d8ebf",
+      "verification/verify_mack_fig10_6.py": "541054dd57f1004c0556c58900a62887c3a892241ee4b931d6ce9c4a686449b8"
+    }
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "case_id": "mack_fig10_6_M100",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/mack_fig10_6_M100/verdict.json",
+    "sha256": "722c6c82e9d7e326baab9648a0448440ab911f0d79452e3a53f462e0c6c5a363",
+    "committed_when": {
+      "commit": "e963286696f4422ecc8b0cdec9e7a17f07678abc",
+      "authored_at": "2026-06-19T09:28:48-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/mack_fig10_6_M100",
+    "regenerated_payload": "SCRATCH/mack_fig10_6_M100/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mack_fig10_6_M100 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mack_fig10_6_M100'",
+    "exit_code": 0,
+    "elapsed_s": 944.1903147000048,
+    "hard_timeout_s": 1800.0,
+    "timed_out": false,
+    "termination": null,
+    "measurement_lock": {
+      "protocol": "atomic mkdir; low-priority poll; never steal",
+      "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+      "owner": "provenance-census-low-priority 2026-07-15T01:36:28.457259+00:00 235680497462475e85efc03bebd8d340 provenance-census-mack_fig10_6_M100",
+      "run_label": "provenance-census-mack_fig10_6_M100",
+      "waited_s": 0.0,
+      "acquired_at_utc": "2026-07-15T01:36:28.457259+00:00",
+      "released_at_utc": "2026-07-15T01:52:12.644662+00:00"
+    },
+    "stdout": "SCRATCH/mack_fig10_6_M100/stdout.txt",
+    "stderr": "SCRATCH/mack_fig10_6_M100/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 6,
+    "n_compared_numeric_metrics": 6,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 0.0,
+    "max_abs_drift_path": "metrics.N",
+    "component_abs_drift": {
+      "metrics.N": 0.0,
+      "metrics.curve_median_rel_err": 0.0,
+      "metrics.n_overlap": 0.0,
+      "metrics.n_valid_stations": 0.0,
+      "metrics.omega_i_max_at_R1500": 0.0,
+      "metrics.y_max": 0.0
+    },
+    "committed_verdict": "agrees",
+    "regenerated_verdict": "agrees",
+    "scientific_verdict_identical": true
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-15T01:52:12.667870+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "d089eff116d77d56593e4c10d5dc92c50ea244b6",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mack_fig10_6_M100 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mack_fig10_6_M100'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1",
+        "PYTHONPATH": "C:\\Users\\merts\\pymack-wt\\census"
+      }
+    },
+    "effective_parameters": {
+      "case_id": "mack_fig10_6_M100",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": true,
+      "driver_effective_parameters": {
+        "mach": 10.0,
+        "N": 200,
+        "y_max": 140.0,
+        "R_sweep": [
+          300,
+          400,
+          520,
+          640,
+          800,
+          1000,
+          1200,
+          1400,
+          1600,
+          1800,
+          2000
+        ],
+        "alpha_scan": [
+          0.02,
+          0.22,
+          0.005
+        ],
+        "Pr": 0.72,
+        "gamma": 1.4,
+        "length_scale": "L_star",
+        "lambda_mu_ratio": 0.0,
+        "condition": "table_11_1",
+        "mode_c_r": [
+          0.78,
+          0.99
+        ],
+        "mode_c_i_cap": 0.05,
+        "sweep_backend": "cpu",
+        "execution_surface": "station_serial_alpha_parallel",
+        "station_workers_requested": 1,
+        "station_workers_effective": 1,
+        "alpha_sweep_observations": [
+          {
+            "R": 300.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 400.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 520.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 640.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 800.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1000.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1200.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1400.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1600.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1800.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 2000.0,
+            "backend": "cpu",
+            "cpu_workers": 41,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 41,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          }
+        ],
+        "historical_reference_scheduler": "station_serial",
+        "runaway_correction": "removed nested 12-station process pool around temporal_sweep's existing per-station alpha-grid process pool"
+      }
+    },
+    "sha256": {
+      "verification/second_mode/mack_fig10_6_M100/verdict.json": "722c6c82e9d7e326baab9648a0448440ab911f0d79452e3a53f462e0c6c5a363",
+      "scripts/verification/provenance_census_worker.py": "25787380e316accdc202afa1989c616336b68d1ba611e3a6c6b629793167859e",
+      "verification/compute_mack_fig10_6.py": "b47e863023072cab4d8e146ad9135f2ba7cb96ee589b0504cd2730a74465cd7d",
+      "verification/verify_mack_fig10_6.py": "541054dd57f1004c0556c58900a62887c3a892241ee4b931d6ce9c4a686449b8",
+      "reference_data/digitized/mack_ch10_fig10_6_M100_paper.csv": "908e2d02fe55384171ce40e6b6d2f206755bfc0d5bd6f5f3ee4ddfbe4117b635",
+      "SCRATCH/mack_fig10_6_M100/stdout.txt": "26e709a9d32d567abbd2eedb9b0315674b9d28774bb793ca2d5f2f9603249ea8",
+      "SCRATCH/mack_fig10_6_M100/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/mack_fig10_6_M100/verdict.json": "df4efaf86599776677bf6db1c5e8e820d048074e64ff5d50d38aee17cb90884a",
+      "SCRATCH/mack_fig10_6_M100/census_effective_parameters.json": "077b3f042b1d5f5729298d65f222d5c23cce35d80ba080392a6a85d1eea4107a"
+    }
+  }
+}

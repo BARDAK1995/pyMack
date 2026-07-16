@@ -8,18 +8,10 @@ back a structured result carrying values, convergence masks, certified FP64
 residuals, freestream-decay diagnostics, provenance codes, and reproducibility
 metadata.
 
-**GPU is an upgrade, not a requirement.** `import pymack` never imports CuPy,
-and `import pymack.sweep` never imports CuPy or `pymack.gpu` (see
-`test_import_is_numpy_safe` in `validation/test_sweep_cpu_backend.py`). Every
-sweep in this document runs on the CPU backend, which is available
-unconditionally. A GPU-native batched temporal engine exists (see
-[`docs/gpu/PLAN.md`](gpu/PLAN.md)) and plugs into this same facade through
-`backend='gpu'` without changing any of the contracts described here. It is
-experimental and not release-certified; **no performance numbers for it are
-published yet**. Temporal sweeps dispatch to it lazily when a CUDA device and
-the optional CuPy stack are available (with an affine-verification gate and an
-automatic CPU fallback); spatial sweeps with `backend='gpu'` still raise
-`NotImplementedError` cleanly.
+This public snapshot is CPU-only. Every sweep in this document uses the
+validated process-pool implementation. `backend='auto'` and `backend='cpu'`
+select it; `backend='gpu'` is retained only as a compatibility request that
+raises a clean `NotImplementedError` explaining the public scope.
 
 ## Quickstart
 
@@ -58,7 +50,7 @@ that also lives in this profile's alpha range — see *Mode families* above and
 `examples/04_parameter_sweep.py` for the full discussion and a worked
 stability map.
 
-Runnable, GPU-less end-to-end example:
+Runnable CPU end-to-end example:
 [`examples/04_parameter_sweep.py`](../examples/04_parameter_sweep.py).
 
 ## Why the `if __name__ == '__main__':` guard
@@ -72,7 +64,7 @@ in-process instead (identical numerics, no pool, no guard needed).
 
 ## API reference
 
-### `temporal_sweep(profile, alphas, Res, *, Ma=None, N=128, y_max=None, L=None, wall_bc='isothermal', length_scale='L_star', Pr=0.72, gamma=1.4, lambda_mu_ratio=..., beta=0.0, operator='mack_2d', families=(CBand(0.8, 1.05, label='Mack'),), seeds='auto', backend='auto', precision='mixed', tile_size='auto', return_eigenvectors=False, cpu_workers=None, cpu_blas_threads=None) -> TemporalSweepResult`
+### `temporal_sweep(profile, alphas, Res, *, Ma=None, N=128, y_max=None, L=None, wall_bc='isothermal', length_scale='L_star', Pr=0.72, gamma=1.4, lambda_mu_ratio=..., beta=0.0, operator='mack_2d', families=(CBand(0.8, 1.05, label='Mack'),), seeds='auto', backend='auto', precision='mixed', tile_size='auto', return_eigenvectors=False, cpu_workers=None, cpu_blas_threads=None, cpu_eigenvalues_only=False) -> TemporalSweepResult`
 
 Solves `A phi = c B phi` at every point of the `alphas x Res` grid with the
 selected `operator`, and per `CBand` family returns the most unstable admitted
@@ -86,6 +78,13 @@ deployed drivers call it:
 | `'mack_2d'` (default) | `pymack.solver.solve_temporal_compressible` |
 | `'ozgen_2d'` | `pymack.temporal_solver.solve_temporal_2d` (no `lambda_mu_ratio`) |
 | `'mack_3d'` | `pymack.solver.solve_temporal_compressible_3d` at the given `beta` |
+
+`cpu_eigenvalues_only=True` is an opt-in CPU optimization for the two 2-D
+operators. QZ computes eigenvalues only, mode selection is unchanged, and one
+deterministic inverse solve reconstructs the selected vector for the existing
+residual and edge-ratio diagnostics. It is rejected for the 3-D leakage-filter
+path and non-CPU backends. The default is `False` and does not alter the
+historical solver call or its bit pattern.
 
 ### `spatial_sweep(profile, omegas, Res, *, Ma=None, N=128, y_max=None, L=None, wall_bc='isothermal', length_scale='L_star', Pr=0.72, gamma=1.4, lambda_mu_ratio=..., operator='mack_qep', families=(CBand(0.8, 0.995, label='Mack'),), n_modes=25, alpha_i_abs_max=inf, seeds='auto', backend='auto', precision='mixed', tile_size='auto', return_eigenvectors=False, cpu_workers=None, cpu_blas_threads=None) -> SpatialSweepResult`
 
@@ -134,9 +133,13 @@ exact normalization is recorded verbatim in `result.meta['residual_definition']`
 `n_edge=4` freestream-side collocation points, divided by the global peak);
 its definition string is `result.meta['edge_ratio_definition']`.
 
-Serialization: `result.to_csv(path)` (one row per family/grid-point, floats
-written with `repr` for exact round-trip, meta embedded as a JSON comment
-header) and `result.to_npz(path)` (all grids plus meta in one `.npz`).
+Serialization: `result.save(path)` dispatches by the `.csv` or `.npz` suffix;
+an unsupported suffix raises `ValueError`. `result.to_csv(path)` writes one
+row per family/grid-point, floats with `repr` for exact round-trip, and meta in
+a JSON comment header. `result.to_npz(path)` writes all grids plus meta in one
+`.npz`. NPZ also preserves nested NumPy arrays in optional metadata; CSV
+records explicit shape/dtype omission markers instead of failing or pretending
+those arrays were serialized.
 `pymack.sweep.load_csv(path)` / `pymack.sweep.load_npz(path)` (or the
 `TemporalSweepResult.from_npz` / `SpatialSweepResult.from_npz` classmethods)
 load them back.
@@ -153,9 +156,8 @@ future backend:
 | `-1` | `SEED_NO_ADMISSIBLE_MODE` | solver succeeded; the family window held no admissible mode (an honest miss, not an error) |
 | `-2` | `SEED_SOLVER_FAILED` | per-point record construction raised; the point is contained (never kills the sweep), and the exception `repr` is recorded in `meta['errors']` |
 
-Positive integers are **reserved** for backend-specific seed-chain /
-provenance ids — for example a future GPU wavefront-continuation engine's
-neighbor-chain ids. The CPU backend never emits a positive code today. Every
+Positive integers are **reserved** for future backend-specific seed-chain /
+provenance ids. The CPU backend never emits a positive code today. Every
 backend publishes its complete code legend in `meta['seed_codes']` so a
 serialized artifact is self-describing without consulting this document; the
 legend dict always carries the `'0'`, `'-1'`, `'-2'`, and `'reserved_positive'`
@@ -184,10 +186,10 @@ populate:
 `edge_ratio_definition`, `versions` (`pymack`, `numpy`, `scipy`, `python`),
 `platform`, `timestamp_utc`, `wall_time_s`.
 
-Notes specific to the CPU backend (the only implemented backend today):
+Notes specific to the CPU backend:
 
 - `backend` is always `'cpu'`; `backend_requested` records what the caller
-  asked for (`'auto'`, `'cpu'`, or the now-rejected `'gpu'`) and
+  asked for (`'auto'` or `'cpu'`) and
   `env_backend_override` records the resolved value of the
   `PYMACK_SWEEP_BACKEND` environment variable, if any (see *Backend
   resolution* below).
@@ -203,16 +205,6 @@ Notes specific to the CPU backend (the only implemented backend today):
 - `operator_source` is `'per_point_cpu_qz'`, naming the reference computation
   the values are certified against.
 
-**An `AffineOperatorCache` fingerprint (`pymack.gpu.affine.AffineOperatorCache.fingerprint()`,
-a sha256 over the structural cache key, basis, and extracted operator terms)
-is part of the GPU engine's internal cache identity, not part of the CPU
-sweep's `meta` today.** When the GPU sweep engine (`pymack.gpu.api`, plan
-slices 07+) lands, its `meta` is expected to publish that fingerprint under
-`meta['affine_fingerprint']` alongside the fields above, so a GPU artifact is
-traceable to the exact affine decomposition that produced it; this document
-will be updated when that field ships. Do not rely on a GPU-only key existing
-in CPU meta.
-
 ### Bitwise identity to the deployed per-point loop
 
 The CPU backend is **bitwise-identical** to the deployed per-point loop it
@@ -223,37 +215,22 @@ asserted — see `validation/test_sweep_cpu_backend.py`
 `test_sweep_equals_point_loop_second_height`,
 `test_driver_sweep_engine_equals_point_engine`), which run the sweep facade
 and a fresh direct per-point loop side by side and assert bit-equality of
-every converged value, every provenance code, and every family label. The
-CPU backend is also the certification reference the (in-development) GPU
-engine's results are checked against — see `docs/gpu/PLAN.md`.
-
-**No GPU performance numbers are published in this documentation, the
-README, or any example.** The GPU temporal engine is experimental and not
-release-certified; its speedup, when certified against the CPU backend above,
-will be published separately.
+every converged value, every provenance code, and every family label.
 
 ## Backend resolution
 
 `backend='cpu'` always uses the `ProcessPoolExecutor` CPU path described
-above. `backend='gpu'` dispatches temporal sweeps to the optional GPU engine
-(`pymack.gpu.api.solve_temporal_sweep`) when a usable device is present, and
-raises a clean `NotImplementedError` when none is; spatial sweeps on
-`backend='gpu'` raise `NotImplementedError` until the spatial engine lands.
+above. `backend='gpu'` always raises `NotImplementedError` in this CPU-only
+public snapshot.
 
 `backend='auto'` resolves in this order:
 
 1. An explicit `backend=` argument other than `'auto'` always wins outright
    (this rule applies before `'auto'` resolution is even considered).
 2. If `'auto'` was passed: the `PYMACK_SWEEP_BACKEND` environment variable
-   (`'cpu'` or `'gpu'`), if set, wins.
-3. Otherwise: GPU if a usable GPU sweep engine is importable and reports a
-   device (`pymack.gpu.is_available()` true and `pymack.gpu.api` exposes a
-   callable `solve_temporal_sweep`) — which is never true today, since that
-   engine has not landed — else CPU.
-
-Every failure mode in step 3 (no `pymack.gpu` package, no CuPy, no device, no
-engine module) makes `'auto'` resolve to CPU silently; the probe is never
-called at import time, so `import pymack.sweep` still never touches CuPy.
+   (`'cpu'` or `'gpu'`), if set, wins. The latter value reaches the same clean
+   unsupported-backend error.
+3. Otherwise: CPU, always.
 
 ## Parallelism
 
@@ -263,48 +240,81 @@ raises `ValueError` above that on Windows' `WaitForMultipleObjects` limit).
 `cpu_workers=1` runs serially in the calling process: identical numerics, no
 pool overhead, and no `if __name__ == '__main__':` guard required.
 
-## Many-core CPU performance (BLAS pinning)
+The same limit applies to completeness-count R4 CPU-QZ escalations. On Windows,
+that escalation pool is additionally bounded by live system commit headroom
+queried with `GlobalMemoryStatusEx` (a 1 GiB system reserve and 512 MiB per
+spawned SciPy worker). If a worker or its pool fails, only the affected points
+are rerun serially in the caller; pool failures are never converted into failed
+point-family records.
 
-On hosts with many logical cores the default `cpu_workers` (often 61 on
-Windows) + unpinned BLAS inside each worker can produce heavy oversubscription
-(threads x workers). A baseline-fairness measurement recorded 1372 s unpinned
-vs ~149 s with workers pinned to 1 BLAS thread each (9x) on the N=128 720-node
-Ozgen overlay workload.
 
-`cpu_blas_threads=1` (or env var `PYMACK_SWEEP_CPU_BLAS_THREADS=1`) is the
-supported opt-in. It pins each worker via the standard env vars
-(OMP/OPENBLAS/MKL/NUMEXPR_NUM_THREADS) inherited at spawn time. Parent
-mutation is exception-safe and restored.
+## Fast CPU sweeps
 
-**Honesty contract**: this is a *different floating-point path*. BLAS thread
-count can alter last-bit rounding. Do **not** claim bitwise identity. The
-default (unset) path remains bitwise-identical; committed fixtures stay green.
+On many-core hosts, one multithreaded BLAS instance inside every worker causes
+severe oversubscription. The supported opt-in is `cpu_blas_threads=1` (or
+`PYMACK_SWEEP_CPU_BLAS_THREADS=1`); it pins the standard OMP/OpenBLAS/MKL/
+NumExpr variables inherited by spawned workers. Parent mutation is
+exception-safe and restored. `cpu_workers` is capped at 61 on Windows because
+`ProcessPoolExecutor` uses `WaitForMultipleObjects`; more workers are not a
+valid Windows configuration.
 
-Semantic identity is guaranteed by test: on small grids (e.g. 6x4 nodes,
-N=31) the selected c (and None-status) agree to 1e-9 relative.
+The two deployed recipes are:
 
-Meta records:
-- `cpu_blas_threads`: the requested value (None = default unpinned)
-- `cpu_blas_threads_effective`: the count observed *inside* a worker (via
-  threadpoolctl when present, else env fallback)
+```powershell
+python scripts/make_ozgen_fig3_overlay.py --quality production --panels 2 --engine sweep --workers 24 --blas-threads 1 --eigenvalues-only --verify-against-committed
+python verification/compute_mack_fig10_4.py --mach 10 --point-parallel --workers 61 --blas-threads 1 --verify-against-committed
+```
 
-Use the pinned path for throughput on many-core hardware; use default for
-exact bitwise reproducibility.
+The second command's point scheduler parallelizes the 1,224 coarse solves and
+then the exact 81-point refine windows. Its default invocation remains the
+historical serial loop. The Ozgen driver likewise forwards tuning arguments
+only when the user supplies the new flags.
 
-The measurement script `scripts/gpu_bench/measure_cpu_parallel_overlay_n128.py`
-accepts `--blas-threads 1` and writes a suffixed artifact carrying the fields
-(workload, workers, effective BLAS threads, wall, cores). See the committed
-`cpu_parallel_overlay_n128_blas1t.json` (or run the script).
+### Measured anchors and scope
+
+All values below are fresh-process, lock-isolated measurements on the same
+64-logical-core Windows host. They are workload-specific observations, not
+portable promises:
+
+| Workload and path | Workers | Wall (s) | Identity authority | Artifact |
+|---|---:|---:|---|---|
+| Ozgen M=2, N=128, serial historical loop | 1 | 1598.6827 | committed production grid | `verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2.json` |
+| Ozgen M=2, full QZ floor | 24 | 108.9757 | 720/720 committed rows | `docs/benchmarks/cpu_floor_sweep.json` |
+| Ozgen M=2, values only + one inverse solve | 24 | 46.7037 | 720/720 committed rows | `docs/benchmarks/cpu_floor_sweep.json` |
+| Mack Fig. 10.4 M=10, historical serial | 1 | 9717.0784 | committed nine-station curve | `docs/benchmarks/cpu_fig10_4_m10_serial.json` |
+| Mack Fig. 10.4 M=10, point parallel | 61 | 1110.5274 | identical nine-station verdict | `docs/benchmarks/cpu_fig10_4_m10_pointparallel_61w.json` |
+
+The completed worker sweep found that more workers are not monotonically
+faster: full-QZ wall was 192.2689, 109.7500,
+108.9757, 123.1585, 137.5265, and 153.3321 s at 8, 16, 24, 32, 48, and 61
+workers. Its best full-QZ point was 24 workers at 108.9757 s; the matching
+values-only-plus-inverse point was 46.7037 s with 720/720 rows matched. That
+evidence is committed in `docs/benchmarks/cpu_floor_sweep.json`.
+
+This flattening and reversal is a memory-bandwidth/process-overhead ceiling,
+not a correctness failure. Benchmark the target machine; do not assume 61 is
+optimal. The earlier 8.75--10.7x user wins compare tuned deployed drivers with
+their honest serial historical baselines. They do not imply linear scaling or
+a universal speedup.
+
+**Reproducibility boundary:** BLAS pinning and eigenvalues-only QZ are explicit
+different floating-point paths, so no bitwise claim is made for either. The
+full 720-row production verdict is nevertheless identical at the committed
+artifact's `1e-9` precision authority, and the Mack curve is exact-zero. With
+both options unset, default-invocation fixtures and per-point equivalence tests
+remain byte-identical.
+
+Meta records `cpu_blas_threads`, the effective value observed inside a worker,
+and (only when opted in) the `cpu_eigenvalues_only` algorithm description. Use
+the default path for exact historical reproduction and the opt-in recipes for
+measured throughput.
 
 ## Validation
 
-The CPU backend's tests live in `validation/test_sweep_cpu_backend.py` and
-run in the default (`-m "not slow"`) CI suite — no GPU, no CuPy, every
-platform in the CI matrix. They cover: bitwise equivalence to the direct
+The CPU backend's tests live in `validation/test_sweep_cpu_backend.py`. They
+cover bitwise equivalence to the direct
 per-point loop at two domain heights and two operators, the committed-CSV
 drift attribution, the cross-family tie-break, environment/argument backend
-precedence, `backend='gpu'` dispatch (or a clean availability error when no
-usable GPU engine is present), per-point and
-post-solve failure containment, `meta` completeness, CSV/NPZ round-trips, the
-Windows worker cap, and that importing `pymack.sweep` never imports `cupy` or
-`pymack.gpu`.
+precedence, the clean CPU-only error for `backend='gpu'`, per-point and
+post-solve failure containment, `meta` completeness, CSV/NPZ round-trips, and
+the Windows worker cap.

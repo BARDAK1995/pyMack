@@ -13,22 +13,96 @@
   },
   "quantity": "max second-mode temporal omega_i vs R (Mack L* scale)",
   "metrics": {
-    "curve_median_rel_err": 0.08946123188554544,
+    "curve_median_rel_err": 0.02648169670599881,
     "n_overlap": 11,
     "n_valid_stations": 12,
-    "omega_i_max_at_R1500": 0.0030129727836907304,
+    "omega_i_max_at_R1500": 0.0032785443578036144,
     "condition": "table_11_1",
     "N": 150,
     "y_max": 64.0,
     "topology_ok": true
   },
-  "verdict": "acceptable",
-  "verdict_reason": "Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=5.8, adiabatic. Two corrections make this a defensible comparison: (1) the COLD table_11_1 edge (resolves the historical ~6x gap \u2014 an edge-temperature error, not a length-scale mapping issue); (2) a wall-normal domain y_max=64 ~4x delta*/L* (a fixed short box starves the thick high-Mach boundary layer and spuriously under-predicts or kills the mode \u2014 e.g. M10 needs y_max~140). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 8.9% over 11 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=150, y_max=64). A small residual offset above the 5% floor; the domain-converged second mode tracks Mack's curve across the band (the 10.6 family agrees from M4.5 to M10, so this is a local residual, NOT a monotonic high-Mach under-prediction).",
+  "verdict": "agrees",
+  "verdict_reason": "Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=5.8, adiabatic. Two corrections make this a defensible comparison: (1) the COLD table_11_1 edge (resolves the historical ~6x gap \u2014 an edge-temperature error, not a length-scale mapping issue); (2) a wall-normal domain y_max=64 ~4x delta*/L* (a fixed short box starves the thick high-Mach boundary layer and spuriously under-predicts or kills the mode \u2014 e.g. M10 needs y_max~140). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 2.6% over 11 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=150, y_max=64). At/below the 5% digitization floor \u2014 the domain-converged, cold-edge second mode matches Mack.",
   "generated": "new",
   "artifacts": {
     "pymack": "verification/second_mode/mack_fig10_6_M58/pymack_curve.json",
     "reference": "reference_data\\digitized\\mack_ch10_fig10_6_M58_paper.csv",
-    "overlay": "verification/second_mode/mack_fig10_6_M58/overlay.png"
+    "overlay": null
   },
-  "pymack_provenance": "verification/compute_mack_fig10_6.py (M=5.8); solve_temporal_compressible N=150, y_max=64 (~4x delta*/L*), L*, lambda_mu_ratio=0.0, condition=table_11_1; single-thread BLAS."
+  "pymack_provenance": "verification/compute_mack_fig10_6.py (M=5.8); solve_temporal_compressible N=150, y_max=64 (~4x delta*/L*), L*, lambda_mu_ratio=0.0, condition=table_11_1; single-thread BLAS.",
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-15T10:08:22.231342+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "351d83287a7fd8bae341c2d87ebfcccb39191288",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "\"C:\\Program Files\\Python312\\python.exe\" verification/verify_mack_fig10_6.py --mach 5.8 --force",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": "cpu",
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1"
+      }
+    },
+    "effective_parameters": {
+      "mach": 5.8,
+      "N": 150,
+      "y_max": 64.0,
+      "R_sweep": [
+        240,
+        300,
+        400,
+        500,
+        700,
+        900,
+        1100,
+        1300,
+        1500,
+        1700,
+        1900,
+        2000
+      ],
+      "alpha_scan": [
+        0.05,
+        0.3,
+        0.005
+      ],
+      "Pr": 0.72,
+      "gamma": 1.4,
+      "length_scale": "L_star",
+      "lambda_mu_ratio": 0.0,
+      "condition": "table_11_1",
+      "mode_c_r": [
+        0.78,
+        0.99
+      ],
+      "mode_c_i_cap": 0.05,
+      "sweep_backend": "cpu"
+    },
+    "sha256": {
+      "verification/second_mode/mack_fig10_6_M58/pymack_curve.json": "ec1971fa37d349b6780902b37caaccef131d4c12b41571c4917c89bf31ea0eda",
+      "reference_data/digitized/mack_ch10_fig10_6_M58_paper.csv": "8011a1f37d6e67dae17bcd2b045c3359bd8ec4f2b32f9439d0a0351e1af3ae2f",
+      "verification/verify_mack_fig10_6.py": "541054dd57f1004c0556c58900a62887c3a892241ee4b931d6ce9c4a686449b8",
+      "verification/compute_mack_fig10_6.py": "b47e863023072cab4d8e146ad9135f2ba7cb96ee589b0504cd2730a74465cd7d",
+      "pymack/solver.py": "d7dd1c4e2f89760a60120b1c0d9cbf87a76fcf4940dce372f0c7da66c833ce2d",
+      "pymack/sweep.py": "5c48c4262363ead6d93f97c50fbea6b256084e30afe0c02339286acb492f123d"
+    }
+  }
 }

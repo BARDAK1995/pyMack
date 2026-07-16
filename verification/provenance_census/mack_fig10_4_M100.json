@@ -1,0 +1,176 @@
+{
+  "schema_version": 1,
+  "case_id": "mack_fig10_4_M100",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/first_mode/mack_fig10_4_M100/verdict.json",
+    "sha256": "32813826ac1964be51210ebea09ea959e0ec21247c2f1ac8ddee4f43ad768545",
+    "committed_when": {
+      "commit": "f0f47bfb072e971092b1a97ccd2164901042a8ee",
+      "authored_at": "2026-07-02T22:09:38-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/mack_fig10_4_M100",
+    "regenerated_payload": "SCRATCH/mack_fig10_4_M100/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mack_fig10_4_M100 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mack_fig10_4_M100'",
+    "exit_code": 0,
+    "elapsed_s": 1079.3727593000003,
+    "hard_timeout_s": 1800.0,
+    "timed_out": false,
+    "termination": null,
+    "measurement_lock": {
+      "protocol": "atomic mkdir; low-priority poll; never steal",
+      "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+      "owner": "provenance-census-low-priority 2026-07-15T02:14:54.317764+00:00 86de28cd8cd046e0b48d80412d620571 provenance-census-mack_fig10_4_M100",
+      "run_label": "provenance-census-mack_fig10_4_M100",
+      "waited_s": 0.0,
+      "acquired_at_utc": "2026-07-15T02:14:54.317764+00:00",
+      "released_at_utc": "2026-07-15T02:32:53.688048+00:00"
+    },
+    "stdout": "SCRATCH/mack_fig10_4_M100/stdout.txt",
+    "stderr": "SCRATCH/mack_fig10_4_M100/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 14,
+    "n_compared_numeric_metrics": 14,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 0.0,
+    "max_abs_drift_path": "metrics.N",
+    "component_abs_drift": {
+      "metrics.N": 0.0,
+      "metrics.c_r_typ": 0.0,
+      "metrics.curve_max_rel_err": 0.0,
+      "metrics.curve_mean_rel_err": 0.0,
+      "metrics.curve_median_rel_err": 0.0,
+      "metrics.delta_star_over_Lstar": 0.0,
+      "metrics.n_low_R_stable_excluded": 0.0,
+      "metrics.n_overlap": 0.0,
+      "metrics.n_valid_stations": 0.0,
+      "metrics.omega_i_max_at_R1500": 0.0,
+      "metrics.overlap_R_hi": 0.0,
+      "metrics.overlap_R_lo": 0.0,
+      "metrics.psi_peak_typ_deg": 0.0,
+      "metrics.y_max": 0.0
+    },
+    "committed_verdict": "acceptable",
+    "regenerated_verdict": "acceptable",
+    "scientific_verdict_identical": true
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-15T02:32:53.712208+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "bdfbc9207132d10096c2e539c9853951c4b60b42",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mack_fig10_4_M100 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mack_fig10_4_M100'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1",
+        "PYTHONPATH": "C:\\Users\\merts\\pymack-wt\\census"
+      }
+    },
+    "effective_parameters": {
+      "case_id": "mack_fig10_4_M100",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": true,
+      "driver_effective_parameters": {
+        "mach": 10.0,
+        "N": 200,
+        "y_max": 150.0,
+        "R_sweep": [
+          450,
+          650,
+          850,
+          1050,
+          1250,
+          1450,
+          1650,
+          1850,
+          2000
+        ],
+        "alpha_grid": [
+          0.01,
+          0.0125,
+          0.015,
+          0.0175,
+          0.02,
+          0.0225,
+          0.025,
+          0.0275,
+          0.03,
+          0.0325,
+          0.035,
+          0.0375,
+          0.04,
+          0.0425,
+          0.045,
+          0.0475,
+          0.05
+        ],
+        "psi_grid_deg": [
+          42.0,
+          45.0,
+          48.0,
+          51.0,
+          54.0,
+          57.0,
+          60.0,
+          63.0
+        ],
+        "mode_c_r": [
+          0.4,
+          0.95
+        ],
+        "mode_c_i_cap": 0.12,
+        "condition": "table_11_1",
+        "length_scale": "L_star",
+        "lambda_mu_ratio": 0.0,
+        "execution_surface": "point_parallel",
+        "workers_requested": 61,
+        "workers_effective": 61,
+        "scheduler": {
+          "workers_effective": 61,
+          "coarse_points": 1224,
+          "refine_points": 81
+        },
+        "historical_reference_scheduler": "station_serial"
+      }
+    },
+    "sha256": {
+      "verification/first_mode/mack_fig10_4_M100/verdict.json": "32813826ac1964be51210ebea09ea959e0ec21247c2f1ac8ddee4f43ad768545",
+      "scripts/verification/provenance_census_worker.py": "25787380e316accdc202afa1989c616336b68d1ba611e3a6c6b629793167859e",
+      "verification/compute_mack_fig10_4.py": "93d9a03eaf327337c251fe86ae0532c21211b4ac3aee28b833d35c93b208f758",
+      "verification/verify_mack_fig10_4.py": "a78ec66146cb9b9c83d7dcbe1a4ae217dbc882700101af0d86729c6f3d0ff93a",
+      "reference_data/digitized/mack_ch10_fig10_4_M100_paper.csv": "6198e8c4ef4754e6518f2879fd35b1c69e1a1d673bdbbacd7fd71b244039c639",
+      "SCRATCH/mack_fig10_4_M100/stdout.txt": "7f0edcf72855fb11b6a4e2a02950088ae25fc8f96b17c7669565961baf3ee62d",
+      "SCRATCH/mack_fig10_4_M100/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/mack_fig10_4_M100/verdict.json": "2365a7d5253484feb25cfcd5f1412abe63cbf2c47e9dc9b7076b7336a4451709",
+      "SCRATCH/mack_fig10_4_M100/census_effective_parameters.json": "b7a098d47439caefd083daacecc95ba2e0b61373bb581b5be164ace26a6d225b"
+    }
+  }
+}

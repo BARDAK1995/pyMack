@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "case_id": "mack_fig10_3_m3p0",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/first_mode/mack_fig10_3_m3p0/verdict.json",
+    "sha256": "0943cd0fb32a3946fe9a60e8617f964a6071a3e40a2c83c59d2bd91cf1b004c8",
+    "committed_when": {
+      "commit": "f0f47bfb072e971092b1a97ccd2164901042a8ee",
+      "authored_at": "2026-07-02T22:09:38-05:00"
+    }
+  },
+  "status": "DEFERRED_DRIVER_WALL",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/mack_fig10_3_m3p0",
+    "regenerated_payload": null,
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mack_fig10_3_m3p0 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mack_fig10_3_m3p0'",
+    "exit_code": 1,
+    "elapsed_s": 0.5488960000220686,
+    "measurement_lock": null,
+    "stdout": "SCRATCH/mack_fig10_3_m3p0/stdout.txt",
+    "stderr": "SCRATCH/mack_fig10_3_m3p0/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "DEFERRED",
+    "whole_reference_byte_identical": null,
+    "max_abs_drift": null,
+    "note": "The committed driver did not produce a comparable verdict; the captured stderr is a binding driver wall."
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:18:08.670403+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "9486ae417b31aba74d631fd1c29c1bd6c5df4e6e",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mack_fig10_3_m3p0 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mack_fig10_3_m3p0'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "case_id": "mack_fig10_3_m3p0",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": false
+    },
+    "sha256": {
+      "verification/first_mode/mack_fig10_3_m3p0/verdict.json": "0943cd0fb32a3946fe9a60e8617f964a6071a3e40a2c83c59d2bd91cf1b004c8",
+      "scripts/verification/provenance_census_worker.py": "a618c1f1a52ed9e8128907e438ee935274c2c39c1f7c7ebc17987287398c8cb8",
+      "verification/compute_mack_fig10_3_selfseed.py": "9beb457cb0d31ca125e3012d5e038e49ab69c7acee70ecaea9eac7ef17c1615d",
+      "SCRATCH/mack_fig10_3_m3p0/stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/mack_fig10_3_m3p0/stderr.txt": "15cf644ac1db26f1c5c2e2919046854ff662486ee51e6e644d84ee1cdc5fe6bc"
+    }
+  }
+}

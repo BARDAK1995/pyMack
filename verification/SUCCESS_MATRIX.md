@@ -8,13 +8,13 @@ from per-case `verdict.json`. Methodology & thresholds:
 
 Each case name below links to its pyMack-vs-reference **overlay plot**. At-a-glance galleries: [second-mode](second_mode_gallery.png) · [first-mode](first_mode_gallery.png).
 
-**Overall (37 cases):** ✅ agrees 15 · 🟡 acceptable 16 · ❌ disagrees 3 · ⬜ pending 3
+**Overall (37 cases):** ✅ agrees 16 · 🟡 acceptable 15 · ❌ disagrees 3 · ⬜ pending 3
 
 **Headline:** every *second-mode* case agrees/acceptable. For the *first mode*, the Özgen cases — once their references were re-digitized correctly and a discrete-mode (eigenfunction-decay + y_max-stationarity) extractor replaced the c_r-band classifier that had excluded the genuine first mode — now AGREE where the mode is cleanly resolvable (M4/M6 reproduce all four neutral branches to ≤8.5%; M2/M3 agree over the resolvable part of the lobe). The low-α first-mode *onset* at low Mach stays continuous-spectrum-limited (a numerical isolation limit, not a physics disagreement). The remaining ❌ are Mack-figure first modes (Fig 10.1/10.3/10.4) computed through a *separate* solver/comparison that has NOT yet had the same discrete-mode scrutiny — so the earlier blanket 'first mode systematically under-amplified' claim is retired pending that re-examination.
 
 ## Second (Mack) mode
 *pyMack's design target — validated across independent sources, Mach 4.5–10, and a cone.*  
-**16 cases:** ✅ agrees 7 · 🟡 acceptable 8 · ❌ disagrees 0 · ⬜ pending 1
+**16 cases:** ✅ agrees 8 · 🟡 acceptable 7 · ❌ disagrees 0 · ⬜ pending 1
 
 ### Neutral curves
 
@@ -28,11 +28,11 @@ Each case name below links to its pyMack-vs-reference **overlay plot**. At-a-gla
 | Case | Source | Conditions | Verdict | Headline |
 |---|---|---|---|---|
 | [`mack_fig10_6_M100`](second_mode/mack_fig10_6_M100/overlay.png) | Mack (1984) Fig 10.6 (AGARD R-709) | M=10, ψ=0°, air, adiabatic | ✅ agrees | curve median 4.0% |
+| `mack_fig10_6_M58` | Mack (1984) Fig 10.6 (AGARD R-709) | M=5.8, ψ=0°, air, adiabatic | ✅ agrees | curve median 2.6% |
 | [`mack_fig10_6_M70`](second_mode/mack_fig10_6_M70/overlay.png) | Mack (1984) Fig 10.6 (AGARD R-709) | M=7, ψ=0°, air, adiabatic | ✅ agrees | curve median 2.8% |
 | [`cone_sivasubramanian_fasel_2015`](second_mode/cone_sivasubramanian_fasel_2015/overlay.png) | Sivasubramanian (2012) PhD thesis | ψ=0°, air, isothermal Tw=300 K (Tw/Te=4.70) | 🟡 acceptable | f: 210 kHz EXACT match (pyMack peak-N at 205 kHz; N=8.05 at the thesis 210 kHz). N: pyMack domain-matched 8.0-8.1 vs thesis 9.5 -> ~15% short (Mangler self-similar BL under-predicts the back-half DNS growth). |
 | [`egorov2006_m6`](second_mode/egorov2006_m6/overlay.png) | Egorov | M=6, ψ=0°, air (perfect gas), adiabatic (dTw/dy=0) | 🟡 acceptable | rel_err=0.075; pymack_value=215 |
-| [`mack_fig10_6_M45`](second_mode/mack_fig10_6_M45/overlay.png) | Mack (1984) Fig 10.6 (AGARD R-709) | M=4.5, ψ=0°, air, adiabatic | 🟡 acceptable | curve median 6.0% |
-| [`mack_fig10_6_M58`](second_mode/mack_fig10_6_M58/overlay.png) | Mack (1984) Fig 10.6 (AGARD R-709) | M=5.8, ψ=0°, air, adiabatic | 🟡 acceptable | curve median 8.9% |
+| `mack_fig10_6_M45` | Mack (1984) Fig 10.6 (AGARD R-709) | M=4.5, ψ=0°, air, adiabatic | 🟡 acceptable | curve median 6.9% |
 | `mack_fig10_6_family` | Mack (1984) Fig 10.6 ⚠ | M=4.5/5.8/7/10, ψ=0°, air, adiabatic | ⬜ pending | — |
 
 ### Eigenvalue anchors
@@ -139,11 +139,11 @@ Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=10.0, adiabatic.
 
 **`mack_fig10_6_M45`** (Second (Mack) mode) — 🟡 acceptable (max second-mode temporal omega_i vs R (Mack L* scale))  
 
-Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=4.5, adiabatic. Two corrections make this a defensible comparison: (1) the COLD table_11_1 edge (resolves the historical ~6x gap — an edge-temperature error, not a length-scale mapping issue); (2) a wall-normal domain y_max=40 ~4x delta*/L* (a fixed short box starves the thick high-Mach boundary layer and spuriously under-predicts or kills the mode — e.g. M10 needs y_max~140). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 6.0% over 10 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=120, y_max=40). A small residual offset above the 5% floor; the domain-converged second mode tracks Mack's curve across the band (the 10.6 family agrees from M4.5 to M10, so this is a local residual, NOT a monotonic high-Mach under-prediction).
+Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=4.5, adiabatic. Two corrections make this a defensible comparison: (1) the COLD table_11_1 edge (resolves the historical ~6x gap — an edge-temperature error, not a length-scale mapping issue); (2) a wall-normal domain y_max=40 ~4x delta*/L* (a fixed short box starves the thick high-Mach boundary layer and spuriously under-predicts or kills the mode — e.g. M10 needs y_max~140). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 6.9% over 10 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=120, y_max=40). A small residual offset above the 5% floor; the domain-converged second mode tracks Mack's curve across the band (the 10.6 family agrees from M4.5 to M10, so this is a local residual, NOT a monotonic high-Mach under-prediction).
 
-**`mack_fig10_6_M58`** (Second (Mack) mode) — 🟡 acceptable (max second-mode temporal omega_i vs R (Mack L* scale))  
+**`mack_fig10_6_M58`** (Second (Mack) mode) — ✅ agrees (max second-mode temporal omega_i vs R (Mack L* scale))
 
-Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=5.8, adiabatic. Two corrections make this a defensible comparison: (1) the COLD table_11_1 edge (resolves the historical ~6x gap — an edge-temperature error, not a length-scale mapping issue); (2) a wall-normal domain y_max=64 ~4x delta*/L* (a fixed short box starves the thick high-Mach boundary layer and spuriously under-predicts or kills the mode — e.g. M10 needs y_max~140). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 8.9% over 11 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=150, y_max=64). A small residual offset above the 5% floor; the domain-converged second mode tracks Mack's curve across the band (the 10.6 family agrees from M4.5 to M10, so this is a local residual, NOT a monotonic high-Mach under-prediction).
+Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M=5.8, adiabatic. Two corrections make this a defensible comparison: (1) the COLD table_11_1 edge (resolves the historical ~6x gap — an edge-temperature error, not a length-scale mapping issue); (2) a wall-normal domain y_max=64 ~4x delta*/L* (a fixed short box starves the thick high-Mach boundary layer and spuriously under-predicts or kills the mode — e.g. M10 needs y_max~140). pyMack omega_i,max(R) vs the digitized paper curve: median relative error 2.6% over 11 overlapping R-stations (L* scale, temporal second mode c_r~0.9, N=150, y_max=64). At/below the 5% digitization floor — the domain-converged, cold-edge second mode matches Mack.
 
 **`mack_fig10_6_M70`** (Second (Mack) mode) — ✅ agrees (max second-mode temporal omega_i vs R (Mack L* scale))  
 

@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "case_id": "sean_m5p35",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/sean_m5p35/verdict.json",
+    "sha256": "5f2988fd760ca796a066f593b9fccb7ff3c7ea772fffed5cf4faada3298406b7",
+    "committed_when": {
+      "commit": "e963286696f4422ecc8b0cdec9e7a17f07678abc",
+      "authored_at": "2026-06-19T09:28:48-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/sean_m5p35",
+    "regenerated_payload": "SCRATCH/sean_m5p35/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py sean_m5p35 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\sean_m5p35'",
+    "exit_code": 0,
+    "elapsed_s": 1.481029799906537,
+    "measurement_lock": null,
+    "stdout": "SCRATCH/sean_m5p35/stdout.txt",
+    "stderr": "SCRATCH/sean_m5p35/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 9,
+    "n_compared_numeric_metrics": 9,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 0.0,
+    "max_abs_drift_path": "metrics.lower_branch_MAE_mm_330_600kHz",
+    "component_abs_drift": {
+      "metrics.lower_branch_MAE_mm_330_600kHz": 0.0,
+      "metrics.lower_branch_MAE_mm_full_200kHz": 0.0,
+      "metrics.lower_branch_n_points_330_600kHz": 0.0,
+      "metrics.lower_branch_n_points_full_200kHz": 0.0,
+      "metrics.lower_branch_ref_span_mm_330_600kHz": 0.0,
+      "metrics.lower_branch_ref_span_mm_full_200kHz": 0.0,
+      "metrics.upper_branch_MAE_mm_200_600kHz": 0.0,
+      "metrics.upper_branch_n_points": 0.0,
+      "metrics.upper_branch_ref_span_mm_200_600kHz": 0.0
+    },
+    "committed_verdict": "acceptable",
+    "regenerated_verdict": "acceptable",
+    "scientific_verdict_identical": true
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:34:28.627516+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "ba716f2e6ab3388eca90ec27b1686f73244e5b00",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py sean_m5p35 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\sean_m5p35'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1",
+        "PYTHONPATH": "C:\\Users\\merts\\pymack-wt\\census"
+      }
+    },
+    "effective_parameters": {
+      "case_id": "sean_m5p35",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": false,
+      "driver_effective_parameters": {
+        "compute_role": "deterministic verdict regeneration from committed production CSV",
+        "production_sweep_rerun": false,
+        "production_manifest": "validation/data/collaborator_mach5p35/run_manifest.json",
+        "pymack_csv": "validation/data/collaborator_mach5p35/pymack_neutral_envelope_dimensional.csv",
+        "reference_csv": "reference_data/collaborator_mach5p35/LST_neutral_curve_M5p35.csv",
+        "upper_band_khz": [
+          200.0,
+          600.0
+        ],
+        "lower_gated_band_khz": [
+          330.0,
+          600.0
+        ],
+        "lower_full_band_khz": [
+          200.0,
+          600.0
+        ]
+      }
+    },
+    "sha256": {
+      "verification/second_mode/sean_m5p35/verdict.json": "5f2988fd760ca796a066f593b9fccb7ff3c7ea772fffed5cf4faada3298406b7",
+      "scripts/verification/provenance_census_worker.py": "c96ff88e638bb52c64b5be7d5bc3a69725e244340f211252add4f28a9af34732",
+      "verification/compare_sean_m5p35.py": "7a213c57de8ed9313cb41862d656dc3b00ba2553233cd915b00831e32a4ef5fe",
+      "validation/data/collaborator_mach5p35/run_manifest.json": "240a1391f9dcfb17315d0d69e568e43913236d121d0ccb03b709b1cefab5c41e",
+      "validation/data/collaborator_mach5p35/pymack_neutral_envelope_dimensional.csv": "26aa45dff7aa59ec882f8e8f8e119997dcbd3157be9555f81d6bebacb68bcd91",
+      "reference_data/collaborator_mach5p35/LST_neutral_curve_M5p35.csv": "f51aef5ab566eef725bef5059bb5f6911d85e3b273825cfdca06c13b9240826c",
+      "SCRATCH/sean_m5p35/stdout.txt": "e5bea59a16cec5d73b9fc41877efc6d1fe4712559fa382bf2571ebc9e2caff2c",
+      "SCRATCH/sean_m5p35/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/sean_m5p35/verdict.json": "7aa91065ae97660fa7cb6860fa2a3e6a913d0bdfa19876b5ae1b5148160c6fb6",
+      "SCRATCH/sean_m5p35/census_effective_parameters.json": "f169f51ad44581b8e0436adc95c95e3f74f4c44fe667c35c803542f67b90f089"
+    }
+  }
+}

@@ -261,19 +261,23 @@ For the first mode:
 - [`validation/test_appendix_a_reduction.py`](../validation/test_appendix_a_reduction.py): reconstructs the Eq. 8.9 / Appendix-A first-order system from the reduced collocation equations and verifies exact agreement
 - [`validation/test_asymptotic.py`](../validation/test_asymptotic.py): sanity checks for Appendix-A/B helper algebra
 
-### Mack chapter scripts
+### Mack reproduction entry points
 
-- [`chapters/ch06_compressible_formulation/ch06.py`](../chapters/ch06_compressible_formulation/ch06.py): mean-flow scaling diagnostics
-- [`chapters/ch09_compressible_inviscid/ch09.py`](../chapters/ch09_compressible_inviscid/ch09.py): inviscid-mode exploration
-- [`chapters/ch10_compressible_viscous/ch10.py`](../chapters/ch10_compressible_viscous/ch10.py): viscous compressible figure scaffolding plus the validated
-  [`table10_1_exact_shooting_growth.png`](../chapters/ch10_compressible_viscous/table10_1_exact_shooting_growth.png)
-  Table 10.1 exact-shooting check
+The development-only chapter notebooks are outside this public snapshot. The
+corresponding public implementation and validation entry points are
+[`pymack/baseflow.py`](../pymack/baseflow.py),
+[`pymack/solver.py`](../pymack/solver.py),
+[`pymack/mack_shooting.py`](../pymack/mack_shooting.py), and the indexed Mack
+cases in [`verification/PROVENANCE_CENSUS.md`](../verification/PROVENANCE_CENSUS.md).
 
 ### Ozgen reproduction
 
-- [`chapters/ozgen_kircali_2008/ozgen.py`](../chapters/ozgen_kircali_2008/ozgen.py)
-
-This path is the closest thing in the repo to a paper-reproduction workflow, but it still mixes faithful 2D work with proxy 3D transformations.
+The public reproduction path is
+[`scripts/make_ozgen_fig3_overlay.py`](../scripts/make_ozgen_fig3_overlay.py),
+with the adopted reference records under
+[`verification/mixed_mode/ozgen_fig3`](../verification/mixed_mode/ozgen_fig3).
+It covers the faithful 2-D workflow; oblique transformations remain separate
+from that validated path.
 
 ## 9. What to Trust and What Not to Trust
 

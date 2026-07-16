@@ -1,0 +1,380 @@
+{
+  "schema_version": 1,
+  "case_id": "mack_fig10_6_M58",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/mack_fig10_6_M58/verdict.json",
+    "sha256": "7c16920211e113d014d8dace9e94335c0b3e9d00ed287408ab10149fcd845483",
+    "committed_when": {
+      "commit": "fe8f03f5fcd83918ce7e52b5fa6da874864ec609",
+      "authored_at": "2026-07-15T05:09:35-05:00"
+    }
+  },
+  "previous_committed_reference": {
+    "path": "verification/_archive/reference_records/mack_fig10_6_M58/2026-07-02_mislabeled_N110_ymax30/verdict.mislabeled_N110_ymax30.json",
+    "sha256": "b2f6aac16e5c48e0ccd92837c20fb57cde4852871a5ac81fdbd7cf1f9330bb6b",
+    "committed_when": {
+      "commit": "f0f47bfb072e971092b1a97ccd2164901042a8ee",
+      "authored_at": "2026-07-02T22:09:38-05:00"
+    }
+  },
+  "status": "REPAIRED-REGENERATED",
+  "status_history": [
+    {
+      "status": "DRIFTED",
+      "recorded_in_commit": "b0ff2cc450f94735e3d1da403e5237be1bdf66e9",
+      "max_abs_drift": 0.06297953517954663,
+      "max_abs_drift_path": "metrics.curve_median_rel_err",
+      "scientific_verdict_transition": "acceptable -> agrees"
+    },
+    {
+      "status": "REPAIRED-REGENERATED",
+      "user_ratified": "2026-07-15",
+      "archive_commit": "351d83287a7fd8bae341c2d87ebfcccb39191288",
+      "replacement_commit": "fe8f03f5fcd83918ce7e52b5fa6da874864ec609"
+    }
+  ],
+  "historical_census_regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/mack_fig10_6_M58",
+    "regenerated_payload": "SCRATCH/mack_fig10_6_M58/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mack_fig10_6_M58 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mack_fig10_6_M58'",
+    "exit_code": 0,
+    "elapsed_s": 491.86452549999376,
+    "hard_timeout_s": 1800.0,
+    "timed_out": false,
+    "termination": null,
+    "measurement_lock": {
+      "protocol": "atomic mkdir; low-priority poll; never steal",
+      "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+      "owner": "provenance-census-low-priority 2026-07-15T01:14:08.748110+00:00 1e69a7b88aaa4db68938e85d5f3b5e38 provenance-census-mack_fig10_6_M58",
+      "run_label": "provenance-census-mack_fig10_6_M58",
+      "waited_s": 0.0,
+      "acquired_at_utc": "2026-07-15T01:14:08.748110+00:00",
+      "released_at_utc": "2026-07-15T01:22:20.609812+00:00"
+    },
+    "stdout": "SCRATCH/mack_fig10_6_M58/stdout.txt",
+    "stderr": "SCRATCH/mack_fig10_6_M58/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "REPAIRED-REGENERATED",
+    "previous_status": "DRIFTED",
+    "comparison_role": "historical stale reference vs correct-parameter regeneration",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 6,
+    "n_compared_numeric_metrics": 6,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 0.06297953517954663,
+    "max_abs_drift_path": "metrics.curve_median_rel_err",
+    "component_abs_drift": {
+      "metrics.N": 0.0,
+      "metrics.curve_median_rel_err": 0.06297953517954663,
+      "metrics.n_overlap": 0.0,
+      "metrics.n_valid_stations": 0.0,
+      "metrics.omega_i_max_at_R1500": 0.000265571574112884,
+      "metrics.y_max": 0.0
+    },
+    "committed_verdict": "acceptable",
+    "regenerated_verdict": "agrees",
+    "scientific_verdict_identical": false,
+    "same_session_replay": {
+      "byte_identical": true,
+      "canonical_payload_sha256": "8332c58f90a2cb506bf0d5e604187686304f13140d0ba69e2bb28de3552084d7",
+      "curve_median_rel_err": 0.02648169670599881,
+      "n_overlap": 11,
+      "n_valid_stations": 12,
+      "omega_i_max_at_R1500": 0.0032785443578036144,
+      "verdict": "agrees"
+    }
+  },
+  "repair": {
+    "user_ratification_date": "2026-07-15",
+    "amendment": "verification/amendments/2026-07-15-m58-validation-record-correction.md",
+    "archive": "verification/_archive/reference_records/mack_fig10_6_M58/2026-07-02_mislabeled_N110_ymax30",
+    "reference_repair_diff": "verification/second_mode/mack_fig10_6_M58/REFERENCE_REPAIR_DIFF.md",
+    "regeneration": {
+      "fresh_process": true,
+      "worktree": "C:\\Users\\merts\\pymack-wt\\m58-repair",
+      "pythonpath": "C:\\Users\\merts\\pymack-wt\\m58-repair",
+      "exact_command": "\"C:\\Program Files\\Python312\\python.exe\" verification/verify_mack_fig10_6.py --mach 5.8 --force",
+      "exit_code": 0,
+      "elapsed_s": 486.171000000002,
+      "measurement_lock": {
+        "protocol": "atomic mkdir; low-priority poll; never steal",
+        "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+        "owner": "m58-repair 2026-07-15T10:00:16.106728+00:00 75d8be7ebbb147638a26f59af7099b84 m58-reference-regeneration",
+        "run_label": "m58-reference-regeneration",
+        "waited_s": 0.0,
+        "acquired_at_utc": "2026-07-15T10:00:16.106728+00:00",
+        "released_at_utc": "2026-07-15T10:08:22.284547+00:00"
+      }
+    },
+    "replacement": {
+      "curve_sha256": "ec1971fa37d349b6780902b37caaccef131d4c12b41571c4917c89bf31ea0eda",
+      "verdict_sha256": "7c16920211e113d014d8dace9e94335c0b3e9d00ed287408ab10149fcd845483",
+      "verdict": "agrees",
+      "metrics": {
+        "curve_median_rel_err": 0.02648169670599881,
+        "n_overlap": 11,
+        "n_valid_stations": 12,
+        "omega_i_max_at_R1500": 0.0032785443578036144,
+        "N": 150,
+        "y_max": 64.0
+      }
+    },
+    "provenance": {
+      "schema_version": 1,
+      "generated_at_utc": "2026-07-15T10:08:22.231342+00:00",
+      "runtime": {
+        "python": "3.12.7",
+        "python_implementation": "CPython",
+        "python_executable": "C:\\Program Files\\Python312\\python.exe",
+        "numpy": "2.2.6",
+        "scipy": "1.14.1",
+        "platform": "Windows-10-10.0.19045-SP0",
+        "system": "Windows",
+        "release": "10",
+        "machine": "AMD64"
+      },
+      "source": {
+        "commit": "351d83287a7fd8bae341c2d87ebfcccb39191288",
+        "tracked_tree_dirty": false
+      },
+      "execution": {
+        "command": "\"C:\\Program Files\\Python312\\python.exe\" verification/verify_mack_fig10_6.py --mach 5.8 --force",
+        "environment": {
+          "PYMACK_SWEEP_BACKEND": "cpu",
+          "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+          "OMP_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "NUMEXPR_NUM_THREADS": "1",
+          "VECLIB_MAXIMUM_THREADS": "1"
+        }
+      },
+      "effective_parameters": {
+        "mach": 5.8,
+        "N": 150,
+        "y_max": 64.0,
+        "R_sweep": [240, 300, 400, 500, 700, 900, 1100, 1300, 1500, 1700, 1900, 2000],
+        "alpha_scan": [0.05, 0.3, 0.005],
+        "Pr": 0.72,
+        "gamma": 1.4,
+        "length_scale": "L_star",
+        "lambda_mu_ratio": 0.0,
+        "condition": "table_11_1",
+        "mode_c_r": [0.78, 0.99],
+        "mode_c_i_cap": 0.05,
+        "sweep_backend": "cpu"
+      },
+      "sha256": {
+        "verification/second_mode/mack_fig10_6_M58/pymack_curve.json": "ec1971fa37d349b6780902b37caaccef131d4c12b41571c4917c89bf31ea0eda",
+        "reference_data/digitized/mack_ch10_fig10_6_M58_paper.csv": "8011a1f37d6e67dae17bcd2b045c3359bd8ec4f2b32f9439d0a0351e1af3ae2f",
+        "verification/verify_mack_fig10_6.py": "541054dd57f1004c0556c58900a62887c3a892241ee4b931d6ce9c4a686449b8",
+        "verification/compute_mack_fig10_6.py": "b47e863023072cab4d8e146ad9135f2ba7cb96ee589b0504cd2730a74465cd7d",
+        "pymack/solver.py": "d7dd1c4e2f89760a60120b1c0d9cbf87a76fcf4940dce372f0c7da66c833ce2d",
+        "pymack/sweep.py": "5c48c4262363ead6d93f97c50fbea6b256084e30afe0c02339286acb492f123d"
+      }
+    }
+  },
+  "historical_census_provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-15T01:22:20.634013+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "27f1f2292eb3be9e020a474dedb21388e8828360",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mack_fig10_6_M58 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mack_fig10_6_M58'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1",
+        "PYTHONPATH": "C:\\Users\\merts\\pymack-wt\\census"
+      }
+    },
+    "effective_parameters": {
+      "case_id": "mack_fig10_6_M58",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": true,
+      "driver_effective_parameters": {
+        "mach": 5.8,
+        "N": 150,
+        "y_max": 64.0,
+        "R_sweep": [
+          240,
+          300,
+          400,
+          500,
+          700,
+          900,
+          1100,
+          1300,
+          1500,
+          1700,
+          1900,
+          2000
+        ],
+        "alpha_scan": [
+          0.05,
+          0.3,
+          0.005
+        ],
+        "Pr": 0.72,
+        "gamma": 1.4,
+        "length_scale": "L_star",
+        "lambda_mu_ratio": 0.0,
+        "condition": "table_11_1",
+        "mode_c_r": [
+          0.78,
+          0.99
+        ],
+        "mode_c_i_cap": 0.05,
+        "sweep_backend": "cpu",
+        "execution_surface": "station_serial_alpha_parallel",
+        "station_workers_requested": 1,
+        "station_workers_effective": 1,
+        "alpha_sweep_observations": [
+          {
+            "R": 240.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 300.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 400.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 500.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 700.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 900.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1100.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1300.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1500.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1700.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1900.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 2000.0,
+            "backend": "cpu",
+            "cpu_workers": 51,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 51,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          }
+        ],
+        "historical_reference_scheduler": "station_serial",
+        "runaway_correction": "removed nested 12-station process pool around temporal_sweep's existing per-station alpha-grid process pool"
+      }
+    },
+    "sha256": {
+      "verification/second_mode/mack_fig10_6_M58/verdict.json": "b2f6aac16e5c48e0ccd92837c20fb57cde4852871a5ac81fdbd7cf1f9330bb6b",
+      "scripts/verification/provenance_census_worker.py": "25787380e316accdc202afa1989c616336b68d1ba611e3a6c6b629793167859e",
+      "verification/compute_mack_fig10_6.py": "b47e863023072cab4d8e146ad9135f2ba7cb96ee589b0504cd2730a74465cd7d",
+      "verification/verify_mack_fig10_6.py": "541054dd57f1004c0556c58900a62887c3a892241ee4b931d6ce9c4a686449b8",
+      "reference_data/digitized/mack_ch10_fig10_6_M58_paper.csv": "8011a1f37d6e67dae17bcd2b045c3359bd8ec4f2b32f9439d0a0351e1af3ae2f",
+      "SCRATCH/mack_fig10_6_M58/stdout.txt": "0db6c06ad149eba59de4d9cf0473631bf970c7e8f5c73eaf455046f7eaf1c7c6",
+      "SCRATCH/mack_fig10_6_M58/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/mack_fig10_6_M58/verdict.json": "60205c3a8eb6c84b507425982c4edd1f7368e68a0d06238b8791f08af630f5cb",
+      "SCRATCH/mack_fig10_6_M58/census_effective_parameters.json": "06139f091a39bcd1b1b7a73356304aa34c8d0459219ffd99ebcbdb51f065ba2b"
+    }
+  }
+}

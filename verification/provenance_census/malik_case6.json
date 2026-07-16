@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "case_id": "malik_case6",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/malik_case6/verdict.json",
+    "sha256": "2426cb5a659a5e9aa8263fd361da907c917ff20ad8e41b9f9057197feacacab9",
+    "committed_when": {
+      "commit": "e963286696f4422ecc8b0cdec9e7a17f07678abc",
+      "authored_at": "2026-06-19T09:28:48-05:00"
+    }
+  },
+  "status": "PRE_CLEARED_2026-07-12",
+  "regeneration": {
+    "rerun_in_this_census": false,
+    "reason": "User-ratified diagnostic evidence; explicitly not rerun.",
+    "evidence": "diagnostics/reference_staleness/SCRATCH/malik_case6.json",
+    "driver": "validation/test_malik1990_case6_anchor.py",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; python diagnostics/reference_staleness/run_census_probe.py malik_case6",
+    "generated_at_utc": "2026-07-12T22:16:28.382320+00:00",
+    "elapsed_s": 1.5174420000985265,
+    "environment": {
+      "python": "3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "blas_thread_env": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1"
+      }
+    },
+    "quantity": [
+      "alpha.real",
+      "alpha.imag"
+    ]
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "canonical_numeric_payload_byte_identical": false,
+    "max_abs_drift": 1.1062331606304099e-14,
+    "max_rel_component_drift": 4.443030996504637e-12,
+    "component_abs_drift": [
+      1.0547118733938987e-14,
+      1.1062331606304099e-14
+    ],
+    "classification_rule": "byte-identical, else max absolute numeric component drift <=1e-9, else DRIFTED"
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:10:34.549718+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "202952d94f65d6e54eae00736f536cbe3ed4f716",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; python diagnostics/reference_staleness/run_census_probe.py malik_case6",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "evidence_origin": "2026-07-12 diagnostic census",
+      "driver": "validation/test_malik1990_case6_anchor.py",
+      "quantity": [
+        "alpha.real",
+        "alpha.imag"
+      ],
+      "rerun_in_this_census": false
+    },
+    "sha256": {
+      "diagnostics/reference_staleness/SCRATCH/malik_case6.json": "ddc6ca7f4d39aea6cb5af880d14f864e26a002b83a6991b968df48f82d248472",
+      "verification/second_mode/malik_case6/verdict.json": "2426cb5a659a5e9aa8263fd361da907c917ff20ad8e41b9f9057197feacacab9",
+      "validation/test_malik1990_case6_anchor.py": "78813b6bdad7f5431a0fd001204626812d98bfba4e60672118b84dab22239831",
+      "diagnostics/reference_staleness/run_census_probe.py": "fc5d3f3f1e3e1fe8fd138cdc5795a36b5a0f67c9f2669f8f48ecc6d896e0e78b"
+    }
+  }
+}

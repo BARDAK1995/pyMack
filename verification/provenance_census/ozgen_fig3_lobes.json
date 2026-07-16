@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "case_id": "ozgen_fig3_lobes",
+  "matrix_path": "GPU-temporal eligible",
+  "committed_reference": {
+    "path": "verification/mixed_mode/ozgen_fig3/lobes/verdict.json",
+    "sha256": "6aa3dc915d771406092bf4fc72bd7fe328743a9a0d9510014ea20a0bda5924c6",
+    "committed_when": {
+      "commit": "8888319afb423a272655f781013a01557fc70a14",
+      "authored_at": "2026-07-02T22:09:54-05:00"
+    }
+  },
+  "status": "INHERITED_FRESH_REGENERATION",
+  "regeneration": {
+    "rerun_in_this_census": false,
+    "reason": "Already freshly regenerated in the ratified 13R/M45 work.",
+    "evidence": "verification/gpu_certification/driver_cpu_identity.json",
+    "exact_command": "python scripts/make_ozgen_fig3_overlay.py --quality production --panels 2 --engine sweep --sweep-backend cpu --workers 24 --blas-threads 1 --verify-against-committed --output-png C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\slice13r_cpu_driver\\cpu_verify.png --output-json C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\slice13r_cpu_driver\\cpu_verify.json --output-grid-csv C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\slice13r_cpu_driver\\cpu_verify.csv",
+    "elapsed_s": 110.9505464999238
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "byte_identical": false,
+    "max_abs_drift": 1.0000000272292198e-09,
+    "identity": {
+      "ok": true,
+      "rows_expected": 720,
+      "rows_actual": 720,
+      "rows_matched": 720,
+      "max_abs_diff_c_i": 9.999999960041972e-11,
+      "max_abs_diff_c_r": 1.0000000272292198e-09,
+      "atol": 1e-09,
+      "byte_equal": false
+    }
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:10:34.846052+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "202952d94f65d6e54eae00736f536cbe3ed4f716",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "python scripts/make_ozgen_fig3_overlay.py --quality production --panels 2 --engine sweep --sweep-backend cpu --workers 24 --blas-threads 1 --verify-against-committed --output-png C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\slice13r_cpu_driver\\cpu_verify.png --output-json C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\slice13r_cpu_driver\\cpu_verify.json --output-grid-csv C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\slice13r_cpu_driver\\cpu_verify.csv",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "mach": 2.0,
+      "N": 128,
+      "nodes": 720,
+      "backend": "cpu",
+      "workers": 24,
+      "blas_threads": 1,
+      "rerun_in_this_census": false
+    },
+    "sha256": {
+      "verification/mixed_mode/ozgen_fig3/lobes/verdict.json": "6aa3dc915d771406092bf4fc72bd7fe328743a9a0d9510014ea20a0bda5924c6",
+      "verification/gpu_certification/driver_cpu_identity.json": "13c1b5db14aaf71db507af6765592e278a58b799a2c916e39308ef2b57aa70cd"
+    }
+  }
+}

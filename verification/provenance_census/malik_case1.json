@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "case_id": "malik_case1",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/other/malik_case1/verdict.json",
+    "sha256": "369bd145eff4799c20374191c045e13089402fb15cb4b309331deebf72567ac7",
+    "committed_when": {
+      "commit": "fbaca209fda00463f3164433d67717e434df9ccd",
+      "authored_at": "2026-06-19T05:37:26-05:00"
+    }
+  },
+  "status": "DEFERRED",
+  "regeneration": {
+    "rerun_in_this_census": false,
+    "reason": "No reproducible compute surface: the committed row explicitly records unknown dimensional total-temperature data and scopes the effectively incompressible coverage to Orszag. This is a scientific-input wall, not a machine-cost deferral.",
+    "cost_estimate": "not applicable until the missing physical condition is recovered",
+    "driver": "verification/compare_malik1990_anchors.py"
+  },
+  "comparison": {
+    "verdict": "DEFERRED",
+    "byte_identical": null,
+    "max_abs_drift": null,
+    "note": "The committed pending record is not a regenerated numerical reference."
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:10:34.803415+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "202952d94f65d6e54eae00736f536cbe3ed4f716",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "\"C:\\Program Files\\Python312\\python.exe\" scripts/verification/provenance_census.py --prepare-carried",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "mach": 0.5,
+      "Re_l": 2000.0,
+      "alpha": 0.1,
+      "missing_condition": "T0_K not openly recoverable",
+      "compute_surface": null
+    },
+    "sha256": {
+      "verification/other/malik_case1/verdict.json": "369bd145eff4799c20374191c045e13089402fb15cb4b309331deebf72567ac7",
+      "verification/compare_malik1990_anchors.py": "09ef36a6d2032b91ec762bffebba164168d98341c37fe2db0f2cb69802518d1b"
+    }
+  }
+}

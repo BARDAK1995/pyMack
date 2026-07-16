@@ -16,21 +16,48 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import sys
 from pathlib import Path
-
-import numpy as np
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 sys.path.insert(0, str(HERE))
-from _compare_lib import classify_relative, write_verdict  # noqa: E402
+sys.path.insert(0, str(REPO))
 
+# Import the engine first: it pins BLAS thread variables before NumPy/SciPy load.
 import compute_mack_fig10_6 as engine  # noqa: E402
+
+import numpy as np  # noqa: E402
+
+from _compare_lib import classify_relative, write_verdict  # noqa: E402
+from scripts.verification.provenance import (  # noqa: E402
+    build_provenance, capture_source, exact_command, hash_files,
+)
 
 # Mach -> (digitized stem suffix, case folder suffix)
 PANELS = {4.5: "45", 5.8: "58", 7.0: "70", 10.0: "100"}
 GROWTH_DIR = HERE / "second_mode"
+
+
+def effective_parameters(mach):
+    """Return the numerical parameters actually consumed for one Mach panel."""
+    mach = float(mach)
+    return {
+        "mach": mach,
+        "N": engine._N_for(mach),
+        "y_max": engine._ymax_for(mach),
+        "R_sweep": engine.DEFAULT_R_SWEEPS[round(mach, 1)],
+        "alpha_scan": list(engine.ALPHA_SCAN[round(mach, 1)]),
+        "Pr": engine.PR,
+        "gamma": engine.GAMMA,
+        "length_scale": "L_star",
+        "lambda_mu_ratio": 0.0,
+        "condition": "table_11_1",
+        "mode_c_r": [engine.CR_LO, engine.CR_HI],
+        "mode_c_i_cap": engine.CI_CAP,
+        "sweep_backend": os.environ.get("PYMACK_SWEEP_BACKEND", "auto"),
+    }
 
 
 def load_digitized(suffix):
@@ -68,11 +95,17 @@ def verify_mach(mach, *, force=False, rows=None):
             print(f"[{case_id}] already done ({existing['verdict']}); skip")
             return existing
 
+    params = effective_parameters(mach)
+    source = capture_source(REPO)
+    command = exact_command()
     if rows is None:
         print(f"[{case_id}] computing M={mach} curve ...", flush=True)
-        rows = engine.compute_curve(mach, verbose=True)
+        rows = engine.compute_curve(
+            mach, N=params["N"], y_max=params["y_max"], verbose=True,
+        )
     folder.mkdir(parents=True, exist_ok=True)
-    (folder / "pymack_curve.json").write_text(json.dumps(rows, indent=2), encoding="utf-8")
+    curve_path = folder / "pymack_curve.json"
+    curve_path.write_text(json.dumps(rows, indent=2), encoding="utf-8")
 
     test_R = np.array([r["R"] for r in rows], float)
     test_oi = np.array([r["omega_i_max"] if r["omega_i_max"] is not None else np.nan
@@ -104,11 +137,11 @@ def verify_mach(mach, *, force=False, rows=None):
             "omega_i_max_at_R1500": (float(test_oi[i_anchor])
                                      if np.isfinite(test_oi[i_anchor]) else None),
             "condition": "table_11_1",
-            "N": engine._N_for(mach),
-            "y_max": engine._ymax_for(mach),
+            "N": params["N"],
+            "y_max": params["y_max"],
             "topology_ok": topo_ok,
         }
-        e_N, e_Y = engine._N_for(mach), engine._ymax_for(mach)
+        e_N, e_Y = params["N"], params["y_max"]
         reason = (
             f"Mack (1984) Fig 10.6 max second-mode temporal omega_i vs R at M={mach}, "
             f"adiabatic. Two corrections make this a defensible comparison: (1) the "
@@ -148,11 +181,27 @@ def verify_mach(mach, *, force=False, rows=None):
         "artifacts": {"pymack": f"verification/second_mode/{case_id}/pymack_curve.json",
                       "reference": ref_rel, "overlay": None},
         "pymack_provenance": (f"verification/compute_mack_fig10_6.py (M={mach}); "
-                              f"solve_temporal_compressible N={engine._N_for(mach)}, "
-                              f"y_max={engine._ymax_for(mach):g} (~4x delta*/L*), L*, "
+                              f"solve_temporal_compressible N={params['N']}, "
+                              f"y_max={params['y_max']:g} (~4x delta*/L*), L*, "
                               f"lambda_mu_ratio=0.0, condition=table_11_1; "
                               f"single-thread BLAS."),
     }
+    verdict_obj["provenance"] = build_provenance(
+        source=source,
+        command=command,
+        effective_parameters=params,
+        sha256=hash_files(
+            (
+                curve_path,
+                REPO / ref_rel,
+                Path(__file__),
+                Path(engine.__file__),
+                REPO / "pymack" / "solver.py",
+                REPO / "pymack" / "sweep.py",
+            ),
+            root=REPO,
+        ),
+    )
     write_verdict(folder, verdict_obj)
     print(f"[{case_id}] -> {verdict}")
     return verdict_obj

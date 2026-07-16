@@ -90,3 +90,13 @@ python verification/build_galleries.py
 Each `compare_*.py` records its pyMack provenance (which run, which grid,
 which conditions) in the case's `verdict.json`. No tuning to pass: thresholds
 are fixed in `_compare_lib.py` and applied uniformly.
+
+## Regeneration provenance
+
+Newly regenerated reference records should embed the schema produced by
+`scripts/verification/provenance.py`. It records the Python/NumPy/SciPy and
+platform versions, source commit and tracked-tree state, exact command,
+effective numerical parameters, relevant execution environment, and SHA-256
+hashes of generated data, reference inputs, and generating sources. Capture the
+source state before writing outputs so a clean source commit is not mislabeled
+as dirty merely because the generator created its artifacts.

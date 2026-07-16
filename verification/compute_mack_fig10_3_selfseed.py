@@ -73,9 +73,9 @@ REPO = Path(__file__).resolve().parents[1]
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
 
-from pymack import (  # noqa: E402
+from pymack import make_mack_profile  # noqa: E402
+from pymack.analysis import (  # noqa: E402
     find_temporal_mode_anchor_3d_shooting,
-    make_mack_profile,
     temporal_growth_scan_3d_shooting_from_anchor,
 )
 from pymack.scales import delta_star_over_lstar  # noqa: E402

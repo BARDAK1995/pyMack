@@ -125,16 +125,6 @@ Requires Python ≥ 3.9 (NumPy, SciPy, Matplotlib). Working from a plain
 checkout without installing also works — the test suite and the examples
 bootstrap the import path themselves.
 
-An optional `pymack[gpu]` extra (`pip install -e ".[gpu]"`) pulls in
-`cupy-cuda12x` for the in-development GPU batch-sweep engine (see
-*Batch sweeps* below); **`import pymack` never requires it** — GPU is an
-upgrade, not a requirement. Match `cupy-cuda12x` to your CUDA runtime (12.x);
-on some environments `cupy-cuda12x` transitively pulls the `nvidia-*-cu12`
-meta-packages (e.g. `nvidia-cublas-cu12`), which can duplicate CUDA libraries
-already provided by your driver/toolkit install — if that happens, install a
-CuPy wheel matching your system CUDA instead of the generic one (see the
-[CuPy install guide](https://docs.cupy.dev/en/stable/install.html)).
-
 ## Quickstart
 
 ```python
@@ -162,10 +152,9 @@ first Mack mode, a growth curve with its N-factor, dimensional units, and a
 (facade → workflows → eigenvalue engines → operators) is documented in
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md); the complete API reference
 lives in [`docs/LST_API_CHEATSHEET.md`](docs/LST_API_CHEATSHEET.md) (per-point
-API) and [`docs/SWEEP_API.md`](docs/SWEEP_API.md) (batch sweeps). Backend
-status: the CPU backend is the reference path; the temporal GPU backend
-exists but is experimental and not release-certified; the spatial GPU
-backend is not yet implemented.
+API) and [`docs/SWEEP_API.md`](docs/SWEEP_API.md) (CPU batch sweeps). Measured
+CPU performance records and their scope are indexed in
+[`docs/benchmarks/`](docs/benchmarks/README.md).
 
 ## Testing
 
@@ -173,8 +162,8 @@ backend is not yet implemented.
 # Install with development dependencies
 pip install -e ".[dev]"
 
-# Run the validation test suite (skip long benchmarks)
-pytest -m "not slow"
+# Run the full public validation suite
+python -m pytest -q
 ```
 
 The `validation/` directory contains the main benchmark tests
@@ -240,17 +229,12 @@ if __name__ == '__main__':          # the CPU backend uses a spawn-context pool
     result.families[0].omega_i   # growth-rate grid; result.to_csv/.to_npz to save
 ```
 
-**GPU is an upgrade, not a requirement.** `import pymack` and
-`import pymack.sweep` never import CuPy or require a GPU; the CPU backend
-(a `ProcessPoolExecutor` over the exact same validated per-point solvers used
-above) is available unconditionally and is **bitwise-identical** to the
-deployed per-point loop it replaces — proven in
-`validation/test_sweep_cpu_backend.py`, which runs in the default GPU-less CI
-suite. A GPU-native batched temporal engine exists and is experimental
-(design docs: [`docs/gpu/PLAN.md`](docs/gpu/PLAN.md)); `temporal_sweep`
-dispatches to it when a CUDA device and the optional CuPy stack are present,
-spatial GPU sweeps still raise `NotImplementedError`, and **no GPU performance numbers
-are published anywhere in this repo yet**.
+The public sweep implementation is CPU-only: a `ProcessPoolExecutor` drives
+the same validated per-point solvers used above and is **bitwise-identical** to
+the deployed per-point loop it replaces, as tested in
+`validation/test_sweep_cpu_backend.py`. `backend='auto'` and `backend='cpu'`
+select this implementation. An explicit `backend='gpu'` request is retained
+only to produce a clear `NotImplementedError` from this CPU-only build.
 
 Full API reference, the `seed_map` provenance contract, the `meta`
 determinism contract, and backend-resolution rules:
@@ -297,6 +281,9 @@ compressible results against the published figures of Mack (1984) and
 help of AI tools, then reorganized and refactored into a reusable package. The
 author made the core modeling decisions and is responsible for the correctness
 of the code and results.
+
+Development is continuous. The public repository receives inspected,
+code-only snapshots rather than the granular internal research history.
 
 ## License
 

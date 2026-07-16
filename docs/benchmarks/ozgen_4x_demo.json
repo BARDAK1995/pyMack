@@ -1,0 +1,399 @@
+{
+  "schema_version": 1,
+  "artifact": "slice15R_ozgen_4x_capability_demo",
+  "status": "PASS",
+  "generated_at_utc": "2026-07-13T18:30:50.245058+00:00",
+  "source_commit": "1ff0e9ae6b1e99823e827947940b6090a5910619",
+  "public_command": [
+    "C:\\Program Files\\Python312\\python.exe",
+    "C:\\Users\\merts\\pymack-wt\\15-demo\\scripts\\gpu_bench\\demo_ozgen_4x.py",
+    "--engine",
+    "cpu-tuned",
+    "--workers",
+    "24",
+    "--blas-threads",
+    "1",
+    "--gate-seconds",
+    "1598"
+  ],
+  "contract": {
+    "vehicle": "tuned CPU through slice-19 productized flags",
+    "workload": "single-domain 48 Re x 60 alpha, N=128, Ma=2, 2,880 nodes",
+    "required_recipes": [
+      "24 workers, BLAS=1, full QZ",
+      "24 workers, BLAS=1, eigenvalues-only plus selected-vector inverse iteration"
+    ],
+    "gate": "both required 4x rows reported together; best passing wall < inherited deployed 1x wall",
+    "investigate_before_merge_if_s": 700.0
+  },
+  "anchor_freshness": {
+    "checked_at_utc": "2026-07-13T18:17:38.020954+00:00",
+    "method": "path exists, tracked HEAD blob, byte-clean worktree copy, registered value check; no anchor rerun",
+    "source_commit": "1ff0e9ae6b1e99823e827947940b6090a5910619",
+    "files": {
+      "scripts/gpu_bench/demo_ozgen_4x.py": {
+        "path": "scripts/gpu_bench/demo_ozgen_4x.py",
+        "tracked_path": "scripts/gpu_bench/demo_ozgen_4x.py",
+        "git_blob": "6010aa02b1fc2ac5a2f46e0110da2c37a6ed2f4c",
+        "git_filtered_worktree_blob": "6010aa02b1fc2ac5a2f46e0110da2c37a6ed2f4c",
+        "worktree_sha256": "d9c88330d44efd49e1e3af6a3811f83e4a6d2d4ccc1206f785d0123dd5f51614",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "scripts/make_ozgen_fig3_overlay.py": {
+        "path": "scripts/make_ozgen_fig3_overlay.py",
+        "tracked_path": "scripts/make_ozgen_fig3_overlay.py",
+        "git_blob": "42271ac66bc762bc110cc0d30cef4089fcca5745",
+        "git_filtered_worktree_blob": "42271ac66bc762bc110cc0d30cef4089fcca5745",
+        "worktree_sha256": "3cea42e264cd724d26dfa31383278ad3e3d444c1ea2fc8b6c96dc69ac10f5b67",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "scripts/hunt/measurement_lock.py": {
+        "path": "scripts/hunt/measurement_lock.py",
+        "tracked_path": "scripts/hunt/measurement_lock.py",
+        "git_blob": "f1997afff25ef630b930ba4effefe8074de2a13b",
+        "git_filtered_worktree_blob": "f1997afff25ef630b930ba4effefe8074de2a13b",
+        "worktree_sha256": "290c33f9a93ec333a605912cff4052bc7c5e564fcc0735d2a23e5af24113bb8a",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "pymack/sweep.py": {
+        "path": "pymack/sweep.py",
+        "tracked_path": "pymack/sweep.py",
+        "git_blob": "3842ff8fe6d4883c6997fb34a2d453afece099df",
+        "git_filtered_worktree_blob": "3842ff8fe6d4883c6997fb34a2d453afece099df",
+        "worktree_sha256": "5c48c4262363ead6d93f97c50fbea6b256084e30afe0c02339286acb492f123d",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2.json": {
+        "path": "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2.json",
+        "tracked_path": "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2.json",
+        "git_blob": "d9d5091e7a9a9058199a99371f7dfcbc6d0ccd0d",
+        "git_filtered_worktree_blob": "d9d5091e7a9a9058199a99371f7dfcbc6d0ccd0d",
+        "worktree_sha256": "0e53291e85e2e3b45247ce038c68e7b1de48bf5b6531c630ee542c240499bd71",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2_ci_grid.csv": {
+        "path": "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2_ci_grid.csv",
+        "tracked_path": "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2_ci_grid.csv",
+        "git_blob": "729798bcf6ceff30915f26ca3e342a1eb450bdd2",
+        "git_filtered_worktree_blob": "729798bcf6ceff30915f26ca3e342a1eb450bdd2",
+        "worktree_sha256": "af5457f71ad43791194a5471b4f645ff7c8be6f488a06d38c33533e3f3e9598a",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "docs/gpu/benchmarks/cpu_parallel_overlay_n128_pinned1t.json": {
+        "path": "docs/gpu/benchmarks/cpu_parallel_overlay_n128_pinned1t.json",
+        "tracked_path": "docs/gpu/benchmarks/cpu_parallel_overlay_n128_pinned1t.json",
+        "git_blob": "d5581319b97746118eb4a75f145a3bac11a6a891",
+        "git_filtered_worktree_blob": "d5581319b97746118eb4a75f145a3bac11a6a891",
+        "worktree_sha256": "6b1182d37740620bfe97c538e2db21a917fec69a6d2adaae9e319121758e902b",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "docs/gpu/benchmarks/cpu_floor_sweep.json": {
+        "path": "docs/gpu/benchmarks/cpu_floor_sweep.json",
+        "tracked_path": "docs/gpu/benchmarks/cpu_floor_sweep.json",
+        "git_blob": "d343a19924cb8ffc08933eb71ed66e3ba8d538a6",
+        "git_filtered_worktree_blob": "d343a19924cb8ffc08933eb71ed66e3ba8d538a6",
+        "worktree_sha256": "6b29ee0dda84218aaac717fd41d2281be31247f3c77f636afc117739aaed77ea",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "docs/gpu/benchmarks/probe_overlay_n128_l16.json": {
+        "path": "docs/gpu/benchmarks/probe_overlay_n128_l16.json",
+        "tracked_path": "docs/gpu/benchmarks/probe_overlay_n128_l16.json",
+        "git_blob": "be0b87243db366630d35f187a6080613141e4b54",
+        "git_filtered_worktree_blob": "be0b87243db366630d35f187a6080613141e4b54",
+        "worktree_sha256": "1d2ac2f4ab81d3fa78b8f09e2da458904ab3a5bd610807965d5db61d0dba658d",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "reference_data/digitized/ozgen_fig3_M2_neutral.csv": {
+        "path": "reference_data/digitized/ozgen_fig3_M2_neutral.csv",
+        "tracked_path": "reference_data/digitized/ozgen_fig3_M2_neutral.csv",
+        "git_blob": "30a1236e40629073ff1648617b71e201123837f0",
+        "git_filtered_worktree_blob": "30a1236e40629073ff1648617b71e201123837f0",
+        "worktree_sha256": "dafa9285466df85e76303969c1b2c1e81abcf3091cef7b500759cd017db09be6",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "reference_data/digitized/ozgen_fig3_M2_004.csv": {
+        "path": "reference_data/digitized/ozgen_fig3_M2_004.csv",
+        "tracked_path": "reference_data/digitized/ozgen_fig3_M2_004.csv",
+        "git_blob": "5a3a5feccc8c1f2ae48beddc7efeeaf83a155312",
+        "git_filtered_worktree_blob": "5a3a5feccc8c1f2ae48beddc7efeeaf83a155312",
+        "worktree_sha256": "75e8a056e04eba46004d49033451e71f4ae5f5d286bb7965bf5adacfee993c38",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      },
+      "reference_data/digitized/ozgen_fig3_M2_012.csv": {
+        "path": "reference_data/digitized/ozgen_fig3_M2_012.csv",
+        "tracked_path": "reference_data/digitized/ozgen_fig3_M2_012.csv",
+        "git_blob": "690ca8be44122593786597fba026528f49d0e150",
+        "git_filtered_worktree_blob": "690ca8be44122593786597fba026528f49d0e150",
+        "worktree_sha256": "3f52197be52f58d5a7b67c00e9bd40231c3529c1a110c84fa76b2904063571cf",
+        "git_canonical_equal_to_head": true,
+        "checkout_filter_note": "Git hash-object --path applies configured checkout filters; this avoids falsely treating CRLF checkout bytes as dirty versus an LF blob."
+      }
+    },
+    "deployed_1x": {
+      "wall_time_s": 1598.6826644999674,
+      "n_points": 720,
+      "N": 128,
+      "role": "binding capability gate anchor"
+    },
+    "tuned_61w_1x": {
+      "wall_time_s": 148.76318529993296,
+      "workers": 61,
+      "role": "R-revision inherited tuned context anchor"
+    },
+    "ratified_24w_floors": {
+      "full_qz_wall_time_s": 108.9757224000059,
+      "eigenvalues_only_wall_time_s": 46.70370259997435,
+      "workers": 24,
+      "blas_threads": 1
+    },
+    "count_meta": {
+      "n_points": 720,
+      "n_meta_populated": 720,
+      "n_exact": 718,
+      "n_count_gate_escalated": 30,
+      "margin_threshold": 0.1
+    },
+    "legacy_json_grid_pointer": "verification\\neutralCurve_verification\\_ozgen_compute\\ozgen_M2_ci_grid.csv",
+    "canonical_committed_grid_used": "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2_ci_grid.csv",
+    "grid_pointer_note": "The migrated verification artifact keeps a historical output_grid_csv string. The live verifier and slice-19 reproduction use the committed co-located sibling CSV named above."
+  },
+  "runs": [
+    {
+      "configuration": "full-qz",
+      "density": "4x",
+      "status": "valid",
+      "artifact": "docs/gpu/demo/ozgen_4x_full_qz.json",
+      "artifact_sha256": "21c1ad4e964487beaca342dd862a18bc4a0aca8ae83e1f67b20231fc9027710d",
+      "map_wall_time_s": 399.8026359998621,
+      "engine_wall_time_s": 399.6921486000065,
+      "workers": 24,
+      "blas_threads": 1,
+      "fresh_process_exit_code": 0,
+      "lock": {
+        "protocol": "atomic mkdir; low-priority poll; never steal",
+        "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+        "owner": "slice-15R 2026-07-13T18:17:38.020954+00:00 00e15449a28f49a7a444e6b3b3cf9467 ozgen-4x-full-qz-24w-blas1",
+        "run_label": "ozgen-4x-full-qz-24w-blas1",
+        "waited_s": 0.0,
+        "acquired_at_utc": "2026-07-13T18:17:38.020954+00:00",
+        "released_at_utc": "2026-07-13T18:24:18.759524+00:00"
+      }
+    },
+    {
+      "configuration": "eigenvalues-only",
+      "density": "4x",
+      "status": "valid",
+      "artifact": "docs/gpu/demo/ozgen_4x_eigenvalues_only.json",
+      "artifact_sha256": "5a8586a1b99e6a21468123293067988bb0a0ea2d00853f699dd8a996b131a2f6",
+      "map_wall_time_s": 169.4716034999583,
+      "engine_wall_time_s": 169.3603958999738,
+      "workers": 24,
+      "blas_threads": 1,
+      "fresh_process_exit_code": 0,
+      "lock": {
+        "protocol": "atomic mkdir; low-priority poll; never steal",
+        "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+        "owner": "slice-15R 2026-07-13T18:24:18.860182+00:00 3917c116128049c79291a854d2fe713d ozgen-4x-eigenvalues-only-24w-blas1",
+        "run_label": "ozgen-4x-eigenvalues-only-24w-blas1",
+        "waited_s": 0.015999999828636646,
+        "acquired_at_utc": "2026-07-13T18:24:18.860182+00:00",
+        "released_at_utc": "2026-07-13T18:27:09.309220+00:00"
+      }
+    },
+    {
+      "configuration": "full-qz",
+      "density": "1x",
+      "status": "valid",
+      "artifact": "docs/gpu/demo/ozgen_1x_reproduction_full_qz.json",
+      "artifact_sha256": "64c42e1f7e4fc08a3c2f703e3dd6fe63e1652ee10d63ff85a58aba577b9d885f",
+      "map_wall_time_s": 111.95216550002806,
+      "engine_wall_time_s": 111.85704289982095,
+      "workers": 24,
+      "blas_threads": 1,
+      "fresh_process_exit_code": 0,
+      "lock": {
+        "protocol": "atomic mkdir; low-priority poll; never steal",
+        "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+        "owner": "slice-15R 2026-07-13T18:27:09.409815+00:00 e33d4a0b3c834746a7b467b1e0e5f3d5 ozgen-1x-full-qz-24w-blas1",
+        "run_label": "ozgen-1x-full-qz-24w-blas1",
+        "waited_s": 0.0,
+        "acquired_at_utc": "2026-07-13T18:27:09.409815+00:00",
+        "released_at_utc": "2026-07-13T18:29:02.311468+00:00"
+      }
+    },
+    {
+      "configuration": "eigenvalues-only",
+      "density": "1x",
+      "status": "valid",
+      "artifact": "docs/gpu/demo/ozgen_1x_reproduction_eigenvalues_only.json",
+      "artifact_sha256": "9e4bdc720c487f6a9c931599969c5eb8f5d1f20cd3989e6159b41c0b18270b21",
+      "map_wall_time_s": 55.63698029983789,
+      "engine_wall_time_s": 55.519017999991775,
+      "workers": 24,
+      "blas_threads": 1,
+      "fresh_process_exit_code": 0,
+      "lock": {
+        "protocol": "atomic mkdir; low-priority poll; never steal",
+        "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+        "owner": "slice-15R 2026-07-13T18:29:02.346138+00:00 80a7de68421d4b15a5d4e48d24eff607 ozgen-1x-eigenvalues-only-24w-blas1",
+        "run_label": "ozgen-1x-eigenvalues-only-24w-blas1",
+        "waited_s": 0.0,
+        "acquired_at_utc": "2026-07-13T18:29:02.346138+00:00",
+        "released_at_utc": "2026-07-13T18:29:58.936238+00:00"
+      }
+    }
+  ],
+  "expectation_class": {
+    "full_qz": {
+      "inherited_1x_floor_s": 108.9757224000059,
+      "four_x_linear_expectation_s": 435.9028896000236,
+      "measured_4x_s": 399.8026359998621,
+      "measured_over_expectation": 0.9171828073145226
+    },
+    "eigenvalues_only": {
+      "inherited_1x_floor_s": 46.70370259997435,
+      "four_x_linear_expectation_s": 186.8148103998974,
+      "measured_4x_s": 169.4716034999583,
+      "measured_over_expectation": 0.90716364049074
+    }
+  },
+  "identity": {
+    "identity_clean_by_configuration": {
+      "full-qz": true,
+      "eigenvalues-only": true
+    },
+    "spotcheck": {
+      "artifact": "docs/gpu/demo/ozgen_4x_deployed_path_spotcheck.json",
+      "artifact_sha256": "556fbd89f39df78c1b3fc53fa336f1a20d055797a586887bea7bd50dce71b23c",
+      "full_qz": {
+        "ok": true,
+        "required_tolerance": 0.0,
+        "backend_certification": "bitwise-certified CPU backend",
+        "n_bitwise": 24,
+        "max_abs_diff": 0.0
+      },
+      "eigenvalues_only": {
+        "ok": true,
+        "required_tolerance": 1e-09,
+        "backend_certification": "tolerance-class productized path",
+        "n_bitwise": 3,
+        "max_abs_diff": 6.9047059736426775e-12
+      }
+    },
+    "one_x_reproduction": {
+      "full-qz": {
+        "ok": true,
+        "comparison": "exact coordinate/family/finite decisions and absolute c_r/c_i agreement at committed CSV precision",
+        "atol": 1e-09,
+        "binary_comparison_slack": 1e-15,
+        "rows_expected": 720,
+        "rows_actual": 720,
+        "rows_matched": 720,
+        "max_abs_diff": {
+          "c_i": 9.999999960041972e-11,
+          "c_r": 1.0000000272292198e-09
+        },
+        "mismatches": [],
+        "mismatches_truncated": false,
+        "byte_equal": false,
+        "actual_bytes": 39003,
+        "reference_bytes": 39003,
+        "reference": "verification\\mixed_mode\\ozgen_fig3\\_compute\\ozgen_M2_ci_grid.csv",
+        "reference_json": "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2.json",
+        "reference_rows": "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2_ci_grid.csv",
+        "reference_json_sha256": "0e53291e85e2e3b45247ce038c68e7b1de48bf5b6531c630ee542c240499bd71",
+        "reference_rows_sha256": "af5457f71ad43791194a5471b4f645ff7c8be6f488a06d38c33533e3f3e9598a"
+      },
+      "eigenvalues-only": {
+        "ok": true,
+        "comparison": "exact coordinate/family/finite decisions and absolute c_r/c_i agreement at committed CSV precision",
+        "atol": 1e-09,
+        "binary_comparison_slack": 1e-15,
+        "rows_expected": 720,
+        "rows_actual": 720,
+        "rows_matched": 720,
+        "max_abs_diff": {
+          "c_i": 1.000000013351432e-10,
+          "c_r": 1.000000082740371e-11
+        },
+        "mismatches": [],
+        "mismatches_truncated": false,
+        "byte_equal": false,
+        "actual_bytes": 39003,
+        "reference_bytes": 39003,
+        "reference": "verification\\mixed_mode\\ozgen_fig3\\_compute\\ozgen_M2_ci_grid.csv",
+        "reference_json": "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2.json",
+        "reference_rows": "verification/mixed_mode/ozgen_fig3/_compute/ozgen_M2_ci_grid.csv",
+        "reference_json_sha256": "0e53291e85e2e3b45247ce038c68e7b1de48bf5b6531c630ee542c240499bd71",
+        "reference_rows_sha256": "af5457f71ad43791194a5471b4f645ff7c8be6f488a06d38c33533e3f3e9598a"
+      }
+    }
+  },
+  "selection": {
+    "configuration": "eigenvalues-only",
+    "artifact": "docs/gpu/demo/ozgen_4x_eigenvalues_only.json",
+    "best_identity_clean_map_wall_time_s": 169.4716034999583,
+    "rule": "minimum map wall among configurations passing both 4x spotcheck and 1x reproduction"
+  },
+  "gate": {
+    "verdict": "PASS",
+    "registered_deployed_1x_anchor_s": 1598.6826644999674,
+    "invocation_gate_seconds": 1598.0,
+    "best_4x_wall_time_s": 169.4716034999583,
+    "registered_gate_passed": true,
+    "invocation_gate_passed": true,
+    "investigation_threshold_s": 700.0,
+    "investigation_threshold_passed": true,
+    "capability_speedup_vs_deployed_1x": 9.433336508793703,
+    "density_factor": 4.0,
+    "claim": "Full-QZ (the same computation as the deployed anchor, 24/24 bitwise spot-check): 399.80 s - 4x the nodes for one quarter the wall; eigenvalues-only (the ratified honest-floor recipe): 169.47 s - 9.4x wall reduction against the deployed anchor, which computed eigenvectors while this recipe does not.",
+    "coverage_disclosure": "The 24-node stratified spot-check contains all 24 genuinely new nodes and 0 shared with the 1x grid; it independently re-solves 0.83% of the full 2,880-node map, equivalent to 1.11% of the 2,160-node count increase, while the remaining map rests on the bitwise-certified backend path.",
+    "speedup_qualifier": "The 9.4x comparison is against the deployed anchor, which computed eigenvectors, while the eigenvalues-only recipe does not.",
+    "anchor_context": "Claim names the deployed 1x 1598.6826645 s anchor and the ratified tuned 1x 46.7037026 s honest floor; the inherited 61w pinned 148.7631853 s context and 24w full-QZ 108.9757224 s row are also retained."
+  },
+  "figures": {
+    "four_x_ci_map": {
+      "path": "docs/gpu/demo/ozgen_m2_4x_ci_map.png",
+      "sha256": "bbd4b8c0be701e6f39ff50aeed5d7f7d1e39b966e5df51684c74ad35c429d316",
+      "provenance": "docs/gpu/demo/ozgen_m2_4x_ci_map.provenance.json",
+      "provenance_sha256": "21bc8df9dd84de4585849447073bac643bacc045c450565f136c2554b9a2da2e"
+    },
+    "escalation_count_margin": {
+      "path": "docs/gpu/demo/ozgen_m2_1x_escalation_count_margin.png",
+      "sha256": "bec4aeb10cc36a9481ab3b216b544ee2bbc59cd132a6e7d6d023e9eb80d93d1b",
+      "provenance": "docs/gpu/demo/ozgen_m2_1x_escalation_count_margin.provenance.json",
+      "provenance_sha256": "7151df1b857ccce22430029a591ec0479e12380b1e36d0931e109b45fbd12890",
+      "statistics": {
+        "n_points": 720,
+        "n_escalated": 30,
+        "n_low_margin": 29,
+        "n_escalated_low_margin": 29,
+        "n_escalated_on_classification_front": 21,
+        "fraction_escalated_on_classification_front": 0.7,
+        "n_escalated_on_outer_grid_edge": 9,
+        "escalated_margin_min": 0.0014405208199531616,
+        "escalated_margin_median": 0.05389893905675813,
+        "escalated_margin_max": 0.18045698678680477,
+        "non_escalated_margin_median": 0.35592680583961345,
+        "status_counts": {
+          "count_audited": 690,
+          "escalated_cpu_qz_count_mismatch": 1,
+          "escalated_cpu_qz_count_mismatch_and_low_margin": 1,
+          "escalated_cpu_qz_low_margin": 28
+        }
+      }
+    }
+  },
+  "required_outputs_complete": true
+}

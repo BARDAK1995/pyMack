@@ -18,5 +18,5 @@ python examples/01_first_mack_mode.py
 For complete workflows (neutral-curve tracing, production Mach-6 case,
 cone N-factors) see `scripts/` and `docs/LST_API_CHEATSHEET.md`. For the
 batch-sweep facade (`pymack.sweep`, example 04) see
-[`docs/SWEEP_API.md`](../docs/SWEEP_API.md) -- GPU is an upgrade, not a
-requirement; every example here runs GPU-less.
+[`docs/SWEEP_API.md`](../docs/SWEEP_API.md); every example here runs on the
+public CPU implementation.

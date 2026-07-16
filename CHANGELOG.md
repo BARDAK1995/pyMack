@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### 0.2.0 (PROPOSED; not tagged)
+
+#### Added
+
+- CPU sweep productization: Windows-safe process pools, opt-in BLAS thread
+  pinning, an eigenvalues-only 2-D route, and committed floor/point-budget
+  measurements with identity checks.
+- The complete 37-case validation record, including the provenance census,
+  Mach 4.5 and Mach 5.8 reference repairs, amendments, and archived historical
+  records needed to audit those corrections.
+- A committed 2,880-node Ozgen capability demonstration (4x the original
+  sampling), its full-QZ and eigenvalues-only artifacts, a deterministic
+  spot-check, and figure provenance.
+- JOSS paper sources, CPU reproducibility instructions, refreshed citation
+  metadata, and committed benchmark evidence for every performance number in
+  the manuscript.
+
+#### Changed
+
+- The public package scope is CPU-only and matches the JOSS service
+  contribution: NumPy/SciPy solvers, CPU batch sweeps, validation evidence,
+  user documentation, and the paper.
+- An explicit `backend='gpu'` request now raises a clean
+  `NotImplementedError` explaining that the public build is CPU-only.
+- Base-flow profiles now serialize their sampled numerical state instead of
+  SciPy's runtime spline objects, preserving Windows process-pool sweeps with
+  current SciPy releases; the development extra includes `threadpoolctl` for
+  the BLAS-pinning verification gate.
+
+#### Release decision
+
+- Version 0.2.0 is proposed only. No version field, release date, archive DOI,
+  or tag is applied until the owner performs the release step.
+
 ## [0.1.0] - 2026-07-01
 
 First design release: the library grew a curated public API, a high-level

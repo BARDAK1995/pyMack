@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "case_id": "orszag_spectrum",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/other/orszag_spectrum/verdict.json",
+    "sha256": "c36e3dd680213ba705d9de70658b7cbf0766fc8c484eefd29b85fce4139526a6",
+    "committed_when": {
+      "commit": "0182004ffea10e44fa6b7e7492c4ab5abf21541f",
+      "authored_at": "2026-07-02T22:10:10-05:00"
+    }
+  },
+  "status": "PRE_CLEARED_2026-07-12",
+  "regeneration": {
+    "rerun_in_this_census": false,
+    "reason": "User-ratified diagnostic evidence; explicitly not rerun.",
+    "evidence": "diagnostics/reference_staleness/SCRATCH/orszag_spectrum.json",
+    "driver": "validation/test_orszag_full_spectrum.py::poiseuille_spectrum",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; python diagnostics/reference_staleness/run_census_probe.py orszag_spectrum",
+    "generated_at_utc": "2026-07-12T22:16:22.768152+00:00",
+    "elapsed_s": 0.46130630001425743,
+    "environment": {
+      "python": "3.12.7 (tags/v3.12.7:0b05ead, Oct  1 2024, 03:06:41) [MSC v.1941 64 bit (AMD64)]",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "blas_thread_env": {
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1"
+      }
+    },
+    "quantity": [
+      "max_abs_err",
+      "median_abs_err",
+      "least_stable_c.real",
+      "least_stable_c.imag"
+    ]
+  },
+  "comparison": {
+    "verdict": "DRIFTED",
+    "canonical_numeric_payload_byte_identical": false,
+    "max_abs_drift": 3.235234232077055e-08,
+    "max_rel_component_drift": 0.004487383218719508,
+    "component_abs_drift": [
+      3.235234232077055e-08,
+      1.0228009989368559e-11,
+      1.1836320257252453e-09,
+      5.058925162462757e-10
+    ],
+    "classification_rule": "byte-identical, else max absolute numeric component drift <=1e-9, else DRIFTED"
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:10:34.643660+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "202952d94f65d6e54eae00736f536cbe3ed4f716",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; python diagnostics/reference_staleness/run_census_probe.py orszag_spectrum",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "evidence_origin": "2026-07-12 diagnostic census",
+      "driver": "validation/test_orszag_full_spectrum.py::poiseuille_spectrum",
+      "quantity": [
+        "max_abs_err",
+        "median_abs_err",
+        "least_stable_c.real",
+        "least_stable_c.imag"
+      ],
+      "rerun_in_this_census": false
+    },
+    "sha256": {
+      "diagnostics/reference_staleness/SCRATCH/orszag_spectrum.json": "38af7c54121f6bacc598983b8135d553b6aa3d2f47953960221808a35efec461",
+      "verification/other/orszag_spectrum/verdict.json": "c36e3dd680213ba705d9de70658b7cbf0766fc8c484eefd29b85fce4139526a6",
+      "validation/test_orszag_full_spectrum.py": "17d1d86934fc00629f57eaeec32f126ae7b7c832260fe8f82d6d56c16c13e738",
+      "diagnostics/reference_staleness/run_census_probe.py": "fc5d3f3f1e3e1fe8fd138cdc5795a36b5a0f67c9f2669f8f48ecc6d896e0e78b"
+    }
+  }
+}

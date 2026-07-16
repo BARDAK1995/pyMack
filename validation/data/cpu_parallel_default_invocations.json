@@ -1,0 +1,4 @@
+{
+  "ozgen": "{\"engine\":\"sweep\",\"panels\":\"2,4\",\"quality\":\"production\",\"sweep_backend\":\"cpu\",\"workers\":null}",
+  "mack_fig10_4": "{\"N\":null,\"mach\":10.0,\"probe\":null,\"r_list\":null,\"y_max\":null}"
+}

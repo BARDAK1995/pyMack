@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "case_id": "cone_sivasubramanian_fasel_2015",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/cone_sivasubramanian_fasel_2015/verdict.json",
+    "sha256": "7de711cb30e7bb04634ea4daf204bb9d685c62fdb7a9cb87709a77a20c80a0ea",
+    "committed_when": {
+      "commit": "f0f47bfb072e971092b1a97ccd2164901042a8ee",
+      "authored_at": "2026-07-02T22:09:38-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/cone_sivasubramanian_fasel_2015",
+    "regenerated_payload": "SCRATCH/cone_sivasubramanian_fasel_2015/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py cone_sivasubramanian_fasel_2015 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\cone_sivasubramanian_fasel_2015'",
+    "exit_code": 0,
+    "elapsed_s": 416.7330996000019,
+    "hard_timeout_s": 1800.0,
+    "timed_out": false,
+    "termination": null,
+    "measurement_lock": {
+      "protocol": "atomic mkdir; low-priority poll; never steal",
+      "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+      "owner": "provenance-census-low-priority 2026-07-15T02:40:15.542625+00:00 d69e14c7bb5d4ad98d8a1f6c716fd24f provenance-census-cone_sivasubramanian_fasel_2015",
+      "run_label": "provenance-census-cone_sivasubramanian_fasel_2015",
+      "waited_s": 0.0,
+      "acquired_at_utc": "2026-07-15T02:40:15.542625+00:00",
+      "released_at_utc": "2026-07-15T02:47:12.272214+00:00"
+    },
+    "stdout": "SCRATCH/cone_sivasubramanian_fasel_2015/stdout.txt",
+    "stderr": "SCRATCH/cone_sivasubramanian_fasel_2015/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 16,
+    "n_compared_numeric_metrics": 16,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 0.0,
+    "max_abs_drift_path": "metrics.N_collocation",
+    "component_abs_drift": {
+      "metrics.N_collocation": 0.0,
+      "metrics.N_rel_err_vs_9p5_at_210khz": 0.0,
+      "metrics.N_rel_err_vs_9p5_at_pymack_peak": 0.0,
+      "metrics.benchmark_F": 0.0,
+      "metrics.benchmark_most_amplified_frequency_khz": 0.0,
+      "metrics.benchmark_peak_N": 0.0,
+      "metrics.freq_rel_err_vs_210khz_at_pymack_peak": 0.0,
+      "metrics.freq_rel_err_vs_210khz_using_pymack_210_eval": 0.0,
+      "metrics.n_frequencies": 0.0,
+      "metrics.n_stations": 0.0,
+      "metrics.pymack_N_at_210khz_domain_matched": 0.0,
+      "metrics.pymack_domain_end_x_star_m": 0.0,
+      "metrics.pymack_lower_neutral_point_x_star_m": 0.0,
+      "metrics.pymack_peak_N_domain_matched": 0.0,
+      "metrics.pymack_peak_N_frequency_khz": 0.0,
+      "metrics.pymack_second_mode_c_r": 0.0
+    },
+    "committed_verdict": "acceptable",
+    "regenerated_verdict": "acceptable",
+    "scientific_verdict_identical": true
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-15T02:47:12.302413+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "6ab2d039ee9d19017b3b4105af39bef81d2566d5",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py cone_sivasubramanian_fasel_2015 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\cone_sivasubramanian_fasel_2015'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1",
+        "PYTHONPATH": "C:\\Users\\merts\\pymack-wt\\census"
+      }
+    },
+    "effective_parameters": {
+      "case_id": "cone_sivasubramanian_fasel_2015",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": true,
+      "driver_effective_parameters": {
+        "driver": "reintegrate_domain_matched.py scratch-safe copy",
+        "execution_surface": "serial frequency_station_grid",
+        "mach_edge": 5.356,
+        "N": 90,
+        "y_max": 40.0,
+        "frequencies_khz": [
+          170.0,
+          180.0,
+          190.0,
+          200.0,
+          205.0,
+          210.0,
+          215.0,
+          220.0,
+          230.0,
+          240.0,
+          250.0,
+          260.0,
+          280.0,
+          300.0
+        ],
+        "n_stations": 60,
+        "n_spatial_solves": 840,
+        "x_star_axial_m": [
+          0.3,
+          0.59
+        ],
+        "length_scale": "L_star",
+        "lambda_mu_ratio": 1.2,
+        "mode_c_r": [
+          0.8,
+          0.985
+        ],
+        "blas_threads": 1
+      }
+    },
+    "sha256": {
+      "verification/second_mode/cone_sivasubramanian_fasel_2015/verdict.json": "7de711cb30e7bb04634ea4daf204bb9d685c62fdb7a9cb87709a77a20c80a0ea",
+      "scripts/verification/provenance_census_worker.py": "46da08132c8bc81c06a835a0d45962fb431ae4d559a7ada55daaa15ad3345bb2",
+      "verification/second_mode/cone_sivasubramanian_fasel_2015/reintegrate_domain_matched.py": "d68d0aa80cbe438f684beb8b2d92bf44dc6175c8a7f14bf685c48792561fa33f",
+      "SCRATCH/cone_sivasubramanian_fasel_2015/stdout.txt": "073090c58ba1bdab20150bc8440a5ba5d3b298b4e0d6d366495a4b4d3fc0dec0",
+      "SCRATCH/cone_sivasubramanian_fasel_2015/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/cone_sivasubramanian_fasel_2015/verdict.json": "28e057a92753a64d1991e6dff07813dff04cf595c00bbf64d4edd7f08a43f2a9",
+      "SCRATCH/cone_sivasubramanian_fasel_2015/census_effective_parameters.json": "260df014053dce76f67b91a470f860025f4175d72d953b76e59e4d4e2e8a9522",
+      "SCRATCH/cone_sivasubramanian_fasel_2015/domain_matched_result.json": "6355de834cf6909e550f33b596fb0f1f111f0c012b48c3b50f02589f1e4196d4",
+      "SCRATCH/cone_sivasubramanian_fasel_2015/reintegrate_domain_matched.py": "90cb823a453623351bf9ee4971a88c934f10fcc4950dc3ede09e19440757d7d6"
+    }
+  }
+}

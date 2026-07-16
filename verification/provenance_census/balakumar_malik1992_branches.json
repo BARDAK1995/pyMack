@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "case_id": "balakumar_malik1992_branches",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/balakumar_malik1992_branches/verdict.json",
+    "sha256": "a4e2b1d2f4d04d4b9ecc8d46208b227e87d40bfd1b40164b327dd2a328c9d8d6",
+    "committed_when": {
+      "commit": "e963286696f4422ecc8b0cdec9e7a17f07678abc",
+      "authored_at": "2026-06-19T09:28:48-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/balakumar_malik1992_branches",
+    "regenerated_payload": "SCRATCH/balakumar_malik1992_branches/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py balakumar_malik1992_branches --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\balakumar_malik1992_branches'",
+    "exit_code": 0,
+    "elapsed_s": 27.066703600110486,
+    "measurement_lock": null,
+    "stdout": "SCRATCH/balakumar_malik1992_branches/stdout.txt",
+    "stderr": "SCRATCH/balakumar_malik1992_branches/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 18,
+    "n_compared_numeric_metrics": 18,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 0.0,
+    "max_abs_drift_path": "metrics.N",
+    "component_abs_drift": {
+      "metrics.N": 0.0,
+      "metrics.alpha_i_gap_to_next_in_band": 0.0,
+      "metrics.continuous_cluster_alpha_i_median": 0.0,
+      "metrics.disc_alpha_i_rel_err": 0.0,
+      "metrics.disc_alpha_r_rel_err": 0.0,
+      "metrics.discrete_alpha[0]": 0.0,
+      "metrics.discrete_alpha[1]": 0.0,
+      "metrics.discrete_c_phase": 0.0,
+      "metrics.min_gap_to_other": 0.0,
+      "metrics.n_continuous_cluster_near_c1": 0.0,
+      "metrics.n_eigs_total": 0.0,
+      "metrics.n_more_amplified_than_disc": 0.0,
+      "metrics.n_within_10pct_of_disc": 0.0,
+      "metrics.nearest_other_alpha[0]": 0.0,
+      "metrics.nearest_other_alpha[1]": 0.0,
+      "metrics.published_alpha[0]": 0.0,
+      "metrics.published_alpha[1]": 0.0,
+      "metrics.separation_ratio": 0.0
+    },
+    "committed_verdict": "acceptable",
+    "regenerated_verdict": "acceptable"
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:16:01.407308+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "9486ae417b31aba74d631fd1c29c1bd6c5df4e6e",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py balakumar_malik1992_branches --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\balakumar_malik1992_branches'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "case_id": "balakumar_malik1992_branches",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": false
+    },
+    "sha256": {
+      "verification/second_mode/balakumar_malik1992_branches/verdict.json": "a4e2b1d2f4d04d4b9ecc8d46208b227e87d40bfd1b40164b327dd2a328c9d8d6",
+      "scripts/verification/provenance_census_worker.py": "a618c1f1a52ed9e8128907e438ee935274c2c39c1f7c7ebc17987287398c8cb8",
+      "verification/compute_balakumar_malik1992_branches.py": "b3785ace7790774cbe6703d27cce1ab322387a6fb766b61c6067f28932e19841",
+      "SCRATCH/balakumar_malik1992_branches/stdout.txt": "5fba879798521aa4b214b90abfac3d8f68dd1a7b3cb88d16768516e1ad70c376",
+      "SCRATCH/balakumar_malik1992_branches/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/balakumar_malik1992_branches/verdict.json": "5f101f60789edab005b672df939b186f62ddd6426f6fbc3ef9b6b34f480affd1"
+    }
+  }
+}

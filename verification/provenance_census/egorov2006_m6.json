@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "case_id": "egorov2006_m6",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/egorov2006_m6/verdict.json",
+    "sha256": "bbb2f2d02dcd0aa7b91c11f690a776934e8adb66317137cfc5efefb7589519fa",
+    "committed_when": {
+      "commit": "e963286696f4422ecc8b0cdec9e7a17f07678abc",
+      "authored_at": "2026-06-19T09:28:48-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/egorov2006_m6",
+    "regenerated_payload": "SCRATCH/egorov2006_m6/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py egorov2006_m6 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\egorov2006_m6'",
+    "exit_code": 0,
+    "elapsed_s": 45.082810800056905,
+    "measurement_lock": null,
+    "stdout": "SCRATCH/egorov2006_m6/stdout.txt",
+    "stderr": "SCRATCH/egorov2006_m6/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 9,
+    "n_compared_numeric_metrics": 9,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 0.0,
+    "max_abs_drift_path": "metrics.N",
+    "component_abs_drift": {
+      "metrics.N": 0.0,
+      "metrics.benchmark_value": 0.0,
+      "metrics.pymack_c_r_at_omega200": 0.0,
+      "metrics.pymack_growth_at_omega200": 0.0,
+      "metrics.pymack_peak_omega_E": 0.0,
+      "metrics.pymack_value": 0.0,
+      "metrics.rel_err": 0.0,
+      "metrics.unstable_band_omega_E[0]": 0.0,
+      "metrics.unstable_band_omega_E[1]": 0.0
+    },
+    "committed_verdict": "acceptable",
+    "regenerated_verdict": "acceptable"
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:16:46.795579+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "9486ae417b31aba74d631fd1c29c1bd6c5df4e6e",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py egorov2006_m6 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\egorov2006_m6'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "case_id": "egorov2006_m6",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": false
+    },
+    "sha256": {
+      "verification/second_mode/egorov2006_m6/verdict.json": "bbb2f2d02dcd0aa7b91c11f690a776934e8adb66317137cfc5efefb7589519fa",
+      "scripts/verification/provenance_census_worker.py": "a618c1f1a52ed9e8128907e438ee935274c2c39c1f7c7ebc17987287398c8cb8",
+      "verification/compare_egorov2006_m6.py": "aca33fb1d70e0baea1268629473bed034a333726db365cc6a1629ed359c952a5",
+      "SCRATCH/egorov2006_m6/stdout.txt": "ed70123930fe717079f406a6a97e449f17182485ef1a41398e855434d9c8e59f",
+      "SCRATCH/egorov2006_m6/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/egorov2006_m6/verdict.json": "01ff076fb387cdc3bd4bda17109415b85f05fb0aaaf2794d6aa0e96a48beae40"
+    }
+  }
+}

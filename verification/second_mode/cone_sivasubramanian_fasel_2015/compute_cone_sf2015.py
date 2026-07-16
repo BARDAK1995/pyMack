@@ -24,7 +24,7 @@ import sys, json
 from pathlib import Path
 import numpy as np
 
-REPO = Path("C:/Users/merts/OneDrive/Masaüstü/MS_LST")
+REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
 
 from pymack import CompressibleBlasiusProfile

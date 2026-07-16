@@ -54,6 +54,7 @@ import numpy as np
 
 import pymack
 from pymack.solver import solve_temporal_compressible
+from pymack.sweep import CBand, temporal_sweep
 
 
 # --- Constants --------------------------------------------------------------
@@ -155,13 +156,15 @@ def maximize_growth(profile, R, mach, *, N=N_DEFAULT, y_max=Y_MAX_DEFAULT,
         alpha_scan = ALPHA_SCAN.get(round(mach, 1), (0.03, 0.45, 0.005))
     a0, a1, da = alpha_scan
 
-    best_oi, best_a, best_c = -np.inf, None, None
-    for a in np.arange(a0, a1 + 0.5 * da, da):
-        c, oi = second_mode_growth(profile, a, R, mach, N=N, y_max=y_max)
-        if oi is not None and oi > best_oi:
-            best_oi, best_a, best_c = oi, float(a), c
-    if best_a is None:
+    alphas = np.arange(a0, a1 + 0.5 * da, da)
+    family = temporal_sweep(
+        profile, alphas, [R], Ma=mach, N=N, y_max=y_max, Pr=PR, gamma=GAMMA,
+        lambda_mu_ratio=0.0, operator="mack_2d",
+        families=(CBand(CR_LO, CR_HI, ci_abs_max=CI_CAP),)).families[0]
+    if not np.any(family.converged[:, 0]):
         return None, None, None
+    best = int(np.nanargmax(family.omega_i[:, 0]))
+    best_oi, best_a, best_c = float(family.omega_i[best, 0]), float(alphas[best]), family.c[best, 0]
 
     # Fine local refine (+/- one coarse step, 1/4-step resolution).
     for a in np.arange(best_a - da, best_a + da + 1e-9, da / 4.0):

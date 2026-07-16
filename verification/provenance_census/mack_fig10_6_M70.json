@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "case_id": "mack_fig10_6_M70",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/mack_fig10_6_M70/verdict.json",
+    "sha256": "e39f1740ea7c80ea71f188573927a3ee78092b4885da22dfbae5fb1463eef807",
+    "committed_when": {
+      "commit": "e963286696f4422ecc8b0cdec9e7a17f07678abc",
+      "authored_at": "2026-06-19T09:28:48-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/mack_fig10_6_M70",
+    "regenerated_payload": "SCRATCH/mack_fig10_6_M70/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mack_fig10_6_M70 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mack_fig10_6_M70'",
+    "exit_code": 0,
+    "elapsed_s": 660.355793499999,
+    "hard_timeout_s": 1800.0,
+    "timed_out": false,
+    "termination": null,
+    "measurement_lock": {
+      "protocol": "atomic mkdir; low-priority poll; never steal",
+      "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+      "owner": "provenance-census-low-priority 2026-07-15T01:24:50.043749+00:00 5e39f61f2cc5408fba5fa1914299f016 provenance-census-mack_fig10_6_M70",
+      "run_label": "provenance-census-mack_fig10_6_M70",
+      "waited_s": 0.0,
+      "acquired_at_utc": "2026-07-15T01:24:50.043749+00:00",
+      "released_at_utc": "2026-07-15T01:35:50.396111+00:00"
+    },
+    "stdout": "SCRATCH/mack_fig10_6_M70/stdout.txt",
+    "stderr": "SCRATCH/mack_fig10_6_M70/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 6,
+    "n_compared_numeric_metrics": 6,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 0.0,
+    "max_abs_drift_path": "metrics.N",
+    "component_abs_drift": {
+      "metrics.N": 0.0,
+      "metrics.curve_median_rel_err": 0.0,
+      "metrics.n_overlap": 0.0,
+      "metrics.n_valid_stations": 0.0,
+      "metrics.omega_i_max_at_R1500": 0.0,
+      "metrics.y_max": 0.0
+    },
+    "committed_verdict": "agrees",
+    "regenerated_verdict": "agrees",
+    "scientific_verdict_identical": true
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-15T01:35:50.420346+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "43d2002aed7a98102a15cc07ac461fcdb4ed6bef",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mack_fig10_6_M70 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mack_fig10_6_M70'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1",
+        "PYTHONPATH": "C:\\Users\\merts\\pymack-wt\\census"
+      }
+    },
+    "effective_parameters": {
+      "case_id": "mack_fig10_6_M70",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": true,
+      "driver_effective_parameters": {
+        "mach": 7.0,
+        "N": 170,
+        "y_max": 88.0,
+        "R_sweep": [
+          240,
+          300,
+          400,
+          500,
+          700,
+          900,
+          1100,
+          1300,
+          1500,
+          1700,
+          1900,
+          2000
+        ],
+        "alpha_scan": [
+          0.03,
+          0.26,
+          0.005
+        ],
+        "Pr": 0.72,
+        "gamma": 1.4,
+        "length_scale": "L_star",
+        "lambda_mu_ratio": 0.0,
+        "condition": "table_11_1",
+        "mode_c_r": [
+          0.78,
+          0.99
+        ],
+        "mode_c_i_cap": 0.05,
+        "sweep_backend": "cpu",
+        "execution_surface": "station_serial_alpha_parallel",
+        "station_workers_requested": 1,
+        "station_workers_effective": 1,
+        "alpha_sweep_observations": [
+          {
+            "R": 240.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 300.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 400.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 500.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 700.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 900.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1100.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1300.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1500.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1700.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 1900.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          },
+          {
+            "R": 2000.0,
+            "backend": "cpu",
+            "cpu_workers": 47,
+            "cpu_blas_threads_effective": null,
+            "alpha_points": 47,
+            "engine_wall_time_s": null,
+            "n_failed_points": 0
+          }
+        ],
+        "historical_reference_scheduler": "station_serial",
+        "runaway_correction": "removed nested 12-station process pool around temporal_sweep's existing per-station alpha-grid process pool"
+      }
+    },
+    "sha256": {
+      "verification/second_mode/mack_fig10_6_M70/verdict.json": "e39f1740ea7c80ea71f188573927a3ee78092b4885da22dfbae5fb1463eef807",
+      "scripts/verification/provenance_census_worker.py": "25787380e316accdc202afa1989c616336b68d1ba611e3a6c6b629793167859e",
+      "verification/compute_mack_fig10_6.py": "b47e863023072cab4d8e146ad9135f2ba7cb96ee589b0504cd2730a74465cd7d",
+      "verification/verify_mack_fig10_6.py": "541054dd57f1004c0556c58900a62887c3a892241ee4b931d6ce9c4a686449b8",
+      "reference_data/digitized/mack_ch10_fig10_6_M70_paper.csv": "cd7ab0c0d210389d1643ddb01e96803b73bbb2c98d8879bca681c437d49f0232",
+      "SCRATCH/mack_fig10_6_M70/stdout.txt": "5430816f417be3ed4beafe693b75325fdacc3044ea410112bfa8deb70335a27b",
+      "SCRATCH/mack_fig10_6_M70/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/mack_fig10_6_M70/verdict.json": "905d1c4214c1a385b4244d1f346f04d152738bfc3f93f0b82e4786ae2f9e46df",
+      "SCRATCH/mack_fig10_6_M70/census_effective_parameters.json": "a41727a537f7424ffcb5921bc074a1200fb0d3c97b5c307f3057c344159906f9"
+    }
+  }
+}

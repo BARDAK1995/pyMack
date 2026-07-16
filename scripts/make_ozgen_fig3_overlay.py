@@ -28,8 +28,8 @@ Outputs: a PNG figure, a JSON metadata file, and a CSV of the gridded
 ``c_i`` field so the figure can be re-drawn without recomputing.
 
 Two compute engines produce identical grids: ``--engine sweep`` (default)
-goes through the ``pymack.sweep`` batch facade (parallel CPU backend today,
-GPU-ready), while ``--engine point`` keeps the original serial per-point
+goes through the ``pymack.sweep`` batch facade (parallel CPU backend), while
+``--engine point`` keeps the original serial per-point
 loop for A/B checks.  Equality of the two paths is asserted in
 ``validation/test_sweep_cpu_backend.py``.
 
@@ -200,7 +200,8 @@ def compute_panel(Ma, re_values, alpha_values, N, *, verbose=True):
 
 
 def compute_panel_sweep(Ma, re_values, alpha_values, N, *, backend="cpu",
-                        workers=None, verbose=True):
+                        workers=None, blas_threads=None,
+                        eigenvalues_only=False, verbose=True):
     """Compute one panel through the ``pymack.sweep`` batch facade.
 
     Produces grids identical to :func:`compute_panel`: the two CBand
@@ -236,6 +237,8 @@ def compute_panel_sweep(Ma, re_values, alpha_values, N, *, backend="cpu",
         ),
         backend=backend,
         cpu_workers=workers,
+        cpu_blas_threads=blas_threads,
+        cpu_eigenvalues_only=eigenvalues_only,
     )
 
     n_a, n_r = len(alpha_values), len(re_values)
@@ -283,6 +286,8 @@ def compute_panel_sweep(Ma, re_values, alpha_values, N, *, backend="cpu",
         "y_max_lstar": float(y_max),
         "N": int(N),
         "wall_time_s": float(wall),
+        "sweep_meta": res.meta,
+        "sweep_result": res,
     }
 
 
@@ -471,7 +476,7 @@ def build_metadata(panels, digitized_by_ma, args, paths, total_wall_s):
                 ],
             }
         )
-    return {
+    metadata = {
         "purpose": (
             "Qualitative overlay (demonstration, not a gate) of pyMack's 2D "
             "temporal stability map against digitized Ozgen & Kircali (2008) "
@@ -516,6 +521,74 @@ def build_metadata(panels, digitized_by_ma, args, paths, total_wall_s):
         "output_grid_csv": str(paths["grid_csv"]),
         "total_wall_time_s": float(total_wall_s),
         "panels": panel_meta,
+    }
+    if args.blas_threads is not None or args.eigenvalues_only:
+        metadata["fast_cpu_sweep"] = {
+            "blas_threads": args.blas_threads,
+            "eigenvalues_only": bool(args.eigenvalues_only),
+        }
+    return metadata
+
+
+def verify_grid_against_committed(path: Path, *, reference: Path | None = None,
+                                  atol=1.0e-9):
+    """Compare a production M=2 grid at the committed artifact's precision."""
+    if reference is None:
+        reference = (
+            REPO_ROOT / "verification" / "mixed_mode" / "ozgen_fig3"
+            / "_compute" / "ozgen_M2_ci_grid.csv"
+        )
+    actual_bytes = path.read_bytes()
+    reference_bytes = reference.read_bytes()
+    with path.open(newline="", encoding="utf-8") as handle:
+        actual_rows = list(csv.DictReader(handle))
+    with reference.open(newline="", encoding="utf-8") as handle:
+        reference_rows = list(csv.DictReader(handle))
+    max_abs_diff = {"c_i": 0.0, "c_r": 0.0}
+    binary_comparison_slack = 1.0e-15
+    mismatches = []
+    for index, (actual, expected) in enumerate(zip(actual_rows, reference_rows)):
+        reasons = []
+        for key in ("Ma", "Re_L", "alpha_L"):
+            if actual[key] != expected[key]:
+                reasons.append(f"{key}: {actual[key]!r} != {expected[key]!r}")
+        if actual["family"] != expected["family"]:
+            reasons.append(
+                f"family: {actual['family']!r} != {expected['family']!r}")
+        for key in ("c_i", "c_r"):
+            got = float(actual[key])
+            ref = float(expected[key])
+            got_nan = bool(np.isnan(got))
+            ref_nan = bool(np.isnan(ref))
+            if got_nan != ref_nan:
+                reasons.append(f"{key}: finite/NaN decision differs")
+            elif not got_nan:
+                diff = abs(got - ref)
+                max_abs_diff[key] = max(max_abs_diff[key], diff)
+                if diff > atol + binary_comparison_slack:
+                    reasons.append(f"{key}: abs diff {diff:.3e} > {atol:.3e}")
+        if reasons:
+            mismatches.append({"row": index, "reasons": reasons})
+    row_count_ok = len(actual_rows) == len(reference_rows) == 720
+    ok = row_count_ok and not mismatches
+    return {
+        "ok": ok,
+        "comparison": (
+            "exact coordinate/family/finite decisions and absolute c_r/c_i "
+            "agreement at committed CSV precision"
+        ),
+        "atol": atol,
+        "binary_comparison_slack": binary_comparison_slack,
+        "rows_expected": 720,
+        "rows_actual": len(actual_rows),
+        "rows_matched": len(actual_rows) - len(mismatches) if row_count_ok else None,
+        "max_abs_diff": max_abs_diff,
+        "mismatches": mismatches[:20],
+        "mismatches_truncated": len(mismatches) > 20,
+        "byte_equal": actual_bytes == reference_bytes,
+        "actual_bytes": len(actual_bytes),
+        "reference_bytes": len(reference_bytes),
+        "reference": str(reference.relative_to(REPO_ROOT)),
     }
 
 
@@ -563,7 +636,7 @@ def parse_args(argv=None):
         "--sweep-backend",
         default="cpu",
         help="pymack.sweep backend for --engine sweep (default cpu; "
-             "'auto' defers to PYMACK_SWEEP_BACKEND / GPU availability)",
+             "'auto' defers to PYMACK_SWEEP_BACKEND, otherwise stays CPU)",
     )
     parser.add_argument(
         "--workers",
@@ -571,6 +644,22 @@ def parse_args(argv=None):
         default=None,
         help="CPU worker processes for --engine sweep "
              "(default: all cores, capped at the number of grid points)",
+    )
+    parser.add_argument(
+        "--blas-threads",
+        type=int,
+        default=None,
+        help="opt-in BLAS threads per CPU sweep worker (tuned recipe: 1)",
+    )
+    parser.add_argument(
+        "--eigenvalues-only",
+        action="store_true",
+        help="opt-in CPU 2-D QZ values-only path with selected-vector recompute",
+    )
+    parser.add_argument(
+        "--verify-against-committed",
+        action="store_true",
+        help="require a production M=2 grid to match ozgen_M2_ci_grid.csv at its stored precision",
     )
     return parser.parse_args(argv)
 
@@ -582,6 +671,19 @@ def main(argv=None):
     mach_numbers = [float(token) for token in args.panels.split(",") if token.strip()]
     if not mach_numbers:
         raise SystemExit("--panels produced no Mach numbers")
+    if args.blas_threads is not None and args.blas_threads < 1:
+        raise SystemExit("--blas-threads must be >= 1")
+    if (args.blas_threads is not None or args.eigenvalues_only) and (
+        args.engine != "sweep" or args.sweep_backend != "cpu"
+    ):
+        raise SystemExit(
+            "--blas-threads/--eigenvalues-only require --engine sweep "
+            "--sweep-backend cpu")
+    if args.verify_against_committed and (
+        args.quality != "production" or mach_numbers != [2.0]
+    ):
+        raise SystemExit(
+            "--verify-against-committed requires --quality production --panels 2")
 
     output_png = Path(args.output_png)
     output_json = (
@@ -618,10 +720,18 @@ def main(argv=None):
             )
         digitized_by_ma[float(Ma)] = load_digitized_curves(Ma)
         if args.engine == "sweep":
+            sweep_options = {
+                "backend": args.sweep_backend,
+                "workers": args.workers,
+            }
+            if args.blas_threads is not None:
+                sweep_options["blas_threads"] = args.blas_threads
+            if args.eigenvalues_only:
+                sweep_options["eigenvalues_only"] = True
             panels.append(
                 compute_panel_sweep(
                     Ma, re_values, alpha_values, settings["N"],
-                    backend=args.sweep_backend, workers=args.workers,
+                    **sweep_options,
                 )
             )
         else:
@@ -640,6 +750,10 @@ def main(argv=None):
         {"png": output_png, "grid_csv": output_grid_csv},
         total_wall_s,
     )
+    identity = None
+    if args.verify_against_committed:
+        identity = verify_grid_against_committed(output_grid_csv)
+        metadata["committed_grid_identity"] = identity
     output_json.parent.mkdir(parents=True, exist_ok=True)
     with output_json.open("w", encoding="utf-8") as handle:
         json.dump(metadata, handle, indent=2)
@@ -647,6 +761,11 @@ def main(argv=None):
     print(f"output_png={output_png}")
     print(f"output_json={output_json}")
     print(f"output_grid_csv={output_grid_csv}")
+    if identity is not None:
+        print(
+            "committed_grid_identity="
+            + ("PASS" if identity["ok"] else "FAIL")
+        )
     for meta in metadata["panels"]:
         print(
             f"  M={meta['Ma']:g}: classified {meta['n_classified']}/"
@@ -661,7 +780,10 @@ def main(argv=None):
                 f"WARNING: M={meta['Ma']:g} c_i field does not change sign — "
                 "no neutral contour. Check y_max / mode classification."
             )
+    if identity is not None and not identity["ok"]:
+        return 2
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())

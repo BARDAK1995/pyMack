@@ -55,7 +55,20 @@ os.environ.setdefault("PYMACK_NO_BANNER", "1")
 
 import argparse
 import concurrent.futures as _cf
+import json
+import math
+import multiprocessing
 import sys
+import time
+from pathlib import Path
+
+# A direct ``python verification/compute_mack_fig10_4.py`` invocation puts the
+# verification directory, not the repository root, at sys.path[0]. Ensure the
+# deployed script and every spawned Windows worker import this worktree rather
+# than an editable install from another checkout.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 import numpy as np
 from scipy import linalg
@@ -269,6 +282,201 @@ def work_unit(args):
             "c_r": float(c.real), "c_i": float(c.imag)}
 
 
+def _point_work_unit(task):
+    """One independently schedulable coarse/refine point (Windows-picklable)."""
+    profile = _get_profile(task["mach"])
+    beta = task["alpha"] * np.tan(np.radians(task["psi"]))
+    oi, c = first_mode_growth(
+        profile, task["alpha"], beta, task["R"], task["mach"],
+        N=task["N"], y_max=task["y_max"],
+    )
+    return {
+        **task,
+        "omega_i": None if oi is None else float(oi),
+        "c_r": None if c is None else float(c.real),
+        "c_i": None if c is None else float(c.imag),
+    }
+
+
+def _best_point(records):
+    best = None
+    best_oi = float("-inf")
+    for record in sorted(records, key=lambda item: item["point_order"]):
+        if record["omega_i"] is not None and record["omega_i"] > best_oi:
+            best = record
+            best_oi = record["omega_i"]
+    return best
+
+
+def _row_from_point(R, best):
+    if best is None:
+        return {"R": float(R), "omega_i_max": None, "alpha_peak": None,
+                "psi_peak": None, "c_r": None, "c_i": None}
+    return {
+        "R": float(R),
+        "omega_i_max": float(best["omega_i"]),
+        "alpha_peak": float(best["alpha"]),
+        "psi_peak": float(best["psi"]),
+        "c_r": float(best["c_r"]),
+        "c_i": float(best["c_i"]),
+    }
+
+
+def _resolve_point_workers(workers, n_tasks):
+    workers = (os.cpu_count() or 1) if workers is None else int(workers)
+    if workers < 1:
+        raise ValueError("workers must be >= 1")
+    if sys.platform == "win32":
+        workers = min(workers, 61)
+    return max(1, min(workers, n_tasks))
+
+
+def compute_curve_point_parallel(mach, r_list=None, *, N=None, y_max=None,
+                                 workers=None, verbose=True):
+    """Coarse points plus exact 9-point refine windows across one process pool."""
+    mach = float(mach)
+    r_list = list(DEFAULT_R_SWEEPS[round(mach, 1)] if r_list is None else r_list)
+    N = _N_for(mach) if N is None else int(N)
+    y_max = _ymax_for(mach) if y_max is None else float(y_max)
+    alpha_grid = ALPHA_GRID[round(mach, 1)]
+    psi_grid = PSI_GRID[round(mach, 1)]
+    coarse = []
+    for station_index, R in enumerate(r_list):
+        point_order = 0
+        for psi in psi_grid:
+            for alpha in alpha_grid:
+                coarse.append({
+                    "phase": "coarse", "station_index": station_index,
+                    "point_order": point_order, "mach": mach, "R": float(R),
+                    "alpha": float(alpha), "psi": float(psi), "N": N,
+                    "y_max": y_max,
+                })
+                point_order += 1
+    n_workers = _resolve_point_workers(workers, len(coarse))
+    if verbose:
+        print(f"point-parallel: {len(coarse)} coarse points across "
+              f"{n_workers} workers", flush=True)
+    context = multiprocessing.get_context("spawn")
+    with _cf.ProcessPoolExecutor(
+        max_workers=n_workers, mp_context=context,
+    ) as executor:
+        coarse_results = list(executor.map(_point_work_unit, coarse))
+        coarse_by_station = {
+            i: [row for row in coarse_results if row["station_index"] == i]
+            for i in range(len(r_list))
+        }
+        coarse_best = {i: _best_point(rows) for i, rows in coarse_by_station.items()}
+        da = float(alpha_grid[1] - alpha_grid[0])
+        refine = []
+        for station_index, best in coarse_best.items():
+            if best is None:
+                continue
+            for point_order, alpha in enumerate(np.arange(
+                best["alpha"] - da, best["alpha"] + da + 1e-12, da / 4.0,
+            )):
+                if alpha > 0:
+                    refine.append({
+                        "phase": "refine", "station_index": station_index,
+                        "point_order": point_order, "mach": mach,
+                        "R": float(r_list[station_index]), "alpha": float(alpha),
+                        "psi": float(best["psi"]), "N": N, "y_max": y_max,
+                    })
+        if verbose:
+            print(f"point-parallel: {len(refine)} refine points", flush=True)
+        refine_results = list(executor.map(_point_work_unit, refine))
+
+    rows = []
+    for station_index, R in enumerate(r_list):
+        # The harness-proven reduction is coarse winner first, then strict
+        # improvements in ascending refine-window order.
+        best = coarse_best[station_index]
+        for candidate in sorted(
+            [row for row in refine_results
+             if row["station_index"] == station_index],
+            key=lambda item: item["point_order"],
+        ):
+            if (best is None or (
+                candidate["omega_i"] is not None
+                and candidate["omega_i"] > best["omega_i"]
+            )):
+                best = candidate
+        rows.append(_row_from_point(R, best))
+    return rows, {
+        "workers_effective": n_workers,
+        "coarse_points": len(coarse),
+        "refine_points": len(refine),
+    }
+
+
+def _float_diff(a, b):
+    if a is None or b is None:
+        return None
+    return abs(float(a) - float(b))
+
+
+def _float_match(a, b, *, rel_tol=5e-13, abs_tol=5e-13):
+    if a is None or b is None:
+        return a is None and b is None
+    return math.isclose(float(a), float(b), rel_tol=rel_tol, abs_tol=abs_tol)
+
+
+def _identity_check(rows, ref_rows, ref_verdict):
+    """Identity source copied from the committed point-parallel harness."""
+    fields = ("omega_i_max", "alpha_peak", "psi_peak", "c_r", "c_i")
+    station_checks = []
+    all_ok = len(rows) == len(ref_rows)
+    max_abs = {field: 0.0 for field in fields}
+    for i, (got, ref) in enumerate(zip(rows, ref_rows)):
+        row_ok = float(got["R"]) == float(ref["R"])
+        band_ok = (got.get("omega_i_max") is None) == (ref.get("omega_i_max") is None)
+        field_diffs = {}
+        field_matches = {}
+        for field in fields:
+            diff = _float_diff(got.get(field), ref.get(field))
+            field_diffs[field] = diff
+            if diff is not None:
+                max_abs[field] = max(max_abs[field], diff)
+            field_matches[field] = _float_match(got.get(field), ref.get(field))
+            row_ok = row_ok and field_matches[field]
+        row_ok = row_ok and band_ok
+        station_checks.append({
+            "index": i, "R": got.get("R"), "reference_R": ref.get("R"),
+            "band_decision_match": band_ok, "field_matches": field_matches,
+            "abs_diffs": field_diffs, "ok": row_ok,
+        })
+        all_ok = all_ok and row_ok
+    n_valid = sum(1 for row in rows if row.get("omega_i_max") is not None)
+    ref_n_valid = sum(1 for row in ref_rows if row.get("omega_i_max") is not None)
+    verdict_ok = (
+        ref_verdict.get("case_id") == "mack_fig10_4_M100"
+        and ref_verdict.get("verdict") not in (None, "pending")
+        and n_valid == ref_n_valid
+    )
+    all_ok = all_ok and verdict_ok
+    return {
+        "ok": bool(all_ok), "row_count_match": len(rows) == len(ref_rows),
+        "station_count": len(rows), "reference_station_count": len(ref_rows),
+        "n_valid_stations": n_valid, "reference_n_valid_stations": ref_n_valid,
+        "committed_verdict": ref_verdict.get("verdict"),
+        "committed_verdict_identity_ok": verdict_ok, "max_abs_diff": max_abs,
+        "station_checks": station_checks,
+    }
+
+
+def _verify_committed_m10(rows):
+    ref_dir = Path(__file__).resolve().parent / "first_mode" / "mack_fig10_4_M100"
+    ref_rows = json.loads((ref_dir / "pymack_curve.json").read_text(encoding="utf-8"))
+    verdict = json.loads((ref_dir / "verdict.json").read_text(encoding="utf-8"))
+    identity = _identity_check(rows, ref_rows, verdict)
+    zero_fields = {
+        key: float(value) == 0.0 for key, value in identity["max_abs_diff"].items()
+    }
+    identity["exact_zero_fields"] = zero_fields
+    identity["exact_zero_ok"] = bool(zero_fields) and all(zero_fields.values())
+    identity["ok"] = bool(identity["ok"] and identity["exact_zero_ok"])
+    return identity
+
+
 def compute_curves_parallel(machs, *, max_workers=48, r_sweeps=None):
     """Compute omega_i,max(R) for several Mach numbers in parallel.
 
@@ -327,7 +535,7 @@ def compute_curve(mach, r_list=None, *, N=None, y_max=None, verbose=True):
     return out
 
 
-def main(argv=None):
+def parse_args(argv=None):
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--mach", type=float, default=None)
@@ -337,7 +545,21 @@ def main(argv=None):
     p.add_argument("--probe", type=float, nargs=2, default=None,
                    metavar=("MACH", "R"),
                    help="print omega_i,max at one (mach,R)")
-    args = p.parse_args(argv)
+    p.add_argument("--point-parallel", action="store_true",
+                   help="schedule coarse points and exact refine windows across a pool")
+    p.add_argument("--workers", type=int, default=None,
+                   help="worker processes for --point-parallel (Windows capped at 61)")
+    p.add_argument("--blas-threads", type=int, default=None,
+                   help="BLAS threads inherited by point-parallel workers")
+    p.add_argument("--verify-against-committed", action="store_true",
+                   help="require exact-zero identity against committed M10 rows")
+    p.add_argument("--output-json", type=Path, default=None,
+                   help="optional point-parallel measurement artifact")
+    return p.parse_args(argv)
+
+
+def main(argv=None):
+    args = parse_args(argv)
 
     if args.probe is not None:
         m, R = args.probe
@@ -350,9 +572,34 @@ def main(argv=None):
         return 0
 
     if args.mach is None:
-        p.error("pass --mach or --probe")
-    rows = compute_curve(args.mach, r_list=args.r_list, N=args.N,
-                         y_max=args.y_max, verbose=True)
+        raise SystemExit("pass --mach or --probe")
+    if args.workers is not None and not args.point_parallel:
+        raise SystemExit("--workers requires --point-parallel")
+    if args.blas_threads is not None:
+        if args.blas_threads < 1:
+            raise SystemExit("--blas-threads must be >= 1")
+        for name in (
+            "OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS",
+            "NUMEXPR_NUM_THREADS", "VECLIB_MAXIMUM_THREADS",
+        ):
+            os.environ[name] = str(args.blas_threads)
+    if args.verify_against_committed and (
+        float(args.mach) != 10.0 or args.r_list is not None
+        or args.N is not None or args.y_max is not None
+    ):
+        raise SystemExit(
+            "--verify-against-committed requires the committed default M10 workload")
+    t0 = time.perf_counter()
+    run_meta = None
+    if args.point_parallel:
+        rows, run_meta = compute_curve_point_parallel(
+            args.mach, r_list=args.r_list, N=args.N, y_max=args.y_max,
+            workers=args.workers, verbose=True)
+    else:
+        rows = compute_curve(args.mach, r_list=args.r_list, N=args.N,
+                             y_max=args.y_max, verbose=True)
+    wall_time_s = time.perf_counter() - t0
+    identity = _verify_committed_m10(rows) if args.verify_against_committed else None
     print("\nR, omega_i_max, alpha_peak, psi_peak, c_r, c_i")
     for r in rows:
         if r["omega_i_max"] is None:
@@ -360,6 +607,25 @@ def main(argv=None):
         else:
             print(f"{r['R']:.0f}, {r['omega_i_max']:.6e}, {r['alpha_peak']:.4f}, "
                   f"{r['psi_peak']:.0f}, {r['c_r']:.4f}, {r['c_i']:+.5f}")
+    if identity is not None:
+        print("committed_identity=" + ("PASS" if identity["ok"] else "FAIL"))
+    if args.output_json is not None:
+        payload = {
+            "artifact": args.output_json.name,
+            "mode": "point_parallel" if args.point_parallel else "station_serial",
+            "mach": float(args.mach), "workers_requested": args.workers,
+            "blas_threads_requested": args.blas_threads,
+            "wall_time_s": wall_time_s, "scheduler": run_meta,
+            "identity_check": identity, "rows": rows,
+            "pymack_file": str(Path(pymack.__file__).resolve()),
+            "driver_file": str(Path(__file__).resolve()),
+            "command_argv": sys.argv,
+        }
+        args.output_json.parent.mkdir(parents=True, exist_ok=True)
+        args.output_json.write_text(json.dumps(payload, indent=1), encoding="utf-8")
+        print(f"output_json={args.output_json}")
+    if identity is not None and not identity["ok"]:
+        return 2
     return 0
 
 

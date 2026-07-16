@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "case_id": "malik_fig4_eigenfunction",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/malik_fig4_eigenfunction/verdict.json",
+    "sha256": "90db270c3da73fbd8aa6af1286e384030cd441cd116551a168b9c27203ed3629",
+    "committed_when": {
+      "commit": "0182004ffea10e44fa6b7e7492c4ab5abf21541f",
+      "authored_at": "2026-07-02T22:10:10-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/malik_fig4_eigenfunction",
+    "regenerated_payload": "SCRATCH/malik_fig4_eigenfunction/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py malik_fig4_eigenfunction --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\malik_fig4_eigenfunction'",
+    "exit_code": 0,
+    "elapsed_s": 9.088322899769992,
+    "measurement_lock": null,
+    "stdout": "SCRATCH/malik_fig4_eigenfunction/stdout.txt",
+    "stderr": "SCRATCH/malik_fig4_eigenfunction/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 9,
+    "n_compared_numeric_metrics": 9,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 7.525962075760617e-10,
+    "max_abs_drift_path": "metrics.T_over_u_dominance",
+    "component_abs_drift": {
+      "metrics.N": 0.0,
+      "metrics.T_over_u_dominance": 7.525962075760617e-10,
+      "metrics.T_peak_y_malik": 0.0,
+      "metrics.T_peak_y_pymack": 0.0,
+      "metrics.T_peak_y_rel_err": 0.0,
+      "metrics.Ti_rms_vs_malik_digitized": 6.514830341863842e-12,
+      "metrics.Tr_rms_vs_malik_digitized": 1.0399944794237115e-12,
+      "metrics.pymack_c[0]": 4.179656620806327e-12,
+      "metrics.pymack_c[1]": 9.786789434418353e-13
+    },
+    "committed_verdict": "agrees",
+    "regenerated_verdict": "agrees"
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:15:29.975016+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "9486ae417b31aba74d631fd1c29c1bd6c5df4e6e",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py malik_fig4_eigenfunction --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\malik_fig4_eigenfunction'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "case_id": "malik_fig4_eigenfunction",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": false
+    },
+    "sha256": {
+      "verification/second_mode/malik_fig4_eigenfunction/verdict.json": "90db270c3da73fbd8aa6af1286e384030cd441cd116551a168b9c27203ed3629",
+      "scripts/verification/provenance_census_worker.py": "a618c1f1a52ed9e8128907e438ee935274c2c39c1f7c7ebc17987287398c8cb8",
+      "verification/compute_malik_fig4_eigenfunction.py": "aaf565698a263d4115b612121f540ef2d12f2f48b238d4867d8fc788f3530139",
+      "verification/second_mode/malik_fig4_eigenfunction/reference_malik_fig4_Tr.csv": "ee618a6357990a037db4a722595d9fcb62e5f728a44dba01ec4ce6b071918535",
+      "verification/second_mode/malik_fig4_eigenfunction/reference_malik_fig4_Ti.csv": "cba8633cef21239869b3aca96767284265cd00d220c5c51f950786d2694f9868",
+      "SCRATCH/malik_fig4_eigenfunction/stdout.txt": "f510f1da4ece832cd19c41d47a8cba6bc2f7f766e55d235a19f0617ce7020175",
+      "SCRATCH/malik_fig4_eigenfunction/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/malik_fig4_eigenfunction/verdict.json": "ea78181dc5fc8cf33f27a82b26cf9bb69fe30c2c39b704c0d3090cba5ff1301e"
+    }
+  }
+}

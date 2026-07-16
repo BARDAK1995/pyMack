@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "case_id": "mack_fig10_6_M45",
+  "matrix_path": "GPU-temporal eligible",
+  "committed_reference": {
+    "path": "verification/second_mode/mack_fig10_6_M45/verdict.json",
+    "sha256": "582f85410459dcbf46f3489967ce2c5acc21c29bc15ea3d631e7e79a2ff44cc7",
+    "committed_when": {
+      "commit": "67b4cc29e7da0657af7eb8ff0e03ef705b81401e",
+      "authored_at": "2026-07-13T10:46:48-05:00"
+    }
+  },
+  "status": "INHERITED_FRESH_REGENERATION",
+  "regeneration": {
+    "rerun_in_this_census": false,
+    "reason": "Already freshly regenerated in the ratified 13R/M45 work.",
+    "evidence": "verification/gpu_certification/mack_m45_cpu_identity.json",
+    "exact_command": "\"C:\\Program Files\\Python312\\python.exe\" verification/gpu_certification/run_mack_m45_driver.py --backend cpu --output verification/gpu_certification/mack_m45_cpu_identity.json",
+    "elapsed_s": 272.9115891000256
+  },
+  "comparison": {
+    "verdict": "byte-identical",
+    "rows_expected": 11,
+    "rows_actual": 11,
+    "byte_identical": true,
+    "byte_identity_basis": "Git-cleaned generated blob vs committed HEAD blob",
+    "generated_git_blob": "693180d1fef5ca8363160729314a01e2cef3e473",
+    "committed_git_blob": "693180d1fef5ca8363160729314a01e2cef3e473",
+    "working_tree_byte_identical": false,
+    "line_ending_only_worktree_difference": true,
+    "worst_rel_eigenvalue_drift": 0.0,
+    "worst_rel_growth_drift": 0.0,
+    "worst_rel_alpha_peak_drift": 0.0,
+    "eigenvalue_limit_rel": 1e-05,
+    "alpha_peak_limit_rel": 0.001,
+    "failures": []
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:10:34.878345+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "202952d94f65d6e54eae00736f536cbe3ed4f716",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "\"C:\\Program Files\\Python312\\python.exe\" verification/gpu_certification/run_mack_m45_driver.py --backend cpu --output verification/gpu_certification/mack_m45_cpu_identity.json",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "mach": 4.5,
+      "N": 120,
+      "y_max": 40.0,
+      "R_sweep": [
+        300,
+        400,
+        500,
+        700,
+        900,
+        1100,
+        1300,
+        1500,
+        1700,
+        1900,
+        2000
+      ],
+      "alpha_scan": [
+        0.08,
+        0.4,
+        0.005
+      ],
+      "Pr": 0.72,
+      "gamma": 1.4,
+      "length_scale": "L_star",
+      "lambda_mu_ratio": 0.0,
+      "condition": "table_11_1",
+      "mode_c_r": [
+        0.78,
+        0.99
+      ],
+      "mode_c_i_cap": 0.05,
+      "sweep_backend": "cpu",
+      "rerun_in_this_census": false
+    },
+    "sha256": {
+      "verification/second_mode/mack_fig10_6_M45/verdict.json": "582f85410459dcbf46f3489967ce2c5acc21c29bc15ea3d631e7e79a2ff44cc7",
+      "verification/gpu_certification/mack_m45_cpu_identity.json": "3bc8de5560b8dde39b2e440bcd3b7472770cada341b16e2fa5869b0e2701df03"
+    }
+  }
+}

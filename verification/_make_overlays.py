@@ -18,6 +18,7 @@ Visual-QA rules enforced here (see verification audit task):
 import json
 import os
 import csv
+from pathlib import Path
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -40,7 +41,7 @@ REF_ORANGE = "#D55E00"    # reference / paper
 REF_VERMIL = "#E69F00"
 BAND_GREEN = "#009E73"
 
-ROOT = r"C:/Users/merts/OneDrive/Masaüstü/MS_LST"
+ROOT = Path(__file__).resolve().parents[1]
 VER = os.path.join(ROOT, "verification")
 DIG = os.path.join(ROOT, "reference_data", "digitized")
 
@@ -133,7 +134,7 @@ for case, tag, M, verdict, med in mack_cases:
 #    full width across the TOP, and the green most-amplified band is a
 #    vertical strip 220-280 kHz. The previous upper-right legend covered
 #    the orange band, the star and the curve near the peak.
-#    Fix: legend goes BELOW the axes (the curve + both bands occupy the
+#    Fix: legend goes BELOW the axes (the curve + both bands fill the
 #    whole interior), and extra top headroom keeps the orange band and
 #    star clear of the frame / title.
 # =====================================================================

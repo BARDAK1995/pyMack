@@ -1,4 +1,4 @@
-"""Gate for the ``pymack.sweep`` CPU backend (pyMack-GPU spec slice 06).
+"""Gate for the public ``pymack.sweep`` CPU backend.
 
 Asserts, per the slice contract:
 
@@ -10,13 +10,11 @@ Asserts, per the slice contract:
   (identical family labels/NaN pattern; values to CSV-formatting
   precision -- see the committed-CSV test docstring for the measured
   1-ulp-of-format environment drift that rules out byte identity);
-- the ``PYMACK_SWEEP_BACKEND`` env override is honored for ``backend='auto'``
-  and never overrides an explicit ``backend=`` argument;
-- ``backend='gpu'`` dispatches to the temporal GPU hook when available, while
-  spatial GPU remains unsupported until its slice lands;
+- ``backend='auto'`` defaults to CPU, while an explicit or environment-driven
+  ``backend='gpu'`` request raises the public CPU-only error;
 - result meta is complete enough to reproduce the sweep;
 - CSV/NPZ round-trips embed the meta as headers and recover the exact arrays;
-- importing ``pymack.sweep`` never imports ``cupy`` or ``pymack.gpu``.
+- importing ``pymack.sweep`` resolves to this worktree.
 """
 
 from __future__ import annotations
@@ -24,6 +22,7 @@ from __future__ import annotations
 import csv
 import importlib.util
 import json
+import pickle
 import subprocess
 import sys
 from pathlib import Path
@@ -37,9 +36,9 @@ from pymack import make_flatplate_profile  # noqa: E402
 from pymack.scales import delta_star_over_lstar  # noqa: E402
 from pymack.solver import solve_spatial  # noqa: E402
 from pymack.sweep import (  # noqa: E402
-    CBand,
     SEED_NO_ADMISSIBLE_MODE,
     SEED_QZ_FULL_SPECTRUM,
+    CBand,
     TemporalFamilyResult,
     TemporalSweepResult,
     load_csv,
@@ -73,6 +72,17 @@ def driver():
 @pytest.fixture(scope='module')
 def profile_m2():
     return make_flatplate_profile(2.0)
+
+
+def test_profile_pickle_roundtrip_for_spawn(profile_m2):
+    """The CPU pool payload remains portable across SciPy spline versions."""
+    sample_y = np.array([0.0, 0.5, 2.0, 8.0])
+    restored = pickle.loads(pickle.dumps(profile_m2))
+    expected = profile_m2(sample_y)
+    actual = restored(sample_y)
+    assert actual.keys() == expected.keys()
+    for name in expected:
+        assert np.array_equal(actual[name], expected[name])
 
 
 # 3x3 sub-grid drawn from the exact production grid of the driver
@@ -326,8 +336,6 @@ def test_driver_sweep_engine_equals_point_engine(driver):
 
 
 def test_env_backend_override(monkeypatch, profile_m2):
-    import pymack.sweep as sweep_mod
-
     families = (CBand(float('-inf'), 0.45, ci_abs_max=0.05, label='TS'),)
     kwargs = dict(Ma=2.0, N=31, y_max=12.0, length_scale='L_star',
                   operator='ozgen_2d', families=families, cpu_workers=1)
@@ -338,18 +346,11 @@ def test_env_backend_override(monkeypatch, profile_m2):
     assert result.meta['backend'] == 'cpu'
     assert result.meta['backend_requested'] == 'auto'
     assert result.meta['env_backend_override'] == 'cpu'
-    # env='gpu' + backend='auto' steers to the GPU hook when available.
+    # The removed backend is rejected cleanly when requested via the env.
     monkeypatch.setenv('PYMACK_SWEEP_BACKEND', 'gpu')
-    if sweep_mod._gpu_backend_available():
-        result = temporal_sweep(profile_m2, [0.08], [900.0],
-                                backend='auto', **kwargs)
-        assert result.meta['backend'] == 'gpu'
-        assert result.meta['backend_requested'] == 'auto'
-        assert result.meta['env_backend_override'] == 'gpu'
-    else:
-        with pytest.raises(NotImplementedError, match='no usable GPU'):
-            temporal_sweep(profile_m2, [0.08], [900.0],
-                           backend='auto', **kwargs)
+    with pytest.raises(NotImplementedError, match='CPU-only public build'):
+        temporal_sweep(profile_m2, [0.08], [900.0],
+                       backend='auto', **kwargs)
     # an explicit backend argument always wins over the environment
     result = temporal_sweep(profile_m2, [0.08], [900.0], backend='cpu',
                             **kwargs)
@@ -357,38 +358,34 @@ def test_env_backend_override(monkeypatch, profile_m2):
     assert result.meta['backend_requested'] == 'cpu'
 
 
-def test_gpu_backend_dispatches_cleanly(monkeypatch, profile_m2):
-    """backend='gpu' either dispatches to the temporal hook or raises a clear
-    availability error; spatial GPU remains unsupported."""
+def test_auto_resolves_cpu_without_override(monkeypatch):
+    """The public automatic backend is CPU when no override is set."""
     import pymack.sweep as sweep_mod
 
+    monkeypatch.delenv('PYMACK_SWEEP_BACKEND', raising=False)
+    assert sweep_mod._resolve_backend('auto') == ('cpu', 'auto', None)
+
+
+def test_removed_backend_raises_clean_notimplemented(monkeypatch, profile_m2):
+    """Both sweep facades reject the removed backend with one public error."""
     monkeypatch.delenv('PYMACK_SWEEP_BACKEND', raising=False)
     kwargs = dict(Ma=2.0, N=31, y_max=12.0, length_scale='L_star',
                   operator='ozgen_2d',
                   families=(CBand(float('-inf'), 0.45,
                                   ci_abs_max=0.05, label='TS'),),
                   cpu_workers=1)
-    if sweep_mod._gpu_backend_available():
-        result = temporal_sweep(profile_m2, [0.08], [900.0],
-                                backend='gpu', **kwargs)
-        assert result.meta['backend'] == 'gpu'
-        assert result.meta['gpu_engine_status']
-    else:
-        with pytest.raises(NotImplementedError, match='no usable GPU'):
-            temporal_sweep(profile_m2, [0.08], [900.0],
-                           backend='gpu', **kwargs)
-    with pytest.raises(NotImplementedError, match='spatial|no usable GPU'):
+    with pytest.raises(NotImplementedError, match='CPU-only public build'):
+        temporal_sweep(profile_m2, [0.08], [900.0],
+                       backend='gpu', **kwargs)
+    with pytest.raises(NotImplementedError, match='CPU-only public build'):
         spatial_sweep(profile_m2, [0.1], [1000.0], Ma=4.5, backend='gpu')
     with pytest.raises(ValueError, match='backend'):
         temporal_sweep(profile_m2, [0.08], [900.0], backend='tpu', **kwargs)
 
 
-def test_auto_resolves_to_cpu_when_no_engine(monkeypatch, profile_m2):
-    """backend='auto' resolves to CPU when the engine probe is false."""
-    import pymack.sweep as sweep_mod
-
+def test_auto_resolves_to_cpu(monkeypatch, profile_m2):
+    """backend='auto' resolves to the CPU public implementation."""
     monkeypatch.delenv('PYMACK_SWEEP_BACKEND', raising=False)
-    monkeypatch.setattr(sweep_mod, '_gpu_backend_available', lambda: False)
     result = temporal_sweep(
         profile_m2, [0.08], [900.0], Ma=2.0, N=31, y_max=12.0,
         length_scale='L_star', operator='ozgen_2d',
@@ -557,13 +554,11 @@ def test_cpu_worker_resolution_respects_windows_cap():
         _resolve_cpu_workers(0, 9)
 
 
-def test_import_is_numpy_safe():
-    """`import pymack, pymack.sweep` must not pull in cupy or pymack.gpu."""
+def test_import_resolves_to_this_worktree():
+    """A fresh interpreter must import the candidate under test."""
     code = (
-        'import sys; import pymack, pymack.sweep; '
-        "assert 'cupy' not in sys.modules, 'cupy imported'; "
-        "assert not any(m.startswith('pymack.gpu') for m in sys.modules), "
-        "'pymack.gpu imported'; "
+        'from pathlib import Path; import pymack, pymack.sweep; '
+        'assert Path(pymack.__file__).resolve().is_relative_to(Path.cwd()); '
         'print(\'ok\')'
     )
     proc = subprocess.run(

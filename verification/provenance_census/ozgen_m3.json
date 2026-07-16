@@ -1,0 +1,142 @@
+{
+  "schema_version": 1,
+  "case_id": "ozgen_m3",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/mixed_mode/ozgen_fig3/M3/verdict.json",
+    "sha256": "6217dd0b9a553ebc39bb0d8659b49233f5c3f2e6fd7483901d2349f3559e2eae",
+    "committed_when": {
+      "commit": "8888319afb423a272655f781013a01557fc70a14",
+      "authored_at": "2026-07-02T22:09:54-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/ozgen_m3",
+    "regenerated_payload": "SCRATCH/ozgen_m3/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py ozgen_m3 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\ozgen_m3'",
+    "exit_code": 0,
+    "elapsed_s": 472.7390627999994,
+    "hard_timeout_s": 1800.0,
+    "timed_out": false,
+    "termination": null,
+    "measurement_lock": {
+      "protocol": "atomic mkdir; low-priority poll; never steal",
+      "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+      "owner": "provenance-census-low-priority 2026-07-15T03:18:36.191402+00:00 38bbef20fe8b4890aa49dd5acd2ed85c provenance-census-ozgen_m3",
+      "run_label": "provenance-census-ozgen_m3",
+      "waited_s": 0.0,
+      "acquired_at_utc": "2026-07-15T03:18:36.191402+00:00",
+      "released_at_utc": "2026-07-15T03:26:28.927081+00:00"
+    },
+    "stdout": "SCRATCH/ozgen_m3/stdout.txt",
+    "stderr": "SCRATCH/ozgen_m3/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "byte-identical",
+    "whole_reference_byte_identical": true,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 7,
+    "n_compared_numeric_metrics": 7,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 0.0,
+    "max_abs_drift_path": "metrics.per_branch_nearest_rel_err.first_lower.covered",
+    "component_abs_drift": {
+      "metrics.per_branch_nearest_rel_err.first_lower.covered": 0.0,
+      "metrics.per_branch_nearest_rel_err.first_lower.median_rel_err": 0.0,
+      "metrics.per_branch_nearest_rel_err.first_lower.n": 0.0,
+      "metrics.per_branch_nearest_rel_err.first_upper.covered": 0.0,
+      "metrics.per_branch_nearest_rel_err.first_upper.median_rel_err": 0.0,
+      "metrics.per_branch_nearest_rel_err.first_upper.n": 0.0,
+      "metrics.robust_branch_median_rel_err": 0.0
+    },
+    "committed_verdict": "acceptable",
+    "regenerated_verdict": "acceptable",
+    "scientific_verdict_identical": true
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-15T03:26:28.951098+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "037f8d8d13bf5c1ac936327f8633b236d240c907",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py ozgen_m3 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\ozgen_m3'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "NUMEXPR_NUM_THREADS": "1",
+        "VECLIB_MAXIMUM_THREADS": "1",
+        "PYTHONPATH": "C:\\Users\\merts\\pymack-wt\\census"
+      }
+    },
+    "effective_parameters": {
+      "case_id": "ozgen_m3",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": true,
+      "driver_effective_parameters": {
+        "mach": 3,
+        "execution_surface": "point_parallel_discrete_mode_grid",
+        "workers_requested": 61,
+        "workers_effective": 61,
+        "blas_threads": 1,
+        "n_grid_nodes": 260,
+        "n_first_mode_nodes": 260,
+        "n_second_mode_nodes": 0,
+        "first_mode_N": 200,
+        "second_mode_N": null,
+        "first_mode_ymax_multiples": [
+          35.0,
+          45.0
+        ],
+        "second_mode_ymax_multiples": null,
+        "grid_sources": [
+          "build_firstmode_grid.py",
+          "build_secondmode_grid.py",
+          "build_onset_extension.py",
+          "build_lowR_extension.py"
+        ],
+        "judge": "build_ozgen_final.py + finalize_ozgen_verdicts.py",
+        "grid_wall_time_s": 471.9999327999976
+      }
+    },
+    "sha256": {
+      "verification/mixed_mode/ozgen_fig3/M3/verdict.json": "6217dd0b9a553ebc39bb0d8659b49233f5c3f2e6fd7483901d2349f3559e2eae",
+      "scripts/verification/provenance_census_worker.py": "46da08132c8bc81c06a835a0d45962fb431ae4d559a7ada55daaa15ad3345bb2",
+      "verification/mixed_mode/ozgen_fig3/_refdigitize/build_ozgen_final.py": "28bcb0089431153aaff43fe3bcd99c0895961c79da28aa20af968e2f0da3f8a6",
+      "verification/mixed_mode/ozgen_fig3/_refdigitize/finalize_ozgen_verdicts.py": "5e0517c5ea33f3c8f588ab149308da4612bd81be8c001676aaf7d01005f333a4",
+      "reference_data/digitized/ozgen_fig3_M3_neutral_v2.csv": "79a78427b3816b382ab999de7999ef9f4c6e047f64be26a9ac67f6c782827797",
+      "verification/mixed_mode/ozgen_fig3/_refdigitize/discrete_mode.py": "e24d5b59b283c97d9e088d18fcd915ba6939621b1140d06fdae2074e637a75f7",
+      "verification/mixed_mode/ozgen_fig3/_refdigitize/build_firstmode_grid.py": "7836d6f5eb88ec422841f274ed4de878c75aff499edc57f7047f9af574325e18",
+      "verification/mixed_mode/ozgen_fig3/_refdigitize/build_secondmode_grid.py": "a928bc69ecb29a57d632b965c0caf1e660d51d826137b58db4a77aac0d267f59",
+      "verification/mixed_mode/ozgen_fig3/_refdigitize/build_onset_extension.py": "bfb04d87cd06e769d15b8719bde6890d8b6e6546d77066971cae088e524b41bf",
+      "verification/mixed_mode/ozgen_fig3/_refdigitize/build_lowR_extension.py": "1cbe0375f3f8d6ae87a09e449cde4111eeec119858ba24cb006dfaf01a92dec0",
+      "SCRATCH/ozgen_m3/stdout.txt": "4d09e41a3e0e7855eac51d184c0dfd731d30c17873ada7c6ca5e32b7a4ad0da3",
+      "SCRATCH/ozgen_m3/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/ozgen_m3/verdict.json": "6217dd0b9a553ebc39bb0d8659b49233f5c3f2e6fd7483901d2349f3559e2eae",
+      "SCRATCH/ozgen_m3/census_effective_parameters.json": "7bceed009efeffb98cb0db0e87406c6d87d90456e0e3c4641bef0b6a357ed999",
+      "SCRATCH/ozgen_m3/continuation_M3.csv": "19c544110f3090b16fe566d5056d81e25a4bbcf526b19c735e2d994222603ff5",
+      "SCRATCH/ozgen_m3/firstmode_grid.csv": "08f270ef5aa1c88e7bbd853b70acaf0c8e03e7f6220f1bbbd7addeeba555189e",
+      "SCRATCH/ozgen_m3/secondmode_grid.csv": "bcaf03404641441599050eb176419ea5623df0dc75549d500e9c3be55234d54a",
+      "SCRATCH/ozgen_m3/verification/first_mode/ozgen_m3/overlay.png": "b5750916ed36bc4e8e4297bb8a15b13d85c085c48e5645651cfb2d3ecc61d6c4",
+      "SCRATCH/ozgen_m3/verification/first_mode/ozgen_m3/verdict.json": "9f7c28bd41323d59beadf7e304daac2b83a46458d9af750bd02dd1121f349c61"
+    }
+  }
+}

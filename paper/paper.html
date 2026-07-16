@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="dcterms.date" content="2026-07-15" />
+  <title>pyMack: Open local compressible and hypersonic stability analysis on CPUs</title>
+  <style>
+    html {
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      overflow-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 12px;
+      }
+      h1 {
+        font-size: 1.8em;
+      }
+    }
+    @media print {
+      html {
+        background-color: white;
+      }
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+      font-size: 85%;
+      margin: 0;
+      hyphens: manual;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+      overflow-wrap: normal;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC ul {
+      padding-left: 1.3em;
+    }
+    #TOC > ul {
+      padding-left: 0;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+    /* CSS for citations */
+    div.csl-bib-body { }
+    div.csl-entry {
+      clear: both;
+    }
+    .hanging-indent div.csl-entry {
+      margin-left:2em;
+      text-indent:-2em;
+    }
+    div.csl-left-margin {
+      min-width:2em;
+      float:left;
+    }
+    div.csl-right-inline {
+      margin-left:2em;
+      padding-left:1em;
+    }
+    div.csl-indent {
+      margin-left: 2em;
+    }  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">pyMack: Open local compressible and hypersonic
+stability analysis on CPUs</h1>
+<p class="date">15 July 2026</p>
+</header>
+<h1 id="summary">Summary</h1>
+<p><code>pyMack</code> is an MIT licensed Python package for local
+linear stability theory (LST) of compressible and hypersonic boundary
+layers. It combines base flow generation, temporal and spatial
+eigenvalue analysis, neutral curves, N-factor integration, and a judged
+validation corpus behind a pip installed facade. The implementation uses
+NumPy and SciPy on CPUs and keeps numerical diagnostics and provenance
+beside the computed results.</p>
+<h1 id="statement-of-need">Statement of need</h1>
+<p>Local LST connects a laminar base flow to disturbance growth, neutral
+boundaries, and transition correlations <span class="citation"
+data-cites="mack1984 schmid2001">(Mack 1984; Schmid and Henningson
+2001)</span>. Reproducing a published case can nevertheless require
+separate base flow, eigensolver, mode selection, plotting, and N-factor
+programs. Differences in scaling, transport laws, boundary conditions,
+domain height, and spectrum filters can then remain implicit.</p>
+<p><code>pyMack</code> provides one inspectable local workflow:</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pymack <span class="im">as</span> pm</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>base <span class="op">=</span> pm.flat_plate(Ma<span class="op">=</span><span class="fl">6.0</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>temporal <span class="op">=</span> pm.temporal_mode(base, alpha<span class="op">=</span><span class="fl">0.174</span>, Re<span class="op">=</span><span class="dv">5500</span>)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>spatial <span class="op">=</span> pm.spatial_mode(base, omega<span class="op">=</span>temporal.omega.real, Re<span class="op">=</span><span class="dv">5500</span>)</span></code></pre></div>
+<p>The package is intended for researchers who need local compressible
+or hypersonic eigenvalues, stability maps, and N-factors without a
+specialized computing system. It does not implement parabolized
+stability equations, global stability, or direct numerical
+simulation.</p>
+<h1 id="functionality">Functionality</h1>
+<p>Chebyshev collocation discretizes the disturbance equations,
+following the spectral accuracy model of <span class="citation"
+data-cites="orszag1971">Orszag (1971)</span>. Temporal solvers cover two
+and three dimensional compressible disturbances, while the spatial
+solver linearizes the quadratic eigenvalue problem. Users can request
+complete spectra or selected modes, run structured parameter sweeps,
+trace neutral boundaries, and integrate spatial growth into
+N-factors.</p>
+<p>Mode selection combines phase speed windows with scaled residual and
+freestream decay tests. Batch results retain failure codes, solver
+settings, and reproducibility metadata. This design makes rejected
+continuous spectrum or truncated domain candidates visible instead of
+silently selecting the nearest eigenvalue.</p>
+<h1 id="validation">Validation</h1>
+<p>The committed success matrix contains <strong>37/37 judged validation
+cases</strong>. Its unchanged judges classify 16 as agrees, 15 as
+acceptable, 3 as disagrees, and 3 as pending. These classes are the
+recorded scientific outcomes, not a claim that every case agrees with
+the literature. The set spans the Orszag spectrum <span class="citation"
+data-cites="orszag1971">(Orszag 1971)</span>, Malik’s cooled wall
+anchors <span class="citation" data-cites="malik1990">(Malik
+1990)</span>, Ma and Zhong’s spatial branches <span class="citation"
+data-cites="mazhong2003">(Ma and Zhong 2003)</span>, and the Mach range
+maps of Özgen and Kırcalı <span class="citation"
+data-cites="ozgen2008">(Özgen and Kırcalı 2008)</span>. Known first mode
+disagreements remain in the matrix.</p>
+<p>A separate provenance census asks whether each committed verdict can
+be regenerated. It found 30 regeneration proven cases, 1 repaired and
+regenerated case, 1 small numerical drift, and 5 deferred cases. The
+repaired Mach 5.8 record now replays exactly. The Orszag drift was <span
+class="math inline">3.24 × 10<sup>−8</sup></span>. The deferred set
+comprises one costly exact shooting sweep, two driver walls, one case
+lacking required dimensional input, and one run stopped at its 1,800 s
+wall. The Mach 4.5 and Mach 5.8 amendments preserve the mislabeled
+historical records and document the ratified corrections. The result is
+therefore <strong>judges plus provenance census</strong>, not “all 37
+live regenerable.”</p>
+<h1 id="performance">Performance</h1>
+<p>Committed measurements on a 64 logical core Windows workstation
+record the same physical formulation before and after CPU engineering.
+The deployed serial full QZ path took 1,598.7 s for a 720 node Özgen
+overlay. A tuned 24 worker, eigenvalues only path took 46.70 s, a 34.23
+fold reduction, with identical classification for 720/720 nodes. The
+serial row denotes one process on that workstation; it is not a proxy
+for a small host. For the 1,305 solve Mach 10 Figure 10.4 workload,
+point parallel execution reduced 9,717.1 s to 1,110.5 s with the same
+nine station verdict.</p>
+<p>Figure 1 demonstrates capacity rather than a new physical model. A
+2,880 node map, four times the original sampling, took 399.80 s with
+full QZ. This is one quarter of the deployed 720 node wall time.
+Independent re-solves of 24 newly added grid nodes were bitwise
+identical on the full QZ path. The eigenvalues only route completed the
+same 2,880 node map in 169.47 s.</p>
+<figure id="fig:capability">
+<img src="figures/ozgen_m2_4x_ci_map.png" style="width:90.0%"
+alt="Mach 2 component of the 2,880 node Özgen map. Color shows the selected mode growth rate, black lines show computed neutral boundaries, and markers show digitized reference values. The denser sampling resolves the unstable region while retaining the original classification logic." />
+<figcaption aria-hidden="true">Mach 2 component of the 2,880 node Özgen
+map. Color shows the selected mode growth rate, black lines show
+computed neutral boundaries, and markers show digitized reference
+values. The denser sampling resolves the unstable region while retaining
+the original classification logic.</figcaption>
+</figure>
+<h1 id="comparison">Comparison</h1>
+<p>COSAL is a finite difference transition code <span class="citation"
+data-cites="malik1982cosal">(Malik 1982)</span>, while LASTRAC supports
+LST and parabolized stability equations through a software request <span
+class="citation" data-cites="chang2004lastrac">(Chang 2004)</span>.
+Krypton addresses linear and nonlinear parabolized stability equations
+in transonic curvilinear flows <span class="citation"
+data-cites="lacombe2022krypton">(Lacombe and Hickey 2022)</span>.
+BROADCAST couples high order compressible flow simulation with global
+stability and sensitivity analysis <span class="citation"
+data-cites="poulain2023broadcast">(Poulain et al. 2023)</span>.
+LinStab2D provides MATLAB stability and resolvent analysis for general
+two dimensional compressible flows <span class="citation"
+data-cites="martini2024linstab2d">(Martini and Schmidt 2024)</span>. The
+Flow Physics and Simulation suite collects separate flow and stability
+codes, including direct and shooting formulations with curvature and
+nonparallel effects <span class="citation" data-cites="fpssuite">(Flow
+Physics and Simulation 2026)</span>. <code>pyMack</code> is
+differentiated by its open local compressible and hypersonic eigenvalue
+and N-factor workflow, pip facade, and committed validation corpus.</p>
+<h1 id="availability">Availability</h1>
+<p><code>pyMack</code> is available under the MIT license from its
+public source repository and archived release <span class="citation"
+data-cites="pymack2026">(Senkardesler 2026)</span>. Installation,
+examples, API documentation, tests, validation verdicts, and provenance
+records are maintained with the source. The runtime path requires
+Python, NumPy, and SciPy and does not require specialized hardware.</p>
+<h1 id="ai-usage-disclosure">AI usage disclosure</h1>
+<p>Development was orchestrated by the author using multiple frontier AI
+systems: Claude (Fable 5) for orchestration and manuscript drafting,
+GPT-5.6 (Codex CLI) for implementation lanes, GPT-5.6 Pro for research
+discussions, and Grok 4.5 and Claude Opus 4.x for adversarial review
+lanes, during June and July 2026. The author set the scientific
+questions and acceptance contracts, ratified every design and validation
+decision, and reviewed and validated all outputs. All validation
+verdicts derive from committed, provenance-tracked artifacts.</p>
+<h1 id="acknowledgements">Acknowledgements</h1>
+<p>The author thanks the researchers whose benchmark tables, curves, and
+numerical methods make independent verification possible.</p>
+<h1 class="unnumbered" id="references">References</h1>
+<div id="refs" class="references csl-bib-body hanging-indent"
+role="list">
+<div id="ref-chang2004lastrac" class="csl-entry" role="listitem">
+Chang, Chau-Lyan. 2004. <span>“Langley Stability and Transition Analysis
+Code (<span>LASTRAC</span>).”</span> LAR-16260-1. NASA Langley Research
+Center. <a
+href="https://software.nasa.gov/software/LAR-16260-1">https://software.nasa.gov/software/LAR-16260-1</a>.
+</div>
+<div id="ref-fpssuite" class="csl-entry" role="listitem">
+Flow Physics and Simulation. 2026. <span>“<span>FPS Code
+Suite</span>.”</span> <a
+href="https://flow-physics-simulation.github.io/flow-physics-simulation/">https://flow-physics-simulation.github.io/flow-physics-simulation/</a>.
+</div>
+<div id="ref-lacombe2022krypton" class="csl-entry" role="listitem">
+Lacombe, Francis, and Jean-Pierre Hickey. 2022. <span>“Krypton:
+Nonlinear Parabolized Stability Equation Solver for Transonic Flow in
+Curvilinear Coordinates.”</span> <em>SoftwareX</em> 20: 101206. <a
+href="https://doi.org/10.1016/j.softx.2022.101206">https://doi.org/10.1016/j.softx.2022.101206</a>.
+</div>
+<div id="ref-mazhong2003" class="csl-entry" role="listitem">
+Ma, Yanbao, and Xiaolin Zhong. 2003. <span>“Receptivity of a Supersonic
+Boundary Layer over a Flat Plate. Part 1. Wave Structures and
+Interactions.”</span> <em>Journal of Fluid Mechanics</em> 488: 31–78. <a
+href="https://doi.org/10.1017/S0022112003004786">https://doi.org/10.1017/S0022112003004786</a>.
+</div>
+<div id="ref-mack1984" class="csl-entry" role="listitem">
+Mack, Leslie M. 1984. <span>“Boundary-Layer Linear Stability
+Theory.”</span> AGARD Report 709. Advisory Group for Aerospace Research;
+Development.
+</div>
+<div id="ref-malik1982cosal" class="csl-entry" role="listitem">
+Malik, Mujeeb R. 1982. <span>“<span>COSAL</span>: A Black-Box
+Compressible Stability Analysis Code for Transition Prediction in
+Three-Dimensional Boundary Layers.”</span> NASA-CR-165925. NASA. <a
+href="https://ntrs.nasa.gov/citations/19840019933">https://ntrs.nasa.gov/citations/19840019933</a>.
+</div>
+<div id="ref-malik1990" class="csl-entry" role="listitem">
+———. 1990. <span>“Numerical Methods for Hypersonic Boundary Layer
+Stability.”</span> <em>Journal of Computational Physics</em> 86 (2):
+376–413. <a
+href="https://doi.org/10.1016/0021-9991(90)90106-B">https://doi.org/10.1016/0021-9991(90)90106-B</a>.
+</div>
+<div id="ref-martini2024linstab2d" class="csl-entry" role="listitem">
+Martini, Eduardo, and Oliver Schmidt. 2024.
+<span>“<span>LinStab2D</span>: Stability and Resolvent Analysis of
+Compressible Viscous Flows in <span>MATLAB</span>.”</span>
+<em>Theoretical and Computational Fluid Dynamics</em> 38 (5): 665–85. <a
+href="https://doi.org/10.1007/s00162-024-00706-0">https://doi.org/10.1007/s00162-024-00706-0</a>.
+</div>
+<div id="ref-orszag1971" class="csl-entry" role="listitem">
+Orszag, Steven A. 1971. <span>“Accurate Solution of the
+<span>Orr–Sommerfeld</span> Stability Equation.”</span> <em>Journal of
+Fluid Mechanics</em> 50 (4): 689–703. <a
+href="https://doi.org/10.1017/S0022112071002842">https://doi.org/10.1017/S0022112071002842</a>.
+</div>
+<div id="ref-ozgen2008" class="csl-entry" role="listitem">
+Özgen, Serkan, and Senem Atalayer Kırcalı. 2008. <span>“Linear Stability
+Analysis in Compressible, Flat-Plate Boundary-Layers.”</span>
+<em>Theoretical and Computational Fluid Dynamics</em> 22 (1): 1–20. <a
+href="https://doi.org/10.1007/s00162-007-0071-0">https://doi.org/10.1007/s00162-007-0071-0</a>.
+</div>
+<div id="ref-poulain2023broadcast" class="csl-entry" role="listitem">
+Poulain, Arthur, Cédric Content, Denis Sipp, Georgios Rigas, and Eric
+Garnier. 2023. <span>“<span>BROADCAST</span>: A High-Order Compressible
+<span>CFD</span> Toolbox for Stability and Sensitivity Using Algorithmic
+Differentiation.”</span> <em>Computer Physics Communications</em> 283:
+108557. <a
+href="https://doi.org/10.1016/j.cpc.2022.108557">https://doi.org/10.1016/j.cpc.2022.108557</a>.
+</div>
+<div id="ref-schmid2001" class="csl-entry" role="listitem">
+Schmid, Peter J., and Dan S. Henningson. 2001. <em>Stability and
+Transition in Shear Flows</em>. Springer. <a
+href="https://doi.org/10.1007/978-1-4613-0185-1">https://doi.org/10.1007/978-1-4613-0185-1</a>.
+</div>
+<div id="ref-pymack2026" class="csl-entry" role="listitem">
+Senkardesler, Mert. 2026. <span>“pyMack: Local Linear Stability Solver
+for Compressible and Hypersonic Boundary Layers.”</span> Zenodo. <a
+href="https://doi.org/10.5281/zenodo.20588214">https://doi.org/10.5281/zenodo.20588214</a>.
+</div>
+</div>
+</body>
+</html>

@@ -1,21 +1,25 @@
 cff-version: 1.2.0
-message: "If you use pyMack in your research, please cite it as below."
-title: "pyMack: local linear stability solver for compressible and hypersonic boundary layers"
+message: "If you use pyMack in your research, please cite the archived release below."
+title: "pyMack: Local linear stability of compressible and hypersonic boundary layers"
 abstract: >-
-  pyMack is a Python package implementing local linear stability theory (LST)
-  for compressible and hypersonic boundary layers using Chebyshev spectral
-  collocation. It computes disturbance growth rates, eigenvalue spectra, neutral
-  curves and N-factors, with a focus on Mack modes. Validated against
-  Orszag (1971), Mack (1984), and Özgen & Kırcalı (2008).
+  pyMack is an MIT-licensed Python package for local linear stability theory
+  of compressible and hypersonic boundary layers. It provides base-flow
+  generation, temporal and spatial eigenvalue solvers, discrete-mode
+  diagnostics, growth and neutral curves, N-factors, and structured CPU batch
+  sweeps. The repository carries layered tests, a 37-case verification
+  registry with provenance-tracked regeneration records, measured benchmark
+  provenance, examples, and reproducibility instructions.
 type: software
 authors:
   - family-names: Senkardesler
     given-names: Mert
     email: mert.senkardesler@gmail.com
+    orcid: "https://orcid.org/0009-0002-7470-0969"
 version: 0.0.1
 date-released: "2026-06-07"
 license: MIT
 repository-code: "https://github.com/BARDAK1995/pyMack"
+url: "https://github.com/BARDAK1995/pyMack"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.20588214"
@@ -30,23 +34,54 @@ keywords:
   - Orr-Sommerfeld
   - neutral curve
   - N-factor
+  - batch eigensolver
 references:
   - type: report
     authors:
       - family-names: Mack
         given-names: Leslie M.
     title: "Boundary-Layer Linear Stability Theory"
-    institution: "AGARD Report No. 709"
+    institution: "Advisory Group for Aerospace Research and Development"
     year: 1984
+  - type: article
+    authors:
+      - family-names: Malik
+        given-names: Mujeeb R.
+    title: "Numerical methods for hypersonic boundary layer stability"
+    journal: "Journal of Computational Physics"
+    volume: 86
+    issue: 2
+    start: 376
+    end: 413
+    year: 1990
+    doi: "10.1016/0021-9991(90)90106-B"
+  - type: article
+    authors:
+      - family-names: Ma
+        given-names: Yanbao
+      - family-names: Zhong
+        given-names: Xiaolin
+    title: "Receptivity of a supersonic boundary layer over a flat plate. Part 1. Wave structures and interactions"
+    journal: "Journal of Fluid Mechanics"
+    volume: 488
+    start: 31
+    end: 78
+    year: 2003
+    doi: "10.1017/S0022112003004786"
   - type: article
     authors:
       - family-names: Özgen
         given-names: Serkan
       - family-names: Kırcalı
-        given-names: Sertaç A.
+        given-names: Senem Atalayer
     title: "Linear stability analysis in compressible, flat-plate boundary-layers"
     journal: "Theoretical and Computational Fluid Dynamics"
+    volume: 22
+    issue: 1
+    start: 1
+    end: 20
     year: 2008
+    doi: "10.1007/s00162-007-0071-0"
   - type: article
     authors:
       - family-names: Orszag
@@ -54,4 +89,8 @@ references:
     title: "Accurate solution of the Orr-Sommerfeld stability equation"
     journal: "Journal of Fluid Mechanics"
     volume: 50
+    issue: 4
+    start: 689
+    end: 703
     year: 1971
+    doi: "10.1017/S0022112071002842"

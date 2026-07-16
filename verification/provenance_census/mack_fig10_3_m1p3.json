@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "case_id": "mack_fig10_3_m1p3",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/first_mode/mack_fig10_3_m1p3/verdict.json",
+    "sha256": "f82d1b78032df8e4f7702d22f36263bb8fee6391a5b0b7ffa7ed1ff7114bb590",
+    "committed_when": {
+      "commit": "f0f47bfb072e971092b1a97ccd2164901042a8ee",
+      "authored_at": "2026-07-02T22:09:38-05:00"
+    }
+  },
+  "status": "DEFERRED_COST",
+  "regeneration": {
+    "rerun_in_this_census": false,
+    "reason": "The production driver is an eight-station serial exact-shooting sweep, records 615-843 s per station, writes its comparable payload only after the complete sweep, and exposes neither station selection nor resume.",
+    "cost_estimate": "5951.3 s historical production runtime (about 99 minutes)",
+    "historical_cost_evidence": "docs/figures/mack_fig10_3_overlay.json",
+    "would_run_command": "$env:PYTHONPATH=(Get-Location).Path; python scripts/make_mack_fig10_3_overlay.py --mach 1.3 --psi 45 --quality production --output-png '<SCRATCH>/mack_fig10_3_overlay.png'"
+  },
+  "comparison": {
+    "verdict": "DEFERRED",
+    "whole_reference_byte_identical": null,
+    "max_abs_drift": null,
+    "note": "No census regeneration was burned for this no-resume long case."
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:19:50.524437+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "2bed3df111244ee7b958d49495a1c16480419334",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; python scripts/make_mack_fig10_3_overlay.py --mach 1.3 --psi 45 --quality production --output-png '<SCRATCH>/mack_fig10_3_overlay.png'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "case_id": "mack_fig10_3_m1p3",
+      "quality": "production",
+      "scratch_only": true,
+      "deferred_without_execution": true,
+      "historical_runtime_s": 5951.3
+    },
+    "sha256": {
+      "verification/first_mode/mack_fig10_3_m1p3/verdict.json": "f82d1b78032df8e4f7702d22f36263bb8fee6391a5b0b7ffa7ed1ff7114bb590",
+      "scripts/make_mack_fig10_3_overlay.py": "83c2f0cf6b1591e0aa49b4a82b01137b69d9fc0872b2a03e7f8267bfdbdd27d7",
+      "docs/figures/mack_fig10_3_overlay.json": "93b78d9c2f6173eb2c61a9566ae8cd6e3f674fe7fcc13002dcbe6a1383a72309"
+    }
+  }
+}

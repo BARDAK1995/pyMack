@@ -14,7 +14,6 @@ where `y` is non-dimensionalized by the physical displacement thickness.
 
 import numpy as np
 from scipy.integrate import cumulative_trapezoid, solve_bvp, solve_ivp, trapezoid
-from scipy.optimize import brentq
 from scipy.interpolate import CubicSpline
 
 
@@ -192,13 +191,26 @@ class BlasiusProfile:
         self._eta = eta
         self._fp = w[1]
         self._fpp = w[2]
-        fppp = -0.5 * w[0] * w[2]
+        self._fppp = -0.5 * w[0] * w[2]
 
         self._delta_star_eta = trapezoid(1.0 - self._fp, eta)
 
         self._spl_fp = CubicSpline(eta, self._fp)
         self._spl_fpp = CubicSpline(eta, self._fpp)
-        self._spl_fppp = CubicSpline(eta, fppp)
+        self._spl_fppp = CubicSpline(eta, self._fppp)
+
+    def __getstate__(self):
+        """Serialize source arrays, not SciPy's version-specific splines."""
+        state = self.__dict__.copy()
+        for name in ('_spl_fp', '_spl_fpp', '_spl_fppp'):
+            state.pop(name, None)
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self._spl_fp = CubicSpline(self._eta, self._fp)
+        self._spl_fpp = CubicSpline(self._eta, self._fpp)
+        self._spl_fppp = CubicSpline(self._eta, self._fppp)
 
     def __call__(self, y):
         """Evaluate at physical y/delta* locations."""
@@ -611,6 +623,28 @@ class CompressibleBlasiusProfile:
         ]:
             self._spl[name] = CubicSpline(y_nd, data, extrapolate=True)
 
+    def __getstate__(self):
+        """Serialize numerical state without SciPy runtime-only objects.
+
+        Recent SciPy ``CubicSpline`` and BVP objects retain module references,
+        which the Windows ``spawn`` start method cannot pickle.  The sampled
+        profile arrays are the durable state and reproduce the same splines.
+        """
+        state = self.__dict__.copy()
+        state.pop('_spl', None)
+        state.pop('_solution', None)
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self._solution = None
+        self._build_splines(
+            self._y_nd, self._U, self._dU, self._d2U,
+            self._T, self._dT, self._d2T,
+            self._rho, self._mu, self._dmu,
+            self._kappa, self._dkappa,
+        )
+
     def __call__(self, y):
         """Evaluate the compressible mean flow at y/delta* locations."""
         y = np.asarray(y, dtype=float)
@@ -877,6 +911,27 @@ class FlatPlateProfile:
             ('Pr_local', Pr_local_arr),
         ]:
             self._spl[name] = CubicSpline(y_nd, data, extrapolate=True)
+
+    def __getstate__(self):
+        """Serialize sampled profile arrays rather than SciPy splines."""
+        state = self.__dict__.copy()
+        state.pop('_spl', None)
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+        self._spl = {}
+        for name, data in [
+            ('U', self._U), ('dU', self._dU), ('d2U', self._d2U),
+            ('T', self._T), ('dT', self._dT), ('d2T', self._d2T),
+            ('rho', self._rho), ('mu', self._mu), ('dmu', self._dmu),
+            ('dmu_dT', self._dmu_dT), ('d2mu_dT2', self._d2mu_dT2),
+            ('kappa', self._kappa), ('dkappa', self._dkappa),
+            ('dkappa_dT', self._dkappa_dT),
+            ('d2kappa_dT2', self._d2kappa_dT2),
+            ('Pr_local', self._Pr_local),
+        ]:
+            self._spl[name] = CubicSpline(self._y_nd, data, extrapolate=True)
 
     def mean_flow_residuals(self):
         """Return residuals of Ozgen Eqs. 2.32-2.33 in the similarity scale."""

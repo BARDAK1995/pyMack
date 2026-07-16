@@ -29,16 +29,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=7", "ruff>=0.4"]
-# In-development GPU batch-sweep engine (docs/gpu/PLAN.md). NEVER required by
-# `import pymack` -- GPU is an upgrade, not a requirement (see README.md,
-# "Batch sweeps" and docs/SWEEP_API.md). Match the CUDA major version to your
-# runtime; on some environments cupy-cuda12x transitively pulls the
-# nvidia-*-cu12 meta-packages (e.g. nvidia-cublas-cu12), which can duplicate
-# CUDA libraries already provided by your driver/toolkit -- if that happens,
-# install a CuPy wheel matching your system CUDA instead
-# (https://docs.cupy.dev/en/stable/install.html).
-gpu = ["cupy-cuda12x"]
+dev = ["pytest>=7", "ruff>=0.4", "threadpoolctl>=3.1"]
 
 [project.urls]
 Homepage = "https://github.com/BARDAK1995/pymack"
@@ -55,7 +46,6 @@ path = "pymack/__init__.py"
 testpaths = ["validation"]
 markers = [
     "slow: long-running benchmark tests (deselect with '-m \"not slow\"')",
-    "gpu: device tests requiring CuPy + a CUDA GPU (select with '-m gpu'; also marked slow so the GPU-less fast suite '-m \"not slow\"' skips them)",
 ]
 
 [tool.ruff]

@@ -14,6 +14,10 @@ build/
 # Local scratch runs (regenerable)
 scratch_*/
 
+# Hunt oracle packs are deterministic, regenerable, and machine-local.
+/local/hunt/*.npz
+/local/hunt/slice20_*/
+
 # Never commit copyrighted papers / reproductions (kept locally only, link instead)
 *.pdf
 latex_papers/

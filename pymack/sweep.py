@@ -19,24 +19,15 @@ Backends
     :func:`pymack.temporal_solver.solve_temporal_2d`,
     :func:`pymack.solver.solve_temporal_compressible_3d`,
     :func:`pymack.solver.solve_spatial`) with the deployed per-point
-    selection semantics.  Usable unconditionally; this is the reference
-    backend that GPU results are certified against.
+    selection semantics.  This is the public, validated backend.
 ``backend='gpu'``
-    Lazy dispatch to ``pymack.gpu.api.solve_temporal_sweep`` when the optional
-    GPU engine is importable and a CUDA device is visible.  Spatial GPU sweeps
-    remain unsupported until the spatial-engine slice lands.  No GPU code is
-    imported by this module at import time.
+    Reserved for compatibility with development configurations.  This
+    CPU-only public build raises :class:`NotImplementedError` immediately.
 ``backend='auto'``
     Resolution order: the ``PYMACK_SWEEP_BACKEND`` environment variable if
-    set (values ``cpu``/``gpu``), else GPU when a usable GPU sweep engine is
-    importable and reports a device, else CPU.  An explicit ``backend=``
-    argument other than ``'auto'`` always wins over the environment.
-
-Import safety
--------------
-Importing :mod:`pymack.sweep` never imports ``cupy`` or :mod:`pymack.gpu`.
-GPU availability is probed lazily (inside ``backend='auto'`` resolution) and
-failure of that probe silently selects the CPU backend.
+    set (values ``cpu``/``gpu``), else CPU.  An explicit ``backend=`` argument
+    other than ``'auto'`` always wins over the environment.  A ``gpu`` request
+    reaches the same clean unsupported-backend error.
 
 Mode families
 -------------
@@ -83,6 +74,7 @@ import os
 import platform
 import sys
 import time
+import warnings
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -272,6 +264,58 @@ class _SweepResultBase:
     def _x_values(self) -> np.ndarray:
         return getattr(self, self._X_ATTR)
 
+    def _artifact_meta(self) -> dict:
+        """Return JSON-safe header metadata without ephemeral capture arrays."""
+        meta = self.meta
+        try:
+            json.dumps(meta)
+            return meta
+        except (TypeError, ValueError):
+            if 'gpu_candidate_sets' not in meta:
+                raise
+        clean = dict(meta)
+        captured = clean.pop('gpu_candidate_sets')
+        clean['gpu_candidate_sets_persistence'] = {
+            'included': False,
+            'reason': (
+                'ephemeral in-process eigenvector capture is omitted from '
+                'CSV/NPZ headers'
+            ),
+            'n_entries': int(len(captured)),
+        }
+        json.dumps(clean)
+        return clean
+
+    def _completeness_arrays(self):
+        """Materialize point-level completeness metadata as dense grids."""
+        completeness = self.meta.get('completeness')
+        if not isinstance(completeness, dict):
+            return None
+        records = completeness.get('records')
+        if not isinstance(records, list):
+            return None
+        shape = (len(self._x_values()), len(self.Res))
+        q48 = np.full(shape, -1, dtype=np.int64)
+        margin = np.full(shape, np.nan, dtype=float)
+        raw = np.full(shape, -1, dtype=np.int64)
+        status = np.full(shape, '', dtype='<U64')
+        for record in records:
+            i = int(record['i'])
+            j = int(record['j'])
+            if record.get('count_q48') is not None:
+                q48[i, j] = int(record['count_q48'])
+            if record.get('count_margin') is not None:
+                margin[i, j] = float(record['count_margin'])
+            if record.get('count_raw_captured') is not None:
+                raw[i, j] = int(record['count_raw_captured'])
+            status[i, j] = str(record.get('completeness_status', ''))
+        return {
+            'count_q48': q48,
+            'count_margin': margin,
+            'count_raw_captured': raw,
+            'completeness_status': status,
+        }
+
     def to_csv(self, path) -> None:
         """Write one row per (family, grid point) with the meta as headers.
 
@@ -281,22 +325,30 @@ class _SweepResultBase:
         """
         xs = self._x_values()
         Res = self.Res
+        completeness = self._completeness_arrays()
+        completeness_fields = (
+            ['count_q48', 'count_margin', 'count_raw_captured',
+             'completeness_status']
+            if completeness is not None else []
+        )
         with open(path, 'w', newline='', encoding='utf-8') as handle:
             handle.write(f'# pymack.sweep {type(self).__name__} v1\n')
-            handle.write('# meta = ' + json.dumps(self.meta) + '\n')
+            handle.write('# meta = ' + json.dumps(
+                _pack_meta(self.meta, arrays=None)) + '\n')
             writer = csv.writer(handle)
             writer.writerow([
                 'family', 'family_label', self._X_COL, 'Re',
                 f'{self._VALUE_COL}_re', f'{self._VALUE_COL}_im',
                 self._GROWTH_ATTR, 'converged', 'residual', 'edge_ratio',
                 'seed', 'mode_index',
+                *completeness_fields,
             ])
             for k, fam in enumerate(self.families):
                 value = getattr(fam, self._VALUE_ATTR)
                 growth = getattr(fam, self._GROWTH_ATTR)
                 for i in range(len(xs)):
                     for j in range(len(Res)):
-                        writer.writerow([
+                        row = [
                             k, fam.band.label,
                             repr(float(xs[i])), repr(float(Res[j])),
                             repr(float(value[i, j].real)),
@@ -307,15 +359,31 @@ class _SweepResultBase:
                             repr(float(fam.edge_ratio[i, j])),
                             int(fam.seed_map[i, j]),
                             int(fam.mode_index[i, j]),
-                        ])
+                        ]
+                        if completeness is not None:
+                            q48 = int(completeness['count_q48'][i, j])
+                            raw = int(completeness['count_raw_captured'][i, j])
+                            margin = float(completeness['count_margin'][i, j])
+                            row.extend([
+                                '' if q48 < 0 else q48,
+                                '' if np.isnan(margin) else repr(margin),
+                                '' if raw < 0 else raw,
+                                str(completeness['completeness_status'][i, j]),
+                            ])
+                        writer.writerow(row)
 
     def to_npz(self, path) -> None:
         """Write all grids plus the meta dict (as JSON) to one ``.npz``."""
+        meta_arrays = {}
         payload = {
-            'meta_json': np.array(json.dumps(self.meta)),
+            'meta_json': np.array(json.dumps(
+                _pack_meta(self.meta, arrays=meta_arrays))),
             self._X_ATTR: self._x_values(),
             'Res': self.Res,
         }
+        completeness = self._completeness_arrays()
+        if completeness is not None:
+            payload.update(completeness)
         for k, fam in enumerate(self.families):
             payload[f'family{k}_{self._VALUE_ATTR}'] = getattr(
                 fam, self._VALUE_ATTR)
@@ -328,7 +396,25 @@ class _SweepResultBase:
             payload[f'family{k}_mode_index'] = fam.mode_index
             if fam.eigenvectors is not None:
                 payload[f'family{k}_eigenvectors'] = fam.eigenvectors
+        payload.update(meta_arrays)
         np.savez(path, **payload)
+
+    def save(self, path) -> None:
+        """Save by filename suffix (``.npz`` or ``.csv``).
+
+        NPZ preserves nested NumPy arrays in metadata, including the optional
+        GPU candidate-set capture. CSV keeps the tabular result and records
+        honest shape/dtype markers for metadata arrays that cannot be embedded
+        in a CSV header.
+        """
+        suffix = os.fspath(path).lower()
+        if suffix.endswith('.npz'):
+            self.to_npz(path)
+            return
+        if suffix.endswith('.csv'):
+            self.to_csv(path)
+            return
+        raise ValueError("sweep result path must end in '.npz' or '.csv'")
 
     @classmethod
     def from_npz(cls, path) -> '_SweepResultBase':
@@ -372,10 +458,74 @@ class SpatialSweepResult(_SweepResultBase):
     _GROWTH_ATTR = 'sigma'
 
 
+_META_ARRAY_REF = '__pymack_npz_array__'
+_META_ARRAY_OMITTED = '__pymack_csv_array_omitted__'
+_META_COMPLEX = '__pymack_complex__'
+_META_TUPLE = '__pymack_tuple__'
+_META_MAPPING = '__pymack_mapping__'
+
+
+def _pack_meta(value, *, arrays):
+    """Make nested result metadata JSON-safe without losing NPZ arrays."""
+    if isinstance(value, np.ndarray):
+        if arrays is None:
+            return {
+                _META_ARRAY_OMITTED: True,
+                'dtype': value.dtype.str,
+                'shape': list(value.shape),
+            }
+        key = f'_pymack_meta_array_{len(arrays)}'
+        arrays[key] = value
+        return {_META_ARRAY_REF: key}
+    if isinstance(value, np.generic):
+        return _pack_meta(value.item(), arrays=arrays)
+    if isinstance(value, complex):
+        return {_META_COMPLEX: [float(value.real), float(value.imag)]}
+    if isinstance(value, tuple):
+        return {_META_TUPLE: [
+            _pack_meta(item, arrays=arrays) for item in value
+        ]}
+    if isinstance(value, list):
+        return [_pack_meta(item, arrays=arrays) for item in value]
+    if isinstance(value, dict):
+        if all(isinstance(key, str) for key in value):
+            return {
+                key: _pack_meta(item, arrays=arrays)
+                for key, item in value.items()
+            }
+        return {_META_MAPPING: [
+            [_pack_meta(key, arrays=arrays), _pack_meta(item, arrays=arrays)]
+            for key, item in value.items()
+        ]}
+    return value
+
+
+def _unpack_meta(value, arrays=None):
+    if isinstance(value, list):
+        return [_unpack_meta(item, arrays) for item in value]
+    if not isinstance(value, dict):
+        return value
+    if set(value) == {_META_ARRAY_REF}:
+        if arrays is None:
+            raise ValueError('NPZ metadata array reference has no array store')
+        return np.array(arrays[value[_META_ARRAY_REF]])
+    if set(value) == {_META_COMPLEX}:
+        real, imag = value[_META_COMPLEX]
+        return complex(real, imag)
+    if set(value) == {_META_TUPLE}:
+        return tuple(_unpack_meta(item, arrays) for item in value[_META_TUPLE])
+    if set(value) == {_META_MAPPING}:
+        return {
+            _unpack_meta(key, arrays): _unpack_meta(item, arrays)
+            for key, item in value[_META_MAPPING]
+        }
+    return {key: _unpack_meta(item, arrays) for key, item in value.items()}
+
+
 def load_npz(path):
     """Load a :meth:`to_npz` file back into the matching result class."""
     with np.load(path, allow_pickle=False) as data:
-        meta = json.loads(str(data['meta_json']))
+        meta = _unpack_meta(json.loads(str(data['meta_json'])), data)
         kind = meta.get('kind')
         if kind == 'temporal':
             cls, fam_cls = TemporalSweepResult, TemporalFamilyResult
@@ -419,7 +569,7 @@ def load_csv(path):
             if line.startswith('#'):
                 stripped = line[1:].strip()
                 if stripped.startswith('meta = '):
-                    meta = json.loads(stripped[len('meta = '):])
+                        meta = _unpack_meta(json.loads(stripped[len('meta = '):]))
                 continue
             for record in csv.reader([line]):
                 if header is None:
@@ -432,11 +582,15 @@ def load_csv(path):
                 row['converged'] = bool(int(row['converged']))
                 row['seed'] = int(row['seed'])
                 row['mode_index'] = int(row['mode_index'])
+                for key in ('count_q48', 'count_raw_captured'):
+                    if key in row:
+                        row[key] = None if row[key] == '' else int(row[key])
                 for key in header[2:]:
                     if key in ('converged', 'seed', 'mode_index',
-                               'family_label'):
+                               'family_label', 'count_q48',
+                               'count_raw_captured', 'completeness_status'):
                         continue
-                    row[key] = float(row[key])
+                    row[key] = None if row[key] == '' else float(row[key])
                 rows.append(row)
     if meta is None:
         raise ValueError(f'no "# meta = ..." header found in {path!r}')
@@ -447,33 +601,13 @@ def load_csv(path):
 # Backend resolution
 # ---------------------------------------------------------------------------
 
-def _gpu_backend_available() -> bool:
-    """True only when a usable GPU sweep engine exists (device + engine API).
-
-    Deliberately conservative: :mod:`pymack.gpu` may exist (or not) without
-    an engine; the sweep engines arrive with plan slices 07+ and register by
-    exposing ``pymack.gpu.api.solve_temporal_sweep``.  Every failure mode
-    (no package, no cupy, no device, no engine) makes ``backend='auto'``
-    resolve to CPU.  Never called at import time.
-    """
-    try:
-        import importlib
-
-        gpu = importlib.import_module('pymack.gpu')
-        if not bool(gpu.is_available()):
-            return False
-        api = importlib.import_module('pymack.gpu.api')
-    except Exception:
-        return False
-    return callable(getattr(api, 'solve_temporal_sweep', None))
-
-
 def _resolve_backend(backend):
-    """Return ``(resolved, requested, env_override)``; raise for GPU/invalid.
+    """Return ``(resolved, requested, env_override)``; reject non-CPU work.
 
     Precedence: an explicit ``backend`` argument other than ``'auto'`` wins;
-    ``'auto'`` defers to ``PYMACK_SWEEP_BACKEND`` when set, else GPU when a
-    usable engine is available, else CPU.
+    ``'auto'`` defers to ``PYMACK_SWEEP_BACKEND`` when set, else always CPU.
+    The public snapshot is CPU-only, so every explicit or environment-driven
+    ``gpu`` request follows the same :class:`NotImplementedError` path.
     """
     requested = backend
     env_raw = os.environ.get(_BACKEND_ENV_VAR)
@@ -481,17 +615,14 @@ def _resolve_backend(backend):
     if backend == 'auto' and env_override:
         backend = env_override
     if backend == 'auto':
-        backend = 'gpu' if _gpu_backend_available() else 'cpu'
+        backend = 'cpu'
     if backend == 'cpu':
         return 'cpu', requested, env_override
     if backend == 'gpu':
-        if _gpu_backend_available():
-            return 'gpu', requested, env_override
         raise NotImplementedError(
-            "pymack.sweep: backend='gpu' requested but no usable GPU temporal "
-            "sweep engine is available. Use backend='cpu' (ProcessPool over "
-            "the validated per-point solvers) or install/enable the optional "
-            "GPU stack.")
+            "pymack.sweep: backend='gpu' is not included in this CPU-only "
+            "public build; use backend='cpu' (ProcessPool over the validated "
+            "per-point solvers).")
     raise ValueError(
         f"backend must be 'auto', 'cpu', or 'gpu'; got {requested!r} "
         f'(environment {_BACKEND_ENV_VAR}={env_raw!r})')
@@ -671,6 +802,39 @@ def _edge_ratio(phi, n, n_edge=4):
     return float(profile_amp[:n_edge].mean() / peak)
 
 
+def _filter_sort_temporal_eigenvalues(eigenvalues):
+    """Apply the shared 2-D temporal solver value filters verbatim."""
+    values = np.asarray(eigenvalues)
+    values = values[np.isfinite(values)]
+    physical = (
+        (values.real > -0.5)
+        & (values.real < 1.5)
+        & (np.abs(values.imag) < 0.5)
+    )
+    values = values[physical]
+    return values[np.argsort(-values.imag)]
+
+
+def _inverse_iteration_eigenvector(A, B, eigenvalue):
+    """Recover one selected right eigenvector with one inverse solve."""
+    nn = A.shape[0]
+    # A non-constant deterministic seed avoids structural cancellation with
+    # the boundary rows while preserving repeatability across workers.
+    seed = np.linspace(1.0, 2.0, nn) + 1j * np.linspace(2.0, 1.0, nn)
+    rhs = B @ seed
+    with warnings.catch_warnings():
+        # Near-singularity is the point of inverse iteration. We certify the
+        # returned vector independently below instead of surfacing this warning.
+        warnings.simplefilter('ignore', scipy.linalg.LinAlgWarning)
+        phi = scipy.linalg.solve(
+            A - complex(eigenvalue) * B, rhs, check_finite=False)
+    scale = float(np.max(np.abs(phi)))
+    if not np.isfinite(scale) or scale == 0.0:
+        raise scipy.linalg.LinAlgError(
+            'inverse iteration returned a non-finite or zero eigenvector')
+    return np.asarray(phi) / scale
+
+
 # ---------------------------------------------------------------------------
 # CPU backend: per-point work (runs inside pool workers; module-level and
 # picklable by reference -- required for Windows spawn semantics)
@@ -694,7 +858,7 @@ def _worker_init(payload):
         for var in _BLAS_THREAD_VARS:
             os.environ[var] = n
     # Import numpy under the (possibly pinned) env. Harmless if already loaded
-    # by bootstrap; guarantees config sees our vars on this child.
+    # by bootstrap; this makes config see our vars on this child.
     try:
         import numpy as np  # noqa: F401
         _ = np.__version__
@@ -790,16 +954,23 @@ def _temporal_point_records(payload, alpha, Re):
     # Shared solve: a failure here fails every family at this point (they all
     # read the same spectrum). Exception -> contained -2; BaseException (e.g.
     # KeyboardInterrupt, MemoryError) still propagates by design.
+    A = B = None
     try:
-        evals, evecs, y = _solve_temporal_point(payload, alpha, Re)
+        if payload.get('cpu_eigenvalues_only'):
+            A, B = _assemble_temporal_operator(payload, alpha, Re)
+            evals = _filter_sort_temporal_eigenvalues(
+                scipy.linalg.eig(A, B, right=False))
+            evecs = None
+            n = A.shape[0] // 4
+        else:
+            evals, evecs, y = _solve_temporal_point(payload, alpha, Re)
+            n = len(y)
     except Exception as exc:
         return [_failed_record(exc) for _ in families]
-    n = len(y)
 
     # Shared FP64 residual operator (best-effort; only assembled when at
     # least one family selects a mode). Contained separately: a residual-
     # operator failure only voids residual certification (NaN), not the point.
-    A = B = None
     norm_A = norm_B = nn = None
     try:
         need_operator = any(
@@ -809,7 +980,8 @@ def _temporal_point_records(payload, alpha, Re):
         need_operator = True
     if need_operator:
         try:
-            A, B = _assemble_temporal_operator(payload, alpha, Re)
+            if A is None:
+                A, B = _assemble_temporal_operator(payload, alpha, Re)
             norm_A = np.linalg.norm(A, 'fro')
             norm_B = np.linalg.norm(B, 'fro')
             nn = A.shape[0]
@@ -827,7 +999,10 @@ def _temporal_point_records(payload, alpha, Re):
                 records.append({'status': SEED_NO_ADMISSIBLE_MODE})
                 continue
             c = complex(evals[sel])
-            phi = np.asarray(evecs[:, sel])
+            phi = (
+                _inverse_iteration_eigenvector(A, B, c)
+                if evecs is None else np.asarray(evecs[:, sel])
+            )
             record = {
                 'status': SEED_QZ_FULL_SPECTRUM,
                 'value': c,
@@ -1106,7 +1281,8 @@ def temporal_sweep(profile, alphas, Res, *,
                    seeds='auto',
                    backend='auto', precision='mixed',
                    tile_size='auto', return_eigenvectors=False,
-                   cpu_workers=None, cpu_blas_threads=None) -> TemporalSweepResult:
+                   cpu_workers=None, cpu_blas_threads=None,
+                   cpu_eigenvalues_only=False) -> TemporalSweepResult:
     """Temporal LST sweep over an ``alphas x Res`` grid.
 
     Solves ``A phi = c B phi`` at every grid point with the selected
@@ -1116,8 +1292,8 @@ def temporal_sweep(profile, alphas, Res, *,
     given ``beta``) and, per :class:`CBand` family, returns the most unstable
     admitted mode -- the batched equivalent of the deployed per-point loops.
 
-    On the CPU backend (the only implemented backend today) ``seeds``,
-    ``precision`` and ``tile_size`` are validated and recorded in
+    On the CPU backend, ``seeds``, ``precision`` and ``tile_size`` are
+    validated and recorded in
     ``result.meta`` but do not affect values: every point is an independent
     full-spectrum FP64 QZ solve, bitwise-identical to the per-point loop.
     ``cpu_workers`` (or ``PYMACK_SWEEP_CPU_WORKERS``) sizes the process pool;
@@ -1131,6 +1307,15 @@ def temporal_sweep(profile, alphas, Res, *,
     bitwise-identical to historical and keeps all fixtures green. When
     enabled, meta records the requested and the count *observed inside a
     worker*.
+    ``cpu_eigenvalues_only=True`` is a separate CPU-only 2-D optimization:
+    QZ computes eigenvalues only and one inverse solve reconstructs each
+    selected family vector for the unchanged edge/residual diagnostics. It is
+    opt-in because QZ job flags change the numerical path.
+
+    ``backend='auto'`` uses CPU unless ``PYMACK_SWEEP_BACKEND`` explicitly
+    requests ``gpu``. Because this public snapshot is CPU-only, that request
+    raises the same clean :class:`NotImplementedError` as an explicit
+    ``backend='gpu'`` argument.
     """
     xs = _as_grid_axis(alphas, 'alphas')
     Res = _as_grid_axis(Res, 'Res')
@@ -1147,19 +1332,13 @@ def temporal_sweep(profile, alphas, Res, *,
         families=families, precision=precision, tile_size=tile_size,
         seeds=seeds, Ma=Ma, kind='temporal')
     _resolved, requested, env_override = _resolve_backend(backend)
-    if _resolved == 'gpu':
-        import importlib
-
-        api = importlib.import_module('pymack.gpu.api')
-        return api.solve_temporal_sweep(
-            profile, xs, Res, Ma=Ma, N=N, y_max=y_max, L=L,
-            wall_bc=wall_bc, length_scale=length_scale, Pr=Pr, gamma=gamma,
-            lambda_mu_ratio=lambda_mu_ratio, beta=beta, operator=operator,
-            families=families, seeds=seeds, precision=precision,
-            tile_size=tile_size, return_eigenvectors=return_eigenvectors,
-            cpu_workers=cpu_workers, backend_requested=requested,
-            env_backend_override=env_override)
-
+    cpu_eigenvalues_only = bool(cpu_eigenvalues_only)
+    if cpu_eigenvalues_only and operator not in ('mack_2d', 'ozgen_2d'):
+        raise ValueError(
+            'cpu_eigenvalues_only supports only mack_2d and ozgen_2d; '
+            'mack_3d requires its full eigenvector leakage filter')
+    if cpu_eigenvalues_only and _resolved != 'cpu':
+        raise ValueError('cpu_eigenvalues_only requires backend=\'cpu\'')
     solver_kwargs = {
         'Ma': float(Ma), 'N': int(N),
         'y_max': None if y_max is None else float(y_max),
@@ -1178,6 +1357,7 @@ def temporal_sweep(profile, alphas, Res, *,
         'solver_kwargs': solver_kwargs,
         'return_eigenvectors': bool(return_eigenvectors),
         'cpu_blas_threads': cpu_blas,
+        'cpu_eigenvalues_only': cpu_eigenvalues_only,
     }
     t0 = time.perf_counter()
     results, n_workers, eff_blas = _run_cpu_grid(payload, xs, Res, cpu_workers)
@@ -1196,6 +1376,12 @@ def temporal_sweep(profile, alphas, Res, *,
         return_eigenvectors=return_eigenvectors, wall_time_s=wall_time_s,
         errors=errors, cpu_blas_threads=cpu_blas,
         cpu_blas_threads_effective=eff_blas)
+    if cpu_eigenvalues_only:
+        meta['cpu_eigenvalues_only'] = {
+            'enabled': True,
+            'eigensolver': 'scipy.linalg.eig(right=False)',
+            'selected_vector': 'one inverse solve per selected family mode',
+        }
 
     family_results = tuple(
         TemporalFamilyResult(
@@ -1261,10 +1447,6 @@ def spatial_sweep(profile, omegas, Res, *,
     if not (isinstance(n_modes, (int, np.integer)) and n_modes >= 1):
         raise ValueError(f'n_modes must be a positive int, got {n_modes!r}')
     _resolved, requested, env_override = _resolve_backend(backend)
-    if _resolved == 'gpu':
-        raise NotImplementedError(
-            "pymack.sweep: backend='gpu' for spatial_sweep is not implemented "
-            "until the GPU spatial-engine slice lands; use backend='cpu'.")
 
     solver_kwargs = {
         'Ma': float(Ma), 'N': int(N),

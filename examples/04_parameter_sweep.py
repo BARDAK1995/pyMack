@@ -5,10 +5,8 @@ example solves a whole GRID of points in one call to `temporal_sweep`, and
 plots the resulting temporal growth-rate map with its neutral curve
 (omega_i = 0).
 
-This runs entirely on the CPU backend -- GPU is an upgrade, not a
-requirement: `import pymack` and `import pymack.sweep` never import CuPy, and
-a machine with no GPU and no CuPy installed runs this script exactly as
-shown. See docs/SWEEP_API.md for the full API reference, the `seed_map`
+This runs entirely on the public CPU backend. See docs/SWEEP_API.md for the
+full API reference, the `seed_map`
 provenance contract, and the determinism/meta contract this sweep publishes.
 
 Run:  python examples/04_parameter_sweep.py --backend cpu     (~15 s)
@@ -38,10 +36,8 @@ LABEL_FS, TICK_FS, TITLE_FS = 14, 12, 16
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        '--backend', default='cpu', choices=('cpu', 'auto', 'gpu'),
-        help="sweep backend ('cpu' is the only one implemented today; "
-             "'gpu' is a dispatch seam that raises cleanly -- see "
-             'docs/SWEEP_API.md)')
+        '--backend', default='cpu', choices=('cpu', 'auto'),
+        help="sweep backend ('auto' resolves to the public CPU path)")
     args = parser.parse_args()
 
     # 1. Same Mach-6 self-similar flat-plate base flow as examples 01-03.
@@ -79,8 +75,7 @@ def main():
 
     # 3. The determinism/provenance contract: every artifact is
     #    self-describing (docs/SWEEP_API.md, "Determinism and the meta
-    #    contract"). No GPU speedup numbers are printed -- none are
-    #    certified yet.
+    #    contract").
     meta = result.meta
     print(f"backend={meta['backend']}  precision={meta['precision']}  "
           f"tile_size={meta['tile_size']}  cpu_workers={meta['cpu_workers']}")

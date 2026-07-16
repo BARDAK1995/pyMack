@@ -1,0 +1,92 @@
+{
+  "schema_version": 1,
+  "case_id": "balakumar_malik1992_via_xirenfu",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/balakumar_malik1992_via_xirenfu/verdict.json",
+    "sha256": "0c109cbdbc108c78d415170d22bcdd072c3b05566ffaa1b02739f6ec0afcdfb9",
+    "committed_when": {
+      "commit": "e963286696f4422ecc8b0cdec9e7a17f07678abc",
+      "authored_at": "2026-06-19T09:28:48-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/balakumar_malik1992_via_xirenfu",
+    "regenerated_payload": "SCRATCH/balakumar_malik1992_via_xirenfu/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py balakumar_malik1992_via_xirenfu --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\balakumar_malik1992_via_xirenfu'",
+    "exit_code": 0,
+    "elapsed_s": 1.6861070999875665,
+    "measurement_lock": null,
+    "stdout": "SCRATCH/balakumar_malik1992_via_xirenfu/stdout.txt",
+    "stderr": "SCRATCH/balakumar_malik1992_via_xirenfu/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 8,
+    "n_compared_numeric_metrics": 8,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 4.189426583423028e-13,
+    "max_abs_drift_path": "metrics.alpha_i_rel_err",
+    "component_abs_drift": {
+      "metrics.N": 0.0,
+      "metrics.alpha_i_rel_err": 4.189426583423028e-13,
+      "metrics.alpha_r_rel_err": 4.276884835868744e-14,
+      "metrics.c_phase": 3.8746783559417963e-14,
+      "metrics.malik_alpha[0]": 0.0,
+      "metrics.malik_alpha[1]": 0.0,
+      "metrics.pymack_alpha[0]": 9.409140133698202e-15,
+      "metrics.pymack_alpha[1]": 1.2949710748166865e-15
+    },
+    "committed_verdict": "acceptable",
+    "regenerated_verdict": "acceptable"
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:15:09.270280+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "9486ae417b31aba74d631fd1c29c1bd6c5df4e6e",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py balakumar_malik1992_via_xirenfu --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\balakumar_malik1992_via_xirenfu'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "case_id": "balakumar_malik1992_via_xirenfu",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": false
+    },
+    "sha256": {
+      "verification/second_mode/balakumar_malik1992_via_xirenfu/verdict.json": "0c109cbdbc108c78d415170d22bcdd072c3b05566ffaa1b02739f6ec0afcdfb9",
+      "scripts/verification/provenance_census_worker.py": "a618c1f1a52ed9e8128907e438ee935274c2c39c1f7c7ebc17987287398c8cb8",
+      "verification/compare_malik1990_anchors.py": "09ef36a6d2032b91ec762bffebba164168d98341c37fe2db0f2cb69802518d1b",
+      "SCRATCH/balakumar_malik1992_via_xirenfu/stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/balakumar_malik1992_via_xirenfu/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/balakumar_malik1992_via_xirenfu/verdict.json": "fc90176a04d6e52538a8bc79c96427b34d191bdf8dafe124d486496c093c873a"
+    }
+  }
+}

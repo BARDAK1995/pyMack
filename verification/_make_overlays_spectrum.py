@@ -119,7 +119,7 @@ def plot_malik_case6():
     ax.grid(True, alpha=0.3)
     ax.ticklabel_format(useOffset=False, style="plain")
 
-    # legend in the upper-left -- the markers occupy the upper-right / center,
+    # legend in the upper-left -- the markers fill the upper-right / center,
     # the Tumin triangle is at lower-center, so upper-left is clear.
     ax.legend(loc="upper left", framealpha=0.95)
 

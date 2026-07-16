@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "case_id": "mazhong2003_m4p5",
+  "matrix_path": "CPU by design",
+  "committed_reference": {
+    "path": "verification/second_mode/mazhong2003_m4p5/verdict.json",
+    "sha256": "3cdec43f7e9aa72dfe154a7d54229099790ccf6c67e593913c2a9e5bca132dcd",
+    "committed_when": {
+      "commit": "0182004ffea10e44fa6b7e7492c4ab5abf21541f",
+      "authored_at": "2026-07-02T22:10:10-05:00"
+    }
+  },
+  "status": "REGENERATED",
+  "regeneration": {
+    "rerun_in_this_census": true,
+    "scratch_directory": "SCRATCH/mazhong2003_m4p5",
+    "regenerated_payload": "SCRATCH/mazhong2003_m4p5/verdict.json",
+    "exact_command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mazhong2003_m4p5 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mazhong2003_m4p5'",
+    "exit_code": 0,
+    "elapsed_s": 54.89730000006966,
+    "measurement_lock": {
+      "protocol": "atomic mkdir; low-priority poll; never steal",
+      "lock_dir": "C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\MEASURE_LOCK",
+      "owner": "provenance-census-low-priority 2026-07-14T06:17:01.539783+00:00 793c4ff49b174feb92cf80dc5b058e23 provenance-census-mazhong2003_m4p5",
+      "run_label": "provenance-census-mazhong2003_m4p5",
+      "waited_s": 0.0,
+      "acquired_at_utc": "2026-07-14T06:17:01.539783+00:00",
+      "released_at_utc": "2026-07-14T06:17:56.431599+00:00"
+    },
+    "stdout": "SCRATCH/mazhong2003_m4p5/stdout.txt",
+    "stderr": "SCRATCH/mazhong2003_m4p5/stderr.txt"
+  },
+  "comparison": {
+    "verdict": "numeric-within-1e-9",
+    "whole_reference_byte_identical": false,
+    "numeric_tolerance": 1e-09,
+    "n_committed_numeric_metrics": 16,
+    "n_compared_numeric_metrics": 16,
+    "missing_numeric_metric_paths": [],
+    "max_abs_drift": 0.0,
+    "max_abs_drift_path": "metrics.F",
+    "component_abs_drift": {
+      "metrics.F": 0.0,
+      "metrics.adiabatic_BC_branch_II_R_pymack": 0.0,
+      "metrics.adiabatic_BC_branch_II_rel_err": 0.0,
+      "metrics.adiabatic_BC_branch_I_R_pymack": 0.0,
+      "metrics.adiabatic_BC_branch_I_rel_err": 0.0,
+      "metrics.branch_II_R_pymack": 0.0,
+      "metrics.branch_II_R_ref": 0.0,
+      "metrics.branch_II_rel_err": 0.0,
+      "metrics.branch_I_R_pymack": 0.0,
+      "metrics.branch_I_R_ref": 0.0,
+      "metrics.branch_I_rel_err": 0.0,
+      "metrics.digitized_branch_II_R": 0.0,
+      "metrics.digitized_branch_II_rel_err": 0.0,
+      "metrics.digitized_branch_I_R": 0.0,
+      "metrics.digitized_branch_I_rel_err": 0.0,
+      "metrics.headline_max_rel_err": 0.0
+    },
+    "committed_verdict": "agrees",
+    "regenerated_verdict": "agrees"
+  },
+  "provenance": {
+    "schema_version": 1,
+    "generated_at_utc": "2026-07-14T06:17:56.446654+00:00",
+    "runtime": {
+      "python": "3.12.7",
+      "python_implementation": "CPython",
+      "python_executable": "C:\\Program Files\\Python312\\python.exe",
+      "numpy": "2.2.6",
+      "scipy": "1.14.1",
+      "platform": "Windows-10-10.0.19045-SP0",
+      "system": "Windows",
+      "release": "10",
+      "machine": "AMD64"
+    },
+    "source": {
+      "commit": "9486ae417b31aba74d631fd1c29c1bd6c5df4e6e",
+      "tracked_tree_dirty": false
+    },
+    "execution": {
+      "command": "$env:PYTHONPATH=(Get-Location).Path; $env:OMP_NUM_THREADS='1'; $env:MKL_NUM_THREADS='1'; $env:OPENBLAS_NUM_THREADS='1'; $env:NUMEXPR_NUM_THREADS='1'; $env:VECLIB_MAXIMUM_THREADS='1'; python scripts/verification/provenance_census_worker.py mazhong2003_m4p5 --out 'C:\\Users\\merts\\.claude\\jobs\\06eee14d\\tmp\\provenance_census\\mazhong2003_m4p5'",
+      "environment": {
+        "PYMACK_SWEEP_BACKEND": null,
+        "PYMACK_NVCP_SYSMEM_FALLBACK": null,
+        "OMP_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "NUMEXPR_NUM_THREADS": null,
+        "VECLIB_MAXIMUM_THREADS": null
+      }
+    },
+    "effective_parameters": {
+      "case_id": "mazhong2003_m4p5",
+      "scratch_only": true,
+      "blas_threads": 1,
+      "measurement_lock_used": true
+    },
+    "sha256": {
+      "verification/second_mode/mazhong2003_m4p5/verdict.json": "3cdec43f7e9aa72dfe154a7d54229099790ccf6c67e593913c2a9e5bca132dcd",
+      "scripts/verification/provenance_census_worker.py": "a618c1f1a52ed9e8128907e438ee935274c2c39c1f7c7ebc17987287398c8cb8",
+      "verification/second_mode/mazhong2003_m4p5/compute_mazhong_m4p5.py": "09597fb35606df2097fe0d2594918f32d9a4a4d8d1ef1d54eb6fec0c55bbfeb3",
+      "verification/second_mode/mazhong2003_m4p5/write_verdict_mazhong.py": "a738288afbfdc8afe1de309dd22320029d051755ebb3769fbaa3d758249fa7ce",
+      "verification/second_mode/mazhong2003_m4p5/reference_mazhong_fig15.csv": "daec87ec9350e1c6fb060e1bb3c65f11b96caab6608f2503ec4321b646050456",
+      "SCRATCH/mazhong2003_m4p5/stdout.txt": "a9e025d57bcb9deeac4fe3eab9a5deda4744a6f4380b53ff302027820bacdfd4",
+      "SCRATCH/mazhong2003_m4p5/stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "SCRATCH/mazhong2003_m4p5/verdict.json": "7a21d50b16b718613f55c27418cb04e93f2c914179fdc9a5e4bc52502b8d6a3c"
+    }
+  }
+}
